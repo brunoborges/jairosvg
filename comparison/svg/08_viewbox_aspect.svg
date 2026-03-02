@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
+  <rect width="200" height="200" fill="#ecf0f1"/>
+  <rect x="5" y="5" width="190" height="190" fill="none" stroke="#bdc3c7" stroke-width="2" stroke-dasharray="6,3"/>
+  <circle cx="100" cy="100" r="80" fill="#3498db" opacity="0.4"/>
+  <rect x="40" y="40" width="120" height="120" fill="#e74c3c" opacity="0.4"/>
+  <line x1="0" y1="100" x2="200" y2="100" stroke="#2c3e50" stroke-width="1" stroke-dasharray="4,2"/>
+  <line x1="100" y1="0" x2="100" y2="200" stroke="#2c3e50" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="100" y="20" text-anchor="middle" font-size="10" fill="#7f8c8d">viewBox 200x200</text>
+  <text x="100" y="195" text-anchor="middle" font-size="10" fill="#7f8c8d">output 400x300</text>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
+  <rect width="400" height="300" fill="#2d3436"/>
+  <text x="200" y="50" text-anchor="middle" font-size="32" font-weight="bold" fill="#dfe6e9">Title Text</text>
+  <text x="200" y="90" text-anchor="middle" font-size="16" fill="#b2bec3">Subtitle in lighter gray</text>
+  <text x="30" y="140" font-size="20" fill="#e17055">Left aligned</text>
+  <text x="370" y="140" text-anchor="end" font-size="20" fill="#00cec9">Right aligned</text>
+  <text x="200" y="190" text-anchor="middle" font-size="18" fill="#ffeaa7">
+    <tspan font-weight="bold">Bold</tspan>
+    <tspan fill="#fab1a0"> and </tspan>
+    <tspan font-style="italic" fill="#74b9ff">Italic</tspan>
+  </text>
+  <text x="30" y="240" font-size="14" fill="#a29bfe" font-family="monospace">monospace: 0123456789</text>
+  <text x="30" y="275" font-size="12" fill="#55efc4" letter-spacing="4">S P A C E D   O U T</text>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="350" height="300">
+  <defs>
+    <circle id="dot" r="15"/>
+    <rect id="card" width="60" height="40" rx="6"/>
+    <clipPath id="circClip">
+      <circle cx="175" cy="150" r="120"/>
+    </clipPath>
+  </defs>
+  <rect width="350" height="300" fill="#dfe6e9"/>
+  <g clip-path="url(#circClip)">
+    <rect width="350" height="300" fill="#6c5ce7"/>
+    <line x1="0" y1="0" x2="350" y2="300" stroke="white" stroke-width="2"/>
+    <line x1="350" y1="0" x2="0" y2="300" stroke="white" stroke-width="2"/>
+  </g>
+  <use href="#dot" x="60" y="60" fill="#e74c3c"/>
+  <use href="#dot" x="175" y="60" fill="#f39c12"/>
+  <use href="#dot" x="290" y="60" fill="#2ecc71"/>
+  <use href="#card" x="25" y="230" fill="#e74c3c"/>
+  <use href="#card" x="105" y="230" fill="#3498db"/>
+  <use href="#card" x="185" y="230" fill="#f39c12"/>
+  <use href="#card" x="265" y="230" fill="#2ecc71"/>
+</svg>

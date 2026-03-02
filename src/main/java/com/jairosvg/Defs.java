@@ -145,10 +145,18 @@ public final class Defs {
             Color[] colorArr = colors.toArray(new Color[0]);
             for (int i = 0; i < stops.size(); i++) fractions[i] = stops.get(i)[0];
 
-            // Fix duplicate fractions
+            // Fix duplicate fractions, clamp to [0,1], ensure strictly increasing
             for (int i = 1; i < fractions.length; i++) {
                 if (fractions[i] <= fractions[i - 1]) {
                     fractions[i] = fractions[i - 1] + 0.0001f;
+                }
+            }
+            for (int i = 0; i < fractions.length; i++) {
+                fractions[i] = Math.min(1.0f, Math.max(0.0f, fractions[i]));
+            }
+            for (int i = fractions.length - 2; i >= 0; i--) {
+                if (fractions[i] >= fractions[i + 1]) {
+                    fractions[i] = Math.nextDown(fractions[i + 1]);
                 }
             }
 
@@ -199,6 +207,14 @@ public final class Defs {
             for (int i = 1; i < fractions.length; i++) {
                 if (fractions[i] <= fractions[i - 1]) {
                     fractions[i] = fractions[i - 1] + 0.0001f;
+                }
+            }
+            for (int i = 0; i < fractions.length; i++) {
+                fractions[i] = Math.min(1.0f, Math.max(0.0f, fractions[i]));
+            }
+            for (int i = fractions.length - 2; i >= 0; i--) {
+                if (fractions[i] >= fractions[i + 1]) {
+                    fractions[i] = Math.nextDown(fractions[i + 1]);
                 }
             }
 
