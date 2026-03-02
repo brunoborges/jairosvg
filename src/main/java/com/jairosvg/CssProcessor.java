@@ -9,6 +9,11 @@ import java.util.regex.*;
  */
 public final class CssProcessor {
 
+    private static final java.util.regex.Pattern COMMENT_PATTERN = java.util.regex.Pattern.compile("/\\*.*?\\*/", java.util.regex.Pattern.DOTALL);
+    private static final java.util.regex.Pattern IMPORT_PATTERN = java.util.regex.Pattern.compile("@import[^;]*;");
+    private static final java.util.regex.Pattern RULE_PATTERN = java.util.regex.Pattern.compile("([^{}]+)\\{([^}]*)\\}");
+    private static final java.util.regex.Pattern WHITESPACE = java.util.regex.Pattern.compile("\\s+");
+
     private CssProcessor() {}
 
     /** A CSS declaration: (property-name, value). */
@@ -80,12 +85,11 @@ public final class CssProcessor {
     /** Parse a CSS stylesheet string into rules. */
     public static void parseStylesheet(String cssText, List<StyleRule> rules) {
         // Remove comments
-        cssText = cssText.replaceAll("/\\*.*?\\*/", "");
+        cssText = COMMENT_PATTERN.matcher(cssText).replaceAll("");
         // Handle @import (basic - skip for now)
-        cssText = cssText.replaceAll("@import[^;]*;", "");
+        cssText = IMPORT_PATTERN.matcher(cssText).replaceAll("");
 
-        Pattern rulePattern = Pattern.compile("([^{}]+)\\{([^}]*)\\}");
-        Matcher m = rulePattern.matcher(cssText);
+        Matcher m = RULE_PATTERN.matcher(cssText);
         while (m.find()) {
             String selectors = m.group(1).strip();
             String declarations = m.group(2).strip();
@@ -127,7 +131,7 @@ public final class CssProcessor {
         if (selector.startsWith(".")) {
             String className = element.getAttribute("class");
             if (className != null) {
-                for (String cls : className.split("\\s+")) {
+                for (String cls : WHITESPACE.split(className)) {
                     if (selector.substring(1).equals(cls)) return true;
                 }
             }
@@ -142,7 +146,7 @@ public final class CssProcessor {
             if (!type.isEmpty() && !type.equals(localName)) return false;
             String className = element.getAttribute("class");
             if (className == null) return false;
-            for (String c : className.split("\\s+")) {
+            for (String c : WHITESPACE.split(className)) {
                 if (cls.equals(c)) return true;
             }
             return false;

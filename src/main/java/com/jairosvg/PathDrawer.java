@@ -12,6 +12,9 @@ import static com.jairosvg.Helpers.*;
  */
 public final class PathDrawer {
 
+    private static final java.util.regex.Pattern WHITESPACE = java.util.regex.Pattern.compile("\\s+");
+    private static final java.util.regex.Pattern PATH_LETTER_PATTERN = java.util.regex.Pattern.compile("([achlmqstvzACHLMQSTVZ])");
+
     private PathDrawer() {}
 
     /** Draw a path node. */
@@ -19,9 +22,7 @@ public final class PathDrawer {
         String d = node.get("d", "");
         node.vertices = new ArrayList<>();
 
-        for (char c : PATH_LETTERS.toCharArray()) {
-            d = d.replace(String.valueOf(c), " " + c + " ");
-        }
+        d = PATH_LETTER_PATTERN.matcher(d).replaceAll(" $1 ");
 
         String lastLetter = null;
         d = normalize(d);
@@ -33,7 +34,8 @@ public final class PathDrawer {
 
         while (!d.isBlank()) {
             d = d.strip();
-            String first = d.split("\\s+", 2)[0];
+            int spaceIdx = d.indexOf(' ');
+            String first = spaceIdx > 0 ? d.substring(0, spaceIdx) : d;
 
             if (first.length() == 1 && PATH_LETTERS.indexOf(first.charAt(0)) >= 0) {
                 letter = first;
@@ -99,7 +101,7 @@ public final class PathDrawer {
                         surface.path.lineTo(cx, cy);
                     }
                     case "H" -> {
-                        String[] sp = (d + " ").split("\\s+", 2);
+                        String[] sp = WHITESPACE.split(d + " ", 2);
                         double x = size(surface, sp[0], "x");
                         d = sp[1];
                         double angle = x > cx ? 0 : Math.PI;
@@ -108,7 +110,7 @@ public final class PathDrawer {
                         cx = x;
                     }
                     case "h" -> {
-                        String[] sp = (d + " ").split("\\s+", 2);
+                        String[] sp = WHITESPACE.split(d + " ", 2);
                         double dx = size(surface, sp[0], "x");
                         d = sp[1];
                         double angle = dx > 0 ? 0 : Math.PI;
@@ -117,7 +119,7 @@ public final class PathDrawer {
                         surface.path.lineTo(cx, cy);
                     }
                     case "V" -> {
-                        String[] sp = (d + " ").split("\\s+", 2);
+                        String[] sp = WHITESPACE.split(d + " ", 2);
                         double y = size(surface, sp[0], "y");
                         d = sp[1];
                         double angle = Math.copySign(Math.PI / 2, y - cy);
@@ -126,7 +128,7 @@ public final class PathDrawer {
                         cy = y;
                     }
                     case "v" -> {
-                        String[] sp = (d + " ").split("\\s+", 2);
+                        String[] sp = WHITESPACE.split(d + " ", 2);
                         double dy = size(surface, sp[0], "y");
                         d = sp[1];
                         double angle = Math.copySign(Math.PI / 2, dy);
@@ -263,7 +265,7 @@ public final class PathDrawer {
                         double rx = (double) rxy[0], ry = (double) rxy[1];
                         d = ((String) rxy[2]).strip();
 
-                        String[] sp = (d + " ").split("\\s+", 2);
+                        String[] sp = WHITESPACE.split(d + " ", 2);
                         double rotation = Math.toRadians(Double.parseDouble(sp[0]));
                         d = sp[1].strip();
 
@@ -302,7 +304,7 @@ public final class PathDrawer {
             } catch (Exception e) {
                 // Skip malformed data
                 if (!d.isEmpty()) {
-                    String[] sp = d.split("\\s+", 2);
+                    String[] sp = WHITESPACE.split(d, 2);
                     d = sp.length > 1 ? sp[1] : "";
                 }
                 continue;

@@ -18,6 +18,21 @@ import org.xml.sax.InputSource;
  */
 public class Node {
 
+    private static final DocumentBuilderFactory SAFE_FACTORY;
+    private static final DocumentBuilderFactory UNSAFE_FACTORY;
+    static {
+        SAFE_FACTORY = DocumentBuilderFactory.newInstance();
+        SAFE_FACTORY.setNamespaceAware(true);
+        try {
+            SAFE_FACTORY.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            SAFE_FACTORY.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        } catch (Exception e) {
+            throw new ExceptionInInitializerError(e);
+        }
+        UNSAFE_FACTORY = DocumentBuilderFactory.newInstance();
+        UNSAFE_FACTORY.setNamespaceAware(true);
+    }
+
     private static final Set<String> NOT_INHERITED_ATTRIBUTES = Set.of(
         "clip", "clip-path", "display", "filter", "height", "id",
         "mask", "opacity", "overflow", "rotate", "stop-color", "stop-opacity",
@@ -84,9 +99,13 @@ public class Node {
             this.attributes.put(name, attr.getNodeValue());
         }
 
-        // Apply CSS rules from stylesheets
+        // Apply CSS rules from stylesheets (non-important first, important after inline styles)
+        List<CssProcessor.Declaration> normalDecls = null;
+        List<CssProcessor.Declaration> importantDecls = null;
         if (styleRules != null) {
-            for (var decl : CssProcessor.getMatchingDeclarations(element, styleRules, false)) {
+            normalDecls = CssProcessor.getMatchingDeclarations(element, styleRules, false);
+            importantDecls = CssProcessor.getMatchingDeclarations(element, styleRules, true);
+            for (var decl : normalDecls) {
                 this.attributes.put(decl.name(), decl.value());
             }
         }
@@ -103,9 +122,9 @@ public class Node {
             }
         }
 
-        // Apply important CSS rules
-        if (styleRules != null) {
-            for (var decl : CssProcessor.getMatchingDeclarations(element, styleRules, true)) {
+        // Apply important CSS rules (override inline styles)
+        if (importantDecls != null) {
+            for (var decl : importantDecls) {
                 this.attributes.put(decl.name(), decl.value());
             }
         }
@@ -223,14 +242,7 @@ public class Node {
             bytestring = new GZIPInputStream(new ByteArrayInputStream(bytestring)).readAllBytes();
         }
 
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        if (!unsafe) {
-            // Security hardening
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-        }
-
+        DocumentBuilderFactory factory = unsafe ? UNSAFE_FACTORY : SAFE_FACTORY;
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.parse(new InputSource(new ByteArrayInputStream(bytestring)));
         Element root = doc.getDocumentElement();

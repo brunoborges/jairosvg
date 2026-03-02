@@ -26,6 +26,12 @@ public final class Helpers {
     public static final Pattern PAINT_URL = Pattern.compile("(url\\(.+\\))\\s*(.*)");
     public static final String PATH_LETTERS = "achlmqstvzACHLMQSTVZ";
     private static final Pattern RECT_PATTERN = Pattern.compile("rect\\(\\s*(.+?)\\s*\\)");
+    private static final Pattern NEGATIVE_SIGN = Pattern.compile("(?<!e)-");
+    private static final Pattern WHITESPACE_COMMA = Pattern.compile("[\\s,]+");
+    private static final Pattern DECIMAL_SPLIT = Pattern.compile("(\\.[0-9-]+)(?=\\.)");
+    private static final Pattern POINT_PATTERN = Pattern.compile("^(\\S+?)\\s+(\\S+?)(?:\\s+|$)");
+    private static final Pattern TRANSFORM_PATTERN = Pattern.compile("(\\w+)\\s*\\(\\s*(.*?)\\s*\\)");
+    private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
     private Helpers() {}
 
@@ -62,7 +68,7 @@ public final class Helpers {
         String viewboxStr = node.get("viewBox");
         double[] viewbox = null;
         if (viewboxStr != null && !viewboxStr.isEmpty()) {
-            viewboxStr = viewboxStr.replaceAll("[\\s,]+", " ").strip();
+            viewboxStr = WHITESPACE_COMMA.matcher(viewboxStr).replaceAll(" ").strip();
             String[] parts = viewboxStr.split(" ");
             if (parts.length == 4) {
                 viewbox = new double[]{
@@ -101,17 +107,16 @@ public final class Helpers {
     public static String normalize(String string) {
         if (string == null || string.isEmpty()) return "";
         string = string.replace('E', 'e');
-        string = string.replaceAll("(?<!e)-", " -");
-        string = string.replaceAll("[\\s,]+", " ");
-        string = string.replaceAll("(\\.[0-9-]+)(?=\\.)", "$1 ");
+        string = NEGATIVE_SIGN.matcher(string).replaceAll(" -");
+        string = WHITESPACE_COMMA.matcher(string).replaceAll(" ");
+        string = DECIMAL_SPLIT.matcher(string).replaceAll("$1 ");
         return string.strip();
     }
 
     /** Return (x, y, trailing_text) from string. */
     public static double[] point(Surface surface, String string) {
         string = string.strip();
-        Pattern p = Pattern.compile("^(\\S+?)\\s+(\\S+?)(?:\\s+|$)");
-        Matcher m = p.matcher(string);
+        Matcher m = POINT_PATTERN.matcher(string);
         if (m.find()) {
             double x = size(surface, m.group(1), "x");
             double y = size(surface, m.group(2), "y");
@@ -123,8 +128,7 @@ public final class Helpers {
     /** Return (x, y, remaining_string). */
     public static Object[] pointWithRemainder(Surface surface, String string) {
         string = string.strip();
-        Pattern p = Pattern.compile("^(\\S+?)\\s+(\\S+?)(?:\\s+|$)");
-        Matcher m = p.matcher(string);
+        Matcher m = POINT_PATTERN.matcher(string);
         if (m.find()) {
             double x = size(surface, m.group(1), "x");
             double y = size(surface, m.group(2), "y");
@@ -168,7 +172,7 @@ public final class Helpers {
         double scaleY = viewboxHeight > 0 ? height / viewboxHeight : 1;
 
         String par = node.get("preserveAspectRatio", "xMidYMid");
-        String[] parts = par.split("\\s+");
+        String[] parts = WHITESPACE.split(par);
         String align = parts[0];
 
         String xPosition, yPosition;
@@ -221,7 +225,7 @@ public final class Helpers {
         if (vb == null) return new double[]{0, 0, mw, mh};
         double vbW = vb[2], vbH = vb[3];
 
-        String align = node.get("preserveAspectRatio", "xMidYMid").split(" ")[0];
+        String align = WHITESPACE.split(node.get("preserveAspectRatio", "xMidYMid"))[0];
         String xPos = "none".equals(align) ? "min" : align.substring(1, 4).toLowerCase();
         String yPos = "none".equals(align) ? "min" : align.substring(5).toLowerCase();
 
@@ -262,8 +266,7 @@ public final class Helpers {
         if (transformString == null || transformString.isEmpty()) return;
 
         String normalized = normalize(transformString);
-        Pattern tp = Pattern.compile("(\\w+)\\s*\\(\\s*(.*?)\\s*\\)");
-        Matcher tm = tp.matcher(normalized);
+        Matcher tm = TRANSFORM_PATTERN.matcher(normalized);
 
         AffineTransform matrix = new AffineTransform();
 
@@ -271,7 +274,7 @@ public final class Helpers {
         double originX = 0, originY = 0;
         boolean hasOrigin = false;
         if (transformOrigin != null && !transformOrigin.isEmpty()) {
-            String[] origin = transformOrigin.strip().split("\\s+");
+            String[] origin = WHITESPACE.split(transformOrigin.strip());
             hasOrigin = true;
             originX = parseOriginComponent(surface, origin[0], true);
             originY = origin.length > 1
@@ -282,7 +285,7 @@ public final class Helpers {
 
         while (tm.find()) {
             String type = tm.group(1);
-            String[] valStrs = tm.group(2).strip().split("\\s+");
+            String[] valStrs = WHITESPACE.split(tm.group(2).strip());
             double[] values = new double[valStrs.length];
             for (int i = 0; i < valStrs.length; i++) {
                 values[i] = size(surface, valStrs[i]);
@@ -351,7 +354,7 @@ public final class Helpers {
         if (string == null || string.isEmpty()) return new String[0];
         Matcher m = RECT_PATTERN.matcher(normalize(string));
         if (m.find()) {
-            return m.group(1).split("\\s+");
+            return WHITESPACE.split(m.group(1));
         }
         return new String[0];
     }
@@ -361,7 +364,7 @@ public final class Helpers {
         String rotate = node.get("rotate");
         if (rotate != null && !rotate.isEmpty()) {
             List<Double> result = new ArrayList<>();
-            for (String s : normalize(rotate).strip().split("\\s+")) {
+            for (String s : WHITESPACE.split(normalize(rotate).strip())) {
                 result.add(Double.parseDouble(s));
             }
             return result;
@@ -406,7 +409,9 @@ public final class Helpers {
 
         if (surface == null) return 0;
 
-        string = normalize(string).split("\\s+")[0];
+        String normalized = normalize(string);
+        int spaceIdx = normalized.indexOf(' ');
+        string = spaceIdx > 0 ? normalized.substring(0, spaceIdx) : normalized;
 
         if (string.endsWith("%")) {
             double ref;
@@ -463,7 +468,7 @@ public final class Helpers {
         var fontWeights = List.of("bold", "bolder", "lighter",
             "100", "200", "300", "400", "500", "600", "700", "800", "900");
 
-        for (String element : value.split("\\s+")) {
+        for (String element : WHITESPACE.split(value)) {
             if ("normal".equals(element)) continue;
             if (!result.get("font-family").isEmpty()) {
                 result.put("font-family", result.get("font-family") + " " + element);

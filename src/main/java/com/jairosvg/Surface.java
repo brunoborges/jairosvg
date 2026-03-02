@@ -24,6 +24,8 @@ public class Surface {
         "clipPath", "filter", "linearGradient", "marker", "mask", "pattern",
         "radialGradient", "symbol");
 
+    private static final java.util.regex.Pattern WHITESPACE = java.util.regex.Pattern.compile("\\s+");
+
     // Rendering state
     public Graphics2D context;
     public GeneralPath path = new GeneralPath();
@@ -254,7 +256,7 @@ public class Surface {
         applyClip(node);
 
         // Reset path for this node
-        path = new GeneralPath();
+        path.reset();
 
         // Draw the tag
         String tag = node.tag;
@@ -332,7 +334,7 @@ public class Surface {
                 String dashStr = node.get("stroke-dasharray", "").strip();
                 float[] dashArray = null;
                 if (!dashStr.isEmpty() && !"none".equals(dashStr)) {
-                    String[] parts = normalize(dashStr).split("\\s+");
+                    String[] parts = WHITESPACE.split(normalize(dashStr));
                     dashArray = new float[parts.length];
                     float sum = 0;
                     for (int i = 0; i < parts.length; i++) {
@@ -353,7 +355,7 @@ public class Surface {
             }
         } else if (!visible) {
             // Reset path
-            path = new GeneralPath();
+            path.reset();
         }
 
         // Draw children
