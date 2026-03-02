@@ -13,6 +13,11 @@ public final class CssProcessor {
     private static final java.util.regex.Pattern IMPORT_PATTERN = java.util.regex.Pattern.compile("@import[^;]*;");
     private static final java.util.regex.Pattern RULE_PATTERN = java.util.regex.Pattern.compile("([^{}]+)\\{([^}]*)\\}");
     private static final java.util.regex.Pattern WHITESPACE = java.util.regex.Pattern.compile("\\s+");
+    private static final java.util.regex.Pattern PSEUDO_ELEMENT_PATTERN = java.util.regex.Pattern.compile("::[\\w-]+");
+    private static final java.util.regex.Pattern NOT_PATTERN = java.util.regex.Pattern.compile(":not\\(([^()]*)\\)");
+    private static final java.util.regex.Pattern FIRST_CHILD_PATTERN = java.util.regex.Pattern.compile(":first-child\\b");
+    private static final java.util.regex.Pattern LAST_CHILD_PATTERN = java.util.regex.Pattern.compile(":last-child\\b");
+    private static final java.util.regex.Pattern NTH_CHILD_PATTERN = java.util.regex.Pattern.compile(":nth-child\\(([^)]*)\\)");
     private static final java.util.regex.Pattern PSEUDO_ATTR_PATTERN = java.util.regex.Pattern.compile(
         "(\\w[\\w-]*)\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)')");
 
@@ -174,6 +179,35 @@ public final class CssProcessor {
     /** Check if an element matches a simple CSS selector. */
     public static boolean matchesSelector(org.w3c.dom.Element element, String selector) {
         selector = selector.strip();
+        selector = PSEUDO_ELEMENT_PATTERN.matcher(selector).replaceAll("").strip();
+
+        Matcher notMatcher = NOT_PATTERN.matcher(selector);
+        while (notMatcher.find()) {
+            String negated = notMatcher.group(1).strip();
+            if (negated.isEmpty() || matchesSelector(element, negated)) return false;
+            selector = notMatcher.replaceFirst("").strip();
+            notMatcher = NOT_PATTERN.matcher(selector);
+        }
+
+        if (FIRST_CHILD_PATTERN.matcher(selector).find()) {
+            if (!isFirstChild(element)) return false;
+            selector = FIRST_CHILD_PATTERN.matcher(selector).replaceAll("").strip();
+        }
+
+        if (LAST_CHILD_PATTERN.matcher(selector).find()) {
+            if (!isLastChild(element)) return false;
+            selector = LAST_CHILD_PATTERN.matcher(selector).replaceAll("").strip();
+        }
+
+        Matcher nthMatcher = NTH_CHILD_PATTERN.matcher(selector);
+        while (nthMatcher.find()) {
+            String nthExpr = nthMatcher.group(1).strip();
+            if (!matchesNthChild(element, nthExpr)) return false;
+            selector = nthMatcher.replaceFirst("").strip();
+            nthMatcher = NTH_CHILD_PATTERN.matcher(selector);
+        }
+
+        if (selector.isEmpty()) return true;
 
         // Universal selector
         if ("*".equals(selector)) return true;
@@ -223,6 +257,74 @@ public final class CssProcessor {
 
         // Simple type selector
         return selector.equals(localName);
+    }
+
+    private static boolean isFirstChild(org.w3c.dom.Element element) {
+        var parent = element.getParentNode();
+        if (parent == null) return false;
+        var siblings = parent.getChildNodes();
+        for (int i = 0; i < siblings.getLength(); i++) {
+            if (siblings.item(i) instanceof org.w3c.dom.Element sibling) {
+                return sibling == element;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isLastChild(org.w3c.dom.Element element) {
+        var parent = element.getParentNode();
+        if (parent == null) return false;
+        var siblings = parent.getChildNodes();
+        for (int i = siblings.getLength() - 1; i >= 0; i--) {
+            if (siblings.item(i) instanceof org.w3c.dom.Element sibling) {
+                return sibling == element;
+            }
+        }
+        return false;
+    }
+
+    private static boolean matchesNthChild(org.w3c.dom.Element element, String expr) {
+        var parent = element.getParentNode();
+        if (parent == null) return false;
+
+        int index = 0;
+        var siblings = parent.getChildNodes();
+        for (int i = 0; i < siblings.getLength(); i++) {
+            if (siblings.item(i) instanceof org.w3c.dom.Element sibling) {
+                index++;
+                if (sibling == element) break;
+            }
+        }
+        if (index == 0) return false;
+
+        String normalized = WHITESPACE.matcher(expr.toLowerCase(Locale.ROOT)).replaceAll("");
+        if ("odd".equals(normalized)) return index % 2 == 1;
+        if ("even".equals(normalized)) return index % 2 == 0;
+
+        try {
+            return index == Integer.parseInt(normalized);
+        } catch (NumberFormatException ignored) {
+            // Continue with an+b pattern parsing
+        }
+
+        Matcher m = java.util.regex.Pattern.compile("([+-]?\\d*)n([+-]\\d+)?").matcher(normalized);
+        if (!m.matches()) return false;
+
+        String aStr = m.group(1);
+        int a;
+        if (aStr == null || aStr.isEmpty() || "+".equals(aStr)) {
+            a = 1;
+        } else if ("-".equals(aStr)) {
+            a = -1;
+        } else {
+            a = Integer.parseInt(aStr);
+        }
+        int b = m.group(2) == null ? 0 : Integer.parseInt(m.group(2));
+        if (a == 0) return index == b;
+
+        int diff = index - b;
+        if (diff % a != 0) return false;
+        return diff / a >= 0;
     }
 
     /** Get CSS declarations that apply to this element from a list of rules. */
