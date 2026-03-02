@@ -120,7 +120,7 @@ public final class CssProcessor {
     }
 
     private static String resolveHref(String href, String baseUrl) {
-        return UrlHelper.parseUrl(href, baseUrl);
+        return UrlHelper.parseUrl(href, baseUrl).getUrl();
     }
 
     /** A CSS rule with selector and declarations. */
