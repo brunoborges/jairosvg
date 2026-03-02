@@ -296,8 +296,13 @@ public final class Colors {
 
     private static double[] hslToRgb(String hPart, String sPart, String lPart) {
         double h = (((Double.parseDouble(hPart.strip()) % 360) + 360) % 360) / 360.0;
-        double s = Double.parseDouble(sPart.strip().replace("%", "")) / 100.0;
-        double l = Double.parseDouble(lPart.strip().replace("%", "")) / 100.0;
+        sPart = sPart.strip();
+        lPart = lPart.strip();
+        if (!sPart.endsWith("%") || !lPart.endsWith("%")) {
+            throw new IllegalArgumentException("Saturation and lightness in hsl() must be percentages.");
+        }
+        double s = Double.parseDouble(sPart.substring(0, sPart.length() - 1)) / 100.0;
+        double l = Double.parseDouble(lPart.substring(0, lPart.length() - 1)) / 100.0;
         if (s == 0) {
             return new double[]{l, l, l};
         }
