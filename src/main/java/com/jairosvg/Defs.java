@@ -326,18 +326,41 @@ public final class Defs {
         surface.contextWidth = savedWidth;
         surface.contextHeight = savedHeight;
 
-        // Create anchor rectangle
+        // Create anchor rectangle (untransformed pattern region)
         Rectangle2D anchor = new Rectangle2D.Double(patX, patY, patW, patH);
 
-        // Apply patternTransform
+        // Apply patternTransform by pre-transforming the pattern image, so that
+        // rotation/skew are preserved instead of being lost via getBounds2D().
+        BufferedImage paintImage = patImage;
         String ptStr = patternNode.get("patternTransform");
         if (ptStr != null && !ptStr.isEmpty()) {
             AffineTransform pt = Helpers.parseTransform(surface, ptStr);
-            anchor = pt.createTransformedShape(anchor).getBounds2D();
+            if (pt != null && !pt.isIdentity()) {
+                // Compute destination bounds of the transformed image in image space
+                Rectangle2D imgRect = new Rectangle2D.Double(0, 0, patImage.getWidth(), patImage.getHeight());
+                Rectangle2D dstRect = pt.createTransformedShape(imgRect).getBounds2D();
+
+                int dstW = Math.max(1, (int) Math.ceil(dstRect.getWidth()));
+                int dstH = Math.max(1, (int) Math.ceil(dstRect.getHeight()));
+
+                BufferedImage transformedImage = new BufferedImage(dstW, dstH, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g2 = transformedImage.createGraphics();
+                try {
+                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    AffineTransform at = new AffineTransform();
+                    // Shift so that the transformed content fits into the new image
+                    at.translate(-dstRect.getX(), -dstRect.getY());
+                    at.concatenate(pt);
+                    g2.drawImage(patImage, at, null);
+                } finally {
+                    g2.dispose();
+                }
+                paintImage = transformedImage;
+            }
         }
 
         // Create TexturePaint
-        TexturePaint texturePaint = new TexturePaint(patImage, anchor);
+        TexturePaint texturePaint = new TexturePaint(paintImage, anchor);
         surface.context.setPaint(texturePaint);
         return true;
     }
