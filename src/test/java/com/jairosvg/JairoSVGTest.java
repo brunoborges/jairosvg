@@ -510,4 +510,33 @@ class JairoSVGTest {
         assertNotNull(png);
         assertTrue(png.length > 0);
     }
+
+    @Test
+    void testSvgFontWithoutId() throws Exception {
+        // <font> without id — should still be registered via <font-face font-family="...">
+        String svg = """
+            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+              <defs>
+                <font horiz-adv-x="1000">
+                  <font-face font-family="NoIdFont" units-per-em="1000" ascent="800" descent="-200"/>
+                  <glyph unicode="A" horiz-adv-x="1000" d="M 100 0 L 100 800 L 900 800 L 900 0 Z"/>
+                  <missing-glyph horiz-adv-x="500" d="M 0 0 L 0 800 L 500 800 L 500 0 Z"/>
+                </font>
+              </defs>
+              <text x="10" y="60" font-family="NoIdFont" font-size="48" fill="red">A</text>
+            </svg>
+            """;
+
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        assertTrue(png.length > 0);
+
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
+        // The glyph path should produce non-transparent red pixels
+        int pixel = image.getRGB(30, 40);
+        int alpha = (pixel >> 24) & 0xFF;
+        int red = (pixel >> 16) & 0xFF;
+        assertTrue(alpha > 0, "SVG font without id should still render glyphs");
+        assertTrue(red > 200, "SVG font glyph should be red (fill='red')");
+    }
 }

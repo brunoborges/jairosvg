@@ -126,11 +126,12 @@ public final class TextDrawer {
         AffineTransform savedTransform = surface.context.getTransform();
 
         if (svgFont != null) {
-            // Render using SVG font glyphs as paths
+            // Render using SVG font glyphs as paths (greedy longest-match for multi-char unicode)
             double curX = startX;
-            for (int i = 0; i < textContent.length(); i++) {
-                String ch = String.valueOf(textContent.charAt(i));
-                SvgFont.Glyph glyph = svgFont.getGlyph(ch);
+            int i = 0;
+            while (i < textContent.length()) {
+                SvgFont.GlyphMatch match = svgFont.getGlyph(textContent, i);
+                SvgFont.Glyph glyph = match.glyph();
                 if (glyph != null) {
                     java.awt.geom.GeneralPath glyphPath =
                         svgFont.buildGlyphPath(glyph, surface.fontSize, curX, startY);
@@ -139,6 +140,7 @@ public final class TextDrawer {
                     }
                 }
                 curX += svgFont.getAdvance(glyph, surface.fontSize) + letterSpacing;
+                i += match.charsConsumed();
             }
             surface.cursorPosition[0] = curX;
         } else if (letterSpacing != 0) {
@@ -196,10 +198,11 @@ public final class TextDrawer {
     /** Measure the width of text rendered with an SVG font. */
     private static double measureSvgFontWidth(SvgFont svgFont, String text, double fontSize) {
         double width = 0;
-        for (int i = 0; i < text.length(); i++) {
-            String ch = String.valueOf(text.charAt(i));
-            SvgFont.Glyph glyph = svgFont.getGlyph(ch);
-            width += svgFont.getAdvance(glyph, fontSize);
+        int i = 0;
+        while (i < text.length()) {
+            SvgFont.GlyphMatch match = svgFont.getGlyph(text, i);
+            width += svgFont.getAdvance(match.glyph(), fontSize);
+            i += match.charsConsumed();
         }
         return width;
     }

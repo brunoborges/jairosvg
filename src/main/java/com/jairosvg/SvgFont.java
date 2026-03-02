@@ -34,6 +34,9 @@ final class SvgFont {
     /** Missing glyph (fallback). */
     final Glyph missingGlyph;
 
+    /** Maximum length of any unicode key in the glyph map (for greedy matching). */
+    final int maxUnicodeLen;
+
     SvgFont(String family, double defaultHorizAdvX, double unitsPerEm,
             double ascent, double descent,
             Map<String, Glyph> glyphs, Glyph missingGlyph) {
@@ -44,10 +47,12 @@ final class SvgFont {
         this.descent = descent;
         this.glyphs = glyphs;
         this.missingGlyph = missingGlyph;
+        this.maxUnicodeLen = glyphs.keySet().stream()
+            .mapToInt(String::length).max().orElse(1);
     }
 
-    /** A single glyph definition. */
-    record Glyph(String pathData, double horizAdvX) {}
+    /** A single glyph definition with a pre-parsed cached path. */
+    record Glyph(GeneralPath cachedPath, double horizAdvX) {}
 
     /**
      * Parse an SVG font from a {@code <font>} node.
@@ -77,7 +82,7 @@ final class SvgFont {
         }
         if (family == null) return null;
 
-        // Parse glyphs
+        // Parse glyphs — path data is parsed once and cached in the Glyph record
         Map<String, Glyph> glyphs = new LinkedHashMap<>();
         Glyph missingGlyph = null;
 
@@ -87,11 +92,11 @@ final class SvgFont {
                 if (unicode == null || unicode.isEmpty()) continue;
                 String d = child.get("d", "");
                 double advX = parseDouble(child.get("horiz-adv-x"), defaultHorizAdvX);
-                glyphs.put(unicode, new Glyph(d, advX));
+                glyphs.put(unicode, new Glyph(parsePathData(d), advX));
             } else if ("missing-glyph".equals(child.tag)) {
                 String d = child.get("d", "");
                 double advX = parseDouble(child.get("horiz-adv-x"), defaultHorizAdvX);
-                missingGlyph = new Glyph(d, advX);
+                missingGlyph = new Glyph(parsePathData(d), advX);
             }
         }
 
@@ -103,13 +108,10 @@ final class SvgFont {
      * Build a GeneralPath for a glyph, scaled to the given font size.
      * SVG font glyphs are defined with y-axis pointing up (origin at baseline),
      * so we flip vertically around the baseline.
+     * Uses the pre-parsed cached path from the Glyph record.
      */
     GeneralPath buildGlyphPath(Glyph glyph, double fontSize, double xOffset, double yOffset) {
-        if (glyph == null || glyph.pathData().isEmpty()) return null;
-
-        // Parse the glyph path data using a temporary surface + node
-        GeneralPath raw = parsePathData(glyph.pathData());
-        if (raw == null) return null;
+        if (glyph == null || glyph.cachedPath() == null) return null;
 
         double scale = fontSize / unitsPerEm;
 
@@ -121,7 +123,7 @@ final class SvgFont {
         transform.scale(scale, -scale);
 
         GeneralPath result = new GeneralPath();
-        result.append(raw.getPathIterator(transform), false);
+        result.append(glyph.cachedPath().getPathIterator(transform), false);
         return result;
     }
 
@@ -131,14 +133,30 @@ final class SvgFont {
         return advX * fontSize / unitsPerEm;
     }
 
-    /** Look up a glyph for a character. */
-    Glyph getGlyph(String ch) {
-        Glyph g = glyphs.get(ch);
-        return g != null ? g : missingGlyph;
+    /** Result of a glyph lookup: the matched glyph and how many chars were consumed. */
+    record GlyphMatch(Glyph glyph, int charsConsumed) {}
+
+    /**
+     * Look up a glyph starting at {@code offset} in {@code text} using greedy longest-match.
+     * Handles multi-character unicode values and supplementary (non-BMP) code points.
+     */
+    GlyphMatch getGlyph(String text, int offset) {
+        // Try longest match first
+        int remaining = text.length() - offset;
+        for (int len = Math.min(maxUnicodeLen, remaining); len > 0; len--) {
+            String candidate = text.substring(offset, offset + len);
+            Glyph g = glyphs.get(candidate);
+            if (g != null) return new GlyphMatch(g, len);
+        }
+        // No match — consume one code point and use missing glyph
+        int cp = text.codePointAt(offset);
+        int cpLen = Character.charCount(cp);
+        return new GlyphMatch(missingGlyph, cpLen);
     }
 
-    /** Parse SVG path data string into a GeneralPath. */
+    /** Parse SVG path data string into a GeneralPath. Returns null for empty/blank data. */
     private static GeneralPath parsePathData(String d) {
+        if (d == null || d.isBlank()) return null;
         try {
             // Create a minimal node with the path data and use PathDrawer
             Node tempNode = new Node();
