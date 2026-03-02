@@ -64,6 +64,22 @@ public final class JairoSVG {
 
     /** Convert SVG URL to PNG bytes. */
     public static byte[] svg2png(String url) throws Exception {
+
+    /** Convert SVG bytes to JPEG bytes. */
+    public static byte[] svg2jpeg(byte[] svgBytes) throws Exception {
+        return builder().fromBytes(svgBytes).toJpeg();
+    }
+
+    /** Convert SVG file to JPEG file. */
+    public static void svg2jpeg(Path input, Path output) throws Exception {
+        byte[] result = builder().fromFile(input).toJpeg();
+        Files.write(output, result);
+    }
+
+    /** Convert SVG URL to JPEG bytes. */
+    public static byte[] svg2jpeg(String url) throws Exception {
+        return builder().fromUrl(url).toJpeg();
+    }
         return builder().fromUrl(url).toPng();
     }
 
@@ -183,6 +199,16 @@ public final class JairoSVG {
 
         /** Convert to PNG and write to output stream. */
         public void toPng(OutputStream out) throws Exception {
+
+        /** Convert to JPEG bytes. */
+        public byte[] toJpeg() throws Exception {
+            return convert(new JpegSurface());
+        }
+
+        /** Convert to JPEG and write to output stream. */
+        public void toJpeg(OutputStream out) throws Exception {
+            convert(new JpegSurface(), out);
+        }
             convert(new PngSurface(), out);
         }
 
