@@ -1,22 +1,23 @@
-# Feature Comparison: JairoSVG vs EchoSVG
+# Feature Comparison: JairoSVG vs EchoSVG vs CairoSVG
 
-A comprehensive comparison of two Java SVG libraries — **JairoSVG** and **EchoSVG** — to help developers choose the right tool for their SVG rendering needs.
+A comprehensive comparison of three SVG libraries — **JairoSVG** (Java), **EchoSVG** (Java), and **CairoSVG** (Python) — to help developers choose the right tool for their SVG rendering needs. JairoSVG is a Java port of CairoSVG, so this comparison also tracks porting fidelity.
 
 ---
 
 ## Overview
 
-| | JairoSVG | EchoSVG |
-|---|---|---|
-| **Origin** | Java port of [CairoSVG](https://cairosvg.org) (Python) | Fork of [Apache Batik](https://xmlgraphics.apache.org/batik/) (Java) |
-| **Maintainer** | Bruno Borges | css4j project |
-| **Primary goal** | Fast, lightweight SVG → raster/vector conversion | Full-featured SVG toolkit: render, manipulate, and convert |
-| **License** | LGPL-3.0 | Apache-2.0 |
-| **Repository** | [github.com/brunoborges/jairosvg](https://github.com/brunoborges/jairosvg) | [github.com/css4j/echosvg](https://github.com/css4j/echosvg) |
-| **Current version** | 1.0.0-SNAPSHOT | 2.4 |
-| **Minimum Java** | Java 25 (uses preview features) | Java 11 |
-| **SVG spec target** | SVG 1.1 | SVG 1.1 + partial SVG 2 |
-| **Key strength** | Speed (2–5× faster than EchoSVG) | Feature completeness and standard compliance |
+| | JairoSVG | EchoSVG | CairoSVG |
+|---|---|---|---|
+| **Language** | Java 25+ | Java 11+ | Python 3.6+ |
+| **Origin** | Java port of [CairoSVG](https://cairosvg.org) | Fork of [Apache Batik](https://xmlgraphics.apache.org/batik/) | Original project |
+| **Maintainer** | Bruno Borges | css4j project | CourtBouillon / Kozea |
+| **Primary goal** | Fast, lightweight SVG → raster/vector conversion | Full-featured SVG toolkit: render, manipulate, and convert | SVG → PNG/PDF/PS conversion |
+| **License** | LGPL-3.0 | Apache-2.0 | LGPL-3.0 |
+| **Repository** | [brunoborges/jairosvg](https://github.com/brunoborges/jairosvg) | [css4j/echosvg](https://github.com/css4j/echosvg) | [Kozea/CairoSVG](https://github.com/Kozea/CairoSVG) |
+| **Current version** | 1.0.0-SNAPSHOT | 2.4 | 2.7+ |
+| **SVG spec target** | SVG 1.1 | SVG 1.1 + partial SVG 2 | SVG 1.1 |
+| **Rendering backend** | Java2D | GVT (Batik) → Java2D | Cairo (C library) |
+| **Key strength** | Speed (2–5× faster than EchoSVG) | Feature completeness and standard compliance | Native C performance, mature ecosystem |
 
 ---
 
@@ -61,123 +62,125 @@ EchoSVG inherits Apache Batik's **modular, enterprise-grade architecture** built
 - `echosvg-ext` — Extensions
 - …and more
 
-EchoSVG uses its own rendering pipeline (GVT) rather than delegating directly to `Graphics2D`, giving it full control over the rendering process at the cost of higher complexity.
+### CairoSVG
 
-| Aspect | JairoSVG | EchoSVG |
-|---|---|---|
-| **Core rendering** | Java2D (`Graphics2D`, `BufferedImage`) | Java2D via GVT (Graphics Vector Tree) |
-| **CSS engine** | Custom lightweight CSS parser | css4j (full CSS4 support) |
-| **SVG DOM** | Read-only internal `Node` tree | Full mutable W3C SVG DOM |
-| **Module structure** | Single JAR, ~20 focused classes | Multi-module Gradle project (20+ modules) |
-| **Animation engine** | None | Full SMIL animation engine |
-| **Scripting** | None | Mozilla Rhino (JavaScript) |
-| **Filter pipeline** | Basic | Full SVG filter primitive chain |
-| **Font handling** | Java AWT font system | Java AWT font system + SVG font support |
-| **Extensibility** | Minimal (source-level) | High (custom elements, handlers, bridges) |
-| **Test infrastructure** | JUnit 5 unit tests | Reference-image regression suite |
+CairoSVG is a **Python library** built on the **Cairo 2D graphics library** (C). It uses `tinycss2` and `cssselect2` for CSS parsing, `lxml` or `ElementTree` for XML, and `Pillow` for raster image handling. The architecture is a set of Python modules (`surface.py`, `shapes.py`, `path.py`, `text.py`, `defs.py`, etc.) that JairoSVG mirrors directly.
+
+### Architecture Comparison
+
+| Aspect | JairoSVG | EchoSVG | CairoSVG |
+|---|---|---|---|
+| **Core rendering** | Java2D (`Graphics2D`) | GVT → Java2D | Cairo (C library) |
+| **CSS engine** | Custom lightweight | css4j (CSS4 support) | tinycss2 + cssselect2 |
+| **SVG DOM** | Read-only `Node` tree | Full mutable W3C DOM | ElementTree (read-only) |
+| **Module structure** | Single JAR, ~20 classes | 20+ Gradle modules | Single Python package |
+| **Animation engine** | None | Full SMIL | None |
+| **Scripting** | None | Mozilla Rhino (JS) | None |
+| **Filter pipeline** | Basic | Full primitives | 3 primitives (feBlend, feFlood, feOffset) |
+| **Font handling** | Java AWT fonts | AWT + SVG fonts | Cairo font system |
+| **Extensibility** | Minimal (source-level) | High (bridges, handlers) | Minimal (source-level) |
 
 ---
 
 ## SVG Element Support
 
-| SVG Element | JairoSVG | EchoSVG |
-|---|:---:|:---:|
-| `<svg>`, `<g>` | ✅ | ✅ |
-| `<rect>`, `<circle>`, `<ellipse>` | ✅ | ✅ |
-| `<line>`, `<polyline>`, `<polygon>` | ✅ | ✅ |
-| `<path>` (all commands) | ✅ | ✅ |
-| `<text>`, `<tspan>` | ✅ | ✅ |
-| `<textPath>` | ✅ | ✅ |
-| `<image>` (raster + nested SVG) | ✅ | ✅ |
-| `<use>`, `<defs>`, `<symbol>` | ✅ | ✅ |
-| `<linearGradient>`, `<radialGradient>` | ✅ | ✅ |
-| `<pattern>` | ✅ | ✅ |
-| `<clipPath>` | ✅ | ✅ |
-| `<mask>` | ✅ | ✅ |
-| `<filter>` | ✅ (basic) | ✅ (full filter primitives) |
-| `<marker>` | ✅ | ✅ |
-| `<metadata>`, `<title>`, `<desc>` | ✅ (parsed, not rendered) | ✅ |
-| `<foreignObject>` | ❌ ([#15](https://github.com/brunoborges/jairosvg/issues/15)) | ✅ |
-| `<animate>`, `<animateTransform>`, `<animateMotion>`, `<set>` | ❌ ([#16](https://github.com/brunoborges/jairosvg/issues/16)) | ✅ (SMIL) |
-| SVG Fonts (`<font>`, `<glyph>`) | ❌ ([#17](https://github.com/brunoborges/jairosvg/issues/17)) | ✅ |
-| `<script>` | ❌ ([#18](https://github.com/brunoborges/jairosvg/issues/18)) | ✅ (Rhino JS engine) |
-| `<cursor>` | ❌ ([#19](https://github.com/brunoborges/jairosvg/issues/19)) | ✅ |
+| SVG Element | JairoSVG | EchoSVG | CairoSVG |
+|---|:---:|:---:|:---:|
+| `<svg>`, `<g>` | ✅ | ✅ | ✅ |
+| `<rect>`, `<circle>`, `<ellipse>` | ✅ | ✅ | ✅ |
+| `<line>`, `<polyline>`, `<polygon>` | ✅ | ✅ | ✅ |
+| `<path>` (all commands) | ✅ | ✅ | ✅ |
+| `<text>`, `<tspan>` | ✅ | ✅ | ✅ |
+| `<textPath>` | ✅ | ✅ | ✅ |
+| `<image>` (raster + nested SVG) | ✅ | ✅ | ✅ (via Pillow) |
+| `<use>`, `<defs>` | ✅ | ✅ | ✅ |
+| `<symbol>` | ✅ | ✅ | ❌ |
+| `<linearGradient>`, `<radialGradient>` | ✅ | ✅ | ✅ |
+| `<pattern>` | ✅ | ✅ | ⚠️ (naive) |
+| `<clipPath>` | ✅ | ✅ | ✅ |
+| `<mask>` | ✅ | ✅ | ⚠️ (alpha only) |
+| `<filter>` | ✅ (basic) | ✅ (full primitives) | ⚠️ (feBlend, feFlood, feOffset only) |
+| `<marker>` | ✅ | ✅ | ✅ (basic) |
+| `<metadata>`, `<title>`, `<desc>` | ✅ (parsed, not rendered) | ✅ | ❌ (ignored) |
+| `<foreignObject>` | ❌ ([#15](https://github.com/brunoborges/jairosvg/issues/15)) | ✅ | ❌ |
+| `<animate>`, `<animateTransform>`, `<animateMotion>`, `<set>` | ❌ ([#16](https://github.com/brunoborges/jairosvg/issues/16)) | ✅ (SMIL) | ❌ |
+| SVG Fonts (`<font>`, `<glyph>`) | ❌ ([#17](https://github.com/brunoborges/jairosvg/issues/17)) | ✅ | ❌ |
+| `<script>` | ❌ ([#18](https://github.com/brunoborges/jairosvg/issues/18)) | ✅ (Rhino JS) | ❌ |
+| `<cursor>` | ❌ ([#19](https://github.com/brunoborges/jairosvg/issues/19)) | ✅ | ❌ |
 
 ---
 
 ## SVG Attributes & Features
 
-| Feature | JairoSVG | EchoSVG |
-|---|:---:|:---:|
-| `viewBox` + `preserveAspectRatio` | ✅ | ✅ |
-| Transforms (translate, rotate, scale, skewX, skewY, matrix) | ✅ | ✅ |
-| Nested `<svg>` (independent viewports) | ✅ | ✅ |
-| Opacity (element, fill, stroke) | ✅ | ✅ |
-| `fill-rule` (nonzero / evenodd) | ✅ | ✅ |
-| Stroke properties (dasharray, linecap, linejoin) | ✅ | ✅ |
-| Gradient `spreadMethod` (pad / reflect / repeat) | ✅ | ✅ |
-| `gradientUnits`, `gradientTransform` | ✅ | ✅ |
-| `patternTransform` | ❌ ([#20](https://github.com/brunoborges/jairosvg/issues/20)) | ✅ |
-| `fill="url(#id)"` references | ✅ | ✅ |
-| Units (px, pt, em, %, cm, mm, in) | ✅ | ✅ |
-| `font` shorthand | ✅ | ✅ |
-| `font-family`, `font-size`, `font-weight` | ✅ | ✅ |
-| `letter-spacing`, `text-anchor` | ✅ | ✅ |
-| `text-decoration` | ❌ ([#21](https://github.com/brunoborges/jairosvg/issues/21)) | ✅ |
-| Named colors (170+) | ✅ | ✅ |
-| `currentColor` | ✅ | ✅ |
-| `rgb()` / `rgba()` / hex colors | ✅ | ✅ |
-| `hsl()` / `hsla()` | ❌ ([#22](https://github.com/brunoborges/jairosvg/issues/22)) | ✅ |
-| CSS Color Level 4 (`oklch`, `lab`, etc.) | ❌ ([#23](https://github.com/brunoborges/jairosvg/issues/23)) | ✅ |
+| Feature | JairoSVG | EchoSVG | CairoSVG |
+|---|:---:|:---:|:---:|
+| `viewBox` + `preserveAspectRatio` | ✅ | ✅ | ✅ |
+| Transforms (translate, rotate, scale, skewX, skewY, matrix) | ✅ | ✅ | ✅ |
+| Nested `<svg>` (independent viewports) | ✅ | ✅ | ✅ |
+| Opacity (element, fill, stroke) | ✅ | ✅ | ✅ |
+| `fill-rule` (nonzero / evenodd) | ✅ | ✅ | ✅ |
+| Stroke properties (dasharray, linecap, linejoin) | ✅ | ✅ | ✅ |
+| Gradient `spreadMethod` (pad / reflect / repeat) | ✅ | ✅ | ✅ |
+| `gradientUnits`, `gradientTransform` | ✅ | ✅ | ✅ |
+| `patternTransform` | ❌ ([#20](https://github.com/brunoborges/jairosvg/issues/20)) | ✅ | ❌ |
+| `fill="url(#id)"` references | ✅ | ✅ | ✅ |
+| Units (px, pt, em, %, cm, mm, in) | ✅ | ✅ | ✅ |
+| `font` shorthand | ✅ | ✅ | ❌ |
+| `font-family`, `font-size`, `font-weight` | ✅ | ✅ | ✅ (basic) |
+| `letter-spacing`, `text-anchor` | ✅ | ✅ | ✅ |
+| `text-decoration` | ❌ ([#21](https://github.com/brunoborges/jairosvg/issues/21)) | ✅ | ❌ |
+| Named colors (170+) | ✅ | ✅ | ✅ |
+| `currentColor` | ✅ | ✅ | ✅ |
+| `rgb()` / `rgba()` / hex colors | ✅ | ✅ | ✅ |
+| `hsl()` / `hsla()` | ❌ ([#22](https://github.com/brunoborges/jairosvg/issues/22)) | ✅ | ❌ |
+| CSS Color Level 4 (`oklch`, `lab`, etc.) | ❌ ([#23](https://github.com/brunoborges/jairosvg/issues/23)) | ✅ | ❌ |
 
 ---
 
 ## CSS & Styling
 
-| Feature | JairoSVG | EchoSVG |
-|---|:---:|:---:|
-| Inline `style` attribute | ✅ | ✅ |
-| `<style>` block (CSS stylesheet) | ✅ | ✅ |
-| External CSS via `<?xml-stylesheet?>` | ❌ ([#24](https://github.com/brunoborges/jairosvg/issues/24)) | ✅ |
-| Class selectors | ✅ | ✅ |
-| ID selectors | ✅ | ✅ |
-| Descendant / child selectors | ✅ (basic) | ✅ |
-| Pseudo-classes / pseudo-elements | ❌ ([#25](https://github.com/brunoborges/jairosvg/issues/25)) | Partial |
-| CSS Level 4 selectors | ❌ ([#26](https://github.com/brunoborges/jairosvg/issues/26)) | ✅ (via css4j) |
-| CSS custom properties (variables) | ❌ ([#27](https://github.com/brunoborges/jairosvg/issues/27)) | ✅ |
-| CSS `calc()` | ❌ ([#28](https://github.com/brunoborges/jairosvg/issues/28)) | ✅ |
-| CSS nesting | ❌ | ❌ |
-| `@import` rules | ❌ ([#29](https://github.com/brunoborges/jairosvg/issues/29)) | ✅ |
-| `@supports` rules | ❌ ([#30](https://github.com/brunoborges/jairosvg/issues/30)) | ✅ |
+| Feature | JairoSVG | EchoSVG | CairoSVG |
+|---|:---:|:---:|:---:|
+| Inline `style` attribute | ✅ | ✅ | ✅ |
+| `<style>` block (CSS stylesheet) | ✅ | ✅ | ✅ |
+| External CSS via `<?xml-stylesheet?>` | ❌ ([#24](https://github.com/brunoborges/jairosvg/issues/24)) | ✅ | ✅ (basic) |
+| Class selectors | ✅ | ✅ | ✅ |
+| ID selectors | ✅ | ✅ | ✅ |
+| Descendant / child selectors | ✅ (basic) | ✅ | ✅ (via cssselect2) |
+| Pseudo-classes / pseudo-elements | ❌ ([#25](https://github.com/brunoborges/jairosvg/issues/25)) | Partial | Partial (via cssselect2) |
+| CSS Level 4 selectors | ❌ ([#26](https://github.com/brunoborges/jairosvg/issues/26)) | ✅ (via css4j) | ❌ |
+| CSS custom properties (variables) | ❌ ([#27](https://github.com/brunoborges/jairosvg/issues/27)) | ✅ | ❌ |
+| CSS `calc()` | ❌ ([#28](https://github.com/brunoborges/jairosvg/issues/28)) | ✅ | ❌ |
+| CSS nesting | ❌ | ❌ | ❌ |
+| `@import` rules | ❌ ([#29](https://github.com/brunoborges/jairosvg/issues/29)) | ✅ | ❌ |
+| `@supports` rules | ❌ ([#30](https://github.com/brunoborges/jairosvg/issues/30)) | ✅ | ❌ |
 
-EchoSVG integrates the **css4j** CSS parser, giving it significantly more advanced CSS support than JairoSVG's lightweight built-in processor. JairoSVG's CSS support covers the common patterns used in SVG files but does not aim for full CSS specification compliance.
+EchoSVG integrates the **css4j** CSS parser, giving it significantly more advanced CSS support. CairoSVG uses **tinycss2** + **cssselect2**, providing solid basic CSS support. JairoSVG's lightweight built-in processor covers the common patterns used in SVG files.
 
 ---
 
 ## Output Formats
 
-| Format | JairoSVG | EchoSVG |
-|---|:---:|:---:|
-| PNG | ✅ | ✅ |
-| PDF | ✅ (via Apache PDFBox 3.0) | ✅ (via FOP or transcoder) |
-| PostScript (PS) | ✅ | ✅ |
-| EPS | ✅ | ❌ |
-| SVG (re-render) | ✅ | ✅ |
-| JPEG | ❌ ([#31](https://github.com/brunoborges/jairosvg/issues/31)) | ✅ |
-| TIFF | ❌ ([#32](https://github.com/brunoborges/jairosvg/issues/32)) | ✅ |
-| `BufferedImage` (in-memory Java object) | ✅ | ✅ |
+| Format | JairoSVG | EchoSVG | CairoSVG |
+|---|:---:|:---:|:---:|
+| PNG | ✅ | ✅ | ✅ |
+| PDF | ✅ (via Apache PDFBox 3.0) | ✅ (via FOP or transcoder) | ✅ (via Cairo) |
+| PostScript (PS) | ✅ | ✅ | ✅ |
+| EPS | ✅ | ❌ | ❌ |
+| SVG (re-render) | ✅ | ✅ | ✅ |
+| JPEG | ❌ ([#31](https://github.com/brunoborges/jairosvg/issues/31)) | ✅ | ❌ |
+| TIFF | ❌ ([#32](https://github.com/brunoborges/jairosvg/issues/32)) | ✅ | ❌ |
+| In-memory image object | ✅ (`BufferedImage`) | ✅ (`BufferedImage`) | ✅ (Cairo surface) |
 
 ---
 
 ## API & Developer Experience
 
-### JairoSVG — Simple & Fluent
+### JairoSVG — Simple & Fluent (Java)
 
 ```java
-// One-liner conversion
 byte[] png = JairoSVG.svg2png(svgBytes);
 
-// Fluent builder with options
 byte[] scaled = JairoSVG.builder()
     .fromBytes(svgBytes)
     .dpi(150)
@@ -185,54 +188,58 @@ byte[] scaled = JairoSVG.builder()
     .backgroundColor("#ffffff")
     .toPng();
 
-// Get BufferedImage directly
 BufferedImage image = JairoSVG.builder()
     .fromFile(Path.of("icon.svg"))
     .toImage();
 ```
 
-JairoSVG provides **static convenience methods** for common conversions and a **fluent builder** for options. The entire public API is in a single class (`JairoSVG`).
-
-### EchoSVG — Transcoder Pattern
+### EchoSVG — Transcoder Pattern (Java)
 
 ```java
 PNGTranscoder transcoder = new PNGTranscoder();
 TranscoderInput input = new TranscoderInput(new FileInputStream("input.svg"));
 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-TranscoderOutput output = new TranscoderOutput(baos);
-transcoder.transcode(input, output);
+transcoder.transcode(input, new TranscoderOutput(baos));
 byte[] png = baos.toByteArray();
 ```
 
-EchoSVG uses the **Transcoder API** inherited from Batik. It is more verbose but offers fine-grained control via transcoding hints. EchoSVG also provides a **Swing component** (`JSVGCanvas`) for interactive SVG display — a capability JairoSVG does not have.
+### CairoSVG — Python Functions
 
-### API & Integration Comparison
+```python
+import cairosvg
 
-| Feature | JairoSVG | EchoSVG |
-|---|:---:|:---:|
-| Simple static method API | ✅ (`JairoSVG.svg2png(bytes)`) | ❌ (transcoder API) |
-| Fluent builder API | ✅ | ❌ |
-| Transcoder API (Batik-style) | ❌ | ✅ |
-| Full SVG DOM (W3C DOM Level 2) | ❌ | ✅ |
-| SVG DOM manipulation at runtime | ❌ | ✅ |
-| Swing viewer component | ❌ | ✅ |
-| CLI tool | ✅ | ✅ (rasterizer) |
-| JBang support | ✅ | ❌ |
-| Maven / Gradle dependency | ✅ | ✅ |
-| GraalVM Native Image compatible | ✅ (no reflection) | ⚠️ (limited, reflection-heavy) |
-| DPI control | ✅ | ✅ |
-| Scale factor | ✅ | ✅ |
-| Background color override | ✅ | ✅ |
-| Color negation | ✅ | ❌ |
-| Output width / height override | ✅ | ✅ |
-| External file access control (XXE) | ✅ (disabled by default) | ✅ (configurable) |
-| URL input (http/https) | ✅ | ✅ |
+png = cairosvg.svg2png(bytestring=svg_bytes)
+cairosvg.svg2pdf(url="input.svg", write_to="output.pdf")
+cairosvg.svg2png(url="input.svg", write_to="output.png",
+                 dpi=150, scale=2, background_color="#ffffff")
+```
+
+### API Comparison
+
+| Feature | JairoSVG | EchoSVG | CairoSVG |
+|---|:---:|:---:|:---:|
+| Simple static method API | ✅ | ❌ (transcoder API) | ✅ |
+| Fluent builder API | ✅ | ❌ | ❌ (keyword args) |
+| Transcoder API (Batik-style) | ❌ | ✅ | ❌ |
+| Full SVG DOM (W3C DOM) | ❌ | ✅ | ❌ |
+| SVG DOM manipulation at runtime | ❌ | ✅ | ❌ |
+| Swing / GUI viewer component | ❌ | ✅ | ❌ |
+| CLI tool | ✅ | ✅ (rasterizer) | ✅ |
+| DPI control | ✅ | ✅ | ✅ |
+| Scale factor | ✅ | ✅ | ✅ |
+| Background color override | ✅ | ✅ | ✅ |
+| Color negation | ✅ | ❌ | ✅ |
+| Output width / height override | ✅ | ✅ | ✅ |
+| External file access control (XXE) | ✅ (disabled by default) | ✅ (configurable) | ✅ (`unsafe` flag) |
+| URL input (http/https) | ✅ | ✅ | ✅ |
+| JBang support | ✅ | ❌ | N/A |
+| GraalVM Native Image compatible | ✅ (no reflection) | ⚠️ (reflection-heavy) | N/A |
 
 ---
 
 ## Performance
 
-SVG → PNG conversion benchmarks (from JairoSVG's benchmark suite, lower is better):
+SVG → PNG conversion benchmarks (lower is better):
 
 | Test Case | JairoSVG (Java) | EchoSVG (Java) | CairoSVG (Python) |
 |---|:---:|:---:|:---:|
@@ -242,55 +249,41 @@ SVG → PNG conversion benchmarks (from JairoSVG's benchmark suite, lower is bet
 
 *JairoSVG is 2–5× faster than EchoSVG and within 1.3–1.9× of CairoSVG's native C backend.*
 
-> **Note:** Benchmarks were run with 20 warm-up iterations and 50 measured iterations. EchoSVG's overhead comes partly from the GVT scene graph construction, which provides capabilities (DOM access, scripting, animation) that JairoSVG does not support. For simple SVG-to-raster conversion, JairoSVG's direct Java2D rendering avoids this overhead. Results may vary by JVM, hardware, and SVG complexity. Reproduce with: `jbang benchmark.java`
+> **Note:** Benchmarks were run with 20 warm-up iterations and 50 measured iterations. CairoSVG's performance advantage comes from Cairo's native C rendering engine. EchoSVG's overhead comes partly from GVT scene graph construction. Results may vary by hardware and SVG complexity. Reproduce with: `jbang benchmark.java`
 
 ---
 
 ## Dependencies & Footprint
 
-### JairoSVG
-
-| Metric | Value |
-|---|---|
-| Runtime dependencies | **1** (Apache PDFBox 3.0 — only needed for PDF output) |
-| Artifact size | ~1 fat JAR (~few MB incl. PDFBox) |
-| Source files | 20 |
-| Lines of code | ~4,100 |
-| Java version required | 25+ (with `--enable-preview`) |
-| Build system | Maven |
-
-### EchoSVG
-
-| Metric | Value |
-|---|---|
-| Runtime dependencies | **Many** (css4j, xml-apis, multiple internal modules) |
-| Artifact size | Many modular JARs (each ~100 KB – 1 MB) |
-| Subprojects/modules | 20+ |
-| Lines of code | ~200,000+ (inherited from Batik) |
-| Java version required | 11–24 |
-| Build system | Gradle |
-
-JairoSVG's minimal dependency tree makes it well-suited for containerized or size-sensitive deployments. EchoSVG's larger footprint reflects its broader feature set and Batik heritage.
+| Metric | JairoSVG | EchoSVG | CairoSVG |
+|---|---|---|---|
+| **Runtime dependencies** | 1 (PDFBox) | Many (css4j, xml-apis, …) | 5 (cairocffi, tinycss2, cssselect2, defusedxml, Pillow) |
+| **Artifact size** | ~1 fat JAR | Many modular JARs | Single Python package |
+| **Source files** | 20 | 20+ modules | ~10 modules |
+| **Lines of code** | ~4,100 | ~200,000+ | ~4,000 |
+| **Platform req.** | Java 25+ (`--enable-preview`) | Java 11–24 | Python 3.6+ / Cairo C lib |
+| **Build system** | Maven | Gradle | pip / setuptools |
+| **Native dependency** | None | None | Cairo C library required |
 
 ---
 
 ## Security
 
-| Feature | JairoSVG | EchoSVG |
-|---|:---:|:---:|
-| XXE protection by default | ✅ | ✅ (configurable) |
-| External resource loading disabled by default | ✅ | ✅ |
-| `--unsafe` flag to opt-in to external access | ✅ | ✅ |
-| Script execution | ❌ (not supported) | ✅ opt-in (Rhino JS) |
-| `SecurityManager` integration | ❌ | ✅ |
+| Feature | JairoSVG | EchoSVG | CairoSVG |
+|---|:---:|:---:|:---:|
+| XXE protection by default | ✅ | ✅ (configurable) | ✅ (via defusedxml) |
+| External resource loading disabled by default | ✅ | ✅ | ✅ |
+| `--unsafe` flag to opt-in to external access | ✅ | ✅ | ✅ |
+| Script execution | ❌ (not supported) | ✅ opt-in (Rhino JS) | ❌ (not supported) |
+| `SecurityManager` integration | ❌ | ✅ | N/A |
 
-JairoSVG's lack of scripting support is itself a security advantage — there is no attack surface for script injection. External file access is blocked by default and must be explicitly enabled with the `unsafe` flag.
+JairoSVG and CairoSVG share the same security posture: no scripting support (eliminating script injection), external access blocked by default. EchoSVG offers more configurability but a larger attack surface.
 
 ---
 
 ## Visual Rendering Comparison
 
-A side-by-side visual comparison of 12 SVG test cases is available in the [`comparison/`](comparison/) directory, covering:
+A side-by-side visual comparison of 12 SVG test cases (JairoSVG vs EchoSVG) is available in the [`comparison/`](comparison/) directory, covering:
 
 1. Basic shapes
 2. Gradients
@@ -305,7 +298,7 @@ A side-by-side visual comparison of 12 SVG test cases is available in the [`comp
 11. Star polygon (fill-rule)
 12. Nested SVG
 
-See the [comparison gallery](comparison/README.md) for rendered PNG output from both libraries. Regenerate with:
+See the [comparison gallery](comparison/README.md) for rendered PNG output. Regenerate with:
 
 ```bash
 ./mvnw install -DskipTests
@@ -316,26 +309,25 @@ jbang comparison/generate.java
 
 ## Summary
 
-| Dimension | JairoSVG | EchoSVG |
-|---|---|---|
-| **Best for** | Fast SVG → raster/PDF conversion | Full SVG toolkit with DOM, scripting, animation |
-| **SVG spec** | SVG 1.1 (static) | SVG 1.1 + partial SVG 2 |
-| **CSS** | Basic (class, ID, type selectors) | Advanced (CSS Level 4, css4j) |
-| **Performance** | 2–5× faster for conversion | Slower, but supports more features |
-| **API simplicity** | One-liner / fluent builder | Transcoder pattern (more verbose) |
-| **Codebase** | ~4K LOC, 1 dependency | ~200K+ LOC, many modules |
-| **Java version** | 25+ | 11–24 |
-| **Animation** | ❌ | ✅ |
-| **Scripting** | ❌ | ✅ |
-| **Swing viewer** | ❌ | ✅ |
-| **License** | LGPL-3.0 | Apache-2.0 |
+| Dimension | JairoSVG | EchoSVG | CairoSVG |
+|---|---|---|---|
+| **Best for** | Fast Java SVG conversion | Full SVG toolkit (DOM, scripting, animation) | Python SVG conversion |
+| **SVG spec** | SVG 1.1 (static) | SVG 1.1 + partial SVG 2 | SVG 1.1 (static) |
+| **CSS** | Basic (class, ID, type) | Advanced (CSS Level 4, css4j) | Basic (via tinycss2) |
+| **Performance** | 2–5× faster than EchoSVG | Slowest (GVT overhead) | Fastest (native C) |
+| **API simplicity** | One-liner / builder | Transcoder pattern | One-liner functions |
+| **Codebase** | ~4K LOC, 1 dep | ~200K+ LOC, many modules | ~4K LOC, 5 deps |
+| **Animation** | ❌ | ✅ | ❌ |
+| **Scripting** | ❌ | ✅ | ❌ |
+| **GUI viewer** | ❌ | ✅ | ❌ |
+| **License** | LGPL-3.0 | Apache-2.0 | LGPL-3.0 |
 
 ---
 
 ## When to Choose Which
 
 **Choose JairoSVG when you need:**
-- Fast, lightweight SVG → PNG/PDF conversion
+- Fast, lightweight SVG → PNG/PDF conversion **in Java**
 - Minimal dependencies and small deployment footprint
 - A simple, fluent Java API
 - Server-side batch rendering where startup time and throughput matter
@@ -351,6 +343,29 @@ jbang comparison/generate.java
 - `foreignObject` support or SVG font rendering
 - Migrating from Apache Batik
 
+**Choose CairoSVG when you need:**
+- SVG conversion **in Python**
+- The fastest raw conversion speed (native C backend)
+- A mature, widely-used library with a large community
+- Integration with Python web frameworks or data pipelines
+- No JVM dependency
+
 ---
 
-**Both libraries are complementary:** JairoSVG excels as a fast conversion engine, while EchoSVG is better suited as a full SVG runtime.
+### JairoSVG Porting Fidelity
+
+Since JairoSVG is a port of CairoSVG, most features should be at parity. Key differences:
+
+| Feature | JairoSVG (Java port) | CairoSVG (Python original) |
+|---|:---:|:---:|
+| `<symbol>` element | ✅ | ❌ |
+| `font` shorthand | ✅ | ❌ |
+| EPS output | ✅ | ❌ |
+| External CSS `<?xml-stylesheet?>` | ❌ | ✅ |
+| Gzip-compressed `.svgz` input | ❌ | ✅ |
+
+JairoSVG adds features beyond CairoSVG (fluent builder API, `BufferedImage` output, EPS support) while maintaining the same core rendering approach.
+
+---
+
+**All three libraries are complementary:** JairoSVG and CairoSVG share DNA and excel as fast conversion engines (Java and Python respectively), while EchoSVG is a full SVG runtime.
