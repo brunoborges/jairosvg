@@ -26,8 +26,8 @@ class JairoSVGTest {
         assertEquals(new Colors.RGBA(0, 0, 0, 0), Colors.color("transparent"));
         assertEquals(new Colors.RGBA(1, 0, 0, 1), Colors.color("#ff0000"));
         assertEquals(new Colors.RGBA(1, 0, 0, 1), Colors.color("#f00"));
-        assertNotNull(Colors.color("rgb(255, 0, 0)"));
-        assertNotNull(Colors.color("rgba(255, 0, 0, 1)"));
+        assertEquals(new Colors.RGBA(1, 0, 0, 1), Colors.color("rgb(255, 0, 0)"));
+        assertEquals(new Colors.RGBA(1, 0, 0, 1), Colors.color("rgba(255, 0, 0, 1)"));
 
         // HSL: red = hsl(0, 100%, 50%)
         Colors.RGBA hslRed = Colors.color("hsl(0, 100%, 50%)");
