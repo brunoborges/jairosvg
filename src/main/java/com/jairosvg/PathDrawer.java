@@ -227,6 +227,37 @@ public final class PathDrawer {
                         node.vertices.add(new double[]{0, 0});
                         cx = x3; cy = y3;
                     }
+                    case "T" -> {
+                        if (lastLetter != null && "qtQT".contains(lastLetter)) {
+                            x2 = 2 * cx - x2;
+                            y2 = 2 * cy - y2;
+                        } else {
+                            x2 = cx; y2 = cy;
+                        }
+                        Object[] p3 = pointWithRemainder(surface, d);
+                        x3 = (double) p3[0]; y3 = (double) p3[1];
+                        d = (String) p3[2];
+                        double[] qp = quadraticPoints(cx, cy, x2, y2, x3, y3);
+                        surface.path.curveTo(qp[0], qp[1], qp[2], qp[3], qp[4], qp[5]);
+                        node.vertices.add(new double[]{0, 0});
+                        cx = x3; cy = y3;
+                    }
+                    case "t" -> {
+                        if (lastLetter != null && "qtQT".contains(lastLetter)) {
+                            x2 = 2 * cx - x2;
+                            y2 = 2 * cy - y2;
+                        } else {
+                            x2 = cx; y2 = cy;
+                        }
+                        Object[] p3 = pointWithRemainder(surface, d);
+                        double dx3 = (double) p3[0], dy3 = (double) p3[1];
+                        d = (String) p3[2];
+                        x3 = cx + dx3; y3 = cy + dy3;
+                        double[] qp = quadraticPoints(cx, cy, x2, y2, x3, y3);
+                        surface.path.curveTo(qp[0], qp[1], qp[2], qp[3], qp[4], qp[5]);
+                        node.vertices.add(new double[]{0, 0});
+                        cx = x3; cy = y3;
+                    }
                     case "A", "a" -> {
                         Object[] rxy = pointWithRemainder(surface, d);
                         double rx = (double) rxy[0], ry = (double) rxy[1];
