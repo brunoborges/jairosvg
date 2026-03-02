@@ -21,8 +21,8 @@ public class Surface {
         "circle", "ellipse", "line", "path", "polygon", "polyline", "rect");
 
     private static final Set<String> INVISIBLE_TAGS = Set.of(
-        "clipPath", "filter", "linearGradient", "marker", "mask", "pattern",
-        "radialGradient", "symbol");
+        "clipPath", "filter", "font", "font-face", "glyph", "linearGradient",
+        "marker", "mask", "missing-glyph", "pattern", "radialGradient", "symbol");
 
     private static final java.util.regex.Pattern WHITESPACE = java.util.regex.Pattern.compile("\\s+");
 
@@ -48,6 +48,7 @@ public class Surface {
     public Map<String, Node> paths = new LinkedHashMap<>();
     public Map<String, Node> filters = new LinkedHashMap<>();
     public Map<String, Node> images = new LinkedHashMap<>();
+    public Map<String, SvgFont> fonts = new LinkedHashMap<>();
 
     // Surface dimensions
     protected BufferedImage image;
@@ -85,6 +86,7 @@ public class Surface {
             this.paths = parentSurface.paths;
             this.filters = parentSurface.filters;
             this.images = parentSurface.images;
+            this.fonts = parentSurface.fonts;
         }
 
         this.fontSize = size(this, "12pt");

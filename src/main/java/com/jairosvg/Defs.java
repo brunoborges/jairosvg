@@ -37,6 +37,12 @@ public final class Defs {
         if (tag.contains("filter")) surface.filters.put(id, node);
         if (tag.contains("image")) surface.images.put(id, node);
         if (tag.equals("clippath")) surface.paths.put(id, node);
+        if (tag.equals("font")) {
+            SvgFont svgFont = SvgFont.parse(node);
+            if (svgFont != null) {
+                surface.fonts.put(svgFont.family, svgFont);
+            }
+        }
     }
 
     /** Apply gradient or pattern color. Returns true if a gradient/pattern was applied. */

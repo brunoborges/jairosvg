@@ -61,6 +61,9 @@ public class Node {
     private final Map<String, String> attributes = new LinkedHashMap<>();
     private List<CssProcessor.StyleRule> styleRules;
 
+    /** Lightweight constructor for programmatic node creation (e.g. SVG font glyph parsing). */
+    Node() {}
+
     /** Create a Node from a DOM Element. */
     public Node(Element element, Node parent, List<CssProcessor.StyleRule> styleRules,
                 UrlHelper.UrlFetcher urlFetcher, boolean unsafe) {

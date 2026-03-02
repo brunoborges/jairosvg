@@ -27,7 +27,10 @@ public final class TextDrawer {
         String fontFamily = node.get("font-family", "SansSerif");
         fontFamily = fontFamily.split(",")[0].strip().replace("'", "").replace("\"", "");
 
-        // Map common generic font families
+        // Check for SVG font match before mapping to AWT fonts
+        SvgFont svgFont = surface.fonts.get(fontFamily);
+
+        // Map common generic font families (for AWT fallback)
         fontFamily = switch (fontFamily.toLowerCase()) {
             case "sans-serif" -> "SansSerif";
             case "serif" -> "Serif";
@@ -102,11 +105,13 @@ public final class TextDrawer {
         // Text anchor alignment (only when node has its own x position)
         String textAnchor = node.get("text-anchor");
         if (textAnchor != null && xStr != null) {
-            Rectangle2D bounds = font.getStringBounds(textContent, frc);
+            double textWidth = svgFont != null
+                ? measureSvgFontWidth(svgFont, textContent, surface.fontSize)
+                : font.getStringBounds(textContent, frc).getWidth();
             if ("middle".equals(textAnchor)) {
-                startX -= bounds.getWidth() / 2;
+                startX -= textWidth / 2;
             } else if ("end".equals(textAnchor)) {
-                startX -= bounds.getWidth();
+                startX -= textWidth;
             }
         }
 
@@ -115,7 +120,23 @@ public final class TextDrawer {
 
         AffineTransform savedTransform = surface.context.getTransform();
 
-        if (letterSpacing != 0) {
+        if (svgFont != null) {
+            // Render using SVG font glyphs as paths
+            double curX = startX;
+            for (int i = 0; i < textContent.length(); i++) {
+                String ch = String.valueOf(textContent.charAt(i));
+                SvgFont.Glyph glyph = svgFont.getGlyph(ch);
+                if (glyph != null) {
+                    java.awt.geom.GeneralPath glyphPath =
+                        svgFont.buildGlyphPath(glyph, surface.fontSize, curX, startY);
+                    if (glyphPath != null) {
+                        surface.path.append(glyphPath, false);
+                    }
+                }
+                curX += svgFont.getAdvance(glyph, surface.fontSize) + letterSpacing;
+            }
+            surface.cursorPosition[0] = curX;
+        } else if (letterSpacing != 0) {
             double curX = startX;
             for (int i = 0; i < textContent.length(); i++) {
                 String ch = String.valueOf(textContent.charAt(i));
@@ -152,13 +173,31 @@ public final class TextDrawer {
         double totalWidth = 0;
         for (Node child : parent.children) {
             if (child.text != null && !child.text.isEmpty()) {
-                totalWidth += resolveFont(surface, child).getStringBounds(child.text, frc).getWidth();
+                String family = child.get("font-family", "SansSerif")
+                    .split(",")[0].strip().replace("'", "").replace("\"", "");
+                SvgFont svgF = surface.fonts.get(family);
+                if (svgF != null) {
+                    totalWidth += measureSvgFontWidth(svgF, child.text, surface.fontSize);
+                } else {
+                    totalWidth += resolveFont(surface, child).getStringBounds(child.text, frc).getWidth();
+                }
             }
             if (child.children != null && !child.children.isEmpty()) {
                 totalWidth += measureChildrenWidth(surface, child, frc);
             }
         }
         return totalWidth;
+    }
+
+    /** Measure the width of text rendered with an SVG font. */
+    private static double measureSvgFontWidth(SvgFont svgFont, String text, double fontSize) {
+        double width = 0;
+        for (int i = 0; i < text.length(); i++) {
+            String ch = String.valueOf(text.charAt(i));
+            SvgFont.Glyph glyph = svgFont.getGlyph(ch);
+            width += svgFont.getAdvance(glyph, fontSize);
+        }
+        return width;
     }
 
     /** Resolve the Font for a given node based on its font attributes. */
