@@ -79,8 +79,16 @@ public final class CssProcessor {
                 var pi = (org.w3c.dom.ProcessingInstruction) node;
                 var attrs = parsePseudoAttributes(pi.getData());
                 String type = attrs.getOrDefault("type", "");
+                String normalizedType = "";
+                if (type != null) {
+                    int semicolonIndex = type.indexOf(';');
+                    if (semicolonIndex >= 0) {
+                        type = type.substring(0, semicolonIndex);
+                    }
+                    normalizedType = type.trim().toLowerCase(java.util.Locale.ROOT);
+                }
                 String href = attrs.get("href");
-                if ("text/css".equals(type) && href != null && !href.isEmpty()) {
+                if ("text/css".equals(normalizedType) && href != null && !href.isEmpty()) {
                     try {
                         String resolvedUrl = resolveHref(href, baseUrl);
                         byte[] cssBytes = fetcher.fetch(resolvedUrl, "text/css");
