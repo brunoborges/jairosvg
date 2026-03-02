@@ -97,11 +97,11 @@ EchoSVG uses its own rendering pipeline (GVT) rather than delegating directly to
 | `<filter>` | ✅ (basic) | ✅ (full filter primitives) |
 | `<marker>` | ✅ | ✅ |
 | `<metadata>`, `<title>`, `<desc>` | ✅ (parsed, not rendered) | ✅ |
-| `<foreignObject>` | ❌ | ✅ |
-| `<animate>`, `<animateTransform>`, `<animateMotion>`, `<set>` | ❌ | ✅ (SMIL) |
-| SVG Fonts (`<font>`, `<glyph>`) | ❌ | ✅ |
-| `<script>` | ❌ | ✅ (Rhino JS engine) |
-| `<cursor>` | ❌ | ✅ |
+| `<foreignObject>` | ❌ ([#15](https://github.com/brunoborges/jairosvg/issues/15)) | ✅ |
+| `<animate>`, `<animateTransform>`, `<animateMotion>`, `<set>` | ❌ ([#16](https://github.com/brunoborges/jairosvg/issues/16)) | ✅ (SMIL) |
+| SVG Fonts (`<font>`, `<glyph>`) | ❌ ([#17](https://github.com/brunoborges/jairosvg/issues/17)) | ✅ |
+| `<script>` | ❌ ([#18](https://github.com/brunoborges/jairosvg/issues/18)) | ✅ (Rhino JS engine) |
+| `<cursor>` | ❌ ([#19](https://github.com/brunoborges/jairosvg/issues/19)) | ✅ |
 
 ---
 
@@ -117,18 +117,18 @@ EchoSVG uses its own rendering pipeline (GVT) rather than delegating directly to
 | Stroke properties (dasharray, linecap, linejoin) | ✅ | ✅ |
 | Gradient `spreadMethod` (pad / reflect / repeat) | ✅ | ✅ |
 | `gradientUnits`, `gradientTransform` | ✅ | ✅ |
-| `patternTransform` | ❌ | ✅ |
+| `patternTransform` | ❌ ([#20](https://github.com/brunoborges/jairosvg/issues/20)) | ✅ |
 | `fill="url(#id)"` references | ✅ | ✅ |
 | Units (px, pt, em, %, cm, mm, in) | ✅ | ✅ |
 | `font` shorthand | ✅ | ✅ |
 | `font-family`, `font-size`, `font-weight` | ✅ | ✅ |
 | `letter-spacing`, `text-anchor` | ✅ | ✅ |
-| `text-decoration` | ❌ | ✅ |
+| `text-decoration` | ❌ ([#21](https://github.com/brunoborges/jairosvg/issues/21)) | ✅ |
 | Named colors (170+) | ✅ | ✅ |
 | `currentColor` | ✅ | ✅ |
 | `rgb()` / `rgba()` / hex colors | ✅ | ✅ |
-| `hsl()` / `hsla()` | ❌ | ✅ |
-| CSS Color Level 4 (`oklch`, `lab`, etc.) | ❌ | ✅ |
+| `hsl()` / `hsla()` | ❌ ([#22](https://github.com/brunoborges/jairosvg/issues/22)) | ✅ |
+| CSS Color Level 4 (`oklch`, `lab`, etc.) | ❌ ([#23](https://github.com/brunoborges/jairosvg/issues/23)) | ✅ |
 
 ---
 
@@ -138,17 +138,17 @@ EchoSVG uses its own rendering pipeline (GVT) rather than delegating directly to
 |---|:---:|:---:|
 | Inline `style` attribute | ✅ | ✅ |
 | `<style>` block (CSS stylesheet) | ✅ | ✅ |
-| External CSS via `<?xml-stylesheet?>` | ❌ | ✅ |
+| External CSS via `<?xml-stylesheet?>` | ❌ ([#24](https://github.com/brunoborges/jairosvg/issues/24)) | ✅ |
 | Class selectors | ✅ | ✅ |
 | ID selectors | ✅ | ✅ |
 | Descendant / child selectors | ✅ (basic) | ✅ |
-| Pseudo-classes / pseudo-elements | ❌ | Partial |
-| CSS Level 4 selectors | ❌ | ✅ (via css4j) |
-| CSS custom properties (variables) | ❌ | ✅ |
-| CSS `calc()` | ❌ | ✅ |
+| Pseudo-classes / pseudo-elements | ❌ ([#25](https://github.com/brunoborges/jairosvg/issues/25)) | Partial |
+| CSS Level 4 selectors | ❌ ([#26](https://github.com/brunoborges/jairosvg/issues/26)) | ✅ (via css4j) |
+| CSS custom properties (variables) | ❌ ([#27](https://github.com/brunoborges/jairosvg/issues/27)) | ✅ |
+| CSS `calc()` | ❌ ([#28](https://github.com/brunoborges/jairosvg/issues/28)) | ✅ |
 | CSS nesting | ❌ | ❌ |
-| `@import` rules | ❌ | ✅ |
-| `@supports` rules | ❌ | ✅ |
+| `@import` rules | ❌ ([#29](https://github.com/brunoborges/jairosvg/issues/29)) | ✅ |
+| `@supports` rules | ❌ ([#30](https://github.com/brunoborges/jairosvg/issues/30)) | ✅ |
 
 EchoSVG integrates the **css4j** CSS parser, giving it significantly more advanced CSS support than JairoSVG's lightweight built-in processor. JairoSVG's CSS support covers the common patterns used in SVG files but does not aim for full CSS specification compliance.
 
@@ -163,8 +163,8 @@ EchoSVG integrates the **css4j** CSS parser, giving it significantly more advanc
 | PostScript (PS) | ✅ | ✅ |
 | EPS | ✅ | ❌ |
 | SVG (re-render) | ✅ | ✅ |
-| JPEG | ❌ | ✅ |
-| TIFF | ❌ | ✅ |
+| JPEG | ❌ ([#31](https://github.com/brunoborges/jairosvg/issues/31)) | ✅ |
+| TIFF | ❌ ([#32](https://github.com/brunoborges/jairosvg/issues/32)) | ✅ |
 | `BufferedImage` (in-memory Java object) | ✅ | ✅ |
 
 ---
