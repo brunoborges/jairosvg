@@ -576,6 +576,7 @@ class JairoSVGTest {
         assertTrue(CssProcessor.matchesSelector(second, "rect:not(:first-child)"));
         assertTrue(CssProcessor.matchesSelector(first, "rect::first-line"));
         assertTrue(CssProcessor.matchesSelector(first, "rect::first-letter"));
+        assertFalse(CssProcessor.matchesSelector(first, "circle::first-line"));
     }
 
     @Test

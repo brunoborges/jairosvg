@@ -18,6 +18,7 @@ public final class CssProcessor {
     private static final java.util.regex.Pattern FIRST_CHILD_PATTERN = java.util.regex.Pattern.compile(":first-child\\b");
     private static final java.util.regex.Pattern LAST_CHILD_PATTERN = java.util.regex.Pattern.compile(":last-child\\b");
     private static final java.util.regex.Pattern NTH_CHILD_PATTERN = java.util.regex.Pattern.compile(":nth-child\\(([^)]*)\\)");
+    private static final java.util.regex.Pattern NTH_CHILD_AN_B_PATTERN = java.util.regex.Pattern.compile("([+-]?\\d*)n([+-]\\d+)?");
     private static final java.util.regex.Pattern PSEUDO_ATTR_PATTERN = java.util.regex.Pattern.compile(
         "(\\w[\\w-]*)\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)')");
 
@@ -307,7 +308,7 @@ public final class CssProcessor {
             // Continue with an+b pattern parsing
         }
 
-        Matcher m = java.util.regex.Pattern.compile("([+-]?\\d*)n([+-]\\d+)?").matcher(normalized);
+        Matcher m = NTH_CHILD_AN_B_PATTERN.matcher(normalized);
         if (!m.matches()) return false;
 
         String aStr = m.group(1);
