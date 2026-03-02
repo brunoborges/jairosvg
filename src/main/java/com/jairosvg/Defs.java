@@ -293,8 +293,8 @@ public final class Defs {
         if (patW <= 0 || patH <= 0) return false;
 
         // Render pattern content into a BufferedImage
-        int imgW = Math.max(1, (int) Math.ceil(patW));
-        int imgH = Math.max(1, (int) Math.ceil(patH));
+        int imgW = Math.min(4096, Math.max(1, (int) Math.ceil(patW)));
+        int imgH = Math.min(4096, Math.max(1, (int) Math.ceil(patH)));
         BufferedImage patImage = new BufferedImage(imgW, imgH, BufferedImage.TYPE_INT_ARGB);
         Graphics2D patG2d = patImage.createGraphics();
         patG2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

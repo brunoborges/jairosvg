@@ -635,6 +635,10 @@ class JairoSVGTest {
         BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
         assertEquals(200, image.getWidth());
         assertEquals(200, image.getHeight());
+        // Verify the scaled pattern produced visible content
+        int pixel = image.getRGB(10, 10);
+        int alpha = (pixel >> 24) & 0xFF;
+        assertTrue(alpha > 0, "Scaled pattern should produce visible pixels");
     }
 
     @Test
@@ -659,6 +663,10 @@ class JairoSVGTest {
         BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
         assertEquals(200, image.getWidth());
         assertEquals(200, image.getHeight());
+        // Verify the rotated pattern produced visible content
+        int pixel = image.getRGB(100, 100);
+        int alpha = (pixel >> 24) & 0xFF;
+        assertTrue(alpha > 0, "Rotated pattern should produce visible pixels");
     }
 
     @Test
