@@ -62,6 +62,10 @@ public final class TextDrawer {
         FontRenderContext frc = surface.context.getFontRenderContext();
 
         String textContent = node.text;
+        // Whitespace-only text between child elements (e.g. tspan) should be ignored
+        if (textContent != null && textContent.isBlank() && !node.children.isEmpty()) {
+            textContent = null;
+        }
         if (textContent == null || textContent.isEmpty()) {
             // Set initial cursor position from this node's x/y
             String parentX = node.get("x");
@@ -85,9 +89,6 @@ public final class TextDrawer {
                 }
             }
 
-            for (Node child : node.children) {
-                text(surface, child, drawAsText);
-            }
             return;
         }
 
