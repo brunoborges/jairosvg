@@ -120,26 +120,7 @@ public final class CssProcessor {
     }
 
     private static String resolveHref(String href, String baseUrl) {
-        if (baseUrl == null || baseUrl.isEmpty()) return href;
-        if (href.startsWith("data:") || href.startsWith("http:") || href.startsWith("https:")) return href;
-        try {
-            java.net.URI baseUri = new java.net.URI(baseUrl);
-            return baseUri.resolve(href).toString();
-        } catch (java.net.URISyntaxException e) {
-            // Only fall back to file path resolution for non-URI base URLs
-            try {
-                java.nio.file.Path basePath = java.nio.file.Path.of(baseUrl);
-                if (java.nio.file.Files.isRegularFile(basePath)) {
-                    basePath = basePath.getParent();
-                }
-                if (basePath != null) {
-                    return basePath.resolve(href).toString();
-                }
-            } catch (Exception ignored) {
-                // Not a valid file path either
-            }
-            return href;
-        }
+        return UrlHelper.parseUrl(href, baseUrl);
     }
 
     /** A CSS rule with selector and declarations. */
