@@ -247,13 +247,19 @@ public class Node {
         Document doc = builder.parse(new InputSource(new ByteArrayInputStream(bytestring)));
         Element root = doc.getDocumentElement();
 
-        // Parse CSS stylesheets
-        List<CssProcessor.StyleRule> styleRules = CssProcessor.parseStylesheets(root);
-
         UrlHelper.UrlFetcher fetcher = urlFetcher;
         if (fetcher == null) {
             fetcher = unsafe ? UrlHelper::fetch : UrlHelper::safeFetch;
         }
+
+        // Parse external CSS stylesheets from <?xml-stylesheet?> processing instructions
+        List<CssProcessor.StyleRule> styleRules = new ArrayList<>();
+        if (unsafe) {
+            styleRules.addAll(CssProcessor.parseExternalStylesheets(doc, fetcher, url));
+        }
+
+        // Parse CSS stylesheets from <style> elements
+        styleRules.addAll(CssProcessor.parseStylesheets(root));
 
         Node tree = new Node(root, null, styleRules, fetcher, unsafe);
         tree.url = url;
