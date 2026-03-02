@@ -55,7 +55,28 @@ public final class TextDrawer {
 
         String textContent = node.text;
         if (textContent == null || textContent.isEmpty()) {
-            // Process children (tspan, etc.)
+            // Set initial cursor position from this node's x/y
+            String parentX = node.get("x");
+            String parentY = node.get("y");
+            String parentDx = node.get("dx");
+            String parentDy = node.get("dy");
+
+            if (parentX != null) surface.cursorPosition[0] = size(surface, parentX.split("\\s+")[0], "x");
+            if (parentY != null) surface.cursorPosition[1] = size(surface, parentY.split("\\s+")[0], "y");
+            if (parentDx != null) surface.cursorPosition[0] += size(surface, parentDx.split("\\s+")[0], "x");
+            if (parentDy != null) surface.cursorPosition[1] += size(surface, parentDy.split("\\s+")[0], "y");
+
+            // Adjust cursor for text-anchor using total width of all children
+            String textAnchor = node.get("text-anchor");
+            if (textAnchor != null && ("middle".equals(textAnchor) || "end".equals(textAnchor))) {
+                double totalWidth = measureChildrenWidth(surface, node, frc);
+                if ("middle".equals(textAnchor)) {
+                    surface.cursorPosition[0] -= totalWidth / 2;
+                } else {
+                    surface.cursorPosition[0] -= totalWidth;
+                }
+            }
+
             for (Node child : node.children) {
                 text(surface, child, drawAsText);
             }
@@ -78,9 +99,9 @@ public final class TextDrawer {
         if (dxStr != null) startX += size(surface, dxStr.split("\\s+")[0], "x");
         if (dyStr != null) startY += size(surface, dyStr.split("\\s+")[0], "y");
 
-        // Text anchor alignment
+        // Text anchor alignment (only when node has its own x position)
         String textAnchor = node.get("text-anchor");
-        if (textAnchor != null) {
+        if (textAnchor != null && xStr != null) {
             Rectangle2D bounds = font.getStringBounds(textContent, frc);
             if ("middle".equals(textAnchor)) {
                 startX -= bounds.getWidth() / 2;
@@ -124,5 +145,44 @@ public final class TextDrawer {
         }
 
         surface.cursorPosition[1] = startY;
+    }
+
+    /** Measure total text width of all children for text-anchor calculation. */
+    private static double measureChildrenWidth(Surface surface, Node parent, FontRenderContext frc) {
+        double totalWidth = 0;
+        for (Node child : parent.children) {
+            if (child.text != null && !child.text.isEmpty()) {
+                totalWidth += resolveFont(surface, child).getStringBounds(child.text, frc).getWidth();
+            }
+            if (child.children != null && !child.children.isEmpty()) {
+                totalWidth += measureChildrenWidth(surface, child, frc);
+            }
+        }
+        return totalWidth;
+    }
+
+    /** Resolve the Font for a given node based on its font attributes. */
+    private static Font resolveFont(Surface surface, Node node) {
+        String fontFamily = node.get("font-family", "SansSerif");
+        fontFamily = fontFamily.split(",")[0].strip().replace("'", "").replace("\"", "");
+        fontFamily = switch (fontFamily.toLowerCase()) {
+            case "sans-serif" -> "SansSerif";
+            case "serif" -> "Serif";
+            case "monospace" -> "Monospaced";
+            default -> fontFamily;
+        };
+        int fontStyle = Font.PLAIN;
+        String styleStr = node.get("font-style", "normal");
+        if ("italic".equals(styleStr) || "oblique".equals(styleStr)) {
+            fontStyle |= Font.ITALIC;
+        }
+        String weightStr = node.get("font-weight", "normal");
+        if ("bold".equals(weightStr) || "bolder".equals(weightStr)) {
+            fontStyle |= Font.BOLD;
+        } else if (weightStr.matches("\\d+") && Integer.parseInt(weightStr) >= 550) {
+            fontStyle |= Font.BOLD;
+        }
+        Font font = new Font(fontFamily, fontStyle, 1);
+        return font.deriveFont((float) surface.fontSize);
     }
 }
