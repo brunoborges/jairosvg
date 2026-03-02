@@ -18,6 +18,8 @@ public final class Colors {
 
     private static final Pattern RGBA_PATTERN = Pattern.compile("rgba\\((.+?)\\)");
     private static final Pattern RGB_PATTERN = Pattern.compile("rgb\\((.+?)\\)");
+    private static final Pattern HSLA_PATTERN = Pattern.compile("hsla\\((.+?)\\)");
+    private static final Pattern HSL_PATTERN = Pattern.compile("hsl\\((.+?)\\)");
     private static final Pattern HEX_RRGGBB = Pattern.compile("#[0-9a-f]{6}");
     private static final Pattern HEX_RGB = Pattern.compile("#[0-9a-f]{3}");
 
@@ -244,6 +246,25 @@ public final class Colors {
             }
         }
 
+        m = HSLA_PATTERN.matcher(string);
+        if (m.find()) {
+            String[] parts = m.group(1).strip().split(",");
+            if (parts.length == 4) {
+                double[] rgb = hslToRgb(parts[0], parts[1], parts[2]);
+                double a = Double.parseDouble(parts[3].strip());
+                return new RGBA(rgb[0], rgb[1], rgb[2], a * opacity);
+            }
+        }
+
+        m = HSL_PATTERN.matcher(string);
+        if (m.find()) {
+            String[] parts = m.group(1).strip().split(",");
+            if (parts.length == 3) {
+                double[] rgb = hslToRgb(parts[0], parts[1], parts[2]);
+                return new RGBA(rgb[0], rgb[1], rgb[2], opacity);
+            }
+        }
+
         m = HEX_RRGGBB.matcher(string);
         if (m.find()) {
             double r = Integer.parseInt(string.substring(1, 3), 16) / 255.0;
@@ -271,6 +292,27 @@ public final class Colors {
     /** Negate (complement) a color. */
     public static RGBA negateColor(RGBA c) {
         return new RGBA(1 - c.r(), 1 - c.g(), 1 - c.b(), c.a());
+    }
+
+    private static double[] hslToRgb(String hPart, String sPart, String lPart) {
+        double h = (((Double.parseDouble(hPart.strip()) % 360) + 360) % 360) / 360.0;
+        double s = Double.parseDouble(sPart.strip().replace("%", "")) / 100.0;
+        double l = Double.parseDouble(lPart.strip().replace("%", "")) / 100.0;
+        if (s == 0) {
+            return new double[]{l, l, l};
+        }
+        double q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        double p = 2 * l - q;
+        return new double[]{hueToRgb(p, q, h + 1.0 / 3), hueToRgb(p, q, h), hueToRgb(p, q, h - 1.0 / 3)};
+    }
+
+    private static double hueToRgb(double p, double q, double t) {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1.0 / 6) return p + (q - p) * 6 * t;
+        if (t < 1.0 / 2) return q;
+        if (t < 2.0 / 3) return p + (q - p) * (2.0 / 3 - t) * 6;
+        return p;
     }
 
     private static double parseColorComponent(String part) {
