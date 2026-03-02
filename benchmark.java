@@ -12,8 +12,9 @@ import io.sf.carte.echosvg.transcoder.TranscoderInput;
 import io.sf.carte.echosvg.transcoder.TranscoderOutput;
 import io.sf.carte.echosvg.transcoder.image.PNGTranscoder;
 
-import java.io.ByteArrayOutputStream;
-import java.io.StringReader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
 import java.util.Arrays;
 
 public class benchmark {
@@ -101,21 +102,70 @@ public class benchmark {
         }
 
         Arrays.sort(times);
-        double avg = Arrays.stream(times).average().orElse(0);
-        double median = times[ITERATIONS / 2];
-        double p95 = times[(int) (ITERATIONS * 0.95)];
-        double min = times[0];
-
-        System.out.printf("  %-28s  avg=%7.2f ms  median=%7.2f ms  p95=%7.2f ms  min=%7.2f ms%n",
-                label, avg, median, p95, min);
         return times;
     }
 
+    static void printStats(String label, double[] times) {
+        double avg = Arrays.stream(times).average().orElse(0);
+        double median = times[times.length / 2];
+        double p95 = times[(int) (times.length * 0.95)];
+        double min = times[0];
+        System.out.printf("  %-28s  avg=%7.2f ms  median=%7.2f ms  p95=%7.2f ms  min=%7.2f ms%n",
+                label, avg, median, p95, min);
+    }
+
+    /** Run CairoSVG (Python) benchmark for a given SVG via subprocess. */
+    static double[] benchCairoSVG(String svg) throws Exception {
+        String pyScript = """
+            import time, cairosvg, json, sys
+            svg = sys.stdin.read()
+            svg_bytes = svg.encode('utf-8')
+            warmup = %d
+            iters = %d
+            for _ in range(warmup):
+                cairosvg.svg2png(bytestring=svg_bytes)
+            times = []
+            for _ in range(iters):
+                t0 = time.perf_counter_ns()
+                cairosvg.svg2png(bytestring=svg_bytes)
+                t1 = time.perf_counter_ns()
+                times.append((t1 - t0) / 1_000_000.0)
+            times.sort()
+            print(json.dumps(times))
+            """.formatted(WARMUP, ITERATIONS);
+
+        ProcessBuilder pb = new ProcessBuilder("python3", "-c", pyScript);
+        pb.redirectErrorStream(true);
+        Process proc = pb.start();
+        proc.getOutputStream().write(svg.getBytes(StandardCharsets.UTF_8));
+        proc.getOutputStream().close();
+
+        String output = new String(proc.getInputStream().readAllBytes(), StandardCharsets.UTF_8).strip();
+        int exitCode = proc.waitFor();
+        if (exitCode != 0) {
+            System.err.println("  CairoSVG error: " + output);
+            return null;
+        }
+
+        // Parse JSON array of doubles
+        String inner = output.substring(1, output.length() - 1);
+        return Arrays.stream(inner.split(",\\s*"))
+                     .mapToDouble(Double::parseDouble)
+                     .toArray();
+    }
+
+    static void printComparison(String nameA, double avgA, String nameB, double avgB) {
+        double ratio = avgB / avgA;
+        String faster = avgA < avgB ? nameA : nameB;
+        System.out.printf("    %s vs %s → %s is %.1fx faster%n",
+                nameA, nameB, faster, avgA < avgB ? ratio : 1.0 / ratio);
+    }
+
     public static void main(String[] args) throws Exception {
-        System.out.println("=".repeat(90));
-        System.out.println("  SVG → PNG Benchmark: JairoSVG vs EchoSVG");
+        System.out.println("=".repeat(98));
+        System.out.println("  SVG → PNG Benchmark: JairoSVG (Java) vs EchoSVG (Java) vs CairoSVG (Python)");
         System.out.printf("  Warmup: %d iterations, Measurement: %d iterations%n", WARMUP, ITERATIONS);
-        System.out.println("=".repeat(90));
+        System.out.println("=".repeat(98));
 
         String[][] cases = {
             {"Simple (shapes)", SVG_SIMPLE},
@@ -123,22 +173,38 @@ public class benchmark {
             {"Complex (paths + text)", SVG_COMPLEX},
         };
 
-        SvgConverter jairosvg = svg -> JairoSVG.svg2png(svg.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        SvgConverter jairosvg = svg -> JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
         SvgConverter echosvg = svg -> echoConvert(svg);
 
         for (String[] c : cases) {
             System.gc();
             System.out.println("\n▸ " + c[0]);
+
             double[] jTimes = bench("JairoSVG", jairosvg, c[1]);
+            printStats("JairoSVG  (Java/Java2D)", jTimes);
+
             System.gc(); Thread.sleep(100);
             double[] eTimes = bench("EchoSVG", echosvg, c[1]);
+            printStats("EchoSVG   (Java/Batik)", eTimes);
+
+            System.gc(); Thread.sleep(100);
+            double[] cTimes = benchCairoSVG(c[1]);
+            if (cTimes != null) {
+                printStats("CairoSVG  (Python/Cairo)", cTimes);
+            }
+
             double jAvg = Arrays.stream(jTimes).average().orElse(0);
             double eAvg = Arrays.stream(eTimes).average().orElse(0);
-            double ratio = eAvg / jAvg;
-            String faster = jAvg < eAvg ? "JairoSVG" : "EchoSVG";
-            System.out.printf("  → %s is %.1fx faster%n", faster, jAvg < eAvg ? ratio : 1.0 / ratio);
+            double cAvg = cTimes != null ? Arrays.stream(cTimes).average().orElse(0) : 0;
+
+            System.out.println();
+            printComparison("JairoSVG", jAvg, "EchoSVG", eAvg);
+            if (cTimes != null) {
+                printComparison("JairoSVG", jAvg, "CairoSVG", cAvg);
+                printComparison("EchoSVG", eAvg, "CairoSVG", cAvg);
+            }
         }
 
-        System.out.println("\n" + "=".repeat(90));
+        System.out.println("\n" + "=".repeat(98));
     }
 }
