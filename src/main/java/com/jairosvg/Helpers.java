@@ -259,29 +259,14 @@ public final class Helpers {
         };
     }
 
-    /** Apply SVG transform string to the surface Graphics2D. */
-    public static void transform(Surface surface, String transformString,
-                                 AffineTransform gradient,
-                                 String transformOrigin) {
-        if (transformString == null || transformString.isEmpty()) return;
+    /** Parse an SVG transform string into an AffineTransform. */
+    public static AffineTransform parseTransform(Surface surface, String transformString) {
+        if (transformString == null || transformString.isEmpty()) return new AffineTransform();
 
         String normalized = normalize(transformString);
         Matcher tm = TRANSFORM_PATTERN.matcher(normalized);
 
         AffineTransform matrix = new AffineTransform();
-
-        // Handle transform-origin
-        double originX = 0, originY = 0;
-        boolean hasOrigin = false;
-        if (transformOrigin != null && !transformOrigin.isEmpty()) {
-            String[] origin = WHITESPACE.split(transformOrigin.strip());
-            hasOrigin = true;
-            originX = parseOriginComponent(surface, origin[0], true);
-            originY = origin.length > 1
-                ? parseOriginComponent(surface, origin[1], false)
-                : surface.contextHeight / 2;
-            matrix.translate(originX, originY);
-        }
 
         while (tm.find()) {
             String type = tm.group(1);
@@ -328,9 +313,29 @@ public final class Helpers {
                 }
             }
         }
+        return matrix;
+    }
 
-        if (hasOrigin) {
-            matrix.translate(-originX, -originY);
+    /** Apply SVG transform string to the surface Graphics2D. */
+    public static void transform(Surface surface, String transformString,
+                                 AffineTransform gradient,
+                                 String transformOrigin) {
+        if (transformString == null || transformString.isEmpty()) return;
+
+        AffineTransform matrix = parseTransform(surface, transformString);
+
+        // Handle transform-origin
+        if (transformOrigin != null && !transformOrigin.isEmpty()) {
+            String[] origin = WHITESPACE.split(transformOrigin.strip());
+            double originX = parseOriginComponent(surface, origin[0], true);
+            double originY = origin.length > 1
+                ? parseOriginComponent(surface, origin[1], false)
+                : surface.contextHeight / 2;
+            AffineTransform withOrigin = new AffineTransform();
+            withOrigin.translate(originX, originY);
+            withOrigin.concatenate(matrix);
+            withOrigin.translate(-originX, -originY);
+            matrix = withOrigin;
         }
 
         if (gradient != null) {

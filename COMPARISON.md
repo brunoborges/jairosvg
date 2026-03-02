@@ -122,7 +122,7 @@ CairoSVG is a **Python library** built on the **Cairo 2D graphics library** (C).
 | Stroke properties (dasharray, linecap, linejoin) | ✅ | ✅ | ✅ |
 | Gradient `spreadMethod` (pad / reflect / repeat) | ✅ | ✅ | ✅ |
 | `gradientUnits`, `gradientTransform` | ✅ | ✅ | ✅ |
-| `patternTransform` | ❌ ([#20](https://github.com/brunoborges/jairosvg/issues/20)) | ✅ | ❌ |
+| `patternTransform` | ✅ | ✅ | ❌ |
 | `fill="url(#id)"` references | ✅ | ✅ | ✅ |
 | Units (px, pt, em, %, cm, mm, in) | ✅ | ✅ | ✅ |
 | `font` shorthand | ✅ | ✅ | ❌ |

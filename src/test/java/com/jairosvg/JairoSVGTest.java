@@ -585,4 +585,105 @@ class JairoSVGTest {
         assertTrue(alpha > 0, "SVG font without id should still render glyphs");
         assertTrue(red > 200, "SVG font glyph should be red (fill='red')");
     }
+
+    @Test
+    void testSvgWithPatternFill() throws Exception {
+        String svg = """
+            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+              <defs>
+                <pattern id="pat1" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <rect width="20" height="20" fill="red"/>
+                </pattern>
+              </defs>
+              <rect width="200" height="200" fill="url(#pat1)"/>
+            </svg>
+            """;
+
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        assertTrue(png.length > 0);
+
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
+        assertEquals(200, image.getWidth());
+        // Center pixel should be filled with the pattern (red)
+        int pixel = image.getRGB(100, 100);
+        int red = (pixel >> 16) & 0xFF;
+        assertTrue(red > 200, "Pattern fill should produce red pixels");
+    }
+
+    @Test
+    void testSvgWithPatternTransformScale() throws Exception {
+        // Pattern with patternTransform="scale(2)" should double the tile size
+        String svg = """
+            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+              <defs>
+                <pattern id="pat2" x="0" y="0" width="20" height="20"
+                         patternUnits="userSpaceOnUse"
+                         patternTransform="scale(2)">
+                  <rect width="10" height="10" fill="blue"/>
+                  <rect x="10" y="10" width="10" height="10" fill="blue"/>
+                </pattern>
+              </defs>
+              <rect width="200" height="200" fill="url(#pat2)"/>
+            </svg>
+            """;
+
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        assertTrue(png.length > 0);
+
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
+        assertEquals(200, image.getWidth());
+        assertEquals(200, image.getHeight());
+    }
+
+    @Test
+    void testSvgWithPatternTransformRotate() throws Exception {
+        String svg = """
+            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+              <defs>
+                <pattern id="pat3" x="0" y="0" width="20" height="20"
+                         patternUnits="userSpaceOnUse"
+                         patternTransform="rotate(45)">
+                  <rect width="20" height="20" fill="green"/>
+                </pattern>
+              </defs>
+              <rect width="200" height="200" fill="url(#pat3)"/>
+            </svg>
+            """;
+
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        assertTrue(png.length > 0);
+
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
+        assertEquals(200, image.getWidth());
+        assertEquals(200, image.getHeight());
+    }
+
+    @Test
+    void testSvgWithPatternTransformTranslate() throws Exception {
+        String svg = """
+            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+              <defs>
+                <pattern id="pat4" x="0" y="0" width="20" height="20"
+                         patternUnits="userSpaceOnUse"
+                         patternTransform="translate(5, 5)">
+                  <rect width="20" height="20" fill="red"/>
+                </pattern>
+              </defs>
+              <rect width="200" height="200" fill="url(#pat4)"/>
+            </svg>
+            """;
+
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        assertTrue(png.length > 0);
+
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
+        // Center should be filled with the pattern (red)
+        int pixel = image.getRGB(100, 100);
+        int red = (pixel >> 16) & 0xFF;
+        assertTrue(red > 200, "Pattern with translate transform should still produce red pixels");
+    }
 }
