@@ -60,6 +60,20 @@ class JairoSVGTest {
         assertEquals(0.0, hslaRed.g(), 0.01);
         assertEquals(0.0, hslaRed.b(), 0.01);
         assertEquals(0.5, hslaRed.a(), 0.01);
+
+        // Verify opacity parameter interaction for HSL/HSLA
+        Colors.RGBA hslRedWithOpacity = Colors.color("hsl(0, 100%, 50%)", 0.5);
+        assertEquals(1.0, hslRedWithOpacity.r(), 0.01);
+        assertEquals(0.0, hslRedWithOpacity.g(), 0.01);
+        assertEquals(0.0, hslRedWithOpacity.b(), 0.01);
+        assertEquals(0.5, hslRedWithOpacity.a(), 0.01);
+
+        Colors.RGBA hslaRedWithOpacity = Colors.color("hsla(0, 100%, 50%, 0.5)", 0.5);
+        assertEquals(1.0, hslaRedWithOpacity.r(), 0.01);
+        assertEquals(0.0, hslaRedWithOpacity.g(), 0.01);
+        assertEquals(0.0, hslaRedWithOpacity.b(), 0.01);
+        // hsla alpha (0.5) multiplied by opacity (0.5) => 0.25
+        assertEquals(0.25, hslaRedWithOpacity.a(), 0.01);
     }
 
     @Test
