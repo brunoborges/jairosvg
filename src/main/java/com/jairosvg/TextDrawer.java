@@ -17,6 +17,12 @@ public final class TextDrawer {
 
     private TextDrawer() {}
 
+    /** Extract the primary font family name from a font-family attribute value. */
+    private static String parseFontFamily(Node node) {
+        return node.get("font-family", "SansSerif")
+            .split(",")[0].strip().replace("'", "").replace("\"", "");
+    }
+
     /** Draw a text node. */
     public static void text(Surface surface, Node node) {
         text(surface, node, false);
@@ -24,8 +30,7 @@ public final class TextDrawer {
 
     /** Draw a text node, optionally as filled text. */
     public static void text(Surface surface, Node node, boolean drawAsText) {
-        String fontFamily = node.get("font-family", "SansSerif");
-        fontFamily = fontFamily.split(",")[0].strip().replace("'", "").replace("\"", "");
+        String fontFamily = parseFontFamily(node);
 
         // Check for SVG font match before mapping to AWT fonts
         SvgFont svgFont = surface.fonts.get(fontFamily);
@@ -173,8 +178,7 @@ public final class TextDrawer {
         double totalWidth = 0;
         for (Node child : parent.children) {
             if (child.text != null && !child.text.isEmpty()) {
-                String family = child.get("font-family", "SansSerif")
-                    .split(",")[0].strip().replace("'", "").replace("\"", "");
+                String family = parseFontFamily(child);
                 SvgFont svgF = surface.fonts.get(family);
                 if (svgF != null) {
                     totalWidth += measureSvgFontWidth(svgF, child.text, surface.fontSize);
@@ -202,8 +206,7 @@ public final class TextDrawer {
 
     /** Resolve the Font for a given node based on its font attributes. */
     private static Font resolveFont(Surface surface, Node node) {
-        String fontFamily = node.get("font-family", "SansSerif");
-        fontFamily = fontFamily.split(",")[0].strip().replace("'", "").replace("\"", "");
+        String fontFamily = parseFontFamily(node);
         fontFamily = switch (fontFamily.toLowerCase()) {
             case "sans-serif" -> "SansSerif";
             case "serif" -> "Serif";
