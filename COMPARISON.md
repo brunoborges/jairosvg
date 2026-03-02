@@ -143,7 +143,7 @@ CairoSVG is a **Python library** built on the **Cairo 2D graphics library** (C).
 |---|:---:|:---:|:---:|
 | Inline `style` attribute | ✅ | ✅ | ✅ |
 | `<style>` block (CSS stylesheet) | ✅ | ✅ | ✅ |
-| External CSS via `<?xml-stylesheet?>` | ❌ ([#24](https://github.com/brunoborges/jairosvg/issues/24)) | ✅ | ✅ (basic) |
+| External CSS via `<?xml-stylesheet?>` | ✅ (requires `--unsafe`) | ✅ | ✅ (basic) |
 | Class selectors | ✅ | ✅ | ✅ |
 | ID selectors | ✅ | ✅ | ✅ |
 | Descendant / child selectors | ✅ (basic) | ✅ | ✅ (via cssselect2) |
@@ -361,7 +361,7 @@ Since JairoSVG is a port of CairoSVG, most features should be at parity. Key dif
 | `<symbol>` element | ✅ | ❌ |
 | `font` shorthand | ✅ | ❌ |
 | EPS output | ✅ | ❌ |
-| External CSS `<?xml-stylesheet?>` | ❌ | ✅ |
+| External CSS `<?xml-stylesheet?>` | ✅ (requires `--unsafe`) | ✅ |
 | Gzip-compressed `.svgz` input | ❌ | ✅ |
 
 JairoSVG adds features beyond CairoSVG (fluent builder API, `BufferedImage` output, EPS support) while maintaining the same core rendering approach.

@@ -13,6 +13,8 @@ public final class CssProcessor {
     private static final java.util.regex.Pattern IMPORT_PATTERN = java.util.regex.Pattern.compile("@import[^;]*;");
     private static final java.util.regex.Pattern RULE_PATTERN = java.util.regex.Pattern.compile("([^{}]+)\\{([^}]*)\\}");
     private static final java.util.regex.Pattern WHITESPACE = java.util.regex.Pattern.compile("\\s+");
+    private static final java.util.regex.Pattern PSEUDO_ATTR_PATTERN = java.util.regex.Pattern.compile(
+        "(\\w[\\w-]*)\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)')");
 
     private CssProcessor() {}
 
@@ -60,6 +62,65 @@ public final class CssProcessor {
         List<StyleRule> rules = new ArrayList<>();
         extractStyleElements(root, rules);
         return rules;
+    }
+
+    /**
+     * Extract external stylesheets referenced via {@code <?xml-stylesheet?>} processing instructions.
+     * Only loads stylesheets with {@code type="text/css"}.
+     */
+    public static List<StyleRule> parseExternalStylesheets(org.w3c.dom.Document doc,
+            UrlHelper.UrlFetcher fetcher, String baseUrl) {
+        List<StyleRule> rules = new ArrayList<>();
+        var childNodes = doc.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            var node = childNodes.item(i);
+            if (node.getNodeType() == org.w3c.dom.Node.PROCESSING_INSTRUCTION_NODE
+                    && "xml-stylesheet".equals(node.getNodeName())) {
+                var pi = (org.w3c.dom.ProcessingInstruction) node;
+                var attrs = parsePseudoAttributes(pi.getData());
+                String type = attrs.getOrDefault("type", "");
+                String normalizedType = "";
+                if (type != null) {
+                    int semicolonIndex = type.indexOf(';');
+                    if (semicolonIndex >= 0) {
+                        type = type.substring(0, semicolonIndex);
+                    }
+                    normalizedType = type.trim().toLowerCase(java.util.Locale.ROOT);
+                }
+                String href = attrs.get("href");
+                if ("text/css".equals(normalizedType) && href != null && !href.isEmpty()) {
+                    try {
+                        String resolvedUrl = resolveHref(href, baseUrl);
+                        byte[] cssBytes = fetcher.fetch(resolvedUrl, "text/css");
+                        if (cssBytes != null && cssBytes.length > 0) {
+                            parseStylesheet(new String(cssBytes, java.nio.charset.StandardCharsets.UTF_8), rules);
+                        }
+                    } catch (Exception e) {
+                        // Skip stylesheets that cannot be loaded
+                    }
+                }
+            }
+        }
+        return rules;
+    }
+
+    /** Parse pseudo-attributes from a processing instruction data string. */
+    static Map<String, String> parsePseudoAttributes(String data) {
+        Map<String, String> attrs = new LinkedHashMap<>();
+        if (data == null || data.isEmpty()) return attrs;
+        Matcher m = PSEUDO_ATTR_PATTERN.matcher(data);
+        while (m.find()) {
+            String name = m.group(1);
+            String value = m.group(2) != null ? m.group(2) : m.group(3);
+            if (value != null) {
+                attrs.put(name, value);
+            }
+        }
+        return attrs;
+    }
+
+    private static String resolveHref(String href, String baseUrl) {
+        return UrlHelper.parseUrl(href, baseUrl).getUrl();
     }
 
     /** A CSS rule with selector and declarations. */

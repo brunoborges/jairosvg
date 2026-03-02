@@ -78,8 +78,19 @@ public final class UrlHelper {
         try {
             URI uri = new URI(url);
             if (uri.getScheme() == null || "file".equals(uri.getScheme())) {
-                String filePath = uri.getScheme() != null ? uri.getPath() : url;
-                return Files.readAllBytes(Path.of(filePath));
+                Path filePath;
+                if (uri.getScheme() == null) {
+                    // No scheme: treat as plain file path
+                    filePath = Path.of(url);
+                } else {
+                    // file: URI — strip query/fragment to avoid IllegalArgumentException
+                    if (uri.getRawQuery() != null || uri.getRawFragment() != null) {
+                        filePath = Path.of(uri.getPath());
+                    } else {
+                        filePath = Path.of(uri);
+                    }
+                }
+                return Files.readAllBytes(filePath);
             } else {
                 return fetchHttp(url);
             }
