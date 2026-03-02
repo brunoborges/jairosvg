@@ -17,6 +17,12 @@ public final class TextDrawer {
 
     private TextDrawer() {}
 
+    /** Extract the primary font family name from a font-family attribute value. */
+    private static String parseFontFamily(Node node) {
+        return node.get("font-family", "SansSerif")
+            .split(",")[0].strip().replace("'", "").replace("\"", "");
+    }
+
     /** Draw a text node. */
     public static void text(Surface surface, Node node) {
         text(surface, node, false);
@@ -24,10 +30,12 @@ public final class TextDrawer {
 
     /** Draw a text node, optionally as filled text. */
     public static void text(Surface surface, Node node, boolean drawAsText) {
-        String fontFamily = node.get("font-family", "SansSerif");
-        fontFamily = fontFamily.split(",")[0].strip().replace("'", "").replace("\"", "");
+        String fontFamily = parseFontFamily(node);
 
-        // Map common generic font families
+        // Check for SVG font match before mapping to AWT fonts
+        SvgFont svgFont = surface.fonts.get(fontFamily);
+
+        // Map common generic font families (for AWT fallback)
         fontFamily = switch (fontFamily.toLowerCase()) {
             case "sans-serif" -> "SansSerif";
             case "serif" -> "Serif";
@@ -54,6 +62,10 @@ public final class TextDrawer {
         FontRenderContext frc = surface.context.getFontRenderContext();
 
         String textContent = node.text;
+        // Whitespace-only text between child elements (e.g. tspan) should be ignored
+        if (textContent != null && textContent.isBlank() && !node.children.isEmpty()) {
+            textContent = null;
+        }
         if (textContent == null || textContent.isEmpty()) {
             // Set initial cursor position from this node's x/y
             String parentX = node.get("x");
@@ -77,9 +89,6 @@ public final class TextDrawer {
                 }
             }
 
-            for (Node child : node.children) {
-                text(surface, child, drawAsText);
-            }
             return;
         }
 
@@ -102,11 +111,13 @@ public final class TextDrawer {
         // Text anchor alignment (only when node has its own x position)
         String textAnchor = node.get("text-anchor");
         if (textAnchor != null && xStr != null) {
-            Rectangle2D bounds = font.getStringBounds(textContent, frc);
+            double textWidth = svgFont != null
+                ? measureSvgFontWidth(svgFont, textContent, surface.fontSize)
+                : font.getStringBounds(textContent, frc).getWidth();
             if ("middle".equals(textAnchor)) {
-                startX -= bounds.getWidth() / 2;
+                startX -= textWidth / 2;
             } else if ("end".equals(textAnchor)) {
-                startX -= bounds.getWidth();
+                startX -= textWidth;
             }
         }
 
@@ -115,7 +126,25 @@ public final class TextDrawer {
 
         AffineTransform savedTransform = surface.context.getTransform();
 
-        if (letterSpacing != 0) {
+        if (svgFont != null) {
+            // Render using SVG font glyphs as paths (greedy longest-match for multi-char unicode)
+            double curX = startX;
+            int i = 0;
+            while (i < textContent.length()) {
+                SvgFont.GlyphMatch match = svgFont.getGlyph(textContent, i);
+                SvgFont.Glyph glyph = match.glyph();
+                if (glyph != null) {
+                    java.awt.geom.GeneralPath glyphPath =
+                        svgFont.buildGlyphPath(glyph, surface.fontSize, curX, startY);
+                    if (glyphPath != null) {
+                        surface.path.append(glyphPath, false);
+                    }
+                }
+                curX += svgFont.getAdvance(glyph, surface.fontSize) + letterSpacing;
+                i += match.charsConsumed();
+            }
+            surface.cursorPosition[0] = curX;
+        } else if (letterSpacing != 0) {
             double curX = startX;
             for (int i = 0; i < textContent.length(); i++) {
                 String ch = String.valueOf(textContent.charAt(i));
@@ -152,7 +181,13 @@ public final class TextDrawer {
         double totalWidth = 0;
         for (Node child : parent.children) {
             if (child.text != null && !child.text.isEmpty()) {
-                totalWidth += resolveFont(surface, child).getStringBounds(child.text, frc).getWidth();
+                String family = parseFontFamily(child);
+                SvgFont svgF = surface.fonts.get(family);
+                if (svgF != null) {
+                    totalWidth += measureSvgFontWidth(svgF, child.text, surface.fontSize);
+                } else {
+                    totalWidth += resolveFont(surface, child).getStringBounds(child.text, frc).getWidth();
+                }
             }
             if (child.children != null && !child.children.isEmpty()) {
                 totalWidth += measureChildrenWidth(surface, child, frc);
@@ -161,10 +196,21 @@ public final class TextDrawer {
         return totalWidth;
     }
 
+    /** Measure the width of text rendered with an SVG font. */
+    private static double measureSvgFontWidth(SvgFont svgFont, String text, double fontSize) {
+        double width = 0;
+        int i = 0;
+        while (i < text.length()) {
+            SvgFont.GlyphMatch match = svgFont.getGlyph(text, i);
+            width += svgFont.getAdvance(match.glyph(), fontSize);
+            i += match.charsConsumed();
+        }
+        return width;
+    }
+
     /** Resolve the Font for a given node based on its font attributes. */
     private static Font resolveFont(Surface surface, Node node) {
-        String fontFamily = node.get("font-family", "SansSerif");
-        fontFamily = fontFamily.split(",")[0].strip().replace("'", "").replace("\"", "");
+        String fontFamily = parseFontFamily(node);
         fontFamily = switch (fontFamily.toLowerCase()) {
             case "sans-serif" -> "SansSerif";
             case "serif" -> "Serif";

@@ -27,6 +27,15 @@ public final class Defs {
     /** Parse a single definition element. */
     public static void parseDef(Surface surface, Node node) {
         String tag = node.tag.toLowerCase();
+
+        // SVG fonts are keyed by font-family, not by id, so handle before the id check
+        if (tag.equals("font")) {
+            SvgFont svgFont = SvgFont.parse(node);
+            if (svgFont != null) {
+                surface.fonts.put(svgFont.family, svgFont);
+            }
+        }
+
         String id = node.get("id");
         if (id == null) return;
 

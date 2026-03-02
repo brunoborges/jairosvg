@@ -104,7 +104,7 @@ CairoSVG is a **Python library** built on the **Cairo 2D graphics library** (C).
 | `<metadata>`, `<title>`, `<desc>` | ✅ (parsed, not rendered) | ✅ | ❌ (ignored) |
 | `<foreignObject>` | ❌ ([#15](https://github.com/brunoborges/jairosvg/issues/15)) | ✅ | ❌ |
 | `<animate>`, `<animateTransform>`, `<animateMotion>`, `<set>` | ❌ ([#16](https://github.com/brunoborges/jairosvg/issues/16)) | ✅ (SMIL) | ❌ |
-| SVG Fonts (`<font>`, `<glyph>`) | ❌ ([#17](https://github.com/brunoborges/jairosvg/issues/17)) | ✅ | ❌ |
+| SVG Fonts (`<font>`, `<glyph>`) | ✅ | ✅ | ❌ |
 | `<script>` | ❌ ([#18](https://github.com/brunoborges/jairosvg/issues/18)) | ✅ (Rhino JS) | ❌ |
 | `<cursor>` | ❌ ([#19](https://github.com/brunoborges/jairosvg/issues/19)) | ✅ | ❌ |
 
