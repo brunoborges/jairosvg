@@ -118,12 +118,17 @@ public final class CssProcessor {
             java.net.URI baseUri = new java.net.URI(baseUrl);
             return baseUri.resolve(href).toString();
         } catch (java.net.URISyntaxException e) {
-            java.nio.file.Path basePath = java.nio.file.Path.of(baseUrl);
-            if (java.nio.file.Files.isRegularFile(basePath)) {
-                basePath = basePath.getParent();
-            }
-            if (basePath != null) {
-                return basePath.resolve(href).toString();
+            // Only fall back to file path resolution for non-URI base URLs
+            try {
+                java.nio.file.Path basePath = java.nio.file.Path.of(baseUrl);
+                if (java.nio.file.Files.isRegularFile(basePath)) {
+                    basePath = basePath.getParent();
+                }
+                if (basePath != null) {
+                    return basePath.resolve(href).toString();
+                }
+            } catch (Exception ignored) {
+                // Not a valid file path either
             }
             return href;
         }
