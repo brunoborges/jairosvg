@@ -1,0 +1,8 @@
+{
+  "aliases": {
+    "jairosvg": {
+      "script-ref": "com.jairosvg:jairosvg:1.0.0-SNAPSHOT",
+      "description": "SVG to PNG/PDF/PS converter - Java port of CairoSVG"
+    }
+  }
+}

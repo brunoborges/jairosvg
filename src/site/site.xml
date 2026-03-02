@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/DECORATION/1.8.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.8.0 https://maven.apache.org/xsd/decoration-1.8.0.xsd"
+         name="JairoSVG">
+
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>2.0.0-M11</version>
+  </skin>
+
+  <body>
+    <breadcrumbs>
+      <item name="JairoSVG" href="index.html"/>
+    </breadcrumbs>
+
+    <menu name="Documentation">
+      <item name="Home" href="index.html"/>
+      <item name="Getting Started" href="getting-started.html"/>
+      <item name="API Reference" href="api-reference.html"/>
+      <item name="CLI Reference" href="cli.html"/>
+      <item name="Architecture" href="architecture.html"/>
+      <item name="Benchmark" href="benchmark.html"/>
+      <item name="FAQ" href="faq.html"/>
+    </menu>
+
+    <menu ref="reports"/>
+  </body>
+</project>
