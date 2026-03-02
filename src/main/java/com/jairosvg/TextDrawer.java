@@ -179,10 +179,12 @@ public final class TextDrawer {
         }
 
         String textDecoration = node.get("text-decoration");
-        if (svgFont == null && textWidth > 0 && textDecoration != null && !"none".equals(textDecoration.strip())) {
+        String normalizedTextDecoration = textDecoration == null ? null : textDecoration.strip();
+        if (svgFont == null && textWidth > 0 && normalizedTextDecoration != null
+            && !"none".equals(normalizedTextDecoration)) {
             LineMetrics lineMetrics = font.getLineMetrics(textContent, frc);
             double decorationThickness = lineMetrics.getUnderlineThickness();
-            for (String decoration : textDecoration.strip().split("\\s+")) {
+            for (String decoration : normalizedTextDecoration.split("\\s+")) {
                 double decorationY = switch (decoration) {
                     case "underline" -> startY + lineMetrics.getUnderlineOffset();
                     case "overline" -> startY - lineMetrics.getAscent();
