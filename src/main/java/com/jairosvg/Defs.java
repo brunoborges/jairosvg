@@ -299,6 +299,8 @@ public final class Defs {
         Graphics2D patG2d = patImage.createGraphics();
         patG2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         patG2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        // Apply overall opacity to all pattern content
+        patG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) opacity));
 
         // Save surface state
         Graphics2D savedContext = surface.context;
