@@ -283,7 +283,7 @@ JairoSVG and CairoSVG share the same security posture: no scripting support (eli
 
 ## Visual Rendering Comparison
 
-A side-by-side visual comparison of 12 SVG test cases (JairoSVG vs EchoSVG) is available in the [`comparison/`](comparison/) directory, covering:
+A side-by-side visual comparison of 12 SVG test cases (JairoSVG vs EchoSVG vs CairoSVG) is available in the [`comparison/`](comparison/) directory, covering:
 
 1. Basic shapes
 2. Gradients
