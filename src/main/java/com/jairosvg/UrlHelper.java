@@ -78,8 +78,8 @@ public final class UrlHelper {
         try {
             URI uri = new URI(url);
             if (uri.getScheme() == null || "file".equals(uri.getScheme())) {
-                String filePath = uri.getScheme() != null ? uri.getPath() : url;
-                return Files.readAllBytes(Path.of(filePath));
+                Path filePath = uri.getScheme() != null ? Path.of(uri) : Path.of(url);
+                return Files.readAllBytes(filePath);
             } else {
                 return fetchHttp(url);
             }
