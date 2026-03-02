@@ -132,7 +132,7 @@ CairoSVG is a **Python library** built on the **Cairo 2D graphics library** (C).
 | Named colors (170+) | ✅ | ✅ | ✅ |
 | `currentColor` | ✅ | ✅ | ✅ |
 | `rgb()` / `rgba()` / hex colors | ✅ | ✅ | ✅ |
-| `hsl()` / `hsla()` | ❌ ([#22](https://github.com/brunoborges/jairosvg/issues/22)) | ✅ | ❌ |
+| `hsl()` / `hsla()` | ✅ | ✅ | ❌ |
 | CSS Color Level 4 (`oklch`, `lab`, etc.) | ❌ ([#23](https://github.com/brunoborges/jairosvg/issues/23)) | ✅ | ❌ |
 
 ---
