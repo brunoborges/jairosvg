@@ -313,6 +313,11 @@ public final class Defs {
         surface.contextWidth = patW;
         surface.contextHeight = patH;
 
+        // Translate so pattern children (in user space) are drawn relative to the tile origin
+        if (patX != 0 || patY != 0) {
+            patG2d.translate(-patX, -patY);
+        }
+
         // Draw pattern children
         for (Node child : patternNode.children) {
             surface.draw(child);
@@ -329,16 +334,15 @@ public final class Defs {
         // Create anchor rectangle (untransformed pattern region)
         Rectangle2D anchor = new Rectangle2D.Double(patX, patY, patW, patH);
 
-        // Apply patternTransform by pre-transforming the pattern image, so that
-        // rotation/skew are preserved instead of being lost via getBounds2D().
+        // Apply patternTransform by pre-transforming the pattern image and anchor,
+        // so that rotation/skew are preserved in the tile pixels.
         BufferedImage paintImage = patImage;
         String ptStr = patternNode.get("patternTransform");
         if (ptStr != null && !ptStr.isEmpty()) {
             AffineTransform pt = Helpers.parseTransform(surface, ptStr);
             if (pt != null && !pt.isIdentity()) {
-                // Compute destination bounds of the transformed image in image space
-                Rectangle2D imgRect = new Rectangle2D.Double(0, 0, patImage.getWidth(), patImage.getHeight());
-                Rectangle2D dstRect = pt.createTransformedShape(imgRect).getBounds2D();
+                // Compute transformed anchor bounds in user space
+                Rectangle2D dstRect = pt.createTransformedShape(anchor).getBounds2D();
 
                 int dstW = Math.max(1, (int) Math.ceil(dstRect.getWidth()));
                 int dstH = Math.max(1, (int) Math.ceil(dstRect.getHeight()));
@@ -347,15 +351,17 @@ public final class Defs {
                 Graphics2D g2 = transformedImage.createGraphics();
                 try {
                     g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    // Map: input pixel → pattern space → user space → output pixel
                     AffineTransform at = new AffineTransform();
-                    // Shift so that the transformed content fits into the new image
                     at.translate(-dstRect.getX(), -dstRect.getY());
                     at.concatenate(pt);
+                    at.translate(patX, patY);
                     g2.drawImage(patImage, at, null);
                 } finally {
                     g2.dispose();
                 }
                 paintImage = transformedImage;
+                anchor = dstRect;
             }
         }
 
