@@ -231,7 +231,7 @@ public final class Colors {
                 double g = parseColorComponent(parts[1]);
                 double b = parseColorComponent(parts[2]);
                 double a = Double.parseDouble(parts[3].strip());
-                return new RGBA(r, g, b, a * 255 * opacity);
+                return new RGBA(r, g, b, a * opacity);
             }
         }
 
