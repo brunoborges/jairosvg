@@ -101,6 +101,7 @@ public final class ImageHandler {
             double[] ratio = preserveRatio(surface, node, width, height);
             var savedTransform = surface.context.getTransform();
             var savedComposite = surface.context.getComposite();
+            var savedInterpolation = surface.context.getRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION);
 
             surface.context.translate(x, y);
             surface.context.scale(ratio[0], ratio[1]);
@@ -110,9 +111,27 @@ public final class ImageHandler {
                 surface.context.setComposite(
                         java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC_OVER, (float) opacity));
             }
+            surface.context.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+                    java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-            surface.context.drawImage(img, 0, 0, null);
+            BufferedImage source = img;
+            int drawX = 0;
+            int drawY = 0;
+            if (opacity < 1) {
+                source = new BufferedImage(img.getWidth() + 2, img.getHeight() + 2, BufferedImage.TYPE_INT_ARGB);
+                var g = source.createGraphics();
+                g.drawImage(img, 1, 1, null);
+                g.dispose();
+                drawX = -1;
+                drawY = -1;
+            }
 
+            surface.context.drawImage(source, drawX, drawY, null);
+
+            surface.context.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+                    savedInterpolation != null
+                            ? savedInterpolation
+                            : java.awt.RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
             surface.context.setComposite(savedComposite);
             surface.context.setTransform(savedTransform);
         } catch (IOException e) {
