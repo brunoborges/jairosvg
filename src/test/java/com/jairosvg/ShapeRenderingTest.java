@@ -221,4 +221,37 @@ class ShapeRenderingTest {
         }
         assertTrue(shadowFound);
     }
+  
+    @Test
+    void testTextPathFollowsCurve() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
+                  <defs>
+                    <path id="curve" d="M30,200 C100,100 300,100 370,200" fill="none"/>
+                  </defs>
+                  <text font-size="18" fill="#9b59b6">
+                    <textPath href="#curve">Text following a curved path element</textPath>
+                  </text>
+                </svg>
+                """;
+
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
+        int curvedBandPixels = 0;
+        // This band covers the upper-middle section of curve M30,200 C100,100 300,100
+        // 370,200.
+        // Straight-line rendering at the baseline does not produce pixels in this
+        // region.
+        for (int y = 110; y <= 150; y++) {
+            for (int x = 150; x <= 250; x++) {
+                int alpha = (image.getRGB(x, y) >> 24) & 0xFF;
+                if (alpha > 0) {
+                    curvedBandPixels++;
+                }
+            }
+        }
+        assertTrue(curvedBandPixels > 20, "textPath should render visible pixels along the curved path");
+    }
 }
