@@ -137,6 +137,10 @@ public class Node {
             }
         }
 
+        for (var entry : new ArrayList<>(this.attributes.entrySet())) {
+            this.attributes.put(entry.getKey(), CssProcessor.resolveCustomProperties(entry.getValue(), this.attributes));
+        }
+
         // Replace currentColor
         String currentColorValue = get("color", "black");
         for (String attr : COLOR_ATTRIBUTES) {

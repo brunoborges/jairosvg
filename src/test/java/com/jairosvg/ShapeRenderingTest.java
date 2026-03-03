@@ -109,4 +109,29 @@ class ShapeRenderingTest {
         assertEquals(400, image.getWidth());
         assertEquals(400, image.getHeight());
     }
+
+    @Test
+    void testCssCustomPropertiesVarSupport() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <style>
+                    svg { --main-fill: rgb(0, 128, 0); }
+                    rect { fill: var(--main-fill); }
+                  </style>
+                  <rect x="10" y="10" width="80" height="80"/>
+                </svg>
+                """;
+
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
+        int center = image.getRGB(50, 50);
+        int centerRed = (center >> 16) & 0xFF;
+        int centerGreen = (center >> 8) & 0xFF;
+        int centerBlue = center & 0xFF;
+        assertTrue(centerGreen > 100);
+        assertTrue(centerRed < 20);
+        assertTrue(centerBlue < 20);
+    }
 }
