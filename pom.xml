@@ -54,6 +54,7 @@
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
             <version>${pdfbox.version}</version>
+            <optional>true</optional>
         </dependency>
 
         <!-- Testing -->
