@@ -3,12 +3,12 @@ package com.jairosvg;
 import static com.jairosvg.Helpers.*;
 
 /**
- * Root SVG tag drawer.
- * Port of CairoSVG svg.py
+ * Root SVG tag drawer. Port of CairoSVG svg.py
  */
 public final class SvgDrawer {
 
-    private SvgDrawer() {}
+    private SvgDrawer() {
+    }
 
     /** Draw a svg node (nested SVG). */
     public static void svg(Surface surface, Node node) {

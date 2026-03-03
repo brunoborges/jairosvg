@@ -1,21 +1,20 @@
 package com.jairosvg;
 
-import java.awt.geom.Arc2D;
-import java.awt.geom.GeneralPath;
 import java.util.ArrayList;
 
 import static com.jairosvg.Helpers.*;
 
 /**
- * SVG path command parser and drawer.
- * Port of CairoSVG path.py
+ * SVG path command parser and drawer. Port of CairoSVG path.py
  */
 public final class PathDrawer {
 
     private static final java.util.regex.Pattern WHITESPACE = java.util.regex.Pattern.compile("\\s+");
-    private static final java.util.regex.Pattern PATH_LETTER_PATTERN = java.util.regex.Pattern.compile("([achlmqstvzACHLMQSTVZ])");
+    private static final java.util.regex.Pattern PATH_LETTER_PATTERN = java.util.regex.Pattern
+            .compile("([achlmqstvzACHLMQSTVZ])");
 
-    private PathDrawer() {}
+    private PathDrawer() {
+    }
 
     /** Draw a path node. */
     public static void path(Surface surface, Node node) {
@@ -40,64 +39,68 @@ public final class PathDrawer {
             if (first.length() == 1 && PATH_LETTERS.indexOf(first.charAt(0)) >= 0) {
                 letter = first;
                 d = d.length() > 1 ? d.substring(2).strip() : "";
-                if ((lastLetter == null || "z".equals(lastLetter) || "Z".equals(lastLetter))
-                    && !"m".equals(letter) && !"M".equals(letter)) {
+                if ((lastLetter == null || lastLetter.charAt(0) == 'z' || lastLetter.charAt(0) == 'Z')
+                        && (letter == null || (letter.charAt(0) != 'm' && letter.charAt(0) != 'M'))) {
                     node.vertices.add(new double[]{cx, cy});
                     firstPathPoint = new double[]{cx, cy};
                 }
-            } else if ("M".equals(letter)) {
+            } else if (letter != null && letter.charAt(0) == 'M') {
                 letter = "L";
-            } else if ("m".equals(letter)) {
+            } else if (letter != null && letter.charAt(0) == 'm') {
                 letter = "l";
             }
 
-            if (lastLetter == null || "m".equals(lastLetter) || "M".equals(lastLetter)
-                || "z".equals(lastLetter) || "Z".equals(lastLetter)) {
+            if (lastLetter == null || lastLetter.charAt(0) == 'm' || lastLetter.charAt(0) == 'M'
+                    || lastLetter.charAt(0) == 'z' || lastLetter.charAt(0) == 'Z') {
                 firstPathPoint = null;
             }
-            if (letter != null && !"m".equals(letter) && !"M".equals(letter)
-                && !"z".equals(letter) && !"Z".equals(letter) && firstPathPoint == null) {
+            if (letter != null && letter.charAt(0) != 'm' && letter.charAt(0) != 'M' && letter.charAt(0) != 'z'
+                    && letter.charAt(0) != 'Z' && firstPathPoint == null) {
                 firstPathPoint = new double[]{cx, cy};
             }
 
             try {
                 switch (letter) {
                     case "M" -> {
-                        Object[] pt = pointWithRemainder(surface, d);
-                        double x = (double) pt[0], y = (double) pt[1];
-                        d = (String) pt[2];
-                        if (lastLetter != null && !"z".equals(lastLetter) && !"Z".equals(lastLetter)) {
+                        ParsedPoint pt = pointWithRemainder(surface, d);
+                        double x = pt.x(), y = pt.y();
+                        d = pt.remainder();
+                        if (lastLetter != null && lastLetter.charAt(0) != 'z' && lastLetter.charAt(0) != 'Z') {
                             node.vertices.add(null);
                         }
                         surface.path.moveTo(x, y);
-                        cx = x; cy = y;
+                        cx = x;
+                        cy = y;
                     }
                     case "m" -> {
-                        Object[] pt = pointWithRemainder(surface, d);
-                        double dx = (double) pt[0], dy = (double) pt[1];
-                        d = (String) pt[2];
-                        if (lastLetter != null && !"z".equals(lastLetter) && !"Z".equals(lastLetter)) {
+                        ParsedPoint pt = pointWithRemainder(surface, d);
+                        double dx = pt.x(), dy = pt.y();
+                        d = pt.remainder();
+                        if (lastLetter != null && lastLetter.charAt(0) != 'z' && lastLetter.charAt(0) != 'Z') {
                             node.vertices.add(null);
                         }
-                        cx += dx; cy += dy;
+                        cx += dx;
+                        cy += dy;
                         surface.path.moveTo(cx, cy);
                     }
                     case "L" -> {
-                        Object[] pt = pointWithRemainder(surface, d);
-                        double x = (double) pt[0], y = (double) pt[1];
-                        d = (String) pt[2];
+                        ParsedPoint pt = pointWithRemainder(surface, d);
+                        double x = pt.x(), y = pt.y();
+                        d = pt.remainder();
                         double angle = pointAngle(cx, cy, x, y);
                         node.vertices.add(new double[]{Math.PI - angle, angle});
                         surface.path.lineTo(x, y);
-                        cx = x; cy = y;
+                        cx = x;
+                        cy = y;
                     }
                     case "l" -> {
-                        Object[] pt = pointWithRemainder(surface, d);
-                        double dx = (double) pt[0], dy = (double) pt[1];
-                        d = (String) pt[2];
+                        ParsedPoint pt = pointWithRemainder(surface, d);
+                        double dx = pt.x(), dy = pt.y();
+                        d = pt.remainder();
                         double angle = pointAngle(0, 0, dx, dy);
                         node.vertices.add(new double[]{Math.PI - angle, angle});
-                        cx += dx; cy += dy;
+                        cx += dx;
+                        cy += dy;
                         surface.path.lineTo(cx, cy);
                     }
                     case "H" -> {
@@ -137,140 +140,164 @@ public final class PathDrawer {
                         surface.path.lineTo(cx, cy);
                     }
                     case "C" -> {
-                        Object[] p1 = pointWithRemainder(surface, d);
-                        Object[] p2 = pointWithRemainder(surface, (String) p1[2]);
-                        Object[] p3 = pointWithRemainder(surface, (String) p2[2]);
-                        x1 = (double) p1[0]; y1 = (double) p1[1];
-                        x2 = (double) p2[0]; y2 = (double) p2[1];
-                        x3 = (double) p3[0]; y3 = (double) p3[1];
-                        d = (String) p3[2];
-                        node.vertices.add(new double[]{
-                            pointAngle(x2, y2, x1, y1), pointAngle(x2, y2, x3, y3)});
+                        ParsedPoint p1 = pointWithRemainder(surface, d);
+                        ParsedPoint p2 = pointWithRemainder(surface, p1.remainder());
+                        ParsedPoint p3 = pointWithRemainder(surface, p2.remainder());
+                        x1 = p1.x();
+                        y1 = p1.y();
+                        x2 = p2.x();
+                        y2 = p2.y();
+                        x3 = p3.x();
+                        y3 = p3.y();
+                        d = p3.remainder();
+                        node.vertices.add(new double[]{pointAngle(x2, y2, x1, y1), pointAngle(x2, y2, x3, y3)});
                         surface.path.curveTo(x1, y1, x2, y2, x3, y3);
-                        cx = x3; cy = y3;
+                        cx = x3;
+                        cy = y3;
                     }
                     case "c" -> {
                         double ox = cx, oy = cy;
-                        Object[] p1 = pointWithRemainder(surface, d);
-                        Object[] p2 = pointWithRemainder(surface, (String) p1[2]);
-                        Object[] p3 = pointWithRemainder(surface, (String) p2[2]);
-                        double dx1 = (double) p1[0], dy1 = (double) p1[1];
-                        double dx2 = (double) p2[0], dy2 = (double) p2[1];
-                        double dx3 = (double) p3[0], dy3 = (double) p3[1];
-                        d = (String) p3[2];
-                        x1 = ox + dx1; y1 = oy + dy1;
-                        x2 = ox + dx2; y2 = oy + dy2;
-                        x3 = ox + dx3; y3 = oy + dy3;
-                        node.vertices.add(new double[]{
-                            pointAngle(x2, y2, x1, y1), pointAngle(x2, y2, x3, y3)});
+                        ParsedPoint p1 = pointWithRemainder(surface, d);
+                        ParsedPoint p2 = pointWithRemainder(surface, p1.remainder());
+                        ParsedPoint p3 = pointWithRemainder(surface, p2.remainder());
+                        double dx1 = p1.x(), dy1 = p1.y();
+                        double dx2 = p2.x(), dy2 = p2.y();
+                        double dx3 = p3.x(), dy3 = p3.y();
+                        d = p3.remainder();
+                        x1 = ox + dx1;
+                        y1 = oy + dy1;
+                        x2 = ox + dx2;
+                        y2 = oy + dy2;
+                        x3 = ox + dx3;
+                        y3 = oy + dy3;
+                        node.vertices.add(new double[]{pointAngle(x2, y2, x1, y1), pointAngle(x2, y2, x3, y3)});
                         surface.path.curveTo(x1, y1, x2, y2, x3, y3);
-                        cx = x3; cy = y3;
+                        cx = x3;
+                        cy = y3;
                     }
                     case "S" -> {
                         double sx1 = cx, sy1 = cy;
-                        if (lastLetter != null && "csCS".contains(lastLetter)) {
+                        if (lastLetter != null && "csCS".indexOf(lastLetter.charAt(0)) >= 0) {
                             sx1 = x3 + (x3 - x2);
                             sy1 = y3 + (y3 - y2);
                         }
-                        Object[] p2 = pointWithRemainder(surface, d);
-                        Object[] p3 = pointWithRemainder(surface, (String) p2[2]);
-                        x2 = (double) p2[0]; y2 = (double) p2[1];
-                        x3 = (double) p3[0]; y3 = (double) p3[1];
-                        d = (String) p3[2];
-                        x1 = sx1; y1 = sy1;
-                        node.vertices.add(new double[]{
-                            pointAngle(x2, y2, x1, y1), pointAngle(x2, y2, x3, y3)});
+                        ParsedPoint p2 = pointWithRemainder(surface, d);
+                        ParsedPoint p3 = pointWithRemainder(surface, p2.remainder());
+                        x2 = p2.x();
+                        y2 = p2.y();
+                        x3 = p3.x();
+                        y3 = p3.y();
+                        d = p3.remainder();
+                        x1 = sx1;
+                        y1 = sy1;
+                        node.vertices.add(new double[]{pointAngle(x2, y2, x1, y1), pointAngle(x2, y2, x3, y3)});
                         surface.path.curveTo(x1, y1, x2, y2, x3, y3);
-                        cx = x3; cy = y3;
+                        cx = x3;
+                        cy = y3;
                     }
                     case "s" -> {
                         double ox = cx, oy = cy;
                         double sx1 = 0, sy1 = 0;
-                        if (lastLetter != null && "csCS".contains(lastLetter)) {
+                        if (lastLetter != null && "csCS".indexOf(lastLetter.charAt(0)) >= 0) {
                             sx1 = x3 - x2;
                             sy1 = y3 - y2;
                         }
-                        Object[] p2 = pointWithRemainder(surface, d);
-                        Object[] p3 = pointWithRemainder(surface, (String) p2[2]);
-                        double dx2 = (double) p2[0], dy2 = (double) p2[1];
-                        double dx3 = (double) p3[0], dy3 = (double) p3[1];
-                        d = (String) p3[2];
-                        x1 = ox + sx1; y1 = oy + sy1;
-                        x2 = ox + dx2; y2 = oy + dy2;
-                        x3 = ox + dx3; y3 = oy + dy3;
-                        node.vertices.add(new double[]{
-                            pointAngle(x2, y2, x1, y1), pointAngle(x2, y2, x3, y3)});
+                        ParsedPoint p2 = pointWithRemainder(surface, d);
+                        ParsedPoint p3 = pointWithRemainder(surface, p2.remainder());
+                        double dx2 = p2.x(), dy2 = p2.y();
+                        double dx3 = p3.x(), dy3 = p3.y();
+                        d = p3.remainder();
+                        x1 = ox + sx1;
+                        y1 = oy + sy1;
+                        x2 = ox + dx2;
+                        y2 = oy + dy2;
+                        x3 = ox + dx3;
+                        y3 = oy + dy3;
+                        node.vertices.add(new double[]{pointAngle(x2, y2, x1, y1), pointAngle(x2, y2, x3, y3)});
                         surface.path.curveTo(x1, y1, x2, y2, x3, y3);
-                        cx = x3; cy = y3;
+                        cx = x3;
+                        cy = y3;
                     }
                     case "Q" -> {
-                        Object[] p2 = pointWithRemainder(surface, d);
-                        Object[] p3 = pointWithRemainder(surface, (String) p2[2]);
-                        x2 = (double) p2[0]; y2 = (double) p2[1];
-                        x3 = (double) p3[0]; y3 = (double) p3[1];
-                        d = (String) p3[2];
+                        ParsedPoint p2 = pointWithRemainder(surface, d);
+                        ParsedPoint p3 = pointWithRemainder(surface, p2.remainder());
+                        x2 = p2.x();
+                        y2 = p2.y();
+                        x3 = p3.x();
+                        y3 = p3.y();
+                        d = p3.remainder();
                         double[] qp = quadraticPoints(cx, cy, x2, y2, x3, y3);
                         surface.path.curveTo(qp[0], qp[1], qp[2], qp[3], qp[4], qp[5]);
                         node.vertices.add(new double[]{0, 0});
-                        cx = x3; cy = y3;
+                        cx = x3;
+                        cy = y3;
                     }
                     case "q" -> {
-                        Object[] p2 = pointWithRemainder(surface, d);
-                        Object[] p3 = pointWithRemainder(surface, (String) p2[2]);
-                        double dx2 = (double) p2[0], dy2 = (double) p2[1];
-                        double dx3 = (double) p3[0], dy3 = (double) p3[1];
-                        d = (String) p3[2];
-                        x2 = cx + dx2; y2 = cy + dy2;
-                        x3 = cx + dx3; y3 = cy + dy3;
+                        ParsedPoint p2 = pointWithRemainder(surface, d);
+                        ParsedPoint p3 = pointWithRemainder(surface, p2.remainder());
+                        double dx2 = p2.x(), dy2 = p2.y();
+                        double dx3 = p3.x(), dy3 = p3.y();
+                        d = p3.remainder();
+                        x2 = cx + dx2;
+                        y2 = cy + dy2;
+                        x3 = cx + dx3;
+                        y3 = cy + dy3;
                         double[] qp = quadraticPoints(0, 0, dx2, dy2, dx3, dy3);
-                        surface.path.curveTo(cx + qp[0], cy + qp[1],
-                                             cx + qp[2], cy + qp[3],
-                                             cx + qp[4], cy + qp[5]);
+                        surface.path.curveTo(cx + qp[0], cy + qp[1], cx + qp[2], cy + qp[3], cx + qp[4], cy + qp[5]);
                         node.vertices.add(new double[]{0, 0});
-                        cx = x3; cy = y3;
+                        cx = x3;
+                        cy = y3;
                     }
                     case "T" -> {
-                        if (lastLetter != null && "qtQT".contains(lastLetter)) {
+                        if (lastLetter != null && "qtQT".indexOf(lastLetter.charAt(0)) >= 0) {
                             x2 = 2 * cx - x2;
                             y2 = 2 * cy - y2;
                         } else {
-                            x2 = cx; y2 = cy;
+                            x2 = cx;
+                            y2 = cy;
                         }
-                        Object[] p3 = pointWithRemainder(surface, d);
-                        x3 = (double) p3[0]; y3 = (double) p3[1];
-                        d = (String) p3[2];
+                        ParsedPoint p3 = pointWithRemainder(surface, d);
+                        x3 = p3.x();
+                        y3 = p3.y();
+                        d = p3.remainder();
                         double[] qp = quadraticPoints(cx, cy, x2, y2, x3, y3);
                         surface.path.curveTo(qp[0], qp[1], qp[2], qp[3], qp[4], qp[5]);
                         node.vertices.add(new double[]{0, 0});
-                        cx = x3; cy = y3;
+                        cx = x3;
+                        cy = y3;
                     }
                     case "t" -> {
-                        if (lastLetter != null && "qtQT".contains(lastLetter)) {
+                        if (lastLetter != null && "qtQT".indexOf(lastLetter.charAt(0)) >= 0) {
                             x2 = 2 * cx - x2;
                             y2 = 2 * cy - y2;
                         } else {
-                            x2 = cx; y2 = cy;
+                            x2 = cx;
+                            y2 = cy;
                         }
-                        Object[] p3 = pointWithRemainder(surface, d);
-                        double dx3 = (double) p3[0], dy3 = (double) p3[1];
-                        d = (String) p3[2];
-                        x3 = cx + dx3; y3 = cy + dy3;
+                        ParsedPoint p3 = pointWithRemainder(surface, d);
+                        double dx3 = p3.x(), dy3 = p3.y();
+                        d = p3.remainder();
+                        x3 = cx + dx3;
+                        y3 = cy + dy3;
                         double[] qp = quadraticPoints(cx, cy, x2, y2, x3, y3);
                         surface.path.curveTo(qp[0], qp[1], qp[2], qp[3], qp[4], qp[5]);
                         node.vertices.add(new double[]{0, 0});
-                        cx = x3; cy = y3;
+                        cx = x3;
+                        cy = y3;
                     }
                     case "A", "a" -> {
-                        Object[] rxy = pointWithRemainder(surface, d);
-                        double rx = (double) rxy[0], ry = (double) rxy[1];
-                        d = ((String) rxy[2]).strip();
+                        ParsedPoint rxy = pointWithRemainder(surface, d);
+                        double rx = rxy.x(), ry = rxy.y();
+                        d = rxy.remainder().strip();
 
                         String[] sp = WHITESPACE.split(d + " ", 2);
                         double rotation = Math.toRadians(Double.parseDouble(sp[0]));
                         d = sp[1].strip();
 
-                        char large = d.charAt(0); d = d.substring(1).strip();
-                        char sweep = d.charAt(0); d = d.substring(1).strip();
+                        char large = d.charAt(0);
+                        d = d.substring(1).strip();
+                        char sweep = d.charAt(0);
+                        d = d.substring(1).strip();
 
                         int largeArc = large - '0';
                         int sweepFlag = sweep - '0';
@@ -278,17 +305,19 @@ public final class PathDrawer {
                             continue;
                         }
 
-                        Object[] ep = pointWithRemainder(surface, d);
-                        double ex = (double) ep[0], ey = (double) ep[1];
-                        d = (String) ep[2];
+                        ParsedPoint ep = pointWithRemainder(surface, d);
+                        double ex = ep.x(), ey = ep.y();
+                        d = ep.remainder();
 
-                        if ("a".equals(letter)) {
-                            ex += cx; ey += cy;
+                        if (letter.charAt(0) == 'a') {
+                            ex += cx;
+                            ey += cy;
                         }
 
                         // Draw arc using approximation
                         drawArc(surface, cx, cy, rx, ry, rotation, largeArc != 0, sweepFlag != 0, ex, ey);
-                        cx = ex; cy = ey;
+                        cx = ex;
+                        cy = ey;
                     }
                     case "Z", "z" -> {
                         node.vertices.add(null);
@@ -310,7 +339,7 @@ public final class PathDrawer {
                 continue;
             }
 
-            if (letter != null && !"Z".equals(letter) && !"z".equals(letter)) {
+            if (letter != null && letter.charAt(0) != 'Z' && letter.charAt(0) != 'z') {
                 node.vertices.add(new double[]{cx, cy});
             }
 
@@ -320,10 +349,8 @@ public final class PathDrawer {
     }
 
     /** Draw an elliptical arc approximation using cubic Bézier curves. */
-    private static void drawArc(Surface surface, double x1, double y1,
-                                double rx, double ry, double rotation,
-                                boolean largeArc, boolean sweep,
-                                double x2, double y2) {
+    private static void drawArc(Surface surface, double x1, double y1, double rx, double ry, double rotation,
+            boolean largeArc, boolean sweep, double x2, double y2) {
         if (rx == 0 || ry == 0) {
             surface.path.lineTo(x2, y2);
             return;
@@ -367,11 +394,12 @@ public final class PathDrawer {
         double cyr = sinR * cxp + cosR * cyp + (y1 + y2) / 2;
 
         double theta1 = angle(1, 0, (x1p - cxp) / rx, (y1p - cyp) / ry);
-        double dtheta = angle((x1p - cxp) / rx, (y1p - cyp) / ry,
-                              (-x1p - cxp) / rx, (-y1p - cyp) / ry);
+        double dtheta = angle((x1p - cxp) / rx, (y1p - cyp) / ry, (-x1p - cxp) / rx, (-y1p - cyp) / ry);
 
-        if (!sweep && dtheta > 0) dtheta -= 2 * Math.PI;
-        if (sweep && dtheta < 0) dtheta += 2 * Math.PI;
+        if (!sweep && dtheta > 0)
+            dtheta -= 2 * Math.PI;
+        if (sweep && dtheta < 0)
+            dtheta += 2 * Math.PI;
 
         // Approximate with cubic Bézier curves
         int segments = (int) Math.ceil(Math.abs(dtheta) / (Math.PI / 2));
@@ -384,11 +412,10 @@ public final class PathDrawer {
         }
     }
 
-    private static void arcToCubic(Surface surface, double cx, double cy,
-                                   double rx, double ry, double phi,
-                                   double theta1, double theta2) {
-        double alpha = Math.sin(theta2 - theta1) *
-            (Math.sqrt(4 + 3 * Math.pow(Math.tan((theta2 - theta1) / 2), 2)) - 1) / 3;
+    private static void arcToCubic(Surface surface, double cx, double cy, double rx, double ry, double phi,
+            double theta1, double theta2) {
+        double dTheta = theta2 - theta1;
+        double alpha = Math.sin(dTheta) * (Math.sqrt(4 + 3 * Math.pow(Math.tan(dTheta / 2), 2)) - 1) / 3;
 
         double cosT1 = Math.cos(theta1), sinT1 = Math.sin(theta1);
         double cosT2 = Math.cos(theta2), sinT2 = Math.sin(theta2);
@@ -419,7 +446,8 @@ public final class PathDrawer {
         double len = Math.sqrt(ux * ux + uy * uy) * Math.sqrt(vx * vx + vy * vy);
         double cos = Math.max(-1, Math.min(1, dot / len));
         double angle = Math.acos(cos);
-        if (ux * vy - uy * vx < 0) angle = -angle;
+        if (ux * vy - uy * vx < 0)
+            angle = -angle;
         return angle;
     }
 }

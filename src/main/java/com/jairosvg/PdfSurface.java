@@ -1,8 +1,6 @@
 package com.jairosvg;
 
-import java.awt.Graphics2D;
 import java.io.IOException;
-import java.io.OutputStream;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -12,15 +10,16 @@ import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 /**
- * PDF output surface using Apache PDFBox.
- * Renders SVG to a BufferedImage via the base Surface, then embeds it in a PDF page.
+ * PDF output surface using Apache PDFBox. Renders SVG to a BufferedImage via
+ * the base Surface, then embeds it in a PDF page.
  */
 public class PdfSurface extends Surface {
 
     @Override
     public void finish() throws IOException {
         super.finish();
-        if (output == null || image == null) return;
+        if (output == null || image == null)
+            return;
 
         try (PDDocument doc = new PDDocument()) {
             float pdfWidth = (float) width;

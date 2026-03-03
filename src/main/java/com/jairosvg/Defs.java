@@ -16,7 +16,8 @@ import static com.jairosvg.Helpers.*;
  */
 public final class Defs {
 
-    private Defs() {}
+    private Defs() {
+    }
 
     /** Recursively parse all definition elements. */
     public static void parseAllDefs(Surface surface, Node node) {
@@ -39,21 +40,32 @@ public final class Defs {
         }
 
         String id = node.get("id");
-        if (id == null) return;
+        if (id == null)
+            return;
 
-        if (tag.contains("marker")) surface.markers.put(id, node);
-        if (tag.contains("gradient")) surface.gradients.put(id, node);
-        if (tag.contains("pattern")) surface.patterns.put(id, node);
-        if (tag.contains("mask")) surface.masks.put(id, node);
-        if (tag.contains("filter")) surface.filters.put(id, node);
-        if (tag.contains("image")) surface.images.put(id, node);
-        if (tag.equals("clippath")) surface.paths.put(id, node);
+        if (tag.contains("marker"))
+            surface.markers.put(id, node);
+        if (tag.contains("gradient"))
+            surface.gradients.put(id, node);
+        if (tag.contains("pattern"))
+            surface.patterns.put(id, node);
+        if (tag.contains("mask"))
+            surface.masks.put(id, node);
+        if (tag.contains("filter"))
+            surface.filters.put(id, node);
+        if (tag.contains("image"))
+            surface.images.put(id, node);
+        if (tag.equals("clippath"))
+            surface.paths.put(id, node);
     }
 
-    /** Apply gradient or pattern color. Returns true if a gradient/pattern was applied. */
-    public static boolean gradientOrPattern(Surface surface, Node node,
-                                            String name, double opacity) {
-        if (name == null) return false;
+    /**
+     * Apply gradient or pattern color. Returns true if a gradient/pattern was
+     * applied.
+     */
+    public static boolean gradientOrPattern(Surface surface, Node node, String name, double opacity) {
+        if (name == null)
+            return false;
         if (surface.gradients.containsKey(name)) {
             return drawGradient(surface, node, name, opacity);
         }
@@ -64,10 +76,10 @@ public final class Defs {
     }
 
     /** Draw a gradient. */
-    public static boolean drawGradient(Surface surface, Node node,
-                                       String name, double opacity) {
+    public static boolean drawGradient(Surface surface, Node node, String name, double opacity) {
         Node gradientNode = surface.gradients.get(name);
-        if (gradientNode == null) return false;
+        if (gradientNode == null)
+            return false;
 
         // Follow href chain
         String href = gradientNode.getHref();
@@ -96,7 +108,8 @@ public final class Defs {
         float lastOffset = 0;
 
         for (Node child : gradientNode.children) {
-            if (!"stop".equals(child.tag)) continue;
+            if (!"stop".equals(child.tag))
+                continue;
             float offset = (float) size(surface, child.get("offset"), null);
             if (child.get("offset", "").contains("%")) {
                 offset = offset; // already parsed as fraction by size()
@@ -104,15 +117,14 @@ public final class Defs {
             offset = Math.max(lastOffset, Math.min(1, offset));
             lastOffset = offset;
 
-            Colors.RGBA rgba = surface.mapColor(
-                child.get("stop-color", "black"),
-                parseDouble(child.get("stop-opacity", "1")) * opacity);
+            Colors.RGBA rgba = surface.mapColor(child.get("stop-color", "black"),
+                    parseDouble(child.get("stop-opacity", "1")) * opacity);
             stops.add(new float[]{offset});
-            colors.add(new Color((float) rgba.r(), (float) rgba.g(),
-                                 (float) rgba.b(), (float) rgba.a()));
+            colors.add(new Color((float) rgba.r(), (float) rgba.g(), (float) rgba.b(), (float) rgba.a()));
         }
 
-        if (stops.isEmpty()) return false;
+        if (stops.isEmpty())
+            return false;
 
         // Ensure we have at least 2 stops
         if (stops.size() == 1) {
@@ -133,7 +145,8 @@ public final class Defs {
                 y2 = (float) size(surface, gradientNode.get("y2", "0%"), "y");
             } else {
                 BoundingBox.Box bb = BoundingBox.calculate(surface, node);
-                if (bb == null || !BoundingBox.isNonEmpty(bb)) return false;
+                if (bb == null || !BoundingBox.isNonEmpty(bb))
+                    return false;
 
                 float pctX1 = parsePercent(gradientNode.get("x1", "0%"));
                 float pctY1 = parsePercent(gradientNode.get("y1", "0%"));
@@ -154,7 +167,8 @@ public final class Defs {
 
             float[] fractions = new float[stops.size()];
             Color[] colorArr = colors.toArray(new Color[0]);
-            for (int i = 0; i < stops.size(); i++) fractions[i] = stops.get(i)[0];
+            for (int i = 0; i < stops.size(); i++)
+                fractions[i] = stops.get(i)[0];
 
             // Fix duplicate fractions, clamp to [0,1], ensure strictly increasing
             for (int i = 1; i < fractions.length; i++) {
@@ -172,7 +186,7 @@ public final class Defs {
             }
 
             paint = new LinearGradientPaint(x1, y1, x2, y2, fractions, colorArr,
-                getSpreadMethod(gradientNode.get("spreadMethod", "pad")));
+                    getSpreadMethod(gradientNode.get("spreadMethod", "pad")));
 
         } else if ("radialGradient".equals(gradientNode.tag)) {
             float cx, cy, r, fx, fy;
@@ -185,7 +199,8 @@ public final class Defs {
                 fy = (float) size(surface, gradientNode.get("fy", String.valueOf(cy)), "y");
             } else {
                 BoundingBox.Box bb = BoundingBox.calculate(surface, node);
-                if (bb == null || !BoundingBox.isNonEmpty(bb)) return false;
+                if (bb == null || !BoundingBox.isNonEmpty(bb))
+                    return false;
 
                 float pctR = parsePercent(gradientNode.get("r", "50%"));
                 float pctCx = parsePercent(gradientNode.get("cx", "50%"));
@@ -201,7 +216,8 @@ public final class Defs {
                 fy = fyStr != null ? (float) (bb.minY() + parsePercent(fyStr) * bb.height()) : cy;
             }
 
-            if (r <= 0) return false;
+            if (r <= 0)
+                return false;
 
             // Ensure focus is within radius
             double dist = Math.hypot(fx - cx, fy - cy);
@@ -213,7 +229,8 @@ public final class Defs {
 
             float[] fractions = new float[stops.size()];
             Color[] colorArr = colors.toArray(new Color[0]);
-            for (int i = 0; i < stops.size(); i++) fractions[i] = stops.get(i)[0];
+            for (int i = 0; i < stops.size(); i++)
+                fractions[i] = stops.get(i)[0];
 
             for (int i = 1; i < fractions.length; i++) {
                 if (fractions[i] <= fractions[i - 1]) {
@@ -229,11 +246,8 @@ public final class Defs {
                 }
             }
 
-            paint = new RadialGradientPaint(
-                new Point2D.Float(cx, cy), r,
-                new Point2D.Float(fx, fy),
-                fractions, colorArr,
-                getSpreadMethod(gradientNode.get("spreadMethod", "pad")));
+            paint = new RadialGradientPaint(new Point2D.Float(cx, cy), r, new Point2D.Float(fx, fy), fractions,
+                    colorArr, getSpreadMethod(gradientNode.get("spreadMethod", "pad")));
         } else {
             return false;
         }
@@ -243,10 +257,10 @@ public final class Defs {
     }
 
     /** Draw a pattern. */
-    public static boolean drawPattern(Surface surface, Node node,
-                                      String name, double opacity) {
+    public static boolean drawPattern(Surface surface, Node node, String name, double opacity) {
         Node patternNode = surface.patterns.get(name);
-        if (patternNode == null) return false;
+        if (patternNode == null)
+            return false;
 
         // Follow href chain
         String href = patternNode.getHref();
@@ -265,7 +279,8 @@ public final class Defs {
             }
         }
 
-        if (patternNode.children.isEmpty()) return false;
+        if (patternNode.children.isEmpty())
+            return false;
 
         boolean userSpace = "userSpaceOnUse".equals(patternNode.get("patternUnits"));
 
@@ -277,7 +292,8 @@ public final class Defs {
             patH = size(surface, patternNode.get("height", "0"), "y");
         } else {
             BoundingBox.Box bb = BoundingBox.calculate(surface, node);
-            if (bb == null || !BoundingBox.isNonEmpty(bb)) return false;
+            if (bb == null || !BoundingBox.isNonEmpty(bb))
+                return false;
 
             double pctX = parsePercent(patternNode.get("x", "0"));
             double pctY = parsePercent(patternNode.get("y", "0"));
@@ -290,7 +306,8 @@ public final class Defs {
             patH = pctH * bb.height();
         }
 
-        if (patW <= 0 || patH <= 0) return false;
+        if (patW <= 0 || patH <= 0)
+            return false;
 
         // Render pattern content into a BufferedImage
         int imgW = Math.min(4096, Math.max(1, (int) Math.ceil(patW)));
@@ -313,7 +330,8 @@ public final class Defs {
         surface.contextWidth = patW;
         surface.contextHeight = patH;
 
-        // Translate so pattern children (in user space) are drawn relative to the tile origin
+        // Translate so pattern children (in user space) are drawn relative to the tile
+        // origin
         if (patX != 0 || patY != 0) {
             patG2d.translate(-patX, -patY);
         }
@@ -385,14 +403,17 @@ public final class Defs {
         double y = size(surface, node.get("y"), "y");
 
         String href = node.getHref();
-        if (href == null) return;
+        if (href == null)
+            return;
 
         String fragment = UrlHelper.parseUrl(href).fragment();
-        if (fragment == null) return;
+        if (fragment == null)
+            return;
 
         // Find referenced element by ID in the tree
         Node refNode = findNodeById(surface.rootNode, fragment);
-        if (refNode == null) return;
+        if (refNode == null)
+            return;
 
         var savedTransform = surface.context.getTransform();
         surface.context.translate(x, y);
@@ -417,7 +438,8 @@ public final class Defs {
     /** Handle filter (simplified - mainly feOffset). */
     public static void prepareFilter(Surface surface, Node node, String name) {
         Node filterNode = surface.filters.get(name);
-        if (filterNode == null) return;
+        if (filterNode == null)
+            return;
 
         for (Node child : filterNode.children) {
             if ("feOffset".equals(child.tag)) {
@@ -433,7 +455,7 @@ public final class Defs {
         // Simplified mask - just apply opacity
         if (opacity < 1) {
             surface.context.setComposite(
-                java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC_OVER, (float) opacity));
+                    java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC_OVER, (float) opacity));
         }
     }
 
@@ -467,11 +489,14 @@ public final class Defs {
     }
 
     static Node findNodeById(Node root, String id) {
-        if (root == null || id == null) return null;
-        if (id.equals(root.get("id"))) return root;
+        if (root == null || id == null)
+            return null;
+        if (id.equals(root.get("id")))
+            return root;
         for (Node child : root.children) {
             Node found = findNodeById(child, id);
-            if (found != null) return found;
+            if (found != null)
+                return found;
         }
         return null;
     }
@@ -485,7 +510,8 @@ public final class Defs {
     }
 
     private static float parsePercent(String s) {
-        if (s == null) return 0;
+        if (s == null)
+            return 0;
         s = s.strip();
         if (s.endsWith("%")) {
             return Float.parseFloat(s.substring(0, s.length() - 1)) / 100f;

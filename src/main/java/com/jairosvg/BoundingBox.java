@@ -3,17 +3,19 @@ package com.jairosvg;
 import static com.jairosvg.Helpers.*;
 
 /**
- * Bounding box calculations for SVG shapes and paths.
- * Port of CairoSVG bounding_box.py
+ * Bounding box calculations for SVG shapes and paths. Port of CairoSVG
+ * bounding_box.py
  */
 public final class BoundingBox {
 
     /** Bounding box as (minX, minY, width, height). */
-    public record Box(double minX, double minY, double width, double height) {}
+    public record Box(double minX, double minY, double width, double height) {
+    }
 
     public static final Box EMPTY = new Box(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, 0, 0);
 
-    private BoundingBox() {}
+    private BoundingBox() {
+    }
 
     public static Box calculate(Surface surface, Node node) {
         return switch (node.tag) {
@@ -64,9 +66,9 @@ public final class BoundingBox {
         String points = normalize(node.get("points", ""));
         Box box = EMPTY;
         while (!points.isBlank()) {
-            Object[] pt = pointWithRemainder(null, points);
-            box = extendBox(box, (double) pt[0], (double) pt[1]);
-            points = (String) pt[2];
+            ParsedPoint pt = pointWithRemainder(null, points);
+            box = extendBox(box, pt.x(), pt.y());
+            points = pt.remainder();
         }
         return box;
     }
@@ -93,20 +95,23 @@ public final class BoundingBox {
             try {
                 switch (letter) {
                     case "M", "L", "T", "m", "l", "t" -> {
-                        Object[] pt = pointWithRemainder(null, d);
-                        double x = (double) pt[0], y = (double) pt[1];
-                        d = (String) pt[2];
+                        ParsedPoint pt = pointWithRemainder(null, d);
+                        double x = pt.x(), y = pt.y();
+                        d = pt.remainder();
                         if ("m".equals(letter) || "l".equals(letter) || "t".equals(letter)) {
-                            x += px; y += py;
+                            x += px;
+                            y += py;
                         }
                         box = extendBox(box, x, y);
-                        px = x; py = y;
+                        px = x;
+                        py = y;
                     }
                     case "H", "h" -> {
                         String[] sp = (d + " ").split("\\s+", 2);
                         double x = Double.parseDouble(sp[0]);
                         d = sp[1];
-                        if ("h".equals(letter)) x += px;
+                        if ("h".equals(letter))
+                            x += px;
                         box = extendBox(box, x, py);
                         px = x;
                     }
@@ -114,51 +119,66 @@ public final class BoundingBox {
                         String[] sp = (d + " ").split("\\s+", 2);
                         double y = Double.parseDouble(sp[0]);
                         d = sp[1];
-                        if ("v".equals(letter)) y += py;
+                        if ("v".equals(letter))
+                            y += py;
                         box = extendBox(box, px, y);
                         py = y;
                     }
                     case "C", "c" -> {
-                        Object[] p1 = pointWithRemainder(null, d);
-                        Object[] p2 = pointWithRemainder(null, (String) p1[2]);
-                        Object[] p3 = pointWithRemainder(null, (String) p2[2]);
-                        d = (String) p3[2];
-                        double x1 = (double) p1[0], y1 = (double) p1[1];
-                        double x2 = (double) p2[0], y2 = (double) p2[1];
-                        double x = (double) p3[0], y = (double) p3[1];
+                        ParsedPoint p1 = pointWithRemainder(null, d);
+                        ParsedPoint p2 = pointWithRemainder(null, p1.remainder());
+                        ParsedPoint p3 = pointWithRemainder(null, p2.remainder());
+                        d = p3.remainder();
+                        double x1 = p1.x(), y1 = p1.y();
+                        double x2 = p2.x(), y2 = p2.y();
+                        double x = p3.x(), y = p3.y();
                         if ("c".equals(letter)) {
-                            x1 += px; y1 += py; x2 += px; y2 += py; x += px; y += py;
+                            x1 += px;
+                            y1 += py;
+                            x2 += px;
+                            y2 += py;
+                            x += px;
+                            y += py;
                         }
                         box = extendBox(box, x1, y1);
                         box = extendBox(box, x2, y2);
                         box = extendBox(box, x, y);
-                        px = x; py = y;
+                        px = x;
+                        py = y;
                     }
                     case "S", "s", "Q", "q" -> {
-                        Object[] p1 = pointWithRemainder(null, d);
-                        Object[] p2 = pointWithRemainder(null, (String) p1[2]);
-                        d = (String) p2[2];
-                        double x1 = (double) p1[0], y1 = (double) p1[1];
-                        double x = (double) p2[0], y = (double) p2[1];
+                        ParsedPoint p1 = pointWithRemainder(null, d);
+                        ParsedPoint p2 = pointWithRemainder(null, p1.remainder());
+                        d = p2.remainder();
+                        double x1 = p1.x(), y1 = p1.y();
+                        double x = p2.x(), y = p2.y();
                         if ("s".equals(letter) || "q".equals(letter)) {
-                            x1 += px; y1 += py; x += px; y += py;
+                            x1 += px;
+                            y1 += py;
+                            x += px;
+                            y += py;
                         }
                         box = extendBox(box, x1, y1);
                         box = extendBox(box, x, y);
-                        px = x; py = y;
+                        px = x;
+                        py = y;
                     }
                     case "A", "a" -> {
-                        Object[] rxy = pointWithRemainder(null, d);
-                        d = (String) rxy[2];
+                        ParsedPoint rxy = pointWithRemainder(null, d);
+                        d = rxy.remainder();
                         // Skip rotation, large-arc, sweep
                         String[] parts = (d + " ").split("\\s+", 4);
                         d = parts.length > 3 ? parts[3] : "";
-                        Object[] ep = pointWithRemainder(null, d);
-                        double x = (double) ep[0], y = (double) ep[1];
-                        d = (String) ep[2];
-                        if ("a".equals(letter)) { x += px; y += py; }
+                        ParsedPoint ep = pointWithRemainder(null, d);
+                        double x = ep.x(), y = ep.y();
+                        d = ep.remainder();
+                        if ("a".equals(letter)) {
+                            x += px;
+                            y += py;
+                        }
                         box = extendBox(box, x, y);
-                        px = x; py = y;
+                        px = x;
+                        py = y;
                     }
                     case "Z", "z" -> {
                         // close path, nothing to extend
@@ -196,7 +216,8 @@ public final class BoundingBox {
     }
 
     public static Box combine(Box a, Box b) {
-        if (b == null || !isValid(b)) return a;
+        if (b == null || !isValid(b))
+            return a;
         Box result = extendBox(a, b.minX, b.minY);
         return extendBox(result, b.minX + b.width, b.minY + b.height);
     }

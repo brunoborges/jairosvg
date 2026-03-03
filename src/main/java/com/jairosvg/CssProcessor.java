@@ -4,28 +4,35 @@ import java.util.*;
 import java.util.regex.*;
 
 /**
- * Minimal CSS parsing for SVG inline styles and stylesheets.
- * Port of CairoSVG css.py
+ * Minimal CSS parsing for SVG inline styles and stylesheets. Port of CairoSVG
+ * css.py
  */
 public final class CssProcessor {
 
-    private static final java.util.regex.Pattern COMMENT_PATTERN = java.util.regex.Pattern.compile("/\\*.*?\\*/", java.util.regex.Pattern.DOTALL);
+    private static final java.util.regex.Pattern COMMENT_PATTERN = java.util.regex.Pattern.compile("/\\*.*?\\*/",
+            java.util.regex.Pattern.DOTALL);
     private static final java.util.regex.Pattern IMPORT_PATTERN = java.util.regex.Pattern.compile("@import[^;]*;");
-    private static final java.util.regex.Pattern RULE_PATTERN = java.util.regex.Pattern.compile("([^{}]+)\\{([^}]*)\\}");
+    private static final java.util.regex.Pattern RULE_PATTERN = java.util.regex.Pattern
+            .compile("([^{}]+)\\{([^}]*)\\}");
     private static final java.util.regex.Pattern WHITESPACE = java.util.regex.Pattern.compile("\\s+");
     private static final java.util.regex.Pattern PSEUDO_ELEMENT_PATTERN = java.util.regex.Pattern.compile("::[\\w-]+");
     private static final java.util.regex.Pattern NOT_PATTERN = java.util.regex.Pattern.compile(":not\\(([^()]*)\\)");
-    private static final java.util.regex.Pattern FIRST_CHILD_PATTERN = java.util.regex.Pattern.compile(":first-child\\b");
+    private static final java.util.regex.Pattern FIRST_CHILD_PATTERN = java.util.regex.Pattern
+            .compile(":first-child\\b");
     private static final java.util.regex.Pattern LAST_CHILD_PATTERN = java.util.regex.Pattern.compile(":last-child\\b");
-    private static final java.util.regex.Pattern NTH_CHILD_PATTERN = java.util.regex.Pattern.compile(":nth-child\\(([^)]*)\\)");
-    private static final java.util.regex.Pattern NTH_CHILD_AN_B_PATTERN = java.util.regex.Pattern.compile("([+-]?\\d*)n([+-]\\d+)?");
-    private static final java.util.regex.Pattern PSEUDO_ATTR_PATTERN = java.util.regex.Pattern.compile(
-        "(\\w[\\w-]*)\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)')");
+    private static final java.util.regex.Pattern NTH_CHILD_PATTERN = java.util.regex.Pattern
+            .compile(":nth-child\\(([^)]*)\\)");
+    private static final java.util.regex.Pattern NTH_CHILD_AN_B_PATTERN = java.util.regex.Pattern
+            .compile("([+-]?\\d*)n([+-]\\d+)?");
+    private static final java.util.regex.Pattern PSEUDO_ATTR_PATTERN = java.util.regex.Pattern
+            .compile("(\\w[\\w-]*)\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)')");
 
-    private CssProcessor() {}
+    private CssProcessor() {
+    }
 
     /** A CSS declaration: (property-name, value). */
-    public record Declaration(String name, String value) {}
+    public record Declaration(String name, String value) {
+    }
 
     /** Parse inline style declarations into normal and important lists. */
     public static List<Declaration>[] parseDeclarations(String input) {
@@ -40,14 +47,17 @@ public final class CssProcessor {
 
         for (String part : input.split(";")) {
             part = part.strip();
-            if (part.isEmpty()) continue;
+            if (part.isEmpty())
+                continue;
             int colonIdx = part.indexOf(':');
-            if (colonIdx < 0) continue;
+            if (colonIdx < 0)
+                continue;
 
             String name = part.substring(0, colonIdx).strip().toLowerCase();
             String value = part.substring(colonIdx + 1).strip();
 
-            if (name.startsWith("-")) continue; // Skip vendor prefixes
+            if (name.startsWith("-"))
+                continue; // Skip vendor prefixes
 
             boolean isImportant = false;
             if (value.toLowerCase().endsWith("!important")) {
@@ -71,11 +81,11 @@ public final class CssProcessor {
     }
 
     /**
-     * Extract external stylesheets referenced via {@code <?xml-stylesheet?>} processing instructions.
-     * Only loads stylesheets with {@code type="text/css"}.
+     * Extract external stylesheets referenced via {@code <?xml-stylesheet?>}
+     * processing instructions. Only loads stylesheets with {@code type="text/css"}.
      */
-    public static List<StyleRule> parseExternalStylesheets(org.w3c.dom.Document doc,
-            UrlHelper.UrlFetcher fetcher, String baseUrl) {
+    public static List<StyleRule> parseExternalStylesheets(org.w3c.dom.Document doc, UrlHelper.UrlFetcher fetcher,
+            String baseUrl) {
         List<StyleRule> rules = new ArrayList<>();
         var childNodes = doc.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
@@ -113,7 +123,8 @@ public final class CssProcessor {
     /** Parse pseudo-attributes from a processing instruction data string. */
     static Map<String, String> parsePseudoAttributes(String data) {
         Map<String, String> attrs = new LinkedHashMap<>();
-        if (data == null || data.isEmpty()) return attrs;
+        if (data == null || data.isEmpty())
+            return attrs;
         Matcher m = PSEUDO_ATTR_PATTERN.matcher(data);
         while (m.find()) {
             String name = m.group(1);
@@ -130,14 +141,16 @@ public final class CssProcessor {
     }
 
     /** A CSS rule with selector and declarations. */
-    public record StyleRule(String selector, List<Declaration> declarations, boolean important) {}
+    public record StyleRule(String selector, List<Declaration> declarations, boolean important) {
+    }
 
     private static void extractStyleElements(org.w3c.dom.Element element, List<StyleRule> rules) {
         var childNodes = element.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
             if (childNodes.item(i) instanceof org.w3c.dom.Element child) {
                 String localName = child.getLocalName();
-                if (localName == null) localName = child.getTagName();
+                if (localName == null)
+                    localName = child.getTagName();
                 if ("style".equals(localName)) {
                     String cssText = child.getTextContent();
                     if (cssText != null) {
@@ -185,37 +198,44 @@ public final class CssProcessor {
         Matcher notMatcher = NOT_PATTERN.matcher(selector);
         while (notMatcher.find()) {
             String negated = notMatcher.group(1).strip();
-            if (negated.isEmpty() || matchesSelector(element, negated)) return false;
+            if (negated.isEmpty() || matchesSelector(element, negated))
+                return false;
             selector = notMatcher.replaceFirst("").strip();
             notMatcher = NOT_PATTERN.matcher(selector);
         }
 
         if (FIRST_CHILD_PATTERN.matcher(selector).find()) {
-            if (!isFirstChild(element)) return false;
+            if (!isFirstChild(element))
+                return false;
             selector = FIRST_CHILD_PATTERN.matcher(selector).replaceAll("").strip();
         }
 
         if (LAST_CHILD_PATTERN.matcher(selector).find()) {
-            if (!isLastChild(element)) return false;
+            if (!isLastChild(element))
+                return false;
             selector = LAST_CHILD_PATTERN.matcher(selector).replaceAll("").strip();
         }
 
         Matcher nthMatcher = NTH_CHILD_PATTERN.matcher(selector);
         while (nthMatcher.find()) {
             String nthExpr = nthMatcher.group(1).strip();
-            if (!matchesNthChild(element, nthExpr)) return false;
+            if (!matchesNthChild(element, nthExpr))
+                return false;
             selector = nthMatcher.replaceFirst("").strip();
             nthMatcher = NTH_CHILD_PATTERN.matcher(selector);
         }
 
-        if (selector.isEmpty()) return true;
+        if (selector.isEmpty())
+            return true;
 
         // Universal selector
-        if ("*".equals(selector)) return true;
+        if ("*".equals(selector))
+            return true;
 
         // Type selector
         String localName = element.getLocalName();
-        if (localName == null) localName = element.getTagName();
+        if (localName == null)
+            localName = element.getTagName();
 
         // ID selector
         if (selector.startsWith("#")) {
@@ -228,7 +248,8 @@ public final class CssProcessor {
             String className = element.getAttribute("class");
             if (className != null) {
                 for (String cls : WHITESPACE.split(className)) {
-                    if (selector.substring(1).equals(cls)) return true;
+                    if (selector.substring(1).equals(cls))
+                        return true;
                 }
             }
             return false;
@@ -239,11 +260,14 @@ public final class CssProcessor {
             int dotIdx = selector.indexOf('.');
             String type = selector.substring(0, dotIdx);
             String cls = selector.substring(dotIdx + 1);
-            if (!type.isEmpty() && !type.equals(localName)) return false;
+            if (!type.isEmpty() && !type.equals(localName))
+                return false;
             String className = element.getAttribute("class");
-            if (className == null) return false;
+            if (className == null)
+                return false;
             for (String c : WHITESPACE.split(className)) {
-                if (cls.equals(c)) return true;
+                if (cls.equals(c))
+                    return true;
             }
             return false;
         }
@@ -252,7 +276,8 @@ public final class CssProcessor {
             int hashIdx = selector.indexOf('#');
             String type = selector.substring(0, hashIdx);
             String id = selector.substring(hashIdx + 1);
-            if (!type.isEmpty() && !type.equals(localName)) return false;
+            if (!type.isEmpty() && !type.equals(localName))
+                return false;
             return id.equals(element.getAttribute("id"));
         }
 
@@ -262,7 +287,8 @@ public final class CssProcessor {
 
     private static boolean isFirstChild(org.w3c.dom.Element element) {
         var parent = element.getParentNode();
-        if (parent == null) return false;
+        if (parent == null)
+            return false;
         var siblings = parent.getChildNodes();
         for (int i = 0; i < siblings.getLength(); i++) {
             if (siblings.item(i) instanceof org.w3c.dom.Element sibling) {
@@ -274,7 +300,8 @@ public final class CssProcessor {
 
     private static boolean isLastChild(org.w3c.dom.Element element) {
         var parent = element.getParentNode();
-        if (parent == null) return false;
+        if (parent == null)
+            return false;
         var siblings = parent.getChildNodes();
         for (int i = siblings.getLength() - 1; i >= 0; i--) {
             if (siblings.item(i) instanceof org.w3c.dom.Element sibling) {
@@ -286,21 +313,26 @@ public final class CssProcessor {
 
     private static boolean matchesNthChild(org.w3c.dom.Element element, String expr) {
         var parent = element.getParentNode();
-        if (parent == null) return false;
+        if (parent == null)
+            return false;
 
         int index = 0;
         var siblings = parent.getChildNodes();
         for (int i = 0; i < siblings.getLength(); i++) {
             if (siblings.item(i) instanceof org.w3c.dom.Element sibling) {
                 index++;
-                if (sibling == element) break;
+                if (sibling == element)
+                    break;
             }
         }
-        if (index == 0) return false;
+        if (index == 0)
+            return false;
 
         String normalized = WHITESPACE.matcher(expr.toLowerCase(Locale.ROOT)).replaceAll("");
-        if ("odd".equals(normalized)) return index % 2 == 1;
-        if ("even".equals(normalized)) return index % 2 == 0;
+        if ("odd".equals(normalized))
+            return index % 2 == 1;
+        if ("even".equals(normalized))
+            return index % 2 == 0;
 
         try {
             return index == Integer.parseInt(normalized);
@@ -309,7 +341,8 @@ public final class CssProcessor {
         }
 
         Matcher m = NTH_CHILD_AN_B_PATTERN.matcher(normalized);
-        if (!m.matches()) return false;
+        if (!m.matches())
+            return false;
 
         String aStr = m.group(1);
         int a;
@@ -321,16 +354,34 @@ public final class CssProcessor {
             a = Integer.parseInt(aStr);
         }
         int b = m.group(2) == null ? 0 : Integer.parseInt(m.group(2));
-        if (a == 0) return index == b;
+        if (a == 0)
+            return index == b;
 
         int diff = index - b;
-        if (diff % a != 0) return false;
+        if (diff % a != 0)
+            return false;
         return diff / a >= 0;
     }
 
+    /** Both normal and important declarations from a single pass. */
+    public record MatchResult(List<Declaration> normal, List<Declaration> important) {
+    }
+
+    /** Get all matching CSS declarations in a single pass through the rules. */
+    public static MatchResult getAllMatchingDeclarations(org.w3c.dom.Element element, List<StyleRule> rules) {
+        List<Declaration> normal = new ArrayList<>();
+        List<Declaration> important = new ArrayList<>();
+        for (StyleRule rule : rules) {
+            if (matchesSelector(element, rule.selector())) {
+                (rule.important() ? important : normal).addAll(rule.declarations());
+            }
+        }
+        return new MatchResult(normal, important);
+    }
+
     /** Get CSS declarations that apply to this element from a list of rules. */
-    public static List<Declaration> getMatchingDeclarations(
-            org.w3c.dom.Element element, List<StyleRule> rules, boolean important) {
+    public static List<Declaration> getMatchingDeclarations(org.w3c.dom.Element element, List<StyleRule> rules,
+            boolean important) {
         List<Declaration> result = new ArrayList<>();
         for (StyleRule rule : rules) {
             if (rule.important() == important && matchesSelector(element, rule.selector())) {

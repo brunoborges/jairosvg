@@ -153,34 +153,31 @@ class SvgFeatureTest {
         int endX = startX + (int) Math.ceil(font.getStringBounds("....", frc).getWidth());
 
         String plainSvg = """
-            <svg xmlns="http://www.w3.org/2000/svg" width="260" height="120">
-              <rect width="260" height="120" fill="white"/>
-              <text x="20" y="80" font-size="48" fill="black">....</text>
-            </svg>
-            """;
-        BufferedImage plainImage = ImageIO.read(new ByteArrayInputStream(
-            JairoSVG.svg2png(plainSvg.getBytes(StandardCharsets.UTF_8))));
+                <svg xmlns="http://www.w3.org/2000/svg" width="260" height="120">
+                  <rect width="260" height="120" fill="white"/>
+                  <text x="20" y="80" font-size="48" fill="black">....</text>
+                </svg>
+                """;
+        BufferedImage plainImage = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(plainSvg.getBytes(StandardCharsets.UTF_8))));
 
         String[] decorations = {"underline", "overline", "line-through"};
-        int[] expectedRows = {
-            (int) Math.round(baselineY + metrics.getUnderlineOffset()),
-            (int) Math.round(baselineY - metrics.getAscent()),
-            (int) Math.round(baselineY + metrics.getStrikethroughOffset())
-        };
+        int[] expectedRows = {(int) Math.round(baselineY + metrics.getUnderlineOffset()),
+                (int) Math.round(baselineY - metrics.getAscent()),
+                (int) Math.round(baselineY + metrics.getStrikethroughOffset())};
 
         for (int i = 0; i < decorations.length; i++) {
             String svg = """
-                <svg xmlns="http://www.w3.org/2000/svg" width="260" height="120">
-                  <rect width="260" height="120" fill="white"/>
-                  <text x="20" y="80" font-size="48" fill="black" text-decoration="%s">....</text>
-                </svg>
-                """.formatted(decorations[i]);
-            BufferedImage decoratedImage = ImageIO.read(new ByteArrayInputStream(
-                JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
+                    <svg xmlns="http://www.w3.org/2000/svg" width="260" height="120">
+                      <rect width="260" height="120" fill="white"/>
+                      <text x="20" y="80" font-size="48" fill="black" text-decoration="%s">....</text>
+                    </svg>
+                    """.formatted(decorations[i]);
+            BufferedImage decoratedImage = ImageIO
+                    .read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
             int plainPixels = countDarkPixelsInBand(plainImage, startX, endX, expectedRows[i], 2);
             int decoratedPixels = countDarkPixelsInBand(decoratedImage, startX, endX, expectedRows[i], 2);
-            assertTrue(decoratedPixels > plainPixels + 8,
-                "Expected visible " + decorations[i] + " decoration line");
+            assertTrue(decoratedPixels > plainPixels + 8, "Expected visible " + decorations[i] + " decoration line");
         }
     }
 

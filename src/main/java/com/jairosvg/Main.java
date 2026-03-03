@@ -1,27 +1,16 @@
 package com.jairosvg;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
 /**
- * Command-line interface to JairoSVG.
- * Port of CairoSVG __main__.py
+ * Command-line interface to JairoSVG. Port of CairoSVG __main__.py
  */
 public final class Main {
 
-    private static final Map<String, String> FORMAT_EXTENSIONS = Map.of(
-        "png", "PNG",
-        "jpeg", "JPEG",
-        "jpg", "JPEG",
-        "tiff", "TIFF",
-        "tif", "TIFF",
-        "pdf", "PDF",
-        "ps", "PS",
-        "eps", "EPS",
-        "svg", "SVG"
-    );
+    private static final Map<String, String> FORMAT_EXTENSIONS = Map.of("png", "PNG", "jpeg", "JPEG", "jpg", "JPEG",
+            "tiff", "TIFF", "tif", "TIFF", "pdf", "PDF", "ps", "PS", "eps", "EPS", "svg", "SVG");
 
     public static void main(String[] args) throws Exception {
         if (args.length == 0 || "--help".equals(args[0]) || "-h".equals(args[0])) {
@@ -90,18 +79,19 @@ public final class Main {
         }
 
         // Build conversion
-        var builder = JairoSVG.builder()
-            .dpi(dpi)
-            .scale(scale)
-            .unsafe(unsafe)
-            .negateColors(negateColors)
-            .invertImages(invertImages);
+        var builder = JairoSVG.builder().dpi(dpi).scale(scale).unsafe(unsafe).negateColors(negateColors)
+                .invertImages(invertImages);
 
-        if (background != null) builder.backgroundColor(background);
-        if (width != null) builder.parentWidth(width);
-        if (height != null) builder.parentHeight(height);
-        if (outputWidth != null) builder.outputWidth(outputWidth);
-        if (outputHeight != null) builder.outputHeight(outputHeight);
+        if (background != null)
+            builder.backgroundColor(background);
+        if (width != null)
+            builder.parentWidth(width);
+        if (height != null)
+            builder.parentHeight(height);
+        if (outputWidth != null)
+            builder.outputWidth(outputWidth);
+        if (outputHeight != null)
+            builder.outputHeight(outputHeight);
 
         // Read input
         if ("-".equals(input)) {
@@ -138,25 +128,25 @@ public final class Main {
 
     private static void printUsage() {
         System.out.println("""
-            JairoSVG %s - Convert SVG files to other formats
+                JairoSVG %s - Convert SVG files to other formats
 
-            Usage: jairosvg [options] input.svg
+                Usage: jairosvg [options] input.svg
 
-            Options:
-              -o, --output FILE      Output filename (default: stdout)
-              -f, --format FORMAT    Output format: png, jpeg, tiff, pdf, ps, eps, svg
-              -d, --dpi DPI          DPI ratio (default: 96)
-              -W, --width PIXELS     Parent container width
-              -H, --height PIXELS    Parent container height
-              -s, --scale FACTOR     Output scaling factor (default: 1)
-              -b, --background COLOR Output background color
-              -n, --negate-colors    Negate vector colors
-              -i, --invert-images    Invert raster image colors
-              -u, --unsafe           Allow external file access and XML entities
-              --output-width PIXELS  Desired output width
-              --output-height PIXELS Desired output height
-              -v, --version          Show version
-              -h, --help             Show this help
-            """.formatted(JairoSVG.VERSION));
+                Options:
+                  -o, --output FILE      Output filename (default: stdout)
+                  -f, --format FORMAT    Output format: png, jpeg, tiff, pdf, ps, eps, svg
+                  -d, --dpi DPI          DPI ratio (default: 96)
+                  -W, --width PIXELS     Parent container width
+                  -H, --height PIXELS    Parent container height
+                  -s, --scale FACTOR     Output scaling factor (default: 1)
+                  -b, --background COLOR Output background color
+                  -n, --negate-colors    Negate vector colors
+                  -i, --invert-images    Invert raster image colors
+                  -u, --unsafe           Allow external file access and XML entities
+                  --output-width PIXELS  Desired output width
+                  --output-height PIXELS Desired output height
+                  -v, --version          Show version
+                  -h, --help             Show this help
+                """.formatted(JairoSVG.VERSION));
     }
 }

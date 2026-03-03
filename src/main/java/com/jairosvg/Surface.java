@@ -12,19 +12,19 @@ import java.util.function.UnaryOperator;
 import static com.jairosvg.Helpers.*;
 
 /**
- * Abstract base surface for SVG rendering using Java2D.
- * Port of CairoSVG surface.py
+ * Abstract base surface for SVG rendering using Java2D. Port of CairoSVG
+ * surface.py
  */
 public class Surface {
 
-    private static final Set<String> PATH_TAGS = Set.of(
-        "circle", "ellipse", "line", "path", "polygon", "polyline", "rect");
+    private static final Set<String> PATH_TAGS = Set.of("circle", "ellipse", "line", "path", "polygon", "polyline",
+            "rect");
 
-    private static final Set<String> INVISIBLE_TAGS = Set.of(
-        "clipPath", "filter", "font", "font-face", "glyph", "linearGradient",
-        "marker", "mask", "missing-glyph", "pattern", "radialGradient", "symbol");
+    private static final Set<String> INVISIBLE_TAGS = Set.of("clipPath", "filter", "font", "font-face", "glyph",
+            "linearGradient", "marker", "mask", "missing-glyph", "pattern", "radialGradient", "symbol");
 
     private static final java.util.regex.Pattern WHITESPACE = java.util.regex.Pattern.compile("\\s+");
+    private static final float[] NO_DASH = new float[0];
 
     // Rendering state
     public Graphics2D context;
@@ -60,15 +60,17 @@ public class Surface {
     private UnaryOperator<Colors.RGBA> mapRgba;
     private UnaryOperator<BufferedImage> mapImage;
 
-    protected Surface() {}
+    // Stroke caches
+    private final Map<String, float[]> dashArrayCache = new HashMap<>();
+    private final Map<String, BasicStroke> strokeCache = new HashMap<>();
+
+    protected Surface() {
+    }
 
     /** Initialize the surface. */
-    public void init(Node tree, OutputStream output, double dpi,
-                     Surface parentSurface, Double parentWidth, Double parentHeight,
-                     double scale, Double outputWidth, Double outputHeight,
-                     String backgroundColor,
-                     UnaryOperator<Colors.RGBA> mapRgba,
-                     UnaryOperator<BufferedImage> mapImage) {
+    public void init(Node tree, OutputStream output, double dpi, Surface parentSurface, Double parentWidth,
+            Double parentHeight, double scale, Double outputWidth, Double outputHeight, String backgroundColor,
+            UnaryOperator<Colors.RGBA> mapRgba, UnaryOperator<BufferedImage> mapImage) {
 
         this.output = output;
         this.dpi = dpi;
@@ -102,10 +104,12 @@ public class Surface {
             w = outputWidth;
             h = outputHeight;
         } else if (outputWidth != null) {
-            if (w > 0) h *= outputWidth / w;
+            if (w > 0)
+                h *= outputWidth / w;
             w = outputWidth;
         } else if (outputHeight != null) {
-            if (h > 0) w *= outputHeight / h;
+            if (h > 0)
+                w *= outputHeight / h;
             h = outputHeight;
         } else {
             w *= scale;
@@ -126,8 +130,7 @@ public class Surface {
 
         if (backgroundColor != null) {
             Colors.RGBA bg = Colors.color(backgroundColor);
-            context.setColor(new Color((float) bg.r(), (float) bg.g(),
-                                       (float) bg.b(), (float) bg.a()));
+            context.setColor(new Color((float) bg.r(), (float) bg.g(), (float) bg.b(), (float) bg.a()));
             context.fillRect(0, 0, image.getWidth(), image.getHeight());
         }
 
@@ -196,10 +199,11 @@ public class Surface {
             Defs.parseAllDefs(this, node);
         }
 
-        if ("defs".equals(node.tag)) return;
+        if ("defs".equals(node.tag))
+            return;
 
-        if ((node.has("width") && size(this, node.get("width")) == 0) ||
-            (node.has("height") && size(this, node.get("height")) == 0)) {
+        if ((node.has("width") && size(this, node.get("width")) == 0)
+                || (node.has("height") && size(this, node.get("height")) == 0)) {
             return;
         }
 
@@ -336,21 +340,30 @@ public class Surface {
                 String dashStr = node.get("stroke-dasharray", "").strip();
                 float[] dashArray = null;
                 if (!dashStr.isEmpty() && !"none".equals(dashStr)) {
-                    String[] parts = WHITESPACE.split(normalize(dashStr));
-                    dashArray = new float[parts.length];
-                    float sum = 0;
-                    for (int i = 0; i < parts.length; i++) {
-                        dashArray[i] = (float) size(this, parts[i]);
-                        sum += dashArray[i];
+                    float[] cached = dashArrayCache.computeIfAbsent(dashStr, k -> {
+                        String[] parts = WHITESPACE.split(normalize(k));
+                        float[] arr = new float[parts.length];
+                        float sum = 0;
+                        for (int i = 0; i < parts.length; i++) {
+                            arr[i] = (float) size(Surface.this, parts[i]);
+                            sum += arr[i];
+                        }
+                        return sum == 0 ? NO_DASH : arr;
+                    });
+                    if (cached != NO_DASH) {
+                        dashArray = cached;
                     }
-                    if (sum == 0) dashArray = null;
                 }
 
                 float dashOffset = (float) size(this, node.get("stroke-dashoffset"));
 
-                BasicStroke stroke = dashArray != null
-                    ? new BasicStroke(strokeWidth, cap, join, miterLimit, dashArray, dashOffset)
-                    : new BasicStroke(strokeWidth, cap, join, miterLimit);
+                String strokeKey = strokeWidth + "|" + cap + "|" + join + "|" + miterLimit + "|" + dashStr + "|"
+                        + dashOffset;
+                final float[] dashForStroke = dashArray;
+                BasicStroke stroke = strokeCache.computeIfAbsent(strokeKey,
+                        k -> dashForStroke != null
+                                ? new BasicStroke(strokeWidth, cap, join, miterLimit, dashForStroke, dashOffset)
+                                : new BasicStroke(strokeWidth, cap, join, miterLimit));
 
                 context.setStroke(stroke);
                 context.draw(path);
@@ -400,8 +413,7 @@ public class Surface {
             double y = size(this, node.get("y"), "y");
             double w = size(this, node.get("width"), "x");
             double h = size(this, node.get("height"), "y");
-            context.clip(new Rectangle2D.Double(x + left, y + top,
-                w - left - right, h - top - bottom));
+            context.clip(new Rectangle2D.Double(x + left, y + top, w - left - right, h - top - bottom));
         }
 
         // Clip path
@@ -445,7 +457,8 @@ public class Surface {
     }
 
     private static int getLineCap(String cap) {
-        if (cap == null) return BasicStroke.CAP_BUTT;
+        if (cap == null)
+            return BasicStroke.CAP_BUTT;
         return switch (cap) {
             case "round" -> BasicStroke.CAP_ROUND;
             case "square" -> BasicStroke.CAP_SQUARE;
@@ -454,7 +467,8 @@ public class Surface {
     }
 
     private static int getLineJoin(String join) {
-        if (join == null) return BasicStroke.JOIN_MITER;
+        if (join == null)
+            return BasicStroke.JOIN_MITER;
         return switch (join) {
             case "round" -> BasicStroke.JOIN_ROUND;
             case "bevel" -> BasicStroke.JOIN_BEVEL;
@@ -464,16 +478,17 @@ public class Surface {
 
     /** Convert RGBA to a clamped AWT Color. */
     static Color toAwtColor(Colors.RGBA c) {
-        return new Color(
-            (float) Math.max(0, Math.min(1, c.r())),
-            (float) Math.max(0, Math.min(1, c.g())),
-            (float) Math.max(0, Math.min(1, c.b())),
-            (float) Math.max(0, Math.min(1, c.a())));
+        return new Color((float) Math.max(0, Math.min(1, c.r())), (float) Math.max(0, Math.min(1, c.g())),
+                (float) Math.max(0, Math.min(1, c.b())), (float) Math.max(0, Math.min(1, c.a())));
     }
 
     private static double parseDoubleOr(String s, double def) {
-        if (s == null) return def;
-        try { return Double.parseDouble(s); }
-        catch (NumberFormatException e) { return def; }
+        if (s == null)
+            return def;
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            return def;
+        }
     }
 }

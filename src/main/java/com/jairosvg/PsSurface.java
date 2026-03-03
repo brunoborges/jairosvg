@@ -1,23 +1,21 @@
 package com.jairosvg;
 
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.print.*;
 import java.io.IOException;
-import java.io.OutputStream;
 
 import javax.print.*;
 import javax.print.attribute.*;
 
 /**
- * PostScript output surface.
- * Uses Java's printing API to generate PS output.
+ * PostScript output surface. Uses Java's printing API to generate PS output.
  */
 public class PsSurface extends Surface {
 
     private boolean eps = false;
 
-    public PsSurface() {}
+    public PsSurface() {
+    }
 
     public PsSurface(boolean eps) {
         this.eps = eps;
@@ -26,7 +24,8 @@ public class PsSurface extends Surface {
     @Override
     public void finish() throws IOException {
         super.finish();
-        if (output == null || image == null) return;
+        if (output == null || image == null)
+            return;
 
         // Use Java's print API to render to PostScript
         PrinterJob job = PrinterJob.getPrinterJob();
@@ -38,7 +37,8 @@ public class PsSurface extends Surface {
         pf.setPaper(paper);
 
         job.setPrintable((graphics, pageFormat, pageIndex) -> {
-            if (pageIndex > 0) return Printable.NO_SUCH_PAGE;
+            if (pageIndex > 0)
+                return Printable.NO_SUCH_PAGE;
             Graphics2D g2d = (Graphics2D) graphics;
             g2d.drawImage(image, 0, 0, null);
             return Printable.PAGE_EXISTS;
@@ -47,8 +47,8 @@ public class PsSurface extends Surface {
         // Create a PostScript stream
         DocFlavor flavor = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
         String mimeType = eps ? "application/postscript" : "application/postscript";
-        StreamPrintServiceFactory[] factories =
-            StreamPrintServiceFactory.lookupStreamPrintServiceFactories(flavor, mimeType);
+        StreamPrintServiceFactory[] factories = StreamPrintServiceFactory.lookupStreamPrintServiceFactories(flavor,
+                mimeType);
 
         if (factories.length > 0) {
             try {

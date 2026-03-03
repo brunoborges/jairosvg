@@ -7,10 +7,13 @@ import java.nio.file.Path;
 import java.util.function.UnaryOperator;
 
 /**
- * JairoSVG - A Java port of CairoSVG.
- * SVG 1.1 to PNG, PDF, PS and SVG converter.
+ * JairoSVG - A Java port of CairoSVG. SVG 1.1 to PNG, PDF, PS and SVG
+ * converter.
  *
- * <p>Usage:</p>
+ * <p>
+ * Usage:
+ * </p>
+ *
  * <pre>{@code
  * // Convert SVG to PNG bytes
  * byte[] png = JairoSVG.svg2png(svgBytes);
@@ -19,19 +22,15 @@ import java.util.function.UnaryOperator;
  * JairoSVG.svg2pdf(Path.of("input.svg"), Path.of("output.pdf"));
  *
  * // Convert with options
- * byte[] png = JairoSVG.builder()
- *     .fromBytes(svgBytes)
- *     .dpi(150)
- *     .scale(2)
- *     .backgroundColor("#ffffff")
- *     .toPng();
+ * byte[] png = JairoSVG.builder().fromBytes(svgBytes).dpi(150).scale(2).backgroundColor("#ffffff").toPng();
  * }</pre>
  */
 public final class JairoSVG {
 
     public static final String VERSION = "1.0.0";
 
-    private JairoSVG() {}
+    private JairoSVG() {
+    }
 
     // ---- Simple API ----
 
@@ -98,7 +97,8 @@ public final class JairoSVG {
         private Double outputWidth;
         private Double outputHeight;
 
-        ConversionBuilder() {}
+        ConversionBuilder() {
+        }
 
         public ConversionBuilder fromBytes(byte[] svgBytes) {
             this.bytestring = svgBytes;
@@ -260,10 +260,8 @@ public final class JairoSVG {
             UnaryOperator<Colors.RGBA> colorMapper = negateColors ? Colors::negateColor : null;
             // invertImages handling would require a BufferedImage mapper
 
-            surface.init(tree, out, dpi, null,
-                parentWidth, parentHeight, scale,
-                outputWidth, outputHeight,
-                backgroundColor, colorMapper, null);
+            surface.init(tree, out, dpi, null, parentWidth, parentHeight, scale, outputWidth, outputHeight,
+                    backgroundColor, colorMapper, null);
         }
 
         private Node parseInput() throws Exception {
@@ -276,7 +274,7 @@ public final class JairoSVG {
             }
             if (data == null) {
                 throw new IllegalArgumentException(
-                    "No input. Use fromBytes(), fromFile(), fromUrl(), or fromStream().");
+                        "No input. Use fromBytes(), fromFile(), fromUrl(), or fromStream().");
             }
             return Node.parseTree(data, this.url, unsafe);
         }

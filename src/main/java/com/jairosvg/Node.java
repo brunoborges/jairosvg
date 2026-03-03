@@ -13,8 +13,8 @@ import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
 /**
- * SVG Node with dict-like properties and children.
- * Port of CairoSVG parser.py (Node and Tree classes).
+ * SVG Node with dict-like properties and children. Port of CairoSVG parser.py
+ * (Node and Tree classes).
  */
 public class Node {
 
@@ -33,17 +33,12 @@ public class Node {
         UNSAFE_FACTORY.setNamespaceAware(true);
     }
 
-    private static final Set<String> NOT_INHERITED_ATTRIBUTES = Set.of(
-        "clip", "clip-path", "display", "filter", "height", "id",
-        "mask", "opacity", "overflow", "rotate", "stop-color", "stop-opacity",
-        "style", "transform", "transform-origin", "viewBox", "width",
-        "x", "y", "dx", "dy",
-        "{http://www.w3.org/1999/xlink}href", "href"
-    );
+    private static final Set<String> NOT_INHERITED_ATTRIBUTES = Set.of("clip", "clip-path", "display", "filter",
+            "height", "id", "mask", "opacity", "overflow", "rotate", "stop-color", "stop-opacity", "style", "transform",
+            "transform-origin", "viewBox", "width", "x", "y", "dx", "dy", "{http://www.w3.org/1999/xlink}href", "href");
 
-    private static final Set<String> COLOR_ATTRIBUTES = Set.of(
-        "fill", "flood-color", "lighting-color", "stop-color", "stroke"
-    );
+    private static final Set<String> COLOR_ATTRIBUTES = Set.of("fill", "flood-color", "lighting-color", "stop-color",
+            "stroke");
 
     public String tag;
     public String text;
@@ -61,12 +56,16 @@ public class Node {
     private final Map<String, String> attributes = new LinkedHashMap<>();
     private List<CssProcessor.StyleRule> styleRules;
 
-    /** Lightweight constructor for programmatic node creation (e.g. SVG font glyph parsing). */
-    Node() {}
+    /**
+     * Lightweight constructor for programmatic node creation (e.g. SVG font glyph
+     * parsing).
+     */
+    Node() {
+    }
 
     /** Create a Node from a DOM Element. */
-    public Node(Element element, Node parent, List<CssProcessor.StyleRule> styleRules,
-                UrlHelper.UrlFetcher urlFetcher, boolean unsafe) {
+    public Node(Element element, Node parent, List<CssProcessor.StyleRule> styleRules, UrlHelper.UrlFetcher urlFetcher,
+            boolean unsafe) {
         this.xmlTree = element;
         this.urlFetcher = urlFetcher;
         this.unsafe = unsafe;
@@ -77,7 +76,8 @@ public class Node {
         if (nsUri == null || "http://www.w3.org/2000/svg".equals(nsUri) || nsUri.isEmpty()) {
             this.tag = element.getLocalName() != null ? element.getLocalName() : element.getTagName();
         } else {
-            this.tag = "{" + nsUri + "}" + (element.getLocalName() != null ? element.getLocalName() : element.getTagName());
+            this.tag = "{" + nsUri + "}"
+                    + (element.getLocalName() != null ? element.getLocalName() : element.getTagName());
         }
 
         this.text = getDirectText(element);
@@ -98,17 +98,17 @@ public class Node {
         for (int i = 0; i < attrs.getLength(); i++) {
             var attr = attrs.item(i);
             String name = attr.getNodeName();
-            if (name.startsWith("xmlns")) continue;
+            if (name.startsWith("xmlns"))
+                continue;
             this.attributes.put(name, attr.getNodeValue());
         }
 
-        // Apply CSS rules from stylesheets (non-important first, important after inline styles)
-        List<CssProcessor.Declaration> normalDecls = null;
-        List<CssProcessor.Declaration> importantDecls = null;
+        // Apply CSS rules from stylesheets (non-important first, important after inline
+        // styles)
+        CssProcessor.MatchResult matchResult = null;
         if (styleRules != null) {
-            normalDecls = CssProcessor.getMatchingDeclarations(element, styleRules, false);
-            importantDecls = CssProcessor.getMatchingDeclarations(element, styleRules, true);
-            for (var decl : normalDecls) {
+            matchResult = CssProcessor.getAllMatchingDeclarations(element, styleRules);
+            for (var decl : matchResult.normal()) {
                 this.attributes.put(decl.name(), decl.value());
             }
         }
@@ -126,16 +126,17 @@ public class Node {
         }
 
         // Apply important CSS rules (override inline styles)
-        if (importantDecls != null) {
-            for (var decl : importantDecls) {
+        if (matchResult != null) {
+            for (var decl : matchResult.important()) {
                 this.attributes.put(decl.name(), decl.value());
             }
         }
 
         // Replace currentColor
+        String currentColorValue = get("color", "black");
         for (String attr : COLOR_ATTRIBUTES) {
             if ("currentColor".equals(this.attributes.get(attr))) {
-                this.attributes.put(attr, get("color", "black"));
+                this.attributes.put(attr, currentColorValue);
             }
         }
 
@@ -166,7 +167,8 @@ public class Node {
             if (childNodes.item(i) instanceof Element childElem) {
                 if (Features.matchFeatures(childElem)) {
                     this.children.add(new Node(childElem, this, styleRules, urlFetcher, unsafe));
-                    if ("switch".equals(this.tag)) break;
+                    if ("switch".equals(this.tag))
+                        break;
                 }
             }
         }
@@ -177,8 +179,8 @@ public class Node {
         var childNodes = element.getChildNodes();
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < childNodes.getLength(); i++) {
-            if (childNodes.item(i).getNodeType() == org.w3c.dom.Node.TEXT_NODE ||
-                childNodes.item(i).getNodeType() == org.w3c.dom.Node.CDATA_SECTION_NODE) {
+            if (childNodes.item(i).getNodeType() == org.w3c.dom.Node.TEXT_NODE
+                    || childNodes.item(i).getNodeType() == org.w3c.dom.Node.CDATA_SECTION_NODE) {
                 sb.append(childNodes.item(i).getTextContent());
             }
         }
@@ -217,8 +219,10 @@ public class Node {
     /** Get href, checking both xlink:href and href. */
     public String getHref() {
         String href = get("{http://www.w3.org/1999/xlink}href");
-        if (href == null) href = get("xlink:href");
-        if (href == null) href = get("href");
+        if (href == null)
+            href = get("xlink:href");
+        if (href == null)
+            href = get("href");
         return href;
     }
 
@@ -230,8 +234,8 @@ public class Node {
     // ---------- Tree (static factory) ----------
 
     /** Parse an SVG from bytes, file, or URL into a Node tree. */
-    public static Node parseTree(byte[] bytestring, String url,
-                                 UrlHelper.UrlFetcher urlFetcher, boolean unsafe) throws Exception {
+    public static Node parseTree(byte[] bytestring, String url, UrlHelper.UrlFetcher urlFetcher, boolean unsafe)
+            throws Exception {
         if (bytestring == null && url != null) {
             UrlHelper.ParsedUrl parsed = UrlHelper.parseUrl(url);
             bytestring = UrlHelper.readUrl(parsed, urlFetcher != null ? urlFetcher : UrlHelper::fetch, "image/svg+xml");
@@ -255,7 +259,8 @@ public class Node {
             fetcher = unsafe ? UrlHelper::fetch : UrlHelper::safeFetch;
         }
 
-        // Parse external CSS stylesheets from <?xml-stylesheet?> processing instructions
+        // Parse external CSS stylesheets from <?xml-stylesheet?> processing
+        // instructions
         List<CssProcessor.StyleRule> styleRules = new ArrayList<>();
         if (unsafe) {
             styleRules.addAll(CssProcessor.parseExternalStylesheets(doc, fetcher, url));

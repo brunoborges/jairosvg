@@ -3,25 +3,19 @@ package com.jairosvg;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Surface helpers: size parsing, transforms, normalize, point, etc.
- * Port of CairoSVG helpers.py
+ * Surface helpers: size parsing, transforms, normalize, point, etc. Port of
+ * CairoSVG helpers.py
  */
 public final class Helpers {
 
-    public static final Map<String, Double> UNITS = Map.of(
-        "mm", 1.0 / 25.4,
-        "cm", 1.0 / 2.54,
-        "in", 1.0,
-        "pt", 1.0 / 72.0,
-        "pc", 1.0 / 6.0
-    );
+    public static final Map<String, Double> UNITS = Map.of("mm", 1.0 / 25.4, "cm", 1.0 / 2.54, "in", 1.0, "pt",
+            1.0 / 72.0, "pc", 1.0 / 6.0);
 
     public static final Pattern PAINT_URL = Pattern.compile("(url\\(.+\\))\\s*(.*)");
     public static final String PATH_LETTERS = "achlmqstvzACHLMQSTVZ";
@@ -32,12 +26,19 @@ public final class Helpers {
     private static final Pattern POINT_PATTERN = Pattern.compile("^(\\S+?)\\s+(\\S+?)(?:\\s+|$)");
     private static final Pattern TRANSFORM_PATTERN = Pattern.compile("(\\w+)\\s*\\(\\s*(.*?)\\s*\\)");
     private static final Pattern WHITESPACE = Pattern.compile("\\s+");
+    private static final String[] EMPTY_PAINT = {null, null};
+    private static final double[] DEFAULT_RATIO = {1, 1, 0, 0};
 
-    private Helpers() {}
+    private Helpers() {
+    }
 
     public static class PointError extends RuntimeException {
-        public PointError() { super(); }
-        public PointError(String msg) { super(msg); }
+        public PointError() {
+            super();
+        }
+        public PointError(String msg) {
+            super(msg);
+        }
     }
 
     /** Distance between two points. */
@@ -48,7 +49,7 @@ public final class Helpers {
     /** Extract URI and color from a paint value. Returns [source, color]. */
     public static String[] paint(String value) {
         if (value == null || value.isBlank()) {
-            return new String[]{null, null};
+            return EMPTY_PAINT;
         }
         value = value.strip();
         Matcher m = PAINT_URL.matcher(value);
@@ -71,21 +72,17 @@ public final class Helpers {
             viewboxStr = WHITESPACE_COMMA.matcher(viewboxStr).replaceAll(" ").strip();
             String[] parts = viewboxStr.split(" ");
             if (parts.length == 4) {
-                viewbox = new double[]{
-                    Double.parseDouble(parts[0]),
-                    Double.parseDouble(parts[1]),
-                    Double.parseDouble(parts[2]),
-                    Double.parseDouble(parts[3])
-                };
-                if (width == 0) width = viewbox[2];
-                if (height == 0) height = viewbox[3];
+                viewbox = new double[]{Double.parseDouble(parts[0]), Double.parseDouble(parts[1]),
+                        Double.parseDouble(parts[2]), Double.parseDouble(parts[3])};
+                if (width == 0)
+                    width = viewbox[2];
+                if (height == 0)
+                    height = viewbox[3];
             }
         }
-        return new double[]{width, height,
-            viewbox != null ? viewbox[0] : Double.NaN,
-            viewbox != null ? viewbox[1] : Double.NaN,
-            viewbox != null ? viewbox[2] : Double.NaN,
-            viewbox != null ? viewbox[3] : Double.NaN};
+        return new double[]{width, height, viewbox != null ? viewbox[0] : Double.NaN,
+                viewbox != null ? viewbox[1] : Double.NaN, viewbox != null ? viewbox[2] : Double.NaN,
+                viewbox != null ? viewbox[3] : Double.NaN};
     }
 
     public static double[] nodeFormat(Surface surface, Node node) {
@@ -99,13 +96,15 @@ public final class Helpers {
 
     /** Get viewbox part from nodeFormat result. Returns null if no viewbox. */
     public static double[] getViewbox(double[] nodeFormat) {
-        if (!hasViewbox(nodeFormat)) return null;
+        if (!hasViewbox(nodeFormat))
+            return null;
         return new double[]{nodeFormat[2], nodeFormat[3], nodeFormat[4], nodeFormat[5]};
     }
 
     /** Normalize a string corresponding to an array of various values. */
     public static String normalize(String string) {
-        if (string == null || string.isEmpty()) return "";
+        if (string == null || string.isEmpty())
+            return "";
         string = string.replace('E', 'e');
         string = NEGATIVE_SIGN.matcher(string).replaceAll(" -");
         string = WHITESPACE_COMMA.matcher(string).replaceAll(" ");
@@ -126,14 +125,14 @@ public final class Helpers {
     }
 
     /** Return (x, y, remaining_string). */
-    public static Object[] pointWithRemainder(Surface surface, String string) {
+    public static ParsedPoint pointWithRemainder(Surface surface, String string) {
         string = string.strip();
         Matcher m = POINT_PATTERN.matcher(string);
         if (m.find()) {
             double x = size(surface, m.group(1), "x");
             double y = size(surface, m.group(2), "y");
             String remainder = string.substring(m.end()).strip();
-            return new Object[]{x, y, remainder};
+            return new ParsedPoint(x, y, remainder);
         }
         throw new PointError("Cannot parse point from: " + string);
     }
@@ -143,28 +142,35 @@ public final class Helpers {
         return Math.atan2(py - cy, px - cx);
     }
 
-    /** Manage the ratio preservation. Returns [scaleX, scaleY, translateX, translateY]. */
-    public static double[] preserveRatio(Surface surface, Node node,
-                                         double width, double height) {
+    /**
+     * Manage the ratio preservation. Returns [scaleX, scaleY, translateX,
+     * translateY].
+     */
+    public static double[] preserveRatio(Surface surface, Node node, double width, double height) {
         double viewboxWidth, viewboxHeight;
 
         if ("marker".equals(node.tag)) {
-            if (width == 0) width = size(surface, node.get("markerWidth", "3"), "x");
-            if (height == 0) height = size(surface, node.get("markerHeight", "3"), "y");
+            if (width == 0)
+                width = size(surface, node.get("markerWidth", "3"), "x");
+            if (height == 0)
+                height = size(surface, node.get("markerHeight", "3"), "y");
             double[] nf = nodeFormat(surface, node);
             double[] vb = getViewbox(nf);
-            if (vb == null) return new double[]{1, 1, 0, 0};
+            if (vb == null)
+                return DEFAULT_RATIO;
             viewboxWidth = vb[2];
             viewboxHeight = vb[3];
         } else if ("svg".equals(node.tag) || "image".equals(node.tag) || "g".equals(node.tag)) {
             double[] nf = nodeFormat(surface, node);
-            if (width == 0) width = nf[0];
-            if (height == 0) height = nf[1];
+            if (width == 0)
+                width = nf[0];
+            if (height == 0)
+                height = nf[1];
             viewboxWidth = node.imageWidth;
             viewboxHeight = node.imageHeight;
         } else {
-            throw new IllegalArgumentException("Root node is " + node.tag +
-                ". Should be one of marker, svg, image, or g.");
+            throw new IllegalArgumentException(
+                    "Root node is " + node.tag + ". Should be one of marker, svg, image, or g.");
         }
 
         double translateX = 0, translateY = 0;
@@ -216,13 +222,13 @@ public final class Helpers {
     }
 
     /** Get clip (x, y, width, height) of marker box. */
-    public static double[] clipMarkerBox(Surface surface, Node node,
-                                         double scaleX, double scaleY) {
+    public static double[] clipMarkerBox(Surface surface, Node node, double scaleX, double scaleY) {
         double mw = size(surface, node.get("markerWidth", "3"), "x");
         double mh = size(surface, node.get("markerHeight", "3"), "y");
         double[] nf = nodeFormat(surface, node);
         double[] vb = getViewbox(nf);
-        if (vb == null) return new double[]{0, 0, mw, mh};
+        if (vb == null)
+            return new double[]{0, 0, mw, mh};
         double vbW = vb[2], vbH = vb[3];
 
         String align = WHITESPACE.split(node.get("preserveAspectRatio", "xMidYMid"))[0];
@@ -230,20 +236,22 @@ public final class Helpers {
         String yPos = "none".equals(align) ? "min" : align.substring(5).toLowerCase();
 
         double clipX = vb[0];
-        if ("mid".equals(xPos)) clipX += (vbW - mw / scaleX) / 2.0;
-        else if ("max".equals(xPos)) clipX += vbW - mw / scaleX;
+        if ("mid".equals(xPos))
+            clipX += (vbW - mw / scaleX) / 2.0;
+        else if ("max".equals(xPos))
+            clipX += vbW - mw / scaleX;
 
         double clipY = vb[1];
-        if ("mid".equals(yPos)) clipY += (vbH - mh / scaleY) / 2.0;
-        else if ("max".equals(yPos)) clipY += vbH - mh / scaleY;
+        if ("mid".equals(yPos))
+            clipY += (vbH - mh / scaleY) / 2.0;
+        else if ("max".equals(yPos))
+            clipY += vbH - mh / scaleY;
 
         return new double[]{clipX, clipY, mw / scaleX, mh / scaleY};
     }
 
     /** Return quadratic points for cubic curve approximation. */
-    public static double[] quadraticPoints(double x1, double y1,
-                                           double x2, double y2,
-                                           double x3, double y3) {
+    public static double[] quadraticPoints(double x1, double y1, double x2, double y2, double x3, double y3) {
         double xq1 = x2 * 2.0 / 3 + x1 / 3.0;
         double yq1 = y2 * 2.0 / 3 + y1 / 3.0;
         double xq2 = x2 * 2.0 / 3 + x3 / 3.0;
@@ -253,15 +261,13 @@ public final class Helpers {
 
     /** Rotate a point by angle around origin. */
     public static double[] rotate(double x, double y, double angle) {
-        return new double[]{
-            x * Math.cos(angle) - y * Math.sin(angle),
-            y * Math.cos(angle) + x * Math.sin(angle)
-        };
+        return new double[]{x * Math.cos(angle) - y * Math.sin(angle), y * Math.cos(angle) + x * Math.sin(angle)};
     }
 
     /** Parse an SVG transform string into an AffineTransform. */
     public static AffineTransform parseTransform(Surface surface, String transformString) {
-        if (transformString == null || transformString.isEmpty()) return new AffineTransform();
+        if (transformString == null || transformString.isEmpty())
+            return new AffineTransform();
 
         String normalized = normalize(transformString);
         Matcher tm = TRANSFORM_PATTERN.matcher(normalized);
@@ -279,9 +285,8 @@ public final class Helpers {
             switch (type) {
                 case "matrix" -> {
                     if (values.length >= 6) {
-                        AffineTransform m = new AffineTransform(
-                            values[0], values[1], values[2],
-                            values[3], values[4], values[5]);
+                        AffineTransform m = new AffineTransform(values[0], values[1], values[2], values[3], values[4],
+                                values[5]);
                         matrix.concatenate(m);
                     }
                 }
@@ -317,10 +322,10 @@ public final class Helpers {
     }
 
     /** Apply SVG transform string to the surface Graphics2D. */
-    public static void transform(Surface surface, String transformString,
-                                 AffineTransform gradient,
-                                 String transformOrigin) {
-        if (transformString == null || transformString.isEmpty()) return;
+    public static void transform(Surface surface, String transformString, AffineTransform gradient,
+            String transformOrigin) {
+        if (transformString == null || transformString.isEmpty())
+            return;
 
         AffineTransform matrix = parseTransform(surface, transformString);
 
@@ -329,8 +334,8 @@ public final class Helpers {
             String[] origin = WHITESPACE.split(transformOrigin.strip());
             double originX = parseOriginComponent(surface, origin[0], true);
             double originY = origin.length > 1
-                ? parseOriginComponent(surface, origin[1], false)
-                : surface.contextHeight / 2;
+                    ? parseOriginComponent(surface, origin[1], false)
+                    : surface.contextHeight / 2;
             AffineTransform withOrigin = new AffineTransform();
             withOrigin.translate(originX, originY);
             withOrigin.concatenate(matrix);
@@ -356,7 +361,8 @@ public final class Helpers {
 
     /** Parse clip rect values. */
     public static String[] clipRect(String string) {
-        if (string == null || string.isEmpty()) return new String[0];
+        if (string == null || string.isEmpty())
+            return new String[0];
         Matcher m = RECT_PATTERN.matcher(normalize(string));
         if (m.find()) {
             return WHITESPACE.split(m.group(1));
@@ -380,10 +386,12 @@ public final class Helpers {
     /** Pop rotation values already used. */
     public static void popRotation(Node node, List<Double> originalRotate, List<Double> rotate) {
         String text = node.text;
-        if (text == null) text = "";
+        if (text == null)
+            text = "";
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < text.length(); i++) {
-            if (i > 0) sb.append(' ');
+            if (i > 0)
+                sb.append(' ');
             double r = !rotate.isEmpty() ? rotate.remove(0) : originalRotate.get(originalRotate.size() - 1);
             sb.append(r);
         }
@@ -400,11 +408,12 @@ public final class Helpers {
     }
 
     /**
-     * Replace a string with units by a float value.
-     * Reference: 'x' = viewport width, 'y' = viewport height, 'xy' = diagonal
+     * Replace a string with units by a float value. Reference: 'x' = viewport
+     * width, 'y' = viewport height, 'xy' = diagonal
      */
     public static double size(Surface surface, String string, String reference) {
-        if (string == null || string.isEmpty()) return 0;
+        if (string == null || string.isEmpty())
+            return 0;
 
         try {
             return Double.parseDouble(string);
@@ -412,7 +421,8 @@ public final class Helpers {
             // Not a plain number
         }
 
-        if (surface == null) return 0;
+        if (surface == null)
+            return 0;
 
         String normalized = normalize(string);
         int spaceIdx = normalized.indexOf(' ');
@@ -459,22 +469,17 @@ public final class Helpers {
 
     /** Parse font shorthand property. */
     public static Map<String, String> parseFont(String value) {
-        var result = new java.util.HashMap<>(Map.of(
-            "font-family", "",
-            "font-size", "",
-            "font-style", "normal",
-            "font-variant", "normal",
-            "font-weight", "normal",
-            "line-height", "normal"
-        ));
+        var result = new java.util.HashMap<>(Map.of("font-family", "", "font-size", "", "font-style", "normal",
+                "font-variant", "normal", "font-weight", "normal", "line-height", "normal"));
 
         var fontStyles = List.of("italic", "oblique");
         var fontVariants = List.of("small-caps");
-        var fontWeights = List.of("bold", "bolder", "lighter",
-            "100", "200", "300", "400", "500", "600", "700", "800", "900");
+        var fontWeights = List.of("bold", "bolder", "lighter", "100", "200", "300", "400", "500", "600", "700", "800",
+                "900");
 
         for (String element : WHITESPACE.split(value)) {
-            if ("normal".equals(element)) continue;
+            if ("normal".equals(element))
+                continue;
             if (!result.get("font-family").isEmpty()) {
                 result.put("font-family", result.get("font-family") + " " + element);
             } else if (fontStyles.contains(element)) {
@@ -485,10 +490,12 @@ public final class Helpers {
                 result.put("font-weight", element);
             } else {
                 if (result.get("font-size").isEmpty()) {
-                    String[] fontParts = element.split("/");
-                    result.put("font-size", fontParts[0]);
-                    if (fontParts.length > 1) {
-                        result.put("line-height", fontParts[1]);
+                    int slashIdx = element.indexOf('/');
+                    if (slashIdx >= 0) {
+                        result.put("font-size", element.substring(0, slashIdx));
+                        result.put("line-height", element.substring(slashIdx + 1));
+                    } else {
+                        result.put("font-size", element);
                     }
                 } else {
                     result.put("font-family", element);

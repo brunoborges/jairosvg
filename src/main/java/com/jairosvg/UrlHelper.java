@@ -1,7 +1,6 @@
 package com.jairosvg;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -14,19 +13,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * URL handling utilities.
- * Port of CairoSVG url.py
+ * URL handling utilities. Port of CairoSVG url.py
  */
 public final class UrlHelper {
 
     public static final String VERSION = "1.0.0";
     private static final Pattern URL_PATTERN = Pattern.compile("url\\((.+)\\)");
 
-    private UrlHelper() {}
+    private UrlHelper() {
+    }
 
     /** A parsed URL wrapper. */
-    public record ParsedUrl(String scheme, String authority, String path,
-                            String query, String fragment) {
+    public record ParsedUrl(String scheme, String authority, String path, String query, String fragment) {
         public String getUrl() {
             var sb = new StringBuilder();
             if (scheme != null && !scheme.isEmpty()) {
@@ -48,10 +46,8 @@ public final class UrlHelper {
         }
 
         public boolean hasNonFragmentParts() {
-            return (scheme != null && !scheme.isEmpty()) ||
-                   (authority != null && !authority.isEmpty()) ||
-                   (path != null && !path.isEmpty()) ||
-                   (query != null && !query.isEmpty());
+            return (scheme != null && !scheme.isEmpty()) || (authority != null && !authority.isEmpty())
+                    || (path != null && !path.isEmpty()) || (query != null && !query.isEmpty());
         }
 
         public ParsedUrl withoutFragment() {
@@ -118,8 +114,7 @@ public final class UrlHelper {
         if (m.find()) {
             url = m.group(1).strip();
             // Remove quotes
-            if ((url.startsWith("'") && url.endsWith("'")) ||
-                (url.startsWith("\"") && url.endsWith("\""))) {
+            if ((url.startsWith("'") && url.endsWith("'")) || (url.startsWith("\"") && url.endsWith("\""))) {
                 url = url.substring(1, url.length() - 1);
             }
         }
@@ -143,7 +138,8 @@ public final class UrlHelper {
             fullUrl = url.getUrl();
         } else {
             String path = url.getUrl();
-            if (path.isEmpty()) return new byte[0];
+            if (path.isEmpty())
+                return new byte[0];
             fullUrl = "file://" + Path.of(path).toAbsolutePath();
         }
         return fetcher.fetch(fullUrl, resourceType);
@@ -225,7 +221,8 @@ public final class UrlHelper {
         // data:[<mediatype>][;base64],<data>
         String data = dataUrl.substring(5); // remove "data:"
         int commaIdx = data.indexOf(',');
-        if (commaIdx < 0) return new byte[0];
+        if (commaIdx < 0)
+            return new byte[0];
 
         String meta = data.substring(0, commaIdx);
         String encoded = data.substring(commaIdx + 1);
@@ -244,11 +241,8 @@ public final class UrlHelper {
     private static byte[] fetchHttp(String url) throws IOException {
         try {
             HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(url))
-                .header("User-Agent", "JairoSVG " + VERSION)
-                .GET()
-                .build();
+            HttpRequest request = HttpRequest.newBuilder().uri(new URI(url)).header("User-Agent", "JairoSVG " + VERSION)
+                    .GET().build();
             HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
             return response.body();
         } catch (URISyntaxException | InterruptedException e) {

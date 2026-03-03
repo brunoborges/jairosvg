@@ -1,26 +1,24 @@
 package com.jairosvg;
 
-import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 
 import static com.jairosvg.Helpers.*;
 
 /**
- * SVG shape drawers.
- * Port of CairoSVG shapes.py
+ * SVG shape drawers. Port of CairoSVG shapes.py
  */
 public final class ShapeDrawer {
 
-    private ShapeDrawer() {}
+    private ShapeDrawer() {
+    }
 
     /** Draw a circle node. */
     public static void circle(Surface surface, Node node) {
         double r = size(surface, node.get("r"));
-        if (r == 0) return;
+        if (r == 0)
+            return;
         double cx = size(surface, node.get("cx"), "x");
         double cy = size(surface, node.get("cy"), "y");
 
@@ -31,7 +29,8 @@ public final class ShapeDrawer {
     public static void ellipse(Surface surface, Node node) {
         double rx = size(surface, node.get("rx"), "x");
         double ry = size(surface, node.get("ry"), "y");
-        if (rx == 0 || ry == 0) return;
+        if (rx == 0 || ry == 0)
+            return;
         double cx = size(surface, node.get("cx"), "x");
         double cy = size(surface, node.get("cy"), "y");
 
@@ -64,14 +63,15 @@ public final class ShapeDrawer {
     /** Draw a polyline node. */
     public static void polyline(Surface surface, Node node) {
         String points = normalize(node.get("points", ""));
-        if (points.isEmpty()) return;
+        if (points.isEmpty())
+            return;
 
         node.vertices = new java.util.ArrayList<>();
         boolean first = true;
         while (!points.isBlank()) {
-            Object[] pt = pointWithRemainder(surface, points);
-            double x = (double) pt[0], y = (double) pt[1];
-            points = (String) pt[2];
+            ParsedPoint pt = pointWithRemainder(surface, points);
+            double x = pt.x(), y = pt.y();
+            points = pt.remainder();
 
             if (first) {
                 surface.path.moveTo(x, y);
@@ -96,8 +96,10 @@ public final class ShapeDrawer {
 
         String rxStr = node.get("rx");
         String ryStr = node.get("ry");
-        if (rxStr != null && ryStr == null) ryStr = rxStr;
-        if (ryStr != null && rxStr == null) rxStr = ryStr;
+        if (rxStr != null && ryStr == null)
+            ryStr = rxStr;
+        if (ryStr != null && rxStr == null)
+            rxStr = ryStr;
 
         double rx = size(surface, rxStr, "x");
         double ry = size(surface, ryStr, "y");
@@ -107,8 +109,7 @@ public final class ShapeDrawer {
         } else {
             rx = Math.min(rx, width / 2);
             ry = Math.min(ry, height / 2);
-            surface.path.append(
-                new RoundRectangle2D.Double(x, y, width, height, rx * 2, ry * 2), false);
+            surface.path.append(new RoundRectangle2D.Double(x, y, width, height, rx * 2, ry * 2), false);
         }
     }
 

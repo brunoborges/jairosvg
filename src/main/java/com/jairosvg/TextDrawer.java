@@ -4,24 +4,34 @@ import java.awt.Font;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.LineMetrics;
-import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import static com.jairosvg.Helpers.*;
 
 /**
- * SVG text rendering.
- * Port of CairoSVG text.py
+ * SVG text rendering. Port of CairoSVG text.py
  */
 public final class TextDrawer {
 
-    private TextDrawer() {}
+    private static final Pattern NUMERIC_PATTERN = Pattern.compile("\\d+");
+
+    private static final Map<String, Font> FONT_CACHE = new LinkedHashMap<>(16, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, Font> eldest) {
+            return size() > 64;
+        }
+    };
+
+    private TextDrawer() {
+    }
 
     /** Extract the primary font family name from a font-family attribute value. */
     private static String parseFontFamily(Node node) {
-        return node.get("font-family", "SansSerif")
-            .split(",")[0].strip().replace("'", "").replace("\"", "");
+        return node.get("font-family", "SansSerif").split(",")[0].strip().replace("'", "").replace("\"", "");
     }
 
     /** Draw a text node. */
@@ -53,12 +63,16 @@ public final class TextDrawer {
         String weightStr = node.get("font-weight", "normal");
         if ("bold".equals(weightStr) || "bolder".equals(weightStr)) {
             fontStyle |= Font.BOLD;
-        } else if (weightStr.matches("\\d+") && Integer.parseInt(weightStr) >= 550) {
+        } else if (NUMERIC_PATTERN.matcher(weightStr).matches() && Integer.parseInt(weightStr) >= 550) {
             fontStyle |= Font.BOLD;
         }
 
-        Font font = new Font(fontFamily, fontStyle, 1);
-        font = font.deriveFont((float) surface.fontSize);
+        String fontKey = fontFamily + "|" + fontStyle + "|" + (float) surface.fontSize;
+        Font font = FONT_CACHE.get(fontKey);
+        if (font == null) {
+            font = new Font(fontFamily, fontStyle, 1).deriveFont((float) surface.fontSize);
+            FONT_CACHE.put(fontKey, font);
+        }
 
         FontRenderContext frc = surface.context.getFontRenderContext();
 
@@ -74,10 +88,14 @@ public final class TextDrawer {
             String parentDx = node.get("dx");
             String parentDy = node.get("dy");
 
-            if (parentX != null) surface.cursorPosition[0] = size(surface, parentX.split("\\s+")[0], "x");
-            if (parentY != null) surface.cursorPosition[1] = size(surface, parentY.split("\\s+")[0], "y");
-            if (parentDx != null) surface.cursorPosition[0] += size(surface, parentDx.split("\\s+")[0], "x");
-            if (parentDy != null) surface.cursorPosition[1] += size(surface, parentDy.split("\\s+")[0], "y");
+            if (parentX != null)
+                surface.cursorPosition[0] = size(surface, parentX.split("\\s+")[0], "x");
+            if (parentY != null)
+                surface.cursorPosition[1] = size(surface, parentY.split("\\s+")[0], "y");
+            if (parentDx != null)
+                surface.cursorPosition[0] += size(surface, parentDx.split("\\s+")[0], "x");
+            if (parentDy != null)
+                surface.cursorPosition[1] += size(surface, parentDy.split("\\s+")[0], "y");
 
             // Adjust cursor for text-anchor using total width of all children
             String textAnchor = node.get("text-anchor");
@@ -100,21 +118,27 @@ public final class TextDrawer {
         String dxStr = node.get("dx");
         String dyStr = node.get("dy");
 
-        if (xStr != null) startX = size(surface, xStr.split("\\s+")[0], "x");
-        else startX = surface.cursorPosition[0];
+        if (xStr != null)
+            startX = size(surface, xStr.split("\\s+")[0], "x");
+        else
+            startX = surface.cursorPosition[0];
 
-        if (yStr != null) startY = size(surface, yStr.split("\\s+")[0], "y");
-        else startY = surface.cursorPosition[1];
+        if (yStr != null)
+            startY = size(surface, yStr.split("\\s+")[0], "y");
+        else
+            startY = surface.cursorPosition[1];
 
-        if (dxStr != null) startX += size(surface, dxStr.split("\\s+")[0], "x");
-        if (dyStr != null) startY += size(surface, dyStr.split("\\s+")[0], "y");
+        if (dxStr != null)
+            startX += size(surface, dxStr.split("\\s+")[0], "x");
+        if (dyStr != null)
+            startY += size(surface, dyStr.split("\\s+")[0], "y");
 
         // Text anchor alignment (only when node has its own x position)
         String textAnchor = node.get("text-anchor");
         if (textAnchor != null && xStr != null) {
             double textWidth = svgFont != null
-                ? measureSvgFontWidth(svgFont, textContent, surface.fontSize)
-                : font.getStringBounds(textContent, frc).getWidth();
+                    ? measureSvgFontWidth(svgFont, textContent, surface.fontSize)
+                    : font.getStringBounds(textContent, frc).getWidth();
             if ("middle".equals(textAnchor)) {
                 startX -= textWidth / 2;
             } else if ("end".equals(textAnchor)) {
@@ -129,15 +153,15 @@ public final class TextDrawer {
         AffineTransform savedTransform = surface.context.getTransform();
 
         if (svgFont != null) {
-            // Render using SVG font glyphs as paths (greedy longest-match for multi-char unicode)
+            // Render using SVG font glyphs as paths (greedy longest-match for multi-char
+            // unicode)
             double curX = startX;
             int i = 0;
             while (i < textContent.length()) {
                 SvgFont.GlyphMatch match = svgFont.getGlyph(textContent, i);
                 SvgFont.Glyph glyph = match.glyph();
                 if (glyph != null) {
-                    java.awt.geom.GeneralPath glyphPath =
-                        svgFont.buildGlyphPath(glyph, surface.fontSize, curX, startY);
+                    java.awt.geom.GeneralPath glyphPath = svgFont.buildGlyphPath(glyph, surface.fontSize, curX, startY);
                     if (glyphPath != null) {
                         surface.path.append(glyphPath, false);
                     }
@@ -181,7 +205,7 @@ public final class TextDrawer {
         String textDecoration = node.get("text-decoration");
         String normalizedTextDecoration = textDecoration == null ? null : textDecoration.strip();
         if (svgFont == null && textWidth > 0 && normalizedTextDecoration != null
-            && !"none".equals(normalizedTextDecoration)) {
+                && !"none".equals(normalizedTextDecoration)) {
             LineMetrics lineMetrics = font.getLineMetrics(textContent, frc);
             double decorationThickness = lineMetrics.getUnderlineThickness();
             for (String decoration : normalizedTextDecoration.split("\\s+")) {
@@ -192,11 +216,8 @@ public final class TextDrawer {
                     default -> Double.NaN;
                 };
                 if (!Double.isNaN(decorationY)) {
-                    surface.path.append(new Rectangle2D.Double(
-                        startX,
-                        decorationY - decorationThickness / 2.0,
-                        textWidth,
-                        decorationThickness), false);
+                    surface.path.append(new Rectangle2D.Double(startX, decorationY - decorationThickness / 2.0,
+                            textWidth, decorationThickness), false);
                 }
             }
         }
@@ -253,10 +274,15 @@ public final class TextDrawer {
         String weightStr = node.get("font-weight", "normal");
         if ("bold".equals(weightStr) || "bolder".equals(weightStr)) {
             fontStyle |= Font.BOLD;
-        } else if (weightStr.matches("\\d+") && Integer.parseInt(weightStr) >= 550) {
+        } else if (NUMERIC_PATTERN.matcher(weightStr).matches() && Integer.parseInt(weightStr) >= 550) {
             fontStyle |= Font.BOLD;
         }
-        Font font = new Font(fontFamily, fontStyle, 1);
-        return font.deriveFont((float) surface.fontSize);
+        String fontKey = fontFamily + "|" + fontStyle + "|" + (float) surface.fontSize;
+        Font font = FONT_CACHE.get(fontKey);
+        if (font == null) {
+            font = new Font(fontFamily, fontStyle, 1).deriveFont((float) surface.fontSize);
+            FONT_CACHE.put(fontKey, font);
+        }
+        return font;
     }
 }
