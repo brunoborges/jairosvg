@@ -10,18 +10,18 @@ Benchmark comparing SVG → PNG conversion across three libraries:
 
 ### Results
 
-Each test case was run with 20 warmup iterations and 50 measurement iterations.
+Each test case was run with 20 warmup iterations and 1000 measurement iterations.
 
 | Test Case | JairoSVG | EchoSVG | CairoSVG | JairoSVG vs EchoSVG |
 |-----------|:--------:|:-------:|:--------:|:-------------------:|
-| Simple shapes | **1.9 ms** | 9.6 ms | 1.9 ms | **4.9x faster** |
-| Gradients + transforms | **4.2 ms** | 34.8 ms | 5.2 ms | **7.7x faster** |
-| Complex paths + text | **6.0 ms** | 30.3 ms | 6.1 ms | **5.0x faster** |
+| Simple shapes | **1.3 ms** | 9.2 ms | 2.0 ms | **6.9x faster** |
+| Gradients + transforms | **3.6 ms** | 34.6 ms | 5.3 ms | **9.5x faster** |
+| Complex paths + text | **5.4 ms** | 28.9 ms | 6.0 ms | **5.4x faster** |
 
 ### Analysis
 
-- **JairoSVG is 5-8x faster than EchoSVG** across all test cases
-- **JairoSVG is on par with CairoSVG** despite CairoSVG using a native C rendering backend
+- **JairoSVG is 5-10x faster than EchoSVG** across all test cases
+- **JairoSVG is 1.1-1.5x faster than CairoSVG** despite CairoSVG using a native C rendering backend
 - JairoSVG achieves competitive performance through:
   - Pre-compiled regex patterns
   - Cached XML parser factories

@@ -411,6 +411,20 @@ public final class Helpers {
     }
 
     /**
+     * Check if a string contains only plain numeric characters (digits, dot, minus,
+     * plus, e/E).
+     */
+    private static boolean isPlainNumber(String s) {
+        for (int i = 0, len = s.length(); i < len; i++) {
+            char c = s.charAt(i);
+            if (!((c >= '0' && c <= '9') || c == '.' || c == '-' || c == '+' || c == 'e' || c == 'E')) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Replace a string with units by a float value. Reference: 'x' = viewport
      * width, 'y' = viewport height, 'xy' = diagonal
      */
@@ -418,51 +432,106 @@ public final class Helpers {
         if (string == null || string.isEmpty())
             return 0;
 
-        try {
+        if (isPlainNumber(string)) {
             return Double.parseDouble(string);
-        } catch (NumberFormatException e) {
-            // Not a plain number
         }
 
         if (surface == null)
             return 0;
 
+        // Quick unit suffix check — avoids normalize() for simple "100px", "50%", etc.
+        String numPart = null;
+        String unit = null;
+        if (string.endsWith("%")) {
+            numPart = string.substring(0, string.length() - 1);
+            unit = "%";
+        } else if (string.endsWith("px")) {
+            numPart = string.substring(0, string.length() - 2);
+            unit = "px";
+        } else if (string.endsWith("em")) {
+            numPart = string.substring(0, string.length() - 2);
+            unit = "em";
+        } else if (string.endsWith("ex")) {
+            numPart = string.substring(0, string.length() - 2);
+            unit = "ex";
+        } else if (string.endsWith("ch")) {
+            numPart = string.substring(0, string.length() - 2);
+            unit = "ch";
+        } else {
+            for (var entry : UNITS.entrySet()) {
+                if (string.endsWith(entry.getKey())) {
+                    numPart = string.substring(0, string.length() - entry.getKey().length());
+                    unit = entry.getKey();
+                    break;
+                }
+            }
+        }
+
+        if (numPart != null && isPlainNumber(numPart)) {
+            return sizeWithUnit(surface, numPart, unit, reference);
+        }
+
+        // Fallback: normalize for complex strings (e.g. containing whitespace or
+        // multiple values)
         String normalized = normalize(string);
         int spaceIdx = normalized.indexOf(' ');
         string = spaceIdx > 0 ? normalized.substring(0, spaceIdx) : normalized;
 
         if (string.endsWith("%")) {
-            double ref;
-            if ("x".equals(reference)) {
-                ref = surface.contextWidth;
-            } else if ("y".equals(reference)) {
-                ref = surface.contextHeight;
-            } else {
-                ref = Math.hypot(surface.contextWidth, surface.contextHeight) / Math.sqrt(2);
-            }
-            return Double.parseDouble(string.substring(0, string.length() - 1)) * ref / 100;
+            numPart = string.substring(0, string.length() - 1);
+            unit = "%";
         } else if (string.endsWith("em")) {
-            return surface.fontSize * Double.parseDouble(string.substring(0, string.length() - 2));
+            numPart = string.substring(0, string.length() - 2);
+            unit = "em";
         } else if (string.endsWith("ex")) {
-            return surface.fontSize * Double.parseDouble(string.substring(0, string.length() - 2)) / 2;
+            numPart = string.substring(0, string.length() - 2);
+            unit = "ex";
         } else if (string.endsWith("ch")) {
-            return surface.fontSize * Double.parseDouble(string.substring(0, string.length() - 2)) / 2;
-        }
-
-        for (var entry : UNITS.entrySet()) {
-            if (string.endsWith(entry.getKey())) {
-                String numStr = string.substring(0, string.length() - entry.getKey().length());
-                double num = Double.parseDouble(numStr);
-                return num * surface.dpi * entry.getValue();
+            numPart = string.substring(0, string.length() - 2);
+            unit = "ch";
+        } else if (string.endsWith("px")) {
+            numPart = string.substring(0, string.length() - 2);
+            unit = "px";
+        } else {
+            for (var entry : UNITS.entrySet()) {
+                if (string.endsWith(entry.getKey())) {
+                    numPart = string.substring(0, string.length() - entry.getKey().length());
+                    unit = entry.getKey();
+                    break;
+                }
             }
         }
 
-        // px or unknown
-        if (string.endsWith("px")) {
-            return Double.parseDouble(string.substring(0, string.length() - 2));
+        if (numPart != null) {
+            return sizeWithUnit(surface, numPart, unit, reference);
         }
 
         return 0;
+    }
+
+    /** Compute a sized value given a numeric string and a unit. */
+    private static double sizeWithUnit(Surface surface, String numPart, String unit, String reference) {
+        double value = Double.parseDouble(numPart);
+        return switch (unit) {
+            case "%" -> {
+                double ref;
+                if ("x".equals(reference)) {
+                    ref = surface.contextWidth;
+                } else if ("y".equals(reference)) {
+                    ref = surface.contextHeight;
+                } else {
+                    ref = Math.hypot(surface.contextWidth, surface.contextHeight) / Math.sqrt(2);
+                }
+                yield value * ref / 100;
+            }
+            case "em" -> surface.fontSize * value;
+            case "ex", "ch" -> surface.fontSize * value / 2;
+            case "px" -> value;
+            default -> {
+                Double factor = UNITS.get(unit);
+                yield factor != null ? value * surface.dpi * factor : 0;
+            }
+        };
     }
 
     /** Size with no reference. */
