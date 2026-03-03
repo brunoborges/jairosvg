@@ -395,6 +395,8 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                 context.setStroke(stroke);
                 context.draw(path);
             }
+
+            Defs.drawMarkers(this, node);
         } else if (!visible) {
             // Reset path
             path.reset();

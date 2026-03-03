@@ -165,7 +165,8 @@ class SvgFeatureTest {
                 </svg>
                 """;
 
-        BufferedImage image = ImageIO.read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
+        BufferedImage image = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
         int topRgb = image.getRGB(200, 40);
         int lowerRightRgb = image.getRGB(260, 220);
         int topRed = (topRgb >> 16) & 0xFF;
