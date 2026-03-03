@@ -4,7 +4,7 @@
 //RUNTIME_OPTIONS --enable-preview -Xmx512m
 //REPOS mavenCentral,mavenLocal
 //REPOS css4j=https://css4j.github.io/maven/
-//DEPS com.jairosvg:jairosvg:1.0.0-SNAPSHOT
+//DEPS io.brunoborges:jairosvg:1.0.0-SNAPSHOT
 //DEPS io.sf.carte:echosvg-transcoder:2.4
 
 import com.jairosvg.JairoSVG;
