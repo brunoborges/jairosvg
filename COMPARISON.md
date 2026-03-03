@@ -149,7 +149,7 @@ CairoSVG is a **Python library** built on the **Cairo 2D graphics library** (C).
 | Descendant / child selectors | ✅ (basic) | ✅ | ✅ (via cssselect2) |
 | Pseudo-classes / pseudo-elements | ✅ (`:first-child`, `:last-child`, `:nth-child()`, `:not()`, `::first-line`, `::first-letter`) | Partial | Partial (via cssselect2) |
 | CSS Level 4 selectors | ❌ ([#26](https://github.com/brunoborges/jairosvg/issues/26)) | ✅ (via css4j) | ❌ |
-| CSS custom properties (variables) | ❌ ([#27](https://github.com/brunoborges/jairosvg/issues/27)) | ✅ | ❌ |
+| CSS custom properties (variables) | ✅ | ✅ | ❌ |
 | CSS `calc()` | ❌ ([#28](https://github.com/brunoborges/jairosvg/issues/28)) | ✅ | ❌ |
 | CSS nesting | ❌ | ❌ | ❌ |
 | `@import` rules | ❌ ([#29](https://github.com/brunoborges/jairosvg/issues/29)) | ✅ | ❌ |
