@@ -34,8 +34,8 @@ jobs:
           git tag "v${{ inputs.version }}"
           git push origin main --tags
 
-      - name: Build
-        run: ./mvnw clean verify --no-transfer-progress
+      - name: Build and stage artifacts
+        run: ./mvnw clean deploy -Prelease --no-transfer-progress
 
       - name: Run JReleaser
         uses: jreleaser/release-action@v2
@@ -44,6 +44,11 @@ jobs:
         env:
           JRELEASER_PROJECT_VERSION: ${{ inputs.version }}
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JRELEASER_MAVENCENTRAL_APP_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          JRELEASER_MAVENCENTRAL_APP_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          JRELEASER_SIGNING_PGP_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          JRELEASER_SIGNING_PGP_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
+          JRELEASER_SIGNING_PGP_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
 
       - name: JReleaser output
         if: always()

@@ -18,6 +18,25 @@ project:
     - pdf
     - converter
     - java2d
+  java:
+    groupId: io.brunoborges
+    artifactId: jairosvg
+
+signing:
+  active: ALWAYS
+  pgp:
+    active: ALWAYS
+    armored: true
+
+deploy:
+  maven:
+    mavenCentral:
+      app:
+        active: ALWAYS
+        url: https://central.sonatype.com/api/v1/publisher
+        applyMavenCentralRules: true
+        stagingRepositories:
+          - target/staging-deploy
 
 release:
   github:
