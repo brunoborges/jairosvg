@@ -99,7 +99,7 @@ CairoSVG is a **Python library** built on the **Cairo 2D graphics library** (C).
 | `<pattern>` | ✅ | ✅ | ⚠️ (naive) |
 | `<clipPath>` | ✅ | ✅ | ✅ |
 | `<mask>` | ✅ | ✅ | ⚠️ (alpha only) |
-| `<filter>` | ✅ (basic) | ✅ (full primitives) | ⚠️ (feBlend, feFlood, feOffset only) |
+| `<filter>` | ✅ (`feGaussianBlur`, `feDropShadow`, `feOffset`, `feFlood`, `feMerge`) | ✅ (full primitives) | ⚠️ (`feFlood`, `feOffset` only; no blur/drop-shadow) |
 | `<marker>` | ✅ | ✅ | ✅ (basic) |
 | `<metadata>`, `<title>`, `<desc>` | ✅ (parsed, not rendered) | ✅ | ❌ (ignored) |
 | `<foreignObject>` | ❌ ([#15](https://github.com/brunoborges/jairosvg/issues/15)) | ✅ | ❌ |
