@@ -88,6 +88,55 @@ Nested `<svg>` elements with independent viewports.
 |:---------:|:--------:|:-------:|:--------:|
 | [SVG](svg/12_nested_svg.svg) | ![JairoSVG](png/jairosvg/12_nested_svg.png) | ![EchoSVG](png/echosvg/12_nested_svg.png) | ![CairoSVG](png/cairosvg/12_nested_svg.png) |
 
+## 13 — Patterns
+Tiled pattern fills: dots, cross-hatch stripes, and grid lines.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG |
+|:---------:|:--------:|:-------:|:--------:|
+| [SVG](svg/13_patterns.svg) | ![JairoSVG](png/jairosvg/13_patterns.png) | ![EchoSVG](png/echosvg/13_patterns.png) | ![CairoSVG](png/cairosvg/13_patterns.png) |
+
+## 14 — Clip Paths
+Star and text clip paths applied to gradient fills.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG |
+|:---------:|:--------:|:-------:|:--------:|
+| [SVG](svg/14_clip_paths.svg) | ![JairoSVG](png/jairosvg/14_clip_paths.png) | ![EchoSVG](png/echosvg/14_clip_paths.png) | ![CairoSVG](png/cairosvg/14_clip_paths.png) |
+
+## 15 — Masks
+Horizontal, vertical, and circular gradient masks with luminance blending.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG |
+|:---------:|:--------:|:-------:|:--------:|
+| [SVG](svg/15_masks.svg) | ![JairoSVG](png/jairosvg/15_masks.png) | ![EchoSVG](png/echosvg/15_masks.png) | ![CairoSVG](png/cairosvg/15_masks.png) |
+
+## 16 — Markers
+Arrow, dot, and square markers on lines, polylines, and curves.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG |
+|:---------:|:--------:|:-------:|:--------:|
+| [SVG](svg/16_markers.svg) | ![JairoSVG](png/jairosvg/16_markers.png) | ![EchoSVG](png/echosvg/16_markers.png) | ![CairoSVG](png/cairosvg/16_markers.png) |
+
+## 17 — Filters
+Gaussian blur and drop-shadow filters on shapes and text.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG |
+|:---------:|:--------:|:-------:|:--------:|
+| [SVG](svg/17_filters.svg) | ![JairoSVG](png/jairosvg/17_filters.png) | ![EchoSVG](png/echosvg/17_filters.png) | ![CairoSVG](png/cairosvg/17_filters.png) |
+
+## 18 — Embedded Images
+Base64-encoded PNG images with clipping, transforms, and opacity.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG |
+|:---------:|:--------:|:-------:|:--------:|
+| [SVG](svg/18_embedded_image.svg) | ![JairoSVG](png/jairosvg/18_embedded_image.png) | ![EchoSVG](png/echosvg/18_embedded_image.png) | ![CairoSVG](png/cairosvg/18_embedded_image.png) |
+
+## 19 — Advanced Text
+Multi-span text (tspan), text-decoration, textPath on curves, and rotated text.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG |
+|:---------:|:--------:|:-------:|:--------:|
+| [SVG](svg/19_text_advanced.svg) | ![JairoSVG](png/jairosvg/19_text_advanced.png) | ![EchoSVG](png/echosvg/19_text_advanced.png) | ![CairoSVG](png/cairosvg/19_text_advanced.png) |
+
 ---
 
 ## Regenerating

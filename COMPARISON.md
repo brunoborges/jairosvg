@@ -283,7 +283,7 @@ JairoSVG and CairoSVG share the same security posture: no scripting support (eli
 
 ## Visual Rendering Comparison
 
-A side-by-side visual comparison of 12 SVG test cases (JairoSVG vs EchoSVG vs CairoSVG) is available in the [`comparison/`](comparison/) directory, covering:
+A side-by-side visual comparison of 19 SVG test cases (JairoSVG vs EchoSVG vs CairoSVG) is available in the [`comparison/`](comparison/) directory, covering:
 
 1. Basic shapes
 2. Gradients
@@ -297,6 +297,13 @@ A side-by-side visual comparison of 12 SVG test cases (JairoSVG vs EchoSVG vs Ca
 10. Use & defs
 11. Star polygon (fill-rule)
 12. Nested SVG
+13. Patterns
+14. Clip paths
+15. Masks
+16. Markers
+17. Filters
+18. Embedded images
+19. Advanced text (tspan, textPath, decorations)
 
 See the [comparison gallery](comparison/README.md) for rendered PNG output. Regenerate with:
 
