@@ -20,7 +20,7 @@ import java.util.Arrays;
 public class benchmark {
 
     static final int WARMUP = 20;
-    static final int ITERATIONS = 50;
+    static final int ITERATIONS = 1000;
 
     static final String SVG_SIMPLE = """
             <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
