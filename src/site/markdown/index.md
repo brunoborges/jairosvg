@@ -1,12 +1,12 @@
 # JairoSVG
 
-**A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to PNG, PDF, PS, and SVG converter powered by Java2D.**
+**A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to PNG, JPEG, TIFF, PDF, PS/EPS, and SVG converter powered by Java2D.**
 
 ## Why JairoSVG?
 
 - 🎨 **Pure Java** — No native dependencies, runs anywhere Java runs
 - ⚡ **Fast** — 2-5x faster than EchoSVG, competitive with CairoSVG's C backend
-- 📄 **Multiple formats** — PNG, PDF, PostScript, SVG output
+- 📄 **Multiple formats** — PNG, JPEG, TIFF, PDF, PostScript/EPS, SVG output
 - 🛡️ **Secure** — XXE protection enabled by default
 - 🧰 **Flexible** — Static methods, fluent builder API, and CLI
 

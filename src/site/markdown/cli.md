@@ -13,7 +13,7 @@ Where `INPUT` is a path to an SVG file or a URL.
 | Option | Short | Description | Default |
 |--------|-------|-------------|---------|
 | `--output FILE` | `-o` | Output filename | stdout |
-| `--format FORMAT` | `-f` | Output format: `png`, `jpeg`, `tiff`, `pdf`, `ps`, `svg` | `png` |
+| `--format FORMAT` | `-f` | Output format: `png`, `jpeg`, `tiff`, `pdf`, `ps`, `eps`, `svg` | `png` |
 | `--dpi DPI` | `-d` | Resolution in dots per inch | `96` |
 | `--scale FACTOR` | `-s` | Scale factor | `1` |
 | `--background COLOR` | `-b` | Background color (name, hex, rgb) | transparent |
@@ -22,6 +22,7 @@ Where `INPUT` is a path to an SVG file or a URL.
 | `--output-width PX` | | Desired output width | — |
 | `--output-height PX` | | Desired output height | — |
 | `--negate-colors` | `-n` | Negate (invert) vector colors | off |
+| `--invert-images` | `-i` | Invert raster image colors | off |
 | `--unsafe` | `-u` | Allow external file access | off |
 | `--version` | | Print version and exit | |
 | `--help` | `-h` | Print help and exit | |
