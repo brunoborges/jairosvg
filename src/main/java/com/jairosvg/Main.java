@@ -13,6 +13,8 @@ public final class Main {
 
     private static final Map<String, String> FORMAT_EXTENSIONS = Map.of(
         "png", "PNG",
+        "jpeg", "JPEG",
+        "jpg", "JPEG",
         "pdf", "PDF",
         "ps", "PS",
         "eps", "EPS",
@@ -116,6 +118,7 @@ public final class Main {
 
         switch (format) {
             case "PNG" -> builder.toPng(out);
+            case "JPEG", "JPG" -> builder.toJpeg(out);
             case "PDF" -> builder.toPdf(out);
             case "SVG" -> builder.toSvg(out);
             case "PS", "EPS" -> {
@@ -138,7 +141,7 @@ public final class Main {
 
             Options:
               -o, --output FILE      Output filename (default: stdout)
-              -f, --format FORMAT    Output format: png, pdf, ps, eps, svg
+              -f, --format FORMAT    Output format: png, jpeg, pdf, ps, eps, svg
               -d, --dpi DPI          DPI ratio (default: 96)
               -W, --width PIXELS     Parent container width
               -H, --height PIXELS    Parent container height
