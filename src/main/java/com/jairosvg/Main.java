@@ -118,7 +118,7 @@ public final class Main {
 
         switch (format) {
             case "PNG" -> builder.toPng(out);
-            case "JPEG", "JPG" -> builder.toJpeg(out);
+            case "JPEG" -> builder.toJpeg(out);
             case "PDF" -> builder.toPdf(out);
             case "SVG" -> builder.toSvg(out);
             case "PS", "EPS" -> {
