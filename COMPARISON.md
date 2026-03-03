@@ -128,7 +128,7 @@ CairoSVG is a **Python library** built on the **Cairo 2D graphics library** (C).
 | `font` shorthand | ✅ | ✅ | ❌ |
 | `font-family`, `font-size`, `font-weight` | ✅ | ✅ | ✅ (basic) |
 | `letter-spacing`, `text-anchor` | ✅ | ✅ | ✅ |
-| `text-decoration` | ❌ ([#21](https://github.com/brunoborges/jairosvg/issues/21)) | ✅ | ❌ |
+| `text-decoration` | ✅ | ✅ | ❌ |
 | Named colors (170+) | ✅ | ✅ | ✅ |
 | `currentColor` | ✅ | ✅ | ✅ |
 | `rgb()` / `rgba()` / hex colors | ✅ | ✅ | ✅ |

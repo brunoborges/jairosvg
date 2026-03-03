@@ -3,6 +3,7 @@ package com.jairosvg;
 import java.awt.Font;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.font.LineMetrics;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
@@ -123,6 +124,7 @@ public final class TextDrawer {
 
         // Apply letter spacing
         double letterSpacing = size(surface, node.get("letter-spacing"));
+        double textWidth = 0;
 
         AffineTransform savedTransform = surface.context.getTransform();
 
@@ -144,6 +146,7 @@ public final class TextDrawer {
                 i += match.charsConsumed();
             }
             surface.cursorPosition[0] = curX;
+            textWidth = curX - startX;
         } else if (letterSpacing != 0) {
             double curX = startX;
             for (int i = 0; i < textContent.length(); i++) {
@@ -161,6 +164,7 @@ public final class TextDrawer {
                 curX += charBounds.getWidth() + letterSpacing;
             }
             surface.cursorPosition[0] = curX;
+            textWidth = curX - startX - letterSpacing;
         } else {
             if (drawAsText) {
                 surface.context.setFont(font);
@@ -171,6 +175,30 @@ public final class TextDrawer {
             }
             Rectangle2D bounds = font.getStringBounds(textContent, frc);
             surface.cursorPosition[0] = startX + bounds.getWidth();
+            textWidth = bounds.getWidth();
+        }
+
+        String textDecoration = node.get("text-decoration");
+        String normalizedTextDecoration = textDecoration == null ? null : textDecoration.strip();
+        if (svgFont == null && textWidth > 0 && normalizedTextDecoration != null
+            && !"none".equals(normalizedTextDecoration)) {
+            LineMetrics lineMetrics = font.getLineMetrics(textContent, frc);
+            double decorationThickness = lineMetrics.getUnderlineThickness();
+            for (String decoration : normalizedTextDecoration.split("\\s+")) {
+                double decorationY = switch (decoration) {
+                    case "underline" -> startY + lineMetrics.getUnderlineOffset();
+                    case "overline" -> startY - lineMetrics.getAscent();
+                    case "line-through" -> startY + lineMetrics.getStrikethroughOffset();
+                    default -> Double.NaN;
+                };
+                if (!Double.isNaN(decorationY)) {
+                    surface.path.append(new Rectangle2D.Double(
+                        startX,
+                        decorationY - decorationThickness / 2.0,
+                        textWidth,
+                        decorationThickness), false);
+                }
+            }
         }
 
         surface.cursorPosition[1] = startY;

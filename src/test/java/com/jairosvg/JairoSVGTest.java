@@ -5,6 +5,8 @@ import org.junit.jupiter.api.io.TempDir;
 import org.w3c.dom.Element;
 
 import javax.imageio.ImageIO;
+import java.awt.Font;
+import java.awt.font.FontRenderContext;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -201,6 +203,47 @@ class JairoSVGTest {
         byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
         assertNotNull(png);
         assertTrue(png.length > 0);
+    }
+
+    @Test
+    void testSvgWithTextDecoration() throws Exception {
+        int baselineY = 80;
+        int startX = 20;
+        Font font = new Font("SansSerif", Font.PLAIN, 48);
+        FontRenderContext frc = new FontRenderContext(null, true, true);
+        var metrics = font.getLineMetrics("....", frc);
+        int endX = startX + (int) Math.ceil(font.getStringBounds("....", frc).getWidth());
+
+        String plainSvg = """
+            <svg xmlns="http://www.w3.org/2000/svg" width="260" height="120">
+              <rect width="260" height="120" fill="white"/>
+              <text x="20" y="80" font-size="48" fill="black">....</text>
+            </svg>
+            """;
+        BufferedImage plainImage = ImageIO.read(new ByteArrayInputStream(
+            JairoSVG.svg2png(plainSvg.getBytes(StandardCharsets.UTF_8))));
+
+        String[] decorations = {"underline", "overline", "line-through"};
+        int[] expectedRows = {
+            (int) Math.round(baselineY + metrics.getUnderlineOffset()),
+            (int) Math.round(baselineY - metrics.getAscent()),
+            (int) Math.round(baselineY + metrics.getStrikethroughOffset())
+        };
+
+        for (int i = 0; i < decorations.length; i++) {
+            String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="260" height="120">
+                  <rect width="260" height="120" fill="white"/>
+                  <text x="20" y="80" font-size="48" fill="black" text-decoration="%s">....</text>
+                </svg>
+                """.formatted(decorations[i]);
+            BufferedImage decoratedImage = ImageIO.read(new ByteArrayInputStream(
+                JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
+            int plainPixels = countDarkPixelsInBand(plainImage, startX, endX, expectedRows[i], 2);
+            int decoratedPixels = countDarkPixelsInBand(decoratedImage, startX, endX, expectedRows[i], 2);
+            assertTrue(decoratedPixels > plainPixels + 8,
+                "Expected visible " + decorations[i] + " decoration line");
+        }
     }
 
     @Test
@@ -980,5 +1023,26 @@ class JairoSVGTest {
         int pixel = image.getRGB(100, 100);
         int red = (pixel >> 16) & 0xFF;
         assertTrue(red > 200, "Pattern with translate transform should still produce red pixels");
+    }
+
+    private static int countDarkPixelsInBand(BufferedImage image, int startX, int endX, int centerY, int halfBand) {
+        int darkPixels = 0;
+        int minY = Math.max(0, centerY - halfBand);
+        int maxY = Math.min(image.getHeight() - 1, centerY + halfBand);
+        int clampedStartX = Math.max(0, startX);
+        int clampedEndX = Math.min(image.getWidth() - 1, endX);
+        for (int y = minY; y <= maxY; y++) {
+            for (int x = clampedStartX; x <= clampedEndX; x++) {
+                int pixel = image.getRGB(x, y);
+                int alpha = (pixel >> 24) & 0xFF;
+                int red = (pixel >> 16) & 0xFF;
+                int green = (pixel >> 8) & 0xFF;
+                int blue = pixel & 0xFF;
+                if (alpha > 0 && red < 80 && green < 80 && blue < 80) {
+                    darkPixels++;
+                }
+            }
+        }
+        return darkPixels;
     }
 }
