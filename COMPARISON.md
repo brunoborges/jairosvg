@@ -168,8 +168,8 @@ EchoSVG integrates the **css4j** CSS parser, giving it significantly more advanc
 | PostScript (PS) | ✅ | ✅ | ✅ |
 | EPS | ✅ | ❌ | ❌ |
 | SVG (re-render) | ✅ | ✅ | ✅ |
-| JPEG | ❌ ([#31](https://github.com/brunoborges/jairosvg/issues/31)) | ✅ | ❌ |
-| TIFF | ❌ ([#32](https://github.com/brunoborges/jairosvg/issues/32)) | ✅ | ❌ |
+| JPEG | ✅ | ✅ | ❌ |
+| TIFF | ✅ | ✅ | ❌ |
 | In-memory image object | ✅ (`BufferedImage`) | ✅ (`BufferedImage`) | ✅ (Cairo surface) |
 
 ---
@@ -338,7 +338,7 @@ jbang comparison/generate.java
 - A full SVG toolkit with DOM manipulation, scripting, and animation
 - Advanced CSS support (Level 4 selectors, `calc()`, modern color functions)
 - A Swing-based SVG viewer component
-- Broader output format support (JPEG, TIFF)
+- Advanced SVG toolkit capabilities beyond conversion (DOM, scripting, animation)
 - Compatibility with Java 11–24 (JairoSVG requires Java 25+)
 - `foreignObject` support or SVG font rendering
 - Migrating from Apache Batik
