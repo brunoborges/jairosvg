@@ -47,6 +47,10 @@ public final class ImageHandler {
         double y = size(surface, node.get("y"), "y");
         double width = size(surface, node.get("width"), "x");
         double height = size(surface, node.get("height"), "y");
+        double opacity = 1;
+        String opacityStr = node.get("opacity");
+        if (opacityStr != null)
+            opacity = Double.parseDouble(opacityStr);
 
         // Check if it's an SVG image
         if (isSvgContent(imageBytes)) {
@@ -64,10 +68,16 @@ public final class ImageHandler {
                 double[] ratio = preserveRatio(surface, node, width, height);
 
                 var savedTransform = surface.context.getTransform();
+                var savedComposite = surface.context.getComposite();
                 surface.context.translate(x, y);
                 surface.context.scale(ratio[0], ratio[1]);
                 surface.context.translate(ratio[2], ratio[3]);
+                if (opacity < 1) {
+                    surface.context.setComposite(
+                            java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC_OVER, (float) opacity));
+                }
                 surface.draw(tree);
+                surface.context.setComposite(savedComposite);
                 surface.context.setTransform(savedTransform);
             } catch (Exception e) {
                 // Skip invalid SVG images
@@ -89,13 +99,9 @@ public final class ImageHandler {
                 height = node.imageHeight;
 
             double[] ratio = preserveRatio(surface, node, width, height);
-            double opacity = 1;
-            String opacityStr = node.get("opacity");
-            if (opacityStr != null)
-                opacity = Double.parseDouble(opacityStr);
-
             var savedTransform = surface.context.getTransform();
             var savedComposite = surface.context.getComposite();
+            var savedInterpolation = surface.context.getRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION);
 
             surface.context.translate(x, y);
             surface.context.scale(ratio[0], ratio[1]);
@@ -105,9 +111,28 @@ public final class ImageHandler {
                 surface.context.setComposite(
                         java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC_OVER, (float) opacity));
             }
+            surface.context.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+                    java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-            surface.context.drawImage(img, 0, 0, null);
+            BufferedImage imageToDraw = img;
+            int drawX = 0;
+            int drawY = 0;
+            if (opacity < 1) {
+                imageToDraw = new BufferedImage(img.getWidth() + 2, img.getHeight() + 2, BufferedImage.TYPE_INT_ARGB);
+                var g = imageToDraw.createGraphics();
+                g.setRenderingHints(surface.context.getRenderingHints());
+                g.drawImage(img, 1, 1, null);
+                g.dispose();
+                drawX = -1;
+                drawY = -1;
+            }
 
+            surface.context.drawImage(imageToDraw, drawX, drawY, null);
+
+            surface.context.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+                    savedInterpolation != null
+                            ? savedInterpolation
+                            : java.awt.RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
             surface.context.setComposite(savedComposite);
             surface.context.setTransform(savedTransform);
         } catch (IOException e) {
