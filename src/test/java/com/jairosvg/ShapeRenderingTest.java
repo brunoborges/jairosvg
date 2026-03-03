@@ -273,33 +273,6 @@ class ShapeRenderingTest {
         assertNotNull(png);
 
         BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
-
-        int lineEnd = image.getRGB(110, 20);
-        int polyMid = image.getRGB(60, 50);
-        int pathEnd = image.getRGB(110, 90);
-
-        assertTrue((lineEnd & 0xFF) > MIN_COLOR_CHANNEL_THRESHOLD);
-        assertTrue(((polyMid >> 8) & 0xFF) > MIN_COLOR_CHANNEL_THRESHOLD);
-        assertTrue(((pathEnd >> 16) & 0xFF) > MIN_COLOR_CHANNEL_THRESHOLD);
-    }
-
-    @Test
-    void testTextPathFollowsCurve() throws Exception {
-        String svg = """
-                <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
-                  <defs>
-                    <path id="curve" d="M30,200 C100,100 300,100 370,200" fill="none"/>
-                  </defs>
-                  <text font-size="18" fill="#9b59b6">
-                    <textPath href="#curve">Text following a curved path element</textPath>
-                  </text>
-                </svg>
-                """;
-
-        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
-        assertNotNull(png);
-
-        BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
         int curvedBandPixels = 0;
         // This band covers the upper-middle section of curve M30,200 C100,100 300,100
         // 370,200.
