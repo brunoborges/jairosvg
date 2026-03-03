@@ -38,6 +38,21 @@ public class Node {
         UNSAFE_FACTORY.setNamespaceAware(true);
     }
 
+    private static final ThreadLocal<DocumentBuilder> SAFE_BUILDER = ThreadLocal.withInitial(() -> {
+        try {
+            return SAFE_FACTORY.newDocumentBuilder();
+        } catch (Exception e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    });
+    private static final ThreadLocal<DocumentBuilder> UNSAFE_BUILDER = ThreadLocal.withInitial(() -> {
+        try {
+            return UNSAFE_FACTORY.newDocumentBuilder();
+        } catch (Exception e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    });
+
     private static final Set<String> NOT_INHERITED_ATTRIBUTES = Set.of("clip", "clip-path", "display", "filter",
             "height", "id", "mask", "opacity", "overflow", "rotate", "stop-color", "stop-opacity", "style", "transform",
             "transform-origin", "viewBox", "width", "x", "y", "dx", "dy", "{http://www.w3.org/1999/xlink}href", "href");
@@ -50,7 +65,7 @@ public class Node {
     public String url;
     public Node parent;
     public boolean root = false;
-    public List<Node> children = new ArrayList<>();
+    public List<Node> children;
     public Element xmlTree;
     public double imageWidth;
     public double imageHeight;
@@ -58,7 +73,7 @@ public class Node {
     public boolean unsafe = false;
     public UrlHelper.UrlFetcher urlFetcher;
 
-    private final Map<String, String> attributes = new LinkedHashMap<>();
+    private final Map<String, String> attributes;
     private List<CssProcessor.StyleRule> styleRules;
 
     /**
@@ -66,11 +81,17 @@ public class Node {
      * parsing).
      */
     Node() {
+        this.attributes = new LinkedHashMap<>();
+        this.children = new ArrayList<>();
     }
 
     /** Create a Node from a DOM Element. */
     public Node(Element element, Node parent, List<CssProcessor.StyleRule> styleRules, UrlHelper.UrlFetcher urlFetcher,
             boolean unsafe) {
+        int parentAttrCount = parent != null ? parent.attributes.size() : 0;
+        int elementAttrCount = element.getAttributes().getLength();
+        this.attributes = LinkedHashMap.newLinkedHashMap(parentAttrCount + elementAttrCount + 8);
+
         this.xmlTree = element;
         this.urlFetcher = urlFetcher;
         this.unsafe = unsafe;
@@ -137,10 +158,12 @@ public class Node {
             }
         }
 
-        // Replace currentColor
-        String currentColorValue = get("color", "black");
+        // Replace currentColor (lazy-resolve only if needed)
+        String currentColorValue = null;
         for (String attr : COLOR_ATTRIBUTES) {
             if ("currentColor".equals(this.attributes.get(attr))) {
+                if (currentColorValue == null)
+                    currentColorValue = get("color", "black");
                 this.attributes.put(attr, currentColorValue);
             }
         }
@@ -168,6 +191,7 @@ public class Node {
 
         // Build children
         var childNodes = element.getChildNodes();
+        this.children = new ArrayList<>(childNodes.getLength());
         for (int i = 0; i < childNodes.getLength(); i++) {
             if (childNodes.item(i) instanceof Element childElem) {
                 if (Features.matchFeatures(childElem)) {
@@ -254,8 +278,7 @@ public class Node {
             bytestring = new GZIPInputStream(new ByteArrayInputStream(bytestring)).readAllBytes();
         }
 
-        DocumentBuilderFactory factory = unsafe ? UNSAFE_FACTORY : SAFE_FACTORY;
-        DocumentBuilder builder = factory.newDocumentBuilder();
+        DocumentBuilder builder = unsafe ? UNSAFE_BUILDER.get() : SAFE_BUILDER.get();
         Document doc = builder.parse(new InputSource(new ByteArrayInputStream(bytestring)));
         Element root = doc.getDocumentElement();
 
