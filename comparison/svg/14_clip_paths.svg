@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
+  <defs>
+    <clipPath id="starClip">
+      <polygon points="200,30 230,110 315,110 245,160 270,240 200,190 130,240 155,160 85,110 170,110"/>
+    </clipPath>
+    <clipPath id="textClip">
+      <text x="200" y="270" text-anchor="middle" font-size="60" font-weight="bold">CLIP</text>
+    </clipPath>
+    <linearGradient id="rainbow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e74c3c"/>
+      <stop offset="25%" stop-color="#f39c12"/>
+      <stop offset="50%" stop-color="#2ecc71"/>
+      <stop offset="75%" stop-color="#3498db"/>
+      <stop offset="100%" stop-color="#9b59b6"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="#2c3e50"/>
+  <g clip-path="url(#starClip)">
+    <rect width="400" height="300" fill="url(#rainbow)"/>
+    <circle cx="200" cy="140" r="60" fill="white" fill-opacity="0.3"/>
+  </g>
+  <g clip-path="url(#textClip)">
+    <rect y="230" width="400" height="70" fill="url(#rainbow)"/>
+  </g>
+</svg>

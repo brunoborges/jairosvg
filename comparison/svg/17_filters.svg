@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
+  <defs>
+    <filter id="blur">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4"/>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow dx="4" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+    <filter id="bigBlur">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8"/>
+    </filter>
+  </defs>
+  <rect width="400" height="300" fill="#ecf0f1"/>
+  <!-- Blurred shapes -->
+  <rect x="20" y="20" width="100" height="80" rx="8" fill="#e74c3c" filter="url(#blur)"/>
+  <text x="70" y="125" text-anchor="middle" font-size="12" fill="#2c3e50">Blur</text>
+  <!-- Drop shadow -->
+  <rect x="150" y="20" width="100" height="80" rx="8" fill="#3498db" filter="url(#shadow)"/>
+  <text x="200" y="125" text-anchor="middle" font-size="12" fill="#2c3e50">Shadow</text>
+  <!-- No filter (reference) -->
+  <rect x="280" y="20" width="100" height="80" rx="8" fill="#2ecc71"/>
+  <text x="330" y="125" text-anchor="middle" font-size="12" fill="#2c3e50">None</text>
+  <!-- Heavy blur on complex shape -->
+  <circle cx="100" cy="220" r="50" fill="#9b59b6" filter="url(#bigBlur)"/>
+  <circle cx="200" cy="220" r="50" fill="#f39c12" filter="url(#shadow)"/>
+  <polygon points="300,170 340,250 260,250" fill="#1abc9c" filter="url(#blur)"/>
+</svg>

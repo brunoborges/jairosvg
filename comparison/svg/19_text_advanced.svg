@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
+  <defs>
+    <path id="curve" d="M30,200 C100,100 300,100 370,200" fill="none"/>
+  </defs>
+  <rect width="400" height="300" fill="#f5f6fa"/>
+  <!-- Multi-span text with mixed styles -->
+  <text x="200" y="40" text-anchor="middle" font-size="18">
+    <tspan fill="#e74c3c" font-weight="bold">Red Bold</tspan>
+    <tspan fill="#3498db" font-style="italic"> Blue Italic</tspan>
+    <tspan fill="#2ecc71" font-size="14"> Small Green</tspan>
+  </text>
+  <!-- Stacked tspans with dx/dy -->
+  <text x="40" y="90" font-size="16" fill="#2c3e50">
+    <tspan>First line</tspan>
+    <tspan x="40" dy="24" fill="#e74c3c">Second line (dy=24)</tspan>
+    <tspan x="40" dy="24" fill="#3498db">Third line (dy=24)</tspan>
+  </text>
+  <!-- Text with letter-spacing and word-spacing -->
+  <text x="200" y="90" font-size="14" fill="#8e44ad" letter-spacing="4">SPACED OUT</text>
+  <!-- Text decorations -->
+  <text x="40" y="195" font-size="18">
+    <tspan text-decoration="underline" fill="#e74c3c">Underline</tspan>
+    <tspan dx="10" text-decoration="line-through" fill="#3498db">Strikethrough</tspan>
+  </text>
+  <!-- Text on path -->
+  <text font-size="16" fill="#9b59b6">
+    <textPath href="#curve">Text following a curved path element</textPath>
+  </text>
+  <!-- Rotated text -->
+  <text x="350" y="150" font-size="14" fill="#e67e22" transform="rotate(-90,350,150)">Rotated 90°</text>
+</svg>

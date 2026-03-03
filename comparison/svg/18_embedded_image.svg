@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="400" height="300">
+  <defs>
+    <clipPath id="roundClip">
+      <circle cx="310" cy="100" r="60"/>
+    </clipPath>
+  </defs>
+  <rect width="400" height="300" fill="#2c3e50"/>
+  <!-- Inline base64 4x4 red image scaled up -->
+  <image x="20" y="20" width="160" height="120"
+    href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAEElEQVR4nGN47mMDRwzEcQBfYhbxYdU3aQAAAABJRU5ErkJggg=="/>
+  <rect x="20" y="20" width="160" height="120" fill="none" stroke="#ecf0f1" stroke-width="2"/>
+  <text x="100" y="165" text-anchor="middle" font-size="12" fill="#ecf0f1">Base64 Image</text>
+  <!-- Clipped image (4x4 green pixel) -->
+  <image x="250" y="40" width="120" height="120" clip-path="url(#roundClip)"
+    href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAEElEQVR4nGPQO1MIRwzEcQBKAhaxZZtV7AAAAABJRU5ErkJggg=="/>
+  <circle cx="310" cy="100" r="60" fill="none" stroke="#ecf0f1" stroke-width="2"/>
+  <text x="310" y="185" text-anchor="middle" font-size="12" fill="#ecf0f1">Clipped Image</text>
+  <!-- Row of images with transforms -->
+  <g transform="translate(20,210)">
+    <image width="50" height="50" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAEUlEQVR4nGMwmXEbjhiI4wAApUIacXR7w1UAAAAASUVORK5CYII=" transform="rotate(0)"/>
+    <image x="70" width="50" height="50" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAEElEQVR4nGPQO1MIRwzEcQBKAhaxZZtV7AAAAABJRU5ErkJggg==" transform="rotate(15,95,25)"/>
+    <image x="140" width="50" height="50" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAEElEQVR4nGN47mMDRwzEcQBfYhbxYdU3aQAAAABJRU5ErkJggg==" opacity="0.5"/>
+    <image x="210" width="50" height="50" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAEUlEQVR4nGP4eIQfjhiI4wAA7PIcQcnRd7cAAAAASUVORK5CYII="/>
+    <image x="280" width="50" height="50" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAEUlEQVR4nGOYHbkNjhiI4wAAsuIaoetoRSwAAAAASUVORK5CYII=" opacity="0.7"/>
+  </g>
+  <text x="200" y="290" text-anchor="middle" font-size="12" fill="#ecf0f1">Transformed &amp; Opacity</text>
+</svg>

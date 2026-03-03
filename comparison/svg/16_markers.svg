@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#e74c3c"/>
+    </marker>
+    <marker id="arrowBack" viewBox="0 0 10 10" refX="0" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M10,0 L0,5 L10,10 Z" fill="#e74c3c"/>
+    </marker>
+    <marker id="dot" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6">
+      <circle cx="5" cy="5" r="4" fill="#3498db"/>
+    </marker>
+    <marker id="square" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6">
+      <rect width="10" height="10" fill="#2ecc71"/>
+    </marker>
+  </defs>
+  <rect width="400" height="300" fill="#f5f6fa"/>
+  <!-- Arrow markers -->
+  <line x1="40" y1="40" x2="360" y2="40" stroke="#e74c3c" stroke-width="2" marker-start="url(#arrowBack)" marker-end="url(#arrow)"/>
+  <polyline points="40,100 130,70 220,110 310,80 360,100" fill="none" stroke="#e74c3c" stroke-width="2" marker-mid="url(#arrow)" marker-end="url(#arrow)"/>
+  <!-- Dot markers on curve -->
+  <path d="M40,170 C100,120 180,220 250,170 S360,120 360,170" fill="none" stroke="#3498db" stroke-width="2" marker-start="url(#dot)" marker-mid="url(#dot)" marker-end="url(#dot)"/>
+  <!-- Square markers -->
+  <path d="M40,250 L130,220 220,260 310,230 360,250" fill="none" stroke="#2ecc71" stroke-width="2" marker-start="url(#square)" marker-mid="url(#square)" marker-end="url(#square)"/>
+</svg>
