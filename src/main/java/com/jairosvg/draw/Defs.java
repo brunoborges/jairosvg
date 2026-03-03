@@ -487,7 +487,12 @@ public final class Defs {
         String midId = markerId(node.get("marker-mid"));
         String endId = markerId(node.get("marker-end"));
 
-        drawMarkerAtVertex(surface, node, surface.markers.get(startId), markerVertices.getFirst(), true, false);
+        drawMarkerAtVertex(surface, node, surface.markers.get(startId), markerVertices.getFirst(), true,
+                markerVertices.size() == 1);
+        if (markerVertices.size() == 1) {
+            drawMarkerAtVertex(surface, node, surface.markers.get(endId), markerVertices.getFirst(), false, true);
+            return;
+        }
         for (int i = 1; i < markerVertices.size() - 1; i++) {
             drawMarkerAtVertex(surface, node, surface.markers.get(midId), markerVertices.get(i), false, false);
         }
@@ -631,12 +636,9 @@ public final class Defs {
     private static double markerAngle(Node markerNode, MarkerVertex vertex, boolean isStart, boolean isEnd) {
         String orient = markerNode.get("orient", "0");
         if ("auto".equals(orient) || "auto-start-reverse".equals(orient)) {
-            double angle = vertex.outAngle;
-            if (isEnd && !Double.isNaN(vertex.inAngle)) {
-                angle = vertex.inAngle;
-            }
-            if (Double.isNaN(angle) && !Double.isNaN(vertex.inAngle)) {
-                angle = vertex.inAngle;
+            double angle = isEnd ? vertex.inAngle : vertex.outAngle;
+            if (Double.isNaN(angle)) {
+                angle = isEnd ? vertex.outAngle : vertex.inAngle;
             }
             if (Double.isNaN(angle)) {
                 angle = 0;

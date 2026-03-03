@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ShapeRenderingTest {
+    private static final int MIN_COLOR_CHANNEL_THRESHOLD = 120;
 
     @Test
     void testSimpleRectSvgToPng() throws Exception {
@@ -164,8 +165,8 @@ class ShapeRenderingTest {
         int polyMid = image.getRGB(60, 50);
         int pathEnd = image.getRGB(110, 90);
 
-        assertTrue((lineEnd & 0xFF) > 120);
-        assertTrue(((polyMid >> 8) & 0xFF) > 120);
-        assertTrue(((pathEnd >> 16) & 0xFF) > 120);
+        assertTrue((lineEnd & 0xFF) > MIN_COLOR_CHANNEL_THRESHOLD);
+        assertTrue(((polyMid >> 8) & 0xFF) > MIN_COLOR_CHANNEL_THRESHOLD);
+        assertTrue(((pathEnd >> 16) & 0xFF) > MIN_COLOR_CHANNEL_THRESHOLD);
     }
 }
