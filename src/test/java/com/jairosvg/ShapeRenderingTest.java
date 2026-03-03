@@ -224,7 +224,7 @@ class ShapeRenderingTest {
     }
   
     @Test
-    void testTextPathFollowsCurve() throws Exception {
+    void testMarkersRenderOnLinePolylineAndPath() throws Exception {
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120">
                   <defs>
@@ -245,30 +245,32 @@ class ShapeRenderingTest {
                 """;
 
         byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
-        assertNotNull(png);
+
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
+        int lineEnd = image.getRGB(110, 20);
+        int polyMid = image.getRGB(60, 50);
+        int pathEnd = image.getRGB(110, 90);
+
+        assertTrue((lineEnd & 0xFF) > MIN_COLOR_CHANNEL_THRESHOLD);
+        assertTrue(((polyMid >> 8) & 0xFF) > MIN_COLOR_CHANNEL_THRESHOLD);
+        assertTrue(((pathEnd >> 16) & 0xFF) > MIN_COLOR_CHANNEL_THRESHOLD);
     }
 
     @Test
-    void testMarkersRenderOnLinePolylineAndPath() throws Exception {
+    void testTextPathFollowsCurve() throws Exception {
         String svg = """
-                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120">
+                <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
                   <defs>
-                    <marker id="dot" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="10" markerHeight="10">
-                      <circle cx="5" cy="5" r="4" fill="blue"/>
-                    </marker>
-                    <marker id="square" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="10" markerHeight="10">
-                      <rect width="10" height="10" fill="lime"/>
-                    </marker>
-                    <marker id="triangle" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="10" markerHeight="10">
-                      <path d="M0,10 L5,0 L10,10 Z" fill="red"/>
-                    </marker>
+                    <path id="curve" d="M30,200 C100,100 300,100 370,200" fill="none"/>
                   </defs>
-                  <line x1="10" y1="20" x2="110" y2="20" stroke="black" marker-end="url(#dot)"/>
-                  <polyline points="10,50 60,50 110,50" fill="none" stroke="black" marker-mid="url(#square)"/>
-                  <path d="M10,90 L110,90" fill="none" stroke="black" marker-end="url(#triangle)"/>
-            """;
+                  <text font-size="18" fill="#9b59b6">
+                    <textPath href="#curve">Text following a curved path element</textPath>
+                  </text>
+                </svg>
+                """;
 
         byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
 
         BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
 
