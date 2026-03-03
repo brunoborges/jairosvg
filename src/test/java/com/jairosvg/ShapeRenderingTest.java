@@ -137,7 +137,94 @@ class ShapeRenderingTest {
     }
 
     @Test
-    void testMarkersRenderOnLinePolylineAndPath() throws Exception {
+    void testGaussianBlurFilterRenders() throws Exception {
+        int shapeX = 30;
+        int shapeY = 30;
+        int shapeSize = 40;
+
+        String filteredSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="blur">
+                      <feGaussianBlur stdDeviation="4"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="white"/>
+                  <rect x="30" y="30" width="40" height="40" fill="red" filter="url(#blur)"/>
+                </svg>
+                """;
+        String plainSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <rect x="%d" y="%d" width="%d" height="%d" fill="red"/>
+                </svg>
+                """.formatted(shapeX, shapeY, shapeSize, shapeSize);
+
+        BufferedImage filteredImage = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(filteredSvg.getBytes(StandardCharsets.UTF_8))));
+        BufferedImage plainImage = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(plainSvg.getBytes(StandardCharsets.UTF_8))));
+
+        int probeY = shapeY + shapeSize / 2;
+        boolean blurFound = false;
+        for (int x = shapeX - 8; x < shapeX; x++) {
+            if (plainImage.getRGB(x, probeY) != filteredImage.getRGB(x, probeY)) {
+                blurFound = true;
+                break;
+            }
+        }
+        assertTrue(blurFound);
+    }
+
+    @Test
+    void testDropShadowFilterRenders() throws Exception {
+        String filteredSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="shadow">
+                      <feDropShadow dx="6" dy="6" stdDeviation="2" flood-color="black" flood-opacity="0.7"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="white"/>
+                  <rect x="20" y="20" width="30" height="30" fill="#3498db" filter="url(#shadow)"/>
+                </svg>
+                """;
+        String plainSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <rect x="20" y="20" width="30" height="30" fill="#3498db"/>
+                </svg>
+                """;
+
+        BufferedImage filteredImage = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(filteredSvg.getBytes(StandardCharsets.UTF_8))));
+        BufferedImage plainImage = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(plainSvg.getBytes(StandardCharsets.UTF_8))));
+
+        int shapeX = 20;
+        int shapeY = 20;
+        int shapeSize = 30;
+        int dx = 6;
+        int dy = 6;
+        int searchStartX = shapeX + shapeSize + 1;
+        int searchStartY = shapeY + shapeSize + 1;
+        int searchEndX = searchStartX + dx + 14;
+        int searchEndY = searchStartY + dy + 14;
+
+        boolean shadowFound = false;
+        for (int y = searchStartY; y <= searchEndY && !shadowFound; y++) {
+            for (int x = searchStartX; x <= searchEndX; x++) {
+                if (plainImage.getRGB(x, y) != filteredImage.getRGB(x, y)) {
+                    shadowFound = true;
+                    break;
+                }
+            }
+        }
+        assertTrue(shadowFound);
+    }
+  
+    @Test
+    void testTextPathFollowsCurve() throws Exception {
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120">
                   <defs>
@@ -158,6 +245,30 @@ class ShapeRenderingTest {
 
         byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
         assertNotNull(png);
+    }
+
+    @Test
+    void testMarkersRenderOnLinePolylineAndPath() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120">
+                  <defs>
+                    <marker id="dot" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="10" markerHeight="10">
+                      <circle cx="5" cy="5" r="4" fill="blue"/>
+                    </marker>
+                    <marker id="square" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="10" markerHeight="10">
+                      <rect width="10" height="10" fill="lime"/>
+                    </marker>
+                    <marker id="triangle" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="10" markerHeight="10">
+                      <path d="M0,10 L5,0 L10,10 Z" fill="red"/>
+                    </marker>
+                  </defs>
+                  <line x1="10" y1="20" x2="110" y2="20" stroke="black" marker-end="url(#dot)"/>
+                  <polyline points="10,50 60,50 110,50" fill="none" stroke="black" marker-mid="url(#square)"/>
+                  <path d="M10,90 L110,90" fill="none" stroke="black" marker-end="url(#triangle)"/>
+            """;
+
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+
         BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
         int curvedBandPixels = 0;
         // This band covers the upper-middle section of curve M30,200 C100,100 300,100
