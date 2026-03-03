@@ -118,10 +118,7 @@ public final class Defs {
         for (Node child : gradientNode.children) {
             if (!"stop".equals(child.tag))
                 continue;
-            float offset = (float) size(surface, child.get("offset"), null);
-            if (child.get("offset", "").contains("%")) {
-                offset = offset; // already parsed as fraction by size()
-            }
+            float offset = parsePercent(child.get("offset", "0"));
             offset = Math.max(lastOffset, Math.min(1, offset));
             lastOffset = offset;
 
