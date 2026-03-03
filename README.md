@@ -4,12 +4,12 @@
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 [![Java 25+](https://img.shields.io/badge/Java-25%2B-orange)](https://openjdk.org/)
 
-A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to PNG, PDF, PS, and SVG converter powered by Java2D.
+A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to PNG, JPEG, TIFF, PDF, PS/EPS, and SVG converter powered by Java2D.
 
 ## Features
 
 - 🎨 **SVG 1.1 rendering** using Java2D — no native dependencies
-- 📄 **Multiple output formats**: PNG, JPEG, TIFF, PDF (via Apache PDFBox), PostScript, SVG
+- 📄 **Multiple output formats**: PNG, JPEG, TIFF, PDF (via Apache PDFBox), PostScript/EPS, SVG
 - 🔷 **Full shape support**: rect, circle, ellipse, line, polygon, polyline, path
 - 🌈 **Gradients**: linear and radial with stop colors and opacity
 - ✍️ **Text rendering** with font control, letter-spacing, text-anchor
@@ -102,7 +102,7 @@ java --enable-preview -jar target/jairosvg-1.0.0-SNAPSHOT-cli.jar input.svg -f p
 | Option | Description |
 |--------|-------------|
 | `-o, --output FILE` | Output filename |
-| `-f, --format FORMAT` | Output format: `png`, `jpeg`, `tiff`, `pdf`, `ps`, `svg` |
+| `-f, --format FORMAT` | Output format: `png`, `jpeg`, `tiff`, `pdf`, `ps`, `eps`, `svg` |
 | `-d, --dpi DPI` | Resolution (default: 96) |
 | `-s, --scale FACTOR` | Scale factor (default: 1) |
 | `-b, --background COLOR` | Background color |
@@ -111,6 +111,7 @@ java --enable-preview -jar target/jairosvg-1.0.0-SNAPSHOT-cli.jar input.svg -f p
 | `--output-width PIXELS` | Desired output width |
 | `--output-height PIXELS` | Desired output height |
 | `-n, --negate-colors` | Negate vector colors |
+| `-i, --invert-images` | Invert raster image colors |
 | `-u, --unsafe` | Allow external file access |
 
 ## Supported SVG Features

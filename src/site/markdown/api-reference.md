@@ -55,8 +55,9 @@ JairoSVG.builder()
     .outputWidth(400)          // Desired output width
     .outputHeight(300)         // Desired output height
     .negateColors(true)        // Invert colors
+    .invertImages(true)        // Invert raster images
     .unsafe(false)             // Allow external entities (default: false)
-    .toPng();                  // or .toJpeg(), .toTiff(), .toPdf(), .toPs(), .toSvg(), .toImage()
+    .toPng();                  // or .toJpeg(), .toTiff(), .toPdf(), .toPs(), .toEps(), .toSvg(), .toImage()
 ```
 
 ### Output Methods
@@ -68,6 +69,7 @@ JairoSVG.builder()
 | `.toTiff()` | `byte[]` | TIFF image data |
 | `.toPdf()` | `byte[]` | PDF document data |
 | `.toPs()` | `byte[]` | PostScript data |
+| `.toEps()` | `byte[]` | Encapsulated PostScript data |
 | `.toSvg()` | `byte[]` | Re-rendered SVG |
 | `.toImage()` | `BufferedImage` | Java2D image object |
 

@@ -4,7 +4,7 @@
 
 ### What is JairoSVG?
 
-JairoSVG is a Java port of [CairoSVG](https://cairosvg.org), a Python SVG converter. It converts SVG 1.1 images to PNG, PDF, PostScript, and SVG formats using pure Java (Java2D for rendering, PDFBox for PDF).
+JairoSVG is a Java port of [CairoSVG](https://cairosvg.org), a Python SVG converter. It converts SVG 1.1 images to PNG, JPEG, TIFF, PDF, PostScript/EPS, and SVG formats using pure Java (Java2D for rendering, PDFBox for PDF).
 
 ### Why "JairoSVG"?
 
@@ -36,8 +36,8 @@ No. JairoSVG is pure Java. Unlike CairoSVG (which depends on Cairo, a C library)
 
 ### What is NOT supported?
 
-- SVG filters (partial: feOffset, feBlend only)
-- CSS descendant/sibling selectors
+- SVG filters (partial: feOffset only)
+- CSS sibling selectors
 - Animations (SMIL)
 - JavaScript
 - Fonts via `@font-face` (system fonts are used)
