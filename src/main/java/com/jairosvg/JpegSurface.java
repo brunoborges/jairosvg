@@ -3,12 +3,25 @@ package com.jairosvg;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 /**
  * JPEG output surface.
  */
 public class JpegSurface extends Surface {
+
+    private static final ImageWriter JPEG_WRITER;
+
+    static {
+        var writers = ImageIO.getImageWritersByFormatName("JPEG");
+        if (!writers.hasNext()) {
+            throw new ExceptionInInitializerError("No JPEG ImageWriter found");
+        }
+        JPEG_WRITER = writers.next();
+    }
 
     @Override
     protected void createSurface(double w, double h) {
@@ -23,7 +36,14 @@ public class JpegSurface extends Surface {
     public void finish() throws IOException {
         super.finish();
         if (output != null && image != null) {
-            ImageIO.write(image, "JPEG", output);
+            synchronized (JPEG_WRITER) {
+                try (var ios = new MemoryCacheImageOutputStream(output)) {
+                    JPEG_WRITER.setOutput(ios);
+                    JPEG_WRITER.write(null, new IIOImage(image, null, null), null);
+                } finally {
+                    JPEG_WRITER.reset();
+                }
+            }
         }
     }
 }

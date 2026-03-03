@@ -6,8 +6,6 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import javax.imageio.ImageIO;
-
 /**
  * SVG output surface. Re-renders the parsed SVG as a clean SVG document with
  * the rasterized image embedded.
@@ -22,7 +20,9 @@ public class SvgSurface extends Surface {
 
         // Encode the rendered image as a PNG data URI within a new SVG
         var pngBytes = new java.io.ByteArrayOutputStream();
-        ImageIO.write(image, "PNG", pngBytes);
+        try (var ios = new javax.imageio.stream.MemoryCacheImageOutputStream(pngBytes)) {
+            PngSurface.writePng(image, ios);
+        }
         String base64 = Base64.getEncoder().encodeToString(pngBytes.toByteArray());
 
         Writer writer = new OutputStreamWriter(output, StandardCharsets.UTF_8);
