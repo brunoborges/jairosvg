@@ -6,7 +6,7 @@
 
     <groupId>io.brunoborges</groupId>
     <artifactId>jairosvg</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>JairoSVG</name>
@@ -42,7 +42,7 @@
 
     <properties>
         <maven.compiler.release>25</maven.compiler.release>
-        <project.build.outputTimestamp>2026-03-03T20:40:33Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2026-03-03T20:50:44Z</project.build.outputTimestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <pdfbox.version>3.0.6</pdfbox.version>
         <junit.version>6.0.3</junit.version>
