@@ -100,6 +100,9 @@ public final class JairoSVG {
         private boolean invertImages = false;
         private Double outputWidth;
         private Double outputHeight;
+        private int pngCompressionLevel = -1;
+        private float jpegQuality = -1f;
+        private String tiffCompressionType;
 
         ConversionBuilder() {
         }
@@ -180,34 +183,79 @@ public final class JairoSVG {
             return this;
         }
 
+        /**
+         * Set PNG compression level (0-9). 0 = no compression (fastest), 9 = max
+         * compression (smallest). Default uses the JDK default (~6).
+         */
+        public ConversionBuilder pngCompressionLevel(int level) {
+            this.pngCompressionLevel = level;
+            return this;
+        }
+
+        /**
+         * Set JPEG quality (0.0-1.0). 0.0 = lowest quality (smallest file), 1.0 =
+         * highest quality (largest file). Default uses the JDK default (~0.75).
+         */
+        public ConversionBuilder jpegQuality(float quality) {
+            this.jpegQuality = quality;
+            return this;
+        }
+
+        /**
+         * Set TIFF compression type. Common values: "Deflate", "LZW", "JPEG", "ZLib",
+         * "PackBits", "Uncompressed". Default uses the writer's default.
+         */
+        public ConversionBuilder tiffCompressionType(String type) {
+            this.tiffCompressionType = type;
+            return this;
+        }
+
         /** Convert to PNG bytes. */
         public byte[] toPng() throws Exception {
-            return convert(new PngSurface());
+            var surface = new PngSurface();
+            if (pngCompressionLevel >= 0)
+                surface.setCompressionLevel(pngCompressionLevel);
+            return convert(surface);
         }
 
         /** Convert to PNG and write to output stream. */
         public void toPng(OutputStream out) throws Exception {
-            convert(new PngSurface(), out);
+            var surface = new PngSurface();
+            if (pngCompressionLevel >= 0)
+                surface.setCompressionLevel(pngCompressionLevel);
+            convert(surface, out);
         }
 
         /** Convert to JPEG bytes. */
         public byte[] toJpeg() throws Exception {
-            return convert(new JpegSurface());
+            var surface = new JpegSurface();
+            if (jpegQuality >= 0f)
+                surface.setQuality(jpegQuality);
+            return convert(surface);
         }
 
         /** Convert to JPEG and write to output stream. */
         public void toJpeg(OutputStream out) throws Exception {
-            convert(new JpegSurface(), out);
+            var surface = new JpegSurface();
+            if (jpegQuality >= 0f)
+                surface.setQuality(jpegQuality);
+            convert(surface, out);
         }
 
         /** Convert to TIFF bytes. */
         public byte[] toTiff() throws Exception {
-            return convert(new TiffSurface());
+            var surface = new TiffSurface();
+            if (tiffCompressionType != null)
+                surface.setCompressionType(tiffCompressionType);
+            return convert(surface);
         }
 
         /** Convert to TIFF and write to output stream. */
         public void toTiff(OutputStream out) throws Exception {
-            convert(new TiffSurface(), out);
+            var surface = new TiffSurface();
+            if (tiffCompressionType != null)
+                surface.setCompressionType(tiffCompressionType);
+            convert(surface, out);
         }
 
         /** Convert to PDF bytes. */

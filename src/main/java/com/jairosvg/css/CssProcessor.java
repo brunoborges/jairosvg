@@ -394,7 +394,9 @@ public final class CssProcessor {
         return result;
     }
 
-    /** Resolve CSS custom properties in {@code var(--name[, fallback])} expressions. */
+    /**
+     * Resolve CSS custom properties in {@code var(--name[, fallback])} expressions.
+     */
     public static String resolveCustomProperties(String value, Map<String, String> attributes) {
         return resolveCustomProperties(value, attributes, new HashSet<>());
     }
@@ -445,7 +447,10 @@ public final class CssProcessor {
         return resolved.toString();
     }
 
-    /** Find the matching ')' for a var() expression, accounting for nested parentheses. */
+    /**
+     * Find the matching ')' for a var() expression, accounting for nested
+     * parentheses.
+     */
     private static int findClosingParenthesis(String value, int start) {
         int depth = 1;
         for (int i = start; i < value.length(); i++) {
@@ -461,7 +466,10 @@ public final class CssProcessor {
         return -1;
     }
 
-    /** Split var() content into [name, fallback], respecting nested parentheses in fallback. */
+    /**
+     * Split var() content into [name, fallback], respecting nested parentheses in
+     * fallback.
+     */
     private static String[] splitVariableArguments(String content) {
         int depth = 0;
         for (int i = 0; i < content.length(); i++) {

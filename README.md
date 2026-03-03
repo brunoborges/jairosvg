@@ -78,6 +78,17 @@ byte[] scaled = JairoSVG.builder()
     .backgroundColor("#ffffff")
     .toPng();
 
+// Control image compression/quality
+byte[] fastPng = JairoSVG.builder()
+    .fromFile(Path.of("icon.svg"))
+    .pngCompressionLevel(1)   // 0 (fastest) to 9 (smallest)
+    .toPng();
+
+byte[] highQualityJpeg = JairoSVG.builder()
+    .fromFile(Path.of("photo.svg"))
+    .jpegQuality(0.95f)       // 0.0 (smallest) to 1.0 (best)
+    .toJpeg();
+
 // Get BufferedImage directly
 BufferedImage image = JairoSVG.builder()
     .fromFile(Path.of("icon.svg"))

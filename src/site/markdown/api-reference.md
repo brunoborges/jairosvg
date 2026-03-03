@@ -57,6 +57,9 @@ JairoSVG.builder()
     .negateColors(true)        // Invert colors
     .invertImages(true)        // Invert raster images
     .unsafe(false)             // Allow external entities (default: false)
+    .pngCompressionLevel(6)    // PNG: 0 (fastest) to 9 (smallest), default ~6
+    .jpegQuality(0.75f)        // JPEG: 0.0 (smallest) to 1.0 (best), default ~0.75
+    .tiffCompressionType("LZW") // TIFF: "Deflate", "LZW", "JPEG", "PackBits", etc.
     .toPng();                  // or .toJpeg(), .toTiff(), .toPdf(), .toPs(), .toEps(), .toSvg(), .toImage()
 ```
 
@@ -72,6 +75,14 @@ JairoSVG.builder()
 | `.toEps()` | `byte[]` | Encapsulated PostScript data |
 | `.toSvg()` | `byte[]` | Re-rendered SVG |
 | `.toImage()` | `BufferedImage` | Java2D image object |
+
+### Image Compression / Quality
+
+| Method | Format | Range | Default | Description |
+|--------|--------|-------|---------|-------------|
+| `.pngCompressionLevel(int)` | PNG | 0–9 | ~6 | 0 = no compression (fastest), 9 = max compression (smallest) |
+| `.jpegQuality(float)` | JPEG | 0.0–1.0 | ~0.75 | 0.0 = lowest quality (smallest), 1.0 = highest quality (largest) |
+| `.tiffCompressionType(String)` | TIFF | — | writer default | "Deflate", "LZW", "JPEG", "ZLib", "PackBits", "Uncompressed" |
 
 ### Input Methods
 
