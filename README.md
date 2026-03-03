@@ -15,7 +15,7 @@ A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to 
 - ✍️ **Text rendering** with font control, letter-spacing, text-anchor
 - 🔄 **Transforms**: translate, rotate, scale, skew, matrix
 - 🎭 **Advanced features**: clip-path, viewBox, preserveAspectRatio, `<use>`, CSS stylesheets
-- ⚡ **Fast**: 5-10x faster than EchoSVG (Batik fork), 1.1-1.5x faster than CairoSVG's native C backend
+- ⚡ **Fast**: 5-10x faster than EchoSVG (Batik fork), 1.2-2.2x faster than CairoSVG's native C backend
 - 🛡️ **Secure**: XML external entity (XXE) protection by default
 - 🧰 **Flexible API**: Static methods, fluent builder, CLI
 
@@ -25,11 +25,13 @@ SVG → PNG conversion (lower is better):
 
 | Test Case | JairoSVG (Java) | EchoSVG (Java) | CairoSVG (Python) |
 |-----------|:---:|:---:|:---:|
-| Simple shapes | **1.3 ms** | 9.2 ms | 2.0 ms |
-| Gradients + transforms | **3.6 ms** | 34.6 ms | 5.3 ms |
-| Complex paths + text | **5.4 ms** | 28.9 ms | 6.0 ms |
+| Simple shapes | **1.4 ms** | 9.0 ms | 2.0 ms |
+| Gradients + transforms | **3.6 ms** | 35.1 ms | 5.3 ms |
+| Complex paths + text | **5.4 ms** | 29.4 ms | 6.3 ms |
+| Defs + use + clipPath | **4.1 ms** | 35.9 ms | 8.7 ms |
+| Markers + dashed strokes | **4.4 ms** | 25.5 ms | 5.2 ms |
 
-*JairoSVG is 5-10x faster than EchoSVG and 1.1-1.5x faster than CairoSVG's native C backend.*
+*JairoSVG is 5-10x faster than EchoSVG and 1.2-2.2x faster than CairoSVG's native C backend.*
 
 Run the benchmark yourself: `jbang benchmark.java`
 
