@@ -1,18 +1,25 @@
 package com.jairosvg.draw;
 
 import java.awt.Font;
+import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.LineMetrics;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.jairosvg.dom.Node;
 import com.jairosvg.dom.SvgFont;
 import com.jairosvg.surface.Surface;
+import com.jairosvg.util.UrlHelper;
 
 import static com.jairosvg.util.Helpers.*;
 
@@ -154,7 +161,10 @@ public final class TextDrawer {
         double letterSpacing = size(surface, node.get("letter-spacing"));
         double textWidth = 0;
 
-        AffineTransform savedTransform = surface.context.getTransform();
+        if (svgFont == null && "textPath".equals(node.tag)
+                && drawTextPath(surface, node, font, frc, textContent, letterSpacing)) {
+            return;
+        }
 
         if (svgFont != null) {
             // Render using SVG font glyphs as paths (greedy longest-match for multi-char
@@ -227,6 +237,153 @@ public final class TextDrawer {
         }
 
         surface.cursorPosition[1] = startY;
+    }
+
+    private static boolean drawTextPath(Surface surface, Node node, Font font, FontRenderContext frc,
+            String textContent, double letterSpacing) {
+        String href = node.getHref();
+        if (href == null || href.isEmpty()) {
+            return false;
+        }
+
+        String pathId = UrlHelper.parseUrl(href).fragment();
+        if (pathId == null || pathId.isEmpty()) {
+            return false;
+        }
+
+        Node pathNode = Defs.findNodeById(surface.rootNode, pathId);
+        if (pathNode == null || !"path".equals(pathNode.tag)) {
+            return false;
+        }
+
+        GeneralPath savedPath = surface.path;
+        GeneralPath textPath = new GeneralPath();
+        surface.path = textPath;
+        PathDrawer.path(surface, pathNode);
+        surface.path = savedPath;
+
+        List<double[]> segments = flattenPathSegments(textPath);
+        if (segments.isEmpty()) {
+            return false;
+        }
+
+        double totalLength = 0;
+        for (double[] segment : segments) {
+            totalLength += segment[4];
+        }
+
+        double distance = parseStartOffset(surface, node.get("startOffset"), totalLength);
+        for (int i = 0; i < textContent.length(); i++) {
+            String ch = String.valueOf(textContent.charAt(i));
+            GlyphVector gv = font.createGlyphVector(frc, ch);
+            double advance = gv.getGlyphMetrics(0).getAdvance() + letterSpacing;
+
+            Point2D point = pointAtDistance(segments, distance);
+            Point2D tangent = tangentAtDistance(segments, distance);
+            if (point == null || tangent == null) {
+                break;
+            }
+
+            if (!ch.isBlank()) {
+                double angle = Math.atan2(tangent.getY(), tangent.getX());
+                AffineTransform placement = new AffineTransform();
+                placement.translate(point.getX(), point.getY());
+                placement.rotate(angle);
+                surface.path.append(placement.createTransformedShape(gv.getOutline()), false);
+            }
+
+            distance += advance;
+            if (distance > totalLength) {
+                break;
+            }
+        }
+
+        surface.cursorPosition[0] = distance;
+        return true;
+    }
+
+    private static List<double[]> flattenPathSegments(Shape shape) {
+        List<double[]> segments = new ArrayList<>();
+        PathIterator iterator = shape.getPathIterator(null, 0.5);
+        double[] coords = new double[6];
+        double moveX = 0;
+        double moveY = 0;
+        double prevX = 0;
+        double prevY = 0;
+        while (!iterator.isDone()) {
+            int type = iterator.currentSegment(coords);
+            switch (type) {
+                case PathIterator.SEG_MOVETO -> {
+                    moveX = coords[0];
+                    moveY = coords[1];
+                    prevX = coords[0];
+                    prevY = coords[1];
+                }
+                case PathIterator.SEG_LINETO -> {
+                    double len = Point2D.distance(prevX, prevY, coords[0], coords[1]);
+                    if (len > 0) {
+                        segments.add(new double[]{prevX, prevY, coords[0], coords[1], len});
+                    }
+                    prevX = coords[0];
+                    prevY = coords[1];
+                }
+                case PathIterator.SEG_CLOSE -> {
+                    double len = Point2D.distance(prevX, prevY, moveX, moveY);
+                    if (len > 0) {
+                        segments.add(new double[]{prevX, prevY, moveX, moveY, len});
+                    }
+                    prevX = moveX;
+                    prevY = moveY;
+                }
+                default -> {
+                }
+            }
+            iterator.next();
+        }
+        return segments;
+    }
+
+    private static Point2D pointAtDistance(List<double[]> segments, double distance) {
+        double remaining = Math.max(0, distance);
+        for (double[] segment : segments) {
+            if (remaining <= segment[4]) {
+                double t = segment[4] == 0 ? 0 : remaining / segment[4];
+                double x = segment[0] + (segment[2] - segment[0]) * t;
+                double y = segment[1] + (segment[3] - segment[1]) * t;
+                return new Point2D.Double(x, y);
+            }
+            remaining -= segment[4];
+        }
+        double[] last = segments.getLast();
+        return new Point2D.Double(last[2], last[3]);
+    }
+
+    private static Point2D tangentAtDistance(List<double[]> segments, double distance) {
+        double remaining = Math.max(0, distance);
+        for (double[] segment : segments) {
+            if (remaining <= segment[4]) {
+                return new Point2D.Double(segment[2] - segment[0], segment[3] - segment[1]);
+            }
+            remaining -= segment[4];
+        }
+        double[] last = segments.getLast();
+        return new Point2D.Double(last[2] - last[0], last[3] - last[1]);
+    }
+
+    private static double parseStartOffset(Surface surface, String startOffset, double totalLength) {
+        if (startOffset == null || startOffset.isBlank()) {
+            return 0;
+        }
+        String normalized = startOffset.strip();
+        if (normalized.endsWith("%")) {
+            try {
+                return Math.max(0,
+                        totalLength * Double.parseDouble(normalized.substring(0, normalized.length() - 1)) / 100.0);
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        }
+        return Math.max(0, size(surface, normalized, "x"));
     }
 
     /** Measure total text width of all children for text-anchor calculation. */
