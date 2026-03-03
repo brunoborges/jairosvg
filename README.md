@@ -9,7 +9,7 @@ A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to 
 ## Features
 
 - 🎨 **SVG 1.1 rendering** using Java2D — no native dependencies
-- 📄 **Multiple output formats**: PNG, JPEG, TIFF, PDF (via Apache PDFBox), PostScript/EPS, SVG
+- 📄 **Multiple output formats**: PNG, JPEG, TIFF, PDF (via optional [Apache PDFBox](https://pdfbox.apache.org/)), PostScript/EPS, SVG
 - 🔷 **Full shape support**: rect, circle, ellipse, line, polygon, polyline, path
 - 🌈 **Gradients**: linear and radial with stop colors and opacity
 - ✍️ **Text rendering** with font control, letter-spacing, text-anchor
@@ -44,6 +44,16 @@ Run the benchmark yourself: `jbang benchmark.java`
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
+
+> **Note:** PDF output requires [Apache PDFBox](https://pdfbox.apache.org/) on the classpath. It is an **optional** dependency — if you only need PNG, JPEG, TIFF, SVG, or PS/EPS output, you do not need to add PDFBox. To enable PDF support, add it explicitly:
+>
+> ```xml
+> <dependency>
+>     <groupId>org.apache.pdfbox</groupId>
+>     <artifactId>pdfbox</artifactId>
+>     <version>3.0.6</version>
+> </dependency>
+> ```
 
 ### Gradle
 
@@ -162,7 +172,7 @@ JairoSVG is a module-by-module port of CairoSVG's Python codebase to Java 25:
 - `cairo.Context` → `java.awt.Graphics2D`
 - `cairo.ImageSurface` → `java.awt.image.BufferedImage`
 - `cairo.Matrix` → `java.awt.geom.AffineTransform`
-- PDF output via Apache PDFBox 3.0
+- PDF output via Apache PDFBox 3.0 (optional dependency — only needed for PDF output)
 
 ## Building
 

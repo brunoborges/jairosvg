@@ -16,6 +16,8 @@ byte[] png = JairoSVG.svg2png(String url);
 
 ### SVG to PDF
 
+> Requires Apache PDFBox on the classpath (optional dependency).
+
 ```java
 byte[] pdf = JairoSVG.svg2pdf(byte[] svgData);
 byte[] pdf = JairoSVG.svg2pdf(String url);
