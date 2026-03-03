@@ -30,7 +30,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Build site
-        run: ./mvnw clean site --no-transfer-progress
+        run: ./mvnw clean verify site --no-transfer-progress
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
