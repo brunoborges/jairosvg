@@ -153,6 +153,10 @@ class ShapeRenderingTest {
 
         BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
         int curvedBandPixels = 0;
+        // This band covers the upper-middle section of curve M30,200 C100,100 300,100
+        // 370,200.
+        // Straight-line rendering at the baseline does not produce pixels in this
+        // region.
         for (int y = 110; y <= 150; y++) {
             for (int x = 150; x <= 250; x++) {
                 int alpha = (image.getRGB(x, y) >> 24) & 0xFF;

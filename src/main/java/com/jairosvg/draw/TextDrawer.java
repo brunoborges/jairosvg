@@ -29,6 +29,7 @@ import static com.jairosvg.util.Helpers.*;
 public final class TextDrawer {
 
     private static final Pattern NUMERIC_PATTERN = Pattern.compile("\\d+");
+    private static final double FLATTEN_TOLERANCE = 0.5;
 
     private static final Map<String, Font> FONT_CACHE = new LinkedHashMap<>(16, 0.75f, true) {
         @Override
@@ -273,6 +274,7 @@ public final class TextDrawer {
         }
 
         double distance = parseStartOffset(surface, node.get("startOffset"), totalLength);
+        Point2D cursorPoint = pointAtDistance(segments, distance);
         for (int i = 0; i < textContent.length(); i++) {
             String ch = String.valueOf(textContent.charAt(i));
             GlyphVector gv = font.createGlyphVector(frc, ch);
@@ -283,6 +285,7 @@ public final class TextDrawer {
             if (point == null || tangent == null) {
                 break;
             }
+            cursorPoint = point;
 
             if (!ch.isBlank()) {
                 double angle = Math.atan2(tangent.getY(), tangent.getX());
@@ -294,17 +297,21 @@ public final class TextDrawer {
 
             distance += advance;
             if (distance > totalLength) {
+                distance = totalLength;
                 break;
             }
         }
 
-        surface.cursorPosition[0] = distance;
+        if (cursorPoint != null) {
+            surface.cursorPosition[0] = cursorPoint.getX();
+            surface.cursorPosition[1] = cursorPoint.getY();
+        }
         return true;
     }
 
     private static List<double[]> flattenPathSegments(Shape shape) {
         List<double[]> segments = new ArrayList<>();
-        PathIterator iterator = shape.getPathIterator(null, 0.5);
+        PathIterator iterator = shape.getPathIterator(null, FLATTEN_TOLERANCE);
         double[] coords = new double[6];
         double moveX = 0;
         double moveY = 0;
@@ -344,6 +351,9 @@ public final class TextDrawer {
     }
 
     private static Point2D pointAtDistance(List<double[]> segments, double distance) {
+        if (segments.isEmpty()) {
+            return null;
+        }
         double remaining = Math.max(0, distance);
         for (double[] segment : segments) {
             if (remaining <= segment[4]) {
@@ -359,6 +369,9 @@ public final class TextDrawer {
     }
 
     private static Point2D tangentAtDistance(List<double[]> segments, double distance) {
+        if (segments.isEmpty()) {
+            return null;
+        }
         double remaining = Math.max(0, distance);
         for (double[] segment : segments) {
             if (remaining <= segment[4]) {
