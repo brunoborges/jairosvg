@@ -10,7 +10,7 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
 /**
  * TIFF output surface.
  */
-public class TiffSurface extends Surface {
+public final class TiffSurface extends Surface {
 
     private static final ImageWriter TIFF_WRITER;
 

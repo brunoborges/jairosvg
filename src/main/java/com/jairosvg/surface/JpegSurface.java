@@ -11,7 +11,7 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
 /**
  * JPEG output surface.
  */
-public class JpegSurface extends Surface {
+public final class JpegSurface extends Surface {
 
     private static final ImageWriter JPEG_WRITER;
 

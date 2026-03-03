@@ -10,7 +10,7 @@ import java.util.Base64;
  * SVG output surface. Re-renders the parsed SVG as a clean SVG document with
  * the rasterized image embedded.
  */
-public class SvgSurface extends Surface {
+public final class SvgSurface extends Surface {
 
     @Override
     public void finish() throws IOException {

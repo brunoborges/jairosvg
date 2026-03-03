@@ -10,7 +10,7 @@ import javax.print.attribute.*;
 /**
  * PostScript output surface. Uses Java's printing API to generate PS output.
  */
-public class PsSurface extends Surface {
+public final class PsSurface extends Surface {
 
     private boolean eps = false;
 

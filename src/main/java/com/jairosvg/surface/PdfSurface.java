@@ -13,7 +13,7 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
  * PDF output surface using Apache PDFBox. Renders SVG to a BufferedImage via
  * the base Surface, then embeds it in a PDF page.
  */
-public class PdfSurface extends Surface {
+public final class PdfSurface extends Surface {
 
     @Override
     public void finish() throws IOException {

@@ -10,7 +10,7 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
 /**
  * PNG output surface.
  */
-public class PngSurface extends Surface {
+public final class PngSurface extends Surface {
 
     private static final ImageWriter PNG_WRITER;
 

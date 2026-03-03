@@ -27,7 +27,7 @@ import static com.jairosvg.util.Helpers.*;
  * Abstract base surface for SVG rendering using Java2D. Port of CairoSVG
  * surface.py
  */
-public class Surface {
+public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSurface, PsSurface, SvgSurface {
 
     private static final Set<String> PATH_TAGS = Set.of("circle", "ellipse", "line", "path", "polygon", "polyline",
             "rect");
