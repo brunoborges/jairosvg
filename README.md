@@ -41,7 +41,7 @@ Run the benchmark yourself: `jbang benchmark.java`
 <dependency>
     <groupId>io.brunoborges</groupId>
     <artifactId>jairosvg</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -58,13 +58,13 @@ Run the benchmark yourself: `jbang benchmark.java`
 ### Gradle
 
 ```groovy
-implementation 'io.brunoborges:jairosvg:1.0.0-SNAPSHOT'
+implementation 'io.brunoborges:jairosvg:1.0.0'
 ```
 
 ### JBang (quick run)
 
 ```bash
-jbang --deps io.brunoborges:jairosvg:1.0.0-SNAPSHOT MyScript.java
+jbang --deps io.brunoborges:jairosvg:1.0.0 MyScript.java
 ```
 
 ## Quick Start
@@ -112,10 +112,10 @@ BufferedImage image = JairoSVG.builder()
 mvn package
 
 # SVG → PNG
-java --enable-preview -jar target/jairosvg-1.0.0-SNAPSHOT-cli.jar input.svg -o output.png
+java --enable-preview -jar target/jairosvg-1.0.0-cli.jar input.svg -o output.png
 
 # SVG → PDF with 2x scale
-java --enable-preview -jar target/jairosvg-1.0.0-SNAPSHOT-cli.jar input.svg -f pdf -s 2 -o output.pdf
+java --enable-preview -jar target/jairosvg-1.0.0-cli.jar input.svg -f pdf -s 2 -o output.pdf
 ```
 
 ### CLI Options
