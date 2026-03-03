@@ -26,7 +26,7 @@ release:
     tagName: "v{{projectVersion}}"
     releaseName: "v{{projectVersion}}"
     overwrite: false
-    skipTag: false
+    skipTag: true
     changelog:
       formatted: ALWAYS
       preset: conventional-commits
@@ -43,8 +43,8 @@ distributions:
   jairosvg:
     type: SINGLE_JAR
     artifacts:
-      - path: target/{{projectName}}-{{projectVersion}}.jar
+      - path: target/jairosvg-{{projectVersion}}.jar
   jairosvg-cli:
     type: SINGLE_JAR
     artifacts:
-      - path: target/{{projectName}}-{{projectVersion}}-cli.jar
+      - path: target/jairosvg-{{projectVersion}}-cli.jar
