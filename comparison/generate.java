@@ -271,6 +271,7 @@ public class generate {
     static final Path SVG_DIR = BASE_DIR.resolve("svg");
     static final Path PNG_JAIRO_DIR = BASE_DIR.resolve("png/jairosvg");
     static final Path PNG_ECHO_DIR = BASE_DIR.resolve("png/echosvg");
+    static final Path PNG_CAIRO_DIR = BASE_DIR.resolve("png/cairosvg");
 
     static byte[] renderWithEchoSVG(String svg) throws Exception {
         var transcoder = new PNGTranscoder();
@@ -280,18 +281,35 @@ public class generate {
         return baos.toByteArray();
     }
 
+    static byte[] renderWithCairoSVG(Path svgPath, Path pngPath) throws Exception {
+        Process process = new ProcessBuilder(
+                "python3", "-m", "cairosvg",
+                svgPath.toString(),
+                "-f", "png",
+                "-o", pngPath.toString()
+        ).redirectErrorStream(true).start();
+        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        int exit = process.waitFor();
+        if (exit != 0) {
+            throw new IOException("python3 -m cairosvg exited with code " + exit
+                    + (output.isBlank() ? "" : ": " + output.strip()));
+        }
+        return Files.readAllBytes(pngPath);
+    }
+
     public static void main(String[] args) throws Exception {
         Files.createDirectories(SVG_DIR);
         Files.createDirectories(PNG_JAIRO_DIR);
         Files.createDirectories(PNG_ECHO_DIR);
+        Files.createDirectories(PNG_CAIRO_DIR);
 
         System.out.println("=".repeat(72));
-        System.out.println("  SVG Comparison Generator — JairoSVG vs EchoSVG");
+        System.out.println("  SVG Comparison Generator — JairoSVG vs EchoSVG vs CairoSVG");
         System.out.printf("  Test cases: %d%n", TEST_CASES.size());
         System.out.println("=".repeat(72));
         System.out.println();
 
-        // Track results: name -> [jairo ok, echo ok]
+        // Track results: name -> [jairo ok, echo ok, cairo ok]
         var results = new LinkedHashMap<String, boolean[]>();
 
         for (var tc : TEST_CASES) {
@@ -304,6 +322,7 @@ public class generate {
 
             boolean jairoOk = false;
             boolean echoOk = false;
+            boolean cairoOk = false;
 
             // Render with JairoSVG
             try {
@@ -327,7 +346,17 @@ public class generate {
                 System.out.println("    EchoSVG    ✗ FAILED: " + e.getMessage());
             }
 
-            results.put(tc.name(), new boolean[]{jairoOk, echoOk});
+            // Render with CairoSVG
+            try {
+                Path out = PNG_CAIRO_DIR.resolve(tc.name() + ".png");
+                byte[] png = renderWithCairoSVG(svgPath, out);
+                System.out.printf("    CairoSVG   → %s (%,d bytes)%n", out, png.length);
+                cairoOk = true;
+            } catch (Exception e) {
+                System.out.println("    CairoSVG   ✗ FAILED: " + e.getMessage());
+            }
+
+            results.put(tc.name(), new boolean[]{jairoOk, echoOk, cairoOk});
             System.out.println();
         }
 
@@ -335,22 +364,24 @@ public class generate {
         System.out.println("=".repeat(72));
         System.out.println("  SUMMARY");
         System.out.println("=".repeat(72));
-        System.out.printf("  %-28s  %-10s  %-10s%n", "Test Case", "JairoSVG", "EchoSVG");
-        System.out.println("  " + "-".repeat(52));
+        System.out.printf("  %-28s  %-10s  %-10s  %-10s%n", "Test Case", "JairoSVG", "EchoSVG", "CairoSVG");
+        System.out.println("  " + "-".repeat(64));
 
-        int jairoPass = 0, echoPass = 0;
+        int jairoPass = 0, echoPass = 0, cairoPass = 0;
         for (var entry : results.entrySet()) {
             boolean[] r = entry.getValue();
             String jStatus = r[0] ? "✓ OK" : "✗ FAIL";
             String eStatus = r[1] ? "✓ OK" : "✗ FAIL";
-            System.out.printf("  %-28s  %-10s  %-10s%n", entry.getKey(), jStatus, eStatus);
+            String cStatus = r[2] ? "✓ OK" : "✗ FAIL";
+            System.out.printf("  %-28s  %-10s  %-10s  %-10s%n", entry.getKey(), jStatus, eStatus, cStatus);
             if (r[0]) jairoPass++;
             if (r[1]) echoPass++;
+            if (r[2]) cairoPass++;
         }
 
-        System.out.println("  " + "-".repeat(52));
-        System.out.printf("  %-28s  %d/%d        %d/%d%n", "TOTAL",
-                jairoPass, results.size(), echoPass, results.size());
+        System.out.println("  " + "-".repeat(64));
+        System.out.printf("  %-28s  %d/%d        %d/%d        %d/%d%n", "TOTAL",
+                jairoPass, results.size(), echoPass, results.size(), cairoPass, results.size());
         System.out.println("=".repeat(72));
     }
 }

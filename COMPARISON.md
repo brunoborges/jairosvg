@@ -147,7 +147,7 @@ CairoSVG is a **Python library** built on the **Cairo 2D graphics library** (C).
 | Class selectors | ✅ | ✅ | ✅ |
 | ID selectors | ✅ | ✅ | ✅ |
 | Descendant / child selectors | ✅ (basic) | ✅ | ✅ (via cssselect2) |
-| Pseudo-classes / pseudo-elements | ❌ ([#25](https://github.com/brunoborges/jairosvg/issues/25)) | Partial | Partial (via cssselect2) |
+| Pseudo-classes / pseudo-elements | ✅ (`:first-child`, `:last-child`, `:nth-child()`, `:not()`, `::first-line`, `::first-letter`) | Partial | Partial (via cssselect2) |
 | CSS Level 4 selectors | ❌ ([#26](https://github.com/brunoborges/jairosvg/issues/26)) | ✅ (via css4j) | ❌ |
 | CSS custom properties (variables) | ❌ ([#27](https://github.com/brunoborges/jairosvg/issues/27)) | ✅ | ❌ |
 | CSS `calc()` | ❌ ([#28](https://github.com/brunoborges/jairosvg/issues/28)) | ✅ | ❌ |
@@ -283,7 +283,7 @@ JairoSVG and CairoSVG share the same security posture: no scripting support (eli
 
 ## Visual Rendering Comparison
 
-A side-by-side visual comparison of 12 SVG test cases (JairoSVG vs EchoSVG) is available in the [`comparison/`](comparison/) directory, covering:
+A side-by-side visual comparison of 12 SVG test cases (JairoSVG vs EchoSVG vs CairoSVG) is available in the [`comparison/`](comparison/) directory, covering:
 
 1. Basic shapes
 2. Gradients
@@ -313,7 +313,7 @@ jbang comparison/generate.java
 |---|---|---|---|
 | **Best for** | Fast Java SVG conversion | Full SVG toolkit (DOM, scripting, animation) | Python SVG conversion |
 | **SVG spec** | SVG 1.1 (static) | SVG 1.1 + partial SVG 2 | SVG 1.1 (static) |
-| **CSS** | Basic (class, ID, type) | Advanced (CSS Level 4, css4j) | Basic (via tinycss2) |
+| **CSS** | Basic + structural pseudo selectors | Advanced (CSS Level 4, css4j) | Basic (via tinycss2) |
 | **Performance** | 2–5× faster than EchoSVG | Slowest (GVT overhead) | Fastest (native C) |
 | **API simplicity** | One-liner / builder | Transcoder pattern | One-liner functions |
 | **Codebase** | ~4K LOC, 1 dep | ~200K+ LOC, many modules | ~4K LOC, 5 deps |
