@@ -186,6 +186,16 @@ public final class JairoSVG {
             convert(new PngSurface(), out);
         }
 
+        /** Convert to JPEG bytes. */
+        public byte[] toJpeg() throws Exception {
+            return convert(new JpegSurface());
+        }
+
+        /** Convert to JPEG and write to output stream. */
+        public void toJpeg(OutputStream out) throws Exception {
+            convert(new JpegSurface(), out);
+        }
+
         /** Convert to PDF bytes. */
         public byte[] toPdf() throws Exception {
             return convert(new PdfSurface());

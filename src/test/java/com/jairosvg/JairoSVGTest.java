@@ -255,6 +255,26 @@ class JairoSVGTest {
     }
 
     @Test
+    void testSvgToJpeg() throws Exception {
+        String svg = """
+            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+              <rect width="100" height="100" fill="red"/>
+            </svg>
+            """;
+
+        byte[] jpeg = JairoSVG.builder().fromString(svg).toJpeg();
+        assertNotNull(jpeg);
+        assertTrue(jpeg.length > 0);
+        assertEquals((byte) 0xFF, jpeg[0]);
+        assertEquals((byte) 0xD8, jpeg[1]);
+
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(jpeg));
+        assertNotNull(image);
+        assertEquals(100, image.getWidth());
+        assertEquals(100, image.getHeight());
+    }
+
+    @Test
     void testSvgToSvg() throws Exception {
         String svg = """
             <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
@@ -321,6 +341,25 @@ class JairoSVGTest {
 
         assertTrue(Files.exists(pngFile));
         assertTrue(Files.size(pngFile) > 0);
+    }
+
+    @Test
+    void testCliJpegOutputFromExtension(@TempDir Path tempDir) throws Exception {
+        String svg = """
+            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+              <rect width="100" height="100" fill="blue"/>
+            </svg>
+            """;
+        Path svgFile = tempDir.resolve("test.svg");
+        Path jpegFile = tempDir.resolve("test.jpg");
+        Files.writeString(svgFile, svg);
+
+        Main.main(new String[]{"-o", jpegFile.toString(), svgFile.toString()});
+
+        byte[] data = Files.readAllBytes(jpegFile);
+        assertTrue(data.length > 0);
+        assertEquals((byte) 0xFF, data[0]);
+        assertEquals((byte) 0xD8, data[1]);
     }
 
     @Test
