@@ -39,7 +39,7 @@ Run the benchmark yourself: `jbang benchmark.java`
 
 ```xml
 <dependency>
-    <groupId>com.jairosvg</groupId>
+    <groupId>io.brunoborges</groupId>
     <artifactId>jairosvg</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
@@ -58,13 +58,13 @@ Run the benchmark yourself: `jbang benchmark.java`
 ### Gradle
 
 ```groovy
-implementation 'com.jairosvg:jairosvg:1.0.0-SNAPSHOT'
+implementation 'io.brunoborges:jairosvg:1.0.0-SNAPSHOT'
 ```
 
 ### JBang (quick run)
 
 ```bash
-jbang --deps com.jairosvg:jairosvg:1.0.0-SNAPSHOT MyScript.java
+jbang --deps io.brunoborges:jairosvg:1.0.0-SNAPSHOT MyScript.java
 ```
 
 ## Quick Start
@@ -72,7 +72,7 @@ jbang --deps com.jairosvg:jairosvg:1.0.0-SNAPSHOT MyScript.java
 ### Library API
 
 ```java
-import com.jairosvg.JairoSVG;
+import io.brunoborges.jairosvg.JairoSVG;
 
 // SVG bytes → PNG bytes
 byte[] png = JairoSVG.svg2png(svgBytes);

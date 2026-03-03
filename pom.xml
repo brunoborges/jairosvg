@@ -92,7 +92,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.jairosvg.Main</mainClass>
+                            <mainClass>io.brunoborges.jairosvg.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -127,7 +127,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.jairosvg.Main</mainClass>
+                                    <mainClass>io.brunoborges.jairosvg.Main</mainClass>
                                 </transformer>
                             </transformers>
                             <createDependencyReducedPom>false</createDependencyReducedPom>

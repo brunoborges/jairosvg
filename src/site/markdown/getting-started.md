@@ -13,7 +13,7 @@ Add to your `pom.xml`:
 
 ```xml
 <dependency>
-    <groupId>com.jairosvg</groupId>
+    <groupId>io.brunoborges</groupId>
     <artifactId>jairosvg</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
@@ -22,7 +22,7 @@ Add to your `pom.xml`:
 ### Gradle
 
 ```groovy
-implementation 'com.jairosvg:jairosvg:1.0.0-SNAPSHOT'
+implementation 'io.brunoborges:jairosvg:1.0.0-SNAPSHOT'
 ```
 
 ### JBang
@@ -30,7 +30,7 @@ implementation 'com.jairosvg:jairosvg:1.0.0-SNAPSHOT'
 For quick scripting:
 
 ```bash
-jbang --deps com.jairosvg:jairosvg:1.0.0-SNAPSHOT MyScript.java
+jbang --deps io.brunoborges:jairosvg:1.0.0-SNAPSHOT MyScript.java
 ```
 
 ### CLI (Fat JAR)
@@ -47,7 +47,7 @@ java --enable-preview -jar target/jairosvg-1.0.0-SNAPSHOT-cli.jar --help
 ### Using the API
 
 ```java
-import com.jairosvg.JairoSVG;
+import io.brunoborges.jairosvg.JairoSVG;
 import java.nio.file.Files;
 import java.nio.file.Path;
 

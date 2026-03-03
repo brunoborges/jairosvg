@@ -7,7 +7,7 @@
 //DEPS io.brunoborges:jairosvg:1.0.0-SNAPSHOT
 //DEPS io.sf.carte:echosvg-transcoder:2.4
 
-import com.jairosvg.JairoSVG;
+import io.brunoborges.jairosvg.JairoSVG;
 import io.sf.carte.echosvg.transcoder.TranscoderInput;
 import io.sf.carte.echosvg.transcoder.TranscoderOutput;
 import io.sf.carte.echosvg.transcoder.image.PNGTranscoder;

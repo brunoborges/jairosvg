@@ -71,7 +71,7 @@ Elevate JairoSVG from a working prototype to a polished open-source project with
   - Link to full documentation site
   - Contributing section
   - License
-- [ ] Add JBang install example: `jbang com.jairosvg:jairosvg:1.0.0 input.svg -o output.png`
+- [ ] Add JBang install example: `jbang io.brunoborges:jairosvg:1.0.0 input.svg -o output.png`
 
 ### Phase 5: Community Health Files
 - [ ] `LICENSE` — LGPLv3 full text file
@@ -113,7 +113,7 @@ Elevate JairoSVG from a working prototype to a polished open-source project with
 - Implement minimal CSS parsing for SVG inline styles
 - Use **javax.imageio** for PNG/image I/O
 - Leverage Java 25 features: records, pattern matching, sealed interfaces, text blocks
-- Maven project with `com.jairosvg` package
+- Maven project with `io.brunoborges.jairosvg` package
 
 ## Module Mapping (Python → Java)
 | Python Module     | Java Class(es)                          |

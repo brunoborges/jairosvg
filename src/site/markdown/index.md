@@ -16,7 +16,7 @@
 
 ```xml
 <dependency>
-    <groupId>com.jairosvg</groupId>
+    <groupId>io.brunoborges</groupId>
     <artifactId>jairosvg</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
@@ -25,13 +25,13 @@
 ### Gradle
 
 ```groovy
-implementation 'com.jairosvg:jairosvg:1.0.0-SNAPSHOT'
+implementation 'io.brunoborges:jairosvg:1.0.0-SNAPSHOT'
 ```
 
 ## Quick Example
 
 ```java
-import com.jairosvg.JairoSVG;
+import io.brunoborges.jairosvg.JairoSVG;
 
 // One-liner SVG to PNG
 byte[] png = JairoSVG.svg2png(svgBytes);
