@@ -263,6 +263,21 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
             Defs.prepareFilter(this, node, filterName);
         }
 
+        Graphics2D filterBaseContext = null;
+        Graphics2D filterContext = null;
+        BufferedImage filterSourceImage = null;
+        if (filterName != null) {
+            filterBaseContext = context;
+            filterSourceImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            filterContext = filterSourceImage.createGraphics();
+            filterContext.setRenderingHints(filterBaseContext.getRenderingHints());
+            filterContext.setTransform(filterBaseContext.getTransform());
+            filterContext.setClip(filterBaseContext.getClip());
+            filterContext.setComposite(filterBaseContext.getComposite());
+            filterContext.setStroke(filterBaseContext.getStroke());
+            context = filterContext;
+        }
+
         // Move to (x, y)
         double nodeX = size(this, node.get("x"), "x");
         double nodeY = size(this, node.get("y"), "y");
@@ -402,6 +417,13 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         context.setClip(savedClip);
         context.setComposite(savedComposite);
         context.setStroke(savedStroke);
+
+        if (filterContext != null) {
+            BufferedImage filteredImage = Defs.applyFilter(this, filterName, filterSourceImage);
+            context = filterBaseContext;
+            filterBaseContext.drawImage(filteredImage, 0, 0, null);
+            filterContext.dispose();
+        }
 
         this.parentNode = oldParentNode;
         this.fontSize = oldFontSize;
