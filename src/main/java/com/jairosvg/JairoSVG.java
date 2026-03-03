@@ -260,11 +260,13 @@ public final class JairoSVG {
 
         /** Convert to PDF bytes. */
         public byte[] toPdf() throws Exception {
+            checkPdfBoxAvailable();
             return convert(new PdfSurface());
         }
 
         /** Convert to PDF and write to output stream. */
         public void toPdf(OutputStream out) throws Exception {
+            checkPdfBoxAvailable();
             convert(new PdfSurface(), out);
         }
 
@@ -329,6 +331,15 @@ public final class JairoSVG {
                         "No input. Use fromBytes(), fromFile(), fromUrl(), or fromStream().");
             }
             return Node.parseTree(data, this.url, unsafe);
+        }
+
+        private static void checkPdfBoxAvailable() {
+            try {
+                Class.forName("org.apache.pdfbox.pdmodel.PDDocument");
+            } catch (ClassNotFoundException e) {
+                throw new UnsupportedOperationException(
+                        "PDF output requires Apache PDFBox. Add org.apache.pdfbox:pdfbox to your classpath.", e);
+            }
         }
     }
 }

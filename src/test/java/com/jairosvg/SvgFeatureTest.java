@@ -144,6 +144,40 @@ class SvgFeatureTest {
     }
 
     @Test
+    void testSvgWithClipPathGradientPreservesMultipleStops() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
+                  <defs>
+                    <clipPath id="starClip">
+                      <polygon points="200,30 230,110 315,110 245,160 270,240 200,190 130,240 155,160 85,110 170,110"/>
+                    </clipPath>
+                    <linearGradient id="rainbow" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#e74c3c"/>
+                      <stop offset="25%" stop-color="#f39c12"/>
+                      <stop offset="50%" stop-color="#2ecc71"/>
+                      <stop offset="75%" stop-color="#3498db"/>
+                      <stop offset="100%" stop-color="#9b59b6"/>
+                    </linearGradient>
+                  </defs>
+                  <g clip-path="url(#starClip)">
+                    <rect width="400" height="300" fill="url(#rainbow)"/>
+                  </g>
+                </svg>
+                """;
+
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
+        int topRgb = image.getRGB(200, 40);
+        int lowerRightRgb = image.getRGB(260, 220);
+        int topRed = (topRgb >> 16) & 0xFF;
+        int topBlue = topRgb & 0xFF;
+        int lowerRightRed = (lowerRightRgb >> 16) & 0xFF;
+        int lowerRightBlue = lowerRightRgb & 0xFF;
+
+        assertTrue(topRed > topBlue, "Top of gradient should remain warm");
+        assertTrue(lowerRightBlue > lowerRightRed, "Lower-right of clipped gradient should reach cool colors");
+    }
+
+    @Test
     void testSvgWithTextDecoration() throws Exception {
         int baselineY = 80;
         int startX = 20;
