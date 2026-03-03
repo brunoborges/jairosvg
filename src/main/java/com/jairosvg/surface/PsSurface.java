@@ -1,4 +1,4 @@
-package com.jairosvg;
+package com.jairosvg.surface;
 
 import java.awt.Graphics2D;
 import java.awt.print.*;

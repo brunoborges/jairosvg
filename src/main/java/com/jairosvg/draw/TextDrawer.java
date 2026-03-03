@@ -1,4 +1,4 @@
-package com.jairosvg;
+package com.jairosvg.draw;
 
 import java.awt.Font;
 import java.awt.font.FontRenderContext;
@@ -10,7 +10,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static com.jairosvg.Helpers.*;
+import com.jairosvg.dom.Node;
+import com.jairosvg.dom.SvgFont;
+import com.jairosvg.surface.Surface;
+
+import static com.jairosvg.util.Helpers.*;
 
 /**
  * SVG text rendering. Port of CairoSVG text.py

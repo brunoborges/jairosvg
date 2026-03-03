@@ -1,5 +1,7 @@
 package com.jairosvg;
 
+import com.jairosvg.css.CssProcessor;
+
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 

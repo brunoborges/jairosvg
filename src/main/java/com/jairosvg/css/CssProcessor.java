@@ -1,7 +1,9 @@
-package com.jairosvg;
+package com.jairosvg.css;
 
 import java.util.*;
 import java.util.regex.*;
+
+import com.jairosvg.util.UrlHelper;
 
 /**
  * Minimal CSS parsing for SVG inline styles and stylesheets. Port of CairoSVG
@@ -121,7 +123,7 @@ public final class CssProcessor {
     }
 
     /** Parse pseudo-attributes from a processing instruction data string. */
-    static Map<String, String> parsePseudoAttributes(String data) {
+    public static Map<String, String> parsePseudoAttributes(String data) {
         Map<String, String> attrs = new LinkedHashMap<>();
         if (data == null || data.isEmpty())
             return attrs;

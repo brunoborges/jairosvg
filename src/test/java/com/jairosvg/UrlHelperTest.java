@@ -1,5 +1,7 @@
 package com.jairosvg;
 
+import com.jairosvg.util.UrlHelper;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

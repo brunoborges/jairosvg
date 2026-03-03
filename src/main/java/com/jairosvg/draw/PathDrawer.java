@@ -1,8 +1,13 @@
-package com.jairosvg;
+package com.jairosvg.draw;
 
 import java.util.ArrayList;
 
-import static com.jairosvg.Helpers.*;
+import com.jairosvg.dom.Node;
+import com.jairosvg.surface.Surface;
+import com.jairosvg.util.Helpers;
+import com.jairosvg.util.ParsedPoint;
+
+import static com.jairosvg.util.Helpers.*;
 
 /**
  * SVG path command parser and drawer. Port of CairoSVG path.py

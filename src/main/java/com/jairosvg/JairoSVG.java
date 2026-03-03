@@ -6,6 +6,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.UnaryOperator;
 
+import com.jairosvg.css.Colors;
+import com.jairosvg.dom.Node;
+import com.jairosvg.surface.*;
+
 /**
  * JairoSVG - A Java port of CairoSVG. SVG 1.1 to PNG, PDF, PS and SVG
  * converter.

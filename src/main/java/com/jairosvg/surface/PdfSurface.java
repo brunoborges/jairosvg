@@ -1,4 +1,4 @@
-package com.jairosvg;
+package com.jairosvg.surface;
 
 import java.io.IOException;
 

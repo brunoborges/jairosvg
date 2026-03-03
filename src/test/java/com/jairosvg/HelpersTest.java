@@ -1,5 +1,7 @@
 package com.jairosvg;
 
+import com.jairosvg.util.Helpers;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

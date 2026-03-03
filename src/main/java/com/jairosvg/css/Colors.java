@@ -1,4 +1,4 @@
-package com.jairosvg;
+package com.jairosvg.css;
 
 import java.util.Map;
 import java.util.regex.Matcher;

@@ -1,6 +1,9 @@
-package com.jairosvg;
+package com.jairosvg.dom;
 
-import static com.jairosvg.Helpers.*;
+import com.jairosvg.surface.Surface;
+import com.jairosvg.util.ParsedPoint;
+
+import static com.jairosvg.util.Helpers.*;
 
 /**
  * Bounding box calculations for SVG shapes and paths. Port of CairoSVG

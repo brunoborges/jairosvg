@@ -1,4 +1,4 @@
-package com.jairosvg;
+package com.jairosvg.dom;
 
 import java.io.*;
 import java.util.*;
@@ -11,6 +11,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
+
+import com.jairosvg.css.CssProcessor;
+import com.jairosvg.util.Features;
+import com.jairosvg.util.Helpers;
+import com.jairosvg.util.UrlHelper;
 
 /**
  * SVG Node with dict-like properties and children. Port of CairoSVG parser.py

@@ -1,9 +1,12 @@
-package com.jairosvg;
+package com.jairosvg.dom;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import com.jairosvg.draw.PathDrawer;
+import com.jairosvg.surface.Surface;
 
 /**
  * Represents a parsed SVG font with its glyphs. Supports {@code <font>},
@@ -11,10 +14,10 @@ import java.util.Map;
  *
  * @see <a href="https://www.w3.org/TR/SVG11/fonts.html">SVG 1.1 — Fonts</a>
  */
-final class SvgFont {
+public final class SvgFont {
 
     /** Font family name from {@code <font-face font-family="...">}. */
-    final String family;
+    public final String family;
 
     /** Default horizontal advance from {@code <font horiz-adv-x="...">}. */
     final double defaultHorizAdvX;
@@ -52,13 +55,13 @@ final class SvgFont {
     }
 
     /** A single glyph definition with a pre-parsed cached path. */
-    record Glyph(GeneralPath cachedPath, double horizAdvX) {
+    public record Glyph(GeneralPath cachedPath, double horizAdvX) {
     }
 
     /**
      * Parse an SVG font from a {@code <font>} node.
      */
-    static SvgFont parse(Node fontNode) {
+    public static SvgFont parse(Node fontNode) {
         double defaultHorizAdvX = parseDouble(fontNode.get("horiz-adv-x"), 1000);
 
         // Find <font-face>
@@ -112,7 +115,7 @@ final class SvgFont {
      * vertically around the baseline. Uses the pre-parsed cached path from the
      * Glyph record.
      */
-    GeneralPath buildGlyphPath(Glyph glyph, double fontSize, double xOffset, double yOffset) {
+    public GeneralPath buildGlyphPath(Glyph glyph, double fontSize, double xOffset, double yOffset) {
         if (glyph == null || glyph.cachedPath() == null)
             return null;
 
@@ -131,7 +134,7 @@ final class SvgFont {
     }
 
     /** Get the scaled horizontal advance for a glyph. */
-    double getAdvance(Glyph glyph, double fontSize) {
+    public double getAdvance(Glyph glyph, double fontSize) {
         double advX = glyph != null ? glyph.horizAdvX() : defaultHorizAdvX;
         return advX * fontSize / unitsPerEm;
     }
@@ -139,7 +142,7 @@ final class SvgFont {
     /**
      * Result of a glyph lookup: the matched glyph and how many chars were consumed.
      */
-    record GlyphMatch(Glyph glyph, int charsConsumed) {
+    public record GlyphMatch(Glyph glyph, int charsConsumed) {
     }
 
     /**
@@ -147,7 +150,7 @@ final class SvgFont {
      * longest-match. Handles multi-character unicode values and supplementary
      * (non-BMP) code points.
      */
-    GlyphMatch getGlyph(String text, int offset) {
+    public GlyphMatch getGlyph(String text, int offset) {
         // Try longest match first
         int remaining = text.length() - offset;
         for (int len = Math.min(maxUnicodeLen, remaining); len > 0; len--) {

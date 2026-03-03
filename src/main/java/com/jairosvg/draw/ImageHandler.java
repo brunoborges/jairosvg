@@ -1,4 +1,4 @@
-package com.jairosvg;
+package com.jairosvg.draw;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -6,7 +6,11 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import static com.jairosvg.Helpers.*;
+import com.jairosvg.dom.Node;
+import com.jairosvg.surface.Surface;
+import com.jairosvg.util.UrlHelper;
+
+import static com.jairosvg.util.Helpers.*;
 
 /**
  * SVG image element handler. Port of CairoSVG image.py

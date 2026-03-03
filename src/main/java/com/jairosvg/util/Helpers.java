@@ -1,4 +1,4 @@
-package com.jairosvg;
+package com.jairosvg.util;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.jairosvg.dom.Node;
+import com.jairosvg.surface.Surface;
 
 /**
  * Surface helpers: size parsing, transforms, normalize, point, etc. Port of

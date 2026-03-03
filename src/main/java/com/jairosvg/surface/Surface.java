@@ -1,4 +1,4 @@
-package com.jairosvg;
+package com.jairosvg.surface;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -9,7 +9,19 @@ import java.io.*;
 import java.util.*;
 import java.util.function.UnaryOperator;
 
-import static com.jairosvg.Helpers.*;
+import com.jairosvg.css.Colors;
+import com.jairosvg.dom.Node;
+import com.jairosvg.dom.SvgFont;
+import com.jairosvg.draw.Defs;
+import com.jairosvg.draw.ImageHandler;
+import com.jairosvg.draw.PathDrawer;
+import com.jairosvg.draw.ShapeDrawer;
+import com.jairosvg.draw.SvgDrawer;
+import com.jairosvg.draw.TextDrawer;
+import com.jairosvg.util.Helpers;
+import com.jairosvg.util.UrlHelper;
+
+import static com.jairosvg.util.Helpers.*;
 
 /**
  * Abstract base surface for SVG rendering using Java2D. Port of CairoSVG
@@ -64,7 +76,7 @@ public class Surface {
     private final Map<String, float[]> dashArrayCache = new HashMap<>();
     private final Map<String, BasicStroke> strokeCache = new HashMap<>();
 
-    protected Surface() {
+    public Surface() {
     }
 
     /** Initialize the surface. */

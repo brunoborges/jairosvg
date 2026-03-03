@@ -1,4 +1,4 @@
-package com.jairosvg;
+package com.jairosvg.util;
 
 import java.io.IOException;
 import java.net.URI;

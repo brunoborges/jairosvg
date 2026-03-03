@@ -1,6 +1,9 @@
-package com.jairosvg;
+package com.jairosvg.draw;
 
-import static com.jairosvg.Helpers.*;
+import com.jairosvg.dom.Node;
+import com.jairosvg.surface.Surface;
+
+import static com.jairosvg.util.Helpers.*;
 
 /**
  * Root SVG tag drawer. Port of CairoSVG svg.py

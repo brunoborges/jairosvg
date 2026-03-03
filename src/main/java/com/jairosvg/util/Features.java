@@ -1,4 +1,4 @@
-package com.jairosvg;
+package com.jairosvg.util;
 
 import java.util.Locale;
 import java.util.Set;

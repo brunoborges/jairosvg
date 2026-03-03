@@ -1,10 +1,14 @@
-package com.jairosvg;
+package com.jairosvg.draw;
 
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 
-import static com.jairosvg.Helpers.*;
+import com.jairosvg.dom.Node;
+import com.jairosvg.surface.Surface;
+import com.jairosvg.util.ParsedPoint;
+
+import static com.jairosvg.util.Helpers.*;
 
 /**
  * SVG shape drawers. Port of CairoSVG shapes.py
