@@ -114,19 +114,20 @@ public final class ImageHandler {
             surface.context.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
                     java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-            BufferedImage source = img;
+            BufferedImage imageToDraw = img;
             int drawX = 0;
             int drawY = 0;
             if (opacity < 1) {
-                source = new BufferedImage(img.getWidth() + 2, img.getHeight() + 2, BufferedImage.TYPE_INT_ARGB);
-                var g = source.createGraphics();
+                imageToDraw = new BufferedImage(img.getWidth() + 2, img.getHeight() + 2, BufferedImage.TYPE_INT_ARGB);
+                var g = imageToDraw.createGraphics();
+                g.setRenderingHints(surface.context.getRenderingHints());
                 g.drawImage(img, 1, 1, null);
                 g.dispose();
                 drawX = -1;
                 drawY = -1;
             }
 
-            surface.context.drawImage(source, drawX, drawY, null);
+            surface.context.drawImage(imageToDraw, drawX, drawY, null);
 
             surface.context.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
                     savedInterpolation != null
