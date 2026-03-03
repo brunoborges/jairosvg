@@ -28,6 +28,7 @@ public final class CssProcessor {
             .compile("([+-]?\\d*)n([+-]\\d+)?");
     private static final java.util.regex.Pattern PSEUDO_ATTR_PATTERN = java.util.regex.Pattern
             .compile("(\\w[\\w-]*)\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)')");
+    private static final String VAR_FUNCTION = "var(";
 
     private CssProcessor() {
     }
@@ -58,7 +59,7 @@ public final class CssProcessor {
             String name = part.substring(0, colonIdx).strip().toLowerCase();
             String value = part.substring(colonIdx + 1).strip();
 
-            if (name.startsWith("-"))
+            if (name.startsWith("-") && !name.startsWith("--"))
                 continue; // Skip vendor prefixes
 
             boolean isImportant = false;
@@ -391,5 +392,88 @@ public final class CssProcessor {
             }
         }
         return result;
+    }
+
+    /** Resolve CSS custom properties in {@code var(--name[, fallback])} expressions. */
+    public static String resolveCustomProperties(String value, Map<String, String> attributes) {
+        return resolveCustomProperties(value, attributes, new HashSet<>());
+    }
+
+    private static String resolveCustomProperties(String value, Map<String, String> attributes, Set<String> resolving) {
+        if (value == null || value.isEmpty() || !value.contains(VAR_FUNCTION))
+            return value;
+
+        StringBuilder resolved = new StringBuilder();
+        int index = 0;
+        while (index < value.length()) {
+            int varIndex = value.indexOf(VAR_FUNCTION, index);
+            if (varIndex < 0) {
+                resolved.append(value, index, value.length());
+                break;
+            }
+
+            resolved.append(value, index, varIndex);
+            int endIndex = findClosingParenthesis(value, varIndex + VAR_FUNCTION.length());
+            if (endIndex < 0) {
+                resolved.append(value, varIndex, value.length());
+                break;
+            }
+
+            String[] parts = splitVariableArguments(value.substring(varIndex + VAR_FUNCTION.length(), endIndex));
+            String name = parts[0].strip();
+            String fallback = parts[1];
+            String replacement = null;
+
+            String propertyValue = attributes.get(name);
+            if (propertyValue == null) {
+                propertyValue = attributes.get(name.toLowerCase(Locale.ROOT));
+            }
+
+            if (propertyValue != null && !resolving.contains(name)) {
+                resolving.add(name);
+                replacement = resolveCustomProperties(propertyValue, attributes, resolving);
+                resolving.remove(name);
+            } else if (fallback != null) {
+                replacement = resolveCustomProperties(fallback, attributes, resolving);
+            }
+
+            if (replacement != null) {
+                resolved.append(replacement);
+            }
+            index = endIndex + 1;
+        }
+        return resolved.toString();
+    }
+
+    /** Find the matching ')' for a var() expression, accounting for nested parentheses. */
+    private static int findClosingParenthesis(String value, int start) {
+        int depth = 1;
+        for (int i = start; i < value.length(); i++) {
+            char current = value.charAt(i);
+            if (current == '(')
+                depth++;
+            else if (current == ')') {
+                depth--;
+                if (depth == 0)
+                    return i;
+            }
+        }
+        return -1;
+    }
+
+    /** Split var() content into [name, fallback], respecting nested parentheses in fallback. */
+    private static String[] splitVariableArguments(String content) {
+        int depth = 0;
+        for (int i = 0; i < content.length(); i++) {
+            char current = content.charAt(i);
+            if (current == '(') {
+                depth++;
+            } else if (current == ')') {
+                depth--;
+            } else if (current == ',' && depth == 0) {
+                return new String[]{content.substring(0, i), content.substring(i + 1).strip()};
+            }
+        }
+        return new String[]{content, null};
     }
 }

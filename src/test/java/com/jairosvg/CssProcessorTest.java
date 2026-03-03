@@ -8,6 +8,7 @@ import org.w3c.dom.Element;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -96,6 +97,24 @@ class CssProcessorTest {
         assertFalse(secondDecls.stream().anyMatch(d -> "stroke-width".equals(d.name())));
         assertTrue(thirdDecls.stream().anyMatch(d -> "opacity".equals(d.name()) && "0.5".equals(d.value())));
         assertTrue(thirdDecls.stream().anyMatch(d -> "stroke-width".equals(d.name()) && "3".equals(d.value())));
+    }
+
+    @Test
+    void testParseDeclarationsKeepsCustomProperties() {
+        var parsed = CssProcessor.parseDeclarations("--main-color: red; fill: var(--main-color);");
+        assertTrue(parsed[0].stream().anyMatch(d -> "--main-color".equals(d.name()) && "red".equals(d.value())));
+        assertTrue(parsed[0].stream().anyMatch(d -> "fill".equals(d.name()) && "var(--main-color)".equals(d.value())));
+    }
+
+    @Test
+    void testResolveCustomPropertiesWithFallback() {
+        var attributes = new LinkedHashMap<String, String>();
+        attributes.put("--primary", "blue");
+        attributes.put("fill", "var(--primary)");
+        attributes.put("stroke", "var(--missing, rgb(255, 0, 0))");
+
+        assertEquals("blue", CssProcessor.resolveCustomProperties(attributes.get("fill"), attributes));
+        assertEquals("rgb(255, 0, 0)", CssProcessor.resolveCustomProperties(attributes.get("stroke"), attributes));
     }
 
     private static Element parseSvgElement(String xml) throws Exception {
