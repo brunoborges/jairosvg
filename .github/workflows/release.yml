@@ -30,9 +30,9 @@ jobs:
           ./mvnw versions:set -DnewVersion=${{ inputs.version }} -DgenerateBackupPoms=false
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git commit -am "Release v${{ inputs.version }}"
-          git tag "v${{ inputs.version }}"
-          git push origin main --tags
+          git diff --quiet || git commit -am "Release v${{ inputs.version }}"
+          git tag -f "v${{ inputs.version }}"
+          git push origin main --tags --force
 
       - name: Build and stage artifacts
         run: ./mvnw clean deploy -Prelease --no-transfer-progress
