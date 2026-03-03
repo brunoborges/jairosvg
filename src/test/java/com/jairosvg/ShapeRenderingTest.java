@@ -241,7 +241,8 @@ class ShapeRenderingTest {
                   <line x1="10" y1="20" x2="110" y2="20" stroke="black" marker-end="url(#dot)"/>
                   <polyline points="10,50 60,50 110,50" fill="none" stroke="black" marker-mid="url(#square)"/>
                   <path d="M10,90 L110,90" fill="none" stroke="black" marker-end="url(#triangle)"/>
-            """;
+                </svg>
+                """;
 
         byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
         assertNotNull(png);
@@ -270,20 +271,14 @@ class ShapeRenderingTest {
         byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
 
         BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
-        int curvedBandPixels = 0;
-        // This band covers the upper-middle section of curve M30,200 C100,100 300,100
-        // 370,200.
-        // Straight-line rendering at the baseline does not produce pixels in this
-        // region.
-        for (int y = 110; y <= 150; y++) {
-            for (int x = 150; x <= 250; x++) {
-                int alpha = (image.getRGB(x, y) >> 24) & 0xFF;
-                if (alpha > 0) {
-                    curvedBandPixels++;
-                }
-            }
-        }
-        assertTrue(curvedBandPixels > 20, "textPath should render visible pixels along the curved path");
+
+        int lineEnd = image.getRGB(110, 20);
+        int polyMid = image.getRGB(60, 50);
+        int pathEnd = image.getRGB(110, 90);
+
+        assertTrue((lineEnd & 0xFF) > MIN_COLOR_CHANNEL_THRESHOLD);
+        assertTrue(((polyMid >> 8) & 0xFF) > MIN_COLOR_CHANNEL_THRESHOLD);
+        assertTrue(((pathEnd >> 16) & 0xFF) > MIN_COLOR_CHANNEL_THRESHOLD);
     }
 
     @Test
@@ -303,12 +298,19 @@ class ShapeRenderingTest {
         assertNotNull(png);
 
         BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
-        int lineEnd = image.getRGB(110, 20);
-        int polyMid = image.getRGB(60, 50);
-        int pathEnd = image.getRGB(110, 90);
-
-        assertTrue((lineEnd & 0xFF) > MIN_COLOR_CHANNEL_THRESHOLD);
-        assertTrue(((polyMid >> 8) & 0xFF) > MIN_COLOR_CHANNEL_THRESHOLD);
-        assertTrue(((pathEnd >> 16) & 0xFF) > MIN_COLOR_CHANNEL_THRESHOLD);
+        int curvedBandPixels = 0;
+        // This band covers the upper-middle section of curve M30,200 C100,100 300,100
+        // 370,200.
+        // Straight-line rendering at the baseline does not produce pixels in this
+        // region.
+        for (int y = 110; y <= 150; y++) {
+            for (int x = 150; x <= 250; x++) {
+                int alpha = (image.getRGB(x, y) >> 24) & 0xFF;
+                if (alpha > 0) {
+                    curvedBandPixels++;
+                }
+            }
+        }
+        assertTrue(curvedBandPixels > 20, "textPath should render visible pixels along the curved path");
     }
 }
