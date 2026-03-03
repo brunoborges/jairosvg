@@ -6,6 +6,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -133,5 +134,37 @@ class ShapeRenderingTest {
         assertTrue(centerGreen > 100);
         assertTrue(centerRed < 20);
         assertTrue(centerBlue < 20);
+    }
+
+    @Test
+    void testEmbeddedSvgImageOpacity() throws Exception {
+        String embeddedSvg = """
+                <svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'>
+                  <rect width='10' height='10' fill='black'/>
+                </svg>
+                """;
+        String imageHref = "data:image/svg+xml;base64,"
+                + Base64.getEncoder().encodeToString(embeddedSvg.getBytes(StandardCharsets.UTF_8));
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">
+                  <rect width="10" height="10" fill="white"/>
+                  <image x="0" y="0" width="10" height="10" opacity="0.5" href="%s"/>
+                </svg>
+                """.formatted(imageHref);
+        String opaqueSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">
+                  <rect width="10" height="10" fill="white"/>
+                  <image x="0" y="0" width="10" height="10" opacity="1" href="%s"/>
+                </svg>
+                """.formatted(imageHref);
+
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
+        BufferedImage opaqueImage = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(opaqueSvg.getBytes(StandardCharsets.UTF_8))));
+        int pixel = image.getRGB(5, 5);
+        int opaquePixel = opaqueImage.getRGB(5, 5);
+        int red = (pixel >> 16) & 0xFF;
+        int opaqueRed = (opaquePixel >> 16) & 0xFF;
+        assertTrue(red > opaqueRed, "50% opacity embedded image should blend lighter than opaque image");
     }
 }

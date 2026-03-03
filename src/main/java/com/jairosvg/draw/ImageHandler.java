@@ -47,6 +47,10 @@ public final class ImageHandler {
         double y = size(surface, node.get("y"), "y");
         double width = size(surface, node.get("width"), "x");
         double height = size(surface, node.get("height"), "y");
+        double opacity = 1;
+        String opacityStr = node.get("opacity");
+        if (opacityStr != null)
+            opacity = Double.parseDouble(opacityStr);
 
         // Check if it's an SVG image
         if (isSvgContent(imageBytes)) {
@@ -64,10 +68,16 @@ public final class ImageHandler {
                 double[] ratio = preserveRatio(surface, node, width, height);
 
                 var savedTransform = surface.context.getTransform();
+                var savedComposite = surface.context.getComposite();
                 surface.context.translate(x, y);
                 surface.context.scale(ratio[0], ratio[1]);
                 surface.context.translate(ratio[2], ratio[3]);
+                if (opacity < 1) {
+                    surface.context.setComposite(
+                            java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC_OVER, (float) opacity));
+                }
                 surface.draw(tree);
+                surface.context.setComposite(savedComposite);
                 surface.context.setTransform(savedTransform);
             } catch (Exception e) {
                 // Skip invalid SVG images
@@ -89,11 +99,6 @@ public final class ImageHandler {
                 height = node.imageHeight;
 
             double[] ratio = preserveRatio(surface, node, width, height);
-            double opacity = 1;
-            String opacityStr = node.get("opacity");
-            if (opacityStr != null)
-                opacity = Double.parseDouble(opacityStr);
-
             var savedTransform = surface.context.getTransform();
             var savedComposite = surface.context.getComposite();
 
