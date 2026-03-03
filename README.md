@@ -9,7 +9,7 @@ A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to 
 ## Features
 
 - 🎨 **SVG 1.1 rendering** using Java2D — no native dependencies
-- 📄 **Multiple output formats**: PNG, PDF (via Apache PDFBox), PostScript, SVG
+- 📄 **Multiple output formats**: PNG, JPEG, TIFF, PDF (via Apache PDFBox), PostScript, SVG
 - 🔷 **Full shape support**: rect, circle, ellipse, line, polygon, polyline, path
 - 🌈 **Gradients**: linear and radial with stop colors and opacity
 - ✍️ **Text rendering** with font control, letter-spacing, text-anchor
@@ -102,7 +102,7 @@ java --enable-preview -jar target/jairosvg-1.0.0-SNAPSHOT-cli.jar input.svg -f p
 | Option | Description |
 |--------|-------------|
 | `-o, --output FILE` | Output filename |
-| `-f, --format FORMAT` | Output format: `png`, `pdf`, `ps`, `svg` |
+| `-f, --format FORMAT` | Output format: `png`, `jpeg`, `tiff`, `pdf`, `ps`, `svg` |
 | `-d, --dpi DPI` | Resolution (default: 96) |
 | `-s, --scale FACTOR` | Scale factor (default: 1) |
 | `-b, --background COLOR` | Background color |

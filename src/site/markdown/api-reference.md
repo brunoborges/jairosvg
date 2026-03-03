@@ -56,7 +56,7 @@ JairoSVG.builder()
     .outputHeight(300)         // Desired output height
     .negateColors(true)        // Invert colors
     .unsafe(false)             // Allow external entities (default: false)
-    .toPng();                  // or .toPdf(), .toPs(), .toSvg(), .toImage()
+    .toPng();                  // or .toJpeg(), .toTiff(), .toPdf(), .toPs(), .toSvg(), .toImage()
 ```
 
 ### Output Methods
@@ -64,6 +64,8 @@ JairoSVG.builder()
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `.toPng()` | `byte[]` | PNG image data |
+| `.toJpeg()` | `byte[]` | JPEG image data |
+| `.toTiff()` | `byte[]` | TIFF image data |
 | `.toPdf()` | `byte[]` | PDF document data |
 | `.toPs()` | `byte[]` | PostScript data |
 | `.toSvg()` | `byte[]` | Re-rendered SVG |
