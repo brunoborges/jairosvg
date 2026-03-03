@@ -31,7 +31,10 @@ jobs:
       - name: Install CairoSVG
         run: pip install cairosvg
 
+      - name: Install JBang
+        run: |
+          curl -Ls https://sh.jbang.dev | bash -s - app setup
+          echo "$HOME/.jbang/bin" >> $GITHUB_PATH
+
       - name: Run Benchmark
-        uses: jbangdev/jbang-action@v0.115.0
-        with:
-          script: benchmark.java
+        run: jbang benchmark.java
