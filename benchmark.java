@@ -70,6 +70,63 @@ public class benchmark {
             </svg>
             """;
 
+    static final String SVG_DEFS_USE = """
+            <svg xmlns="http://www.w3.org/2000/svg" width="360" height="240" viewBox="0 0 360 240">
+              <defs>
+                <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#0ea5e9"/>
+                  <stop offset="100%" stop-color="#1d4ed8"/>
+                </linearGradient>
+                <clipPath id="cardClip">
+                  <rect x="0" y="0" width="320" height="200" rx="18"/>
+                </clipPath>
+                <g id="badge">
+                  <circle cx="0" cy="0" r="24" fill="#facc15"/>
+                  <path d="M-10,2 L-2,10 L12,-8" fill="none" stroke="#1f2937" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                </g>
+              </defs>
+              <rect x="20" y="20" width="320" height="200" rx="18" fill="url(#bg)"/>
+              <g clip-path="url(#cardClip)" transform="translate(20,20)">
+                <rect x="0" y="120" width="320" height="80" fill="rgba(15,23,42,0.28)"/>
+                <text x="24" y="58" font-size="28" font-family="sans-serif" font-weight="700" fill="white">Defs + Use</text>
+                <text x="24" y="92" font-size="15" font-family="sans-serif" fill="#dbeafe">clipPath, gradients and symbol reuse</text>
+                <use href="#badge" transform="translate(276,48)"/>
+                <use href="#badge" transform="translate(242,82) scale(0.75)"/>
+                <use href="#badge" transform="translate(206,110) scale(0.55)"/>
+              </g>
+            </svg>
+            """;
+
+    static final String SVG_MARKERS_DASH = """
+            <svg xmlns="http://www.w3.org/2000/svg" width="420" height="280" viewBox="0 0 420 280">
+              <defs>
+                <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                  <path d="M0,0 L8,4 L0,8 z" fill="#ef4444"/>
+                </marker>
+              </defs>
+              <rect width="420" height="280" fill="#f8fafc"/>
+              <path d="M30,230 C100,40 200,40 280,180 S390,240 390,70"
+                    fill="none"
+                    stroke="#ef4444"
+                    stroke-width="4"
+                    stroke-dasharray="12 8"
+                    stroke-linecap="round"
+                    marker-start="url(#arrow)"
+                    marker-mid="url(#arrow)"
+                    marker-end="url(#arrow)"/>
+              <polyline points="30,30 90,70 150,50 210,95 300,55 390,100"
+                        fill="none"
+                        stroke="#0f766e"
+                        stroke-width="6"
+                        stroke-linejoin="round"
+                        stroke-linecap="round"
+                        opacity="0.75"/>
+              <text x="210" y="260" text-anchor="middle" font-size="16" font-family="sans-serif" fill="#0f172a">
+                markers + dashed strokes + opacity
+              </text>
+            </svg>
+            """;
+
     interface SvgConverter {
         byte[] convert(String svg) throws Exception;
     }
@@ -171,6 +228,8 @@ public class benchmark {
             {"Simple (shapes)", SVG_SIMPLE},
             {"Gradients + Transforms", SVG_GRADIENTS},
             {"Complex (paths + text)", SVG_COMPLEX},
+            {"Defs + Use + clipPath", SVG_DEFS_USE},
+            {"Markers + dashed strokes", SVG_MARKERS_DASH},
         };
 
         SvgConverter jairosvg = svg -> JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
