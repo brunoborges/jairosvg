@@ -15,6 +15,9 @@ on:
       - '.github/workflows/native-image.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   native-image:
     runs-on: ubuntu-latest
@@ -33,7 +36,12 @@ jobs:
         run: ./mvnw -DskipTests package --no-transfer-progress
       - name: Build native image
         run: |
-          CLI_JAR=$(ls target/*-cli.jar | head -n 1)
-          native-image --enable-preview -jar "$CLI_JAR"
+          shopt -s nullglob
+          cli_jars=(target/*-cli.jar)
+          if [ ${#cli_jars[@]} -eq 0 ]; then
+            echo "No shaded CLI jar found in target/"
+            exit 1
+          fi
+          native-image --enable-preview -o jairosvg -jar "${cli_jars[0]}"
       - name: Smoke test native executable
         run: ./jairosvg --help
