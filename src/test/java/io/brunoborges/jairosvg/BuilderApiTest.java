@@ -92,14 +92,8 @@ class BuilderApiTest {
         byte[] png = JairoSVG.builder().fromString(svg).negateColors(true).toPng();
 
         BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
-        int pixel = image.getRGB(50, 50);
         // Red negated should be cyan (0, 255, 255)
-        int red = (pixel >> 16) & 0xFF;
-        int green = (pixel >> 8) & 0xFF;
-        int blue = pixel & 0xFF;
-        assertEquals(0, red);
-        assertEquals(255, green);
-        assertEquals(255, blue);
+        assertColor(image.getRGB(50, 50), 0, 255, 255);
     }
 
     @Test
@@ -115,6 +109,7 @@ class BuilderApiTest {
         BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
         assertEquals(40, image.getWidth());
         assertEquals(30, image.getHeight());
+        assertColor(image.getRGB(20, 15), 0, 128, 0);
     }
 
     @Test
@@ -132,12 +127,14 @@ class BuilderApiTest {
         BufferedImage fileImage = ImageIO.read(new ByteArrayInputStream(pngFromFile));
         assertEquals(25, fileImage.getWidth());
         assertEquals(15, fileImage.getHeight());
+        assertColor(fileImage.getRGB(12, 7), 0, 0, 255);
 
         String dataUrl = "data:image/svg+xml;base64," + Base64.getEncoder().encodeToString(compressed);
         byte[] pngFromUrl = JairoSVG.builder().fromUrl(dataUrl).toPng();
         BufferedImage urlImage = ImageIO.read(new ByteArrayInputStream(pngFromUrl));
         assertEquals(25, urlImage.getWidth());
         assertEquals(15, urlImage.getHeight());
+        assertColor(urlImage.getRGB(12, 7), 0, 0, 255);
     }
 
     private static byte[] gzip(byte[] bytes) throws Exception {
@@ -146,5 +143,11 @@ class BuilderApiTest {
             gzip.write(bytes);
         }
         return out.toByteArray();
+    }
+
+    private static void assertColor(int pixel, int expectedRed, int expectedGreen, int expectedBlue) {
+        assertEquals(expectedRed, (pixel >> 16) & 0xFF);
+        assertEquals(expectedGreen, (pixel >> 8) & 0xFF);
+        assertEquals(expectedBlue, pixel & 0xFF);
     }
 }
