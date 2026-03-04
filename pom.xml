@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.brunoborges</groupId>
@@ -73,7 +73,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.15.0</version>
                 <configuration>
-                    <release>25</release>
+                    <release>${maven.compiler.release}</release>
                     <enablePreview>true</enablePreview>
                 </configuration>
             </plugin>
@@ -106,9 +106,9 @@
                         <eclipse>
                             <version>4.33</version>
                         </eclipse>
-                        <removeUnusedImports/>
-                        <trimTrailingWhitespace/>
-                        <endWithNewline/>
+                        <removeUnusedImports />
+                        <trimTrailingWhitespace />
+                        <endWithNewline />
                         <indent>
                             <spaces>true</spaces>
                             <spacesPerTab>4</spacesPerTab>
@@ -123,10 +123,13 @@
                 <executions>
                     <execution>
                         <phase>package</phase>
-                        <goals><goal>shade</goal></goals>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
                         <configuration>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>io.brunoborges.jairosvg.Main</mainClass>
                                 </transformer>
                             </transformers>
@@ -148,12 +151,16 @@
                 <version>0.8.14</version>
                 <executions>
                     <execution>
-                        <goals><goal>prepare-agent</goal></goals>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
                     </execution>
                     <execution>
                         <id>report</id>
                         <phase>test</phase>
-                        <goals><goal>report</goal></goals>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -173,7 +180,7 @@
                 <version>3.12.0</version>
                 <configuration>
                     <additionalOptions>--enable-preview</additionalOptions>
-                    <source>25</source>
+                    <source>${maven.compiler.release}</source>
                     <doclint>none</doclint>
                     <failOnError>false</failOnError>
                 </configuration>
@@ -184,7 +191,9 @@
                 <version>0.8.14</version>
                 <reportSets>
                     <reportSet>
-                        <reports><report>report</report></reports>
+                        <reports>
+                            <report>report</report>
+                        </reports>
                     </reportSet>
                 </reportSets>
             </plugin>
@@ -203,7 +212,9 @@
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
-                                <goals><goal>jar-no-fork</goal></goals>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
@@ -214,12 +225,14 @@
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
-                                <goals><goal>jar</goal></goals>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
                             </execution>
                         </executions>
                         <configuration>
                             <additionalOptions>--enable-preview</additionalOptions>
-                            <source>25</source>
+                            <source>${maven.compiler.release}</source>
                             <doclint>none</doclint>
                         </configuration>
                     </plugin>
