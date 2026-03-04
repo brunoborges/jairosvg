@@ -72,9 +72,9 @@ public final class Main {
         if (format == null) {
             if (!"-".equals(output)) {
                 String ext = output.substring(output.lastIndexOf('.') + 1).toLowerCase();
-                format = FORMAT_EXTENSIONS.getOrDefault(ext, "PDF");
+                format = FORMAT_EXTENSIONS.getOrDefault(ext, "PNG");
             } else {
-                format = "PDF";
+                format = "PNG";
             }
         } else {
             format = format.toUpperCase();
@@ -118,7 +118,7 @@ public final class Main {
                 byte[] data = builder.toPs();
                 out.write(data);
             }
-            default -> builder.toPdf(out);
+            default -> builder.toPng(out);
         }
 
         if (!"-".equals(output)) {
