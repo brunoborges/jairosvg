@@ -463,7 +463,7 @@ Multi-span text (tspan), text-decoration, textPath on curves, and rotated text.
 
 **Choose JairoSVG when you need:**
 
-- Fast, lightweight SVG → PNG/PDF conversion **in Java**
+- True cross-platform, fast, lightweight SVG → PNG/PDF conversion
 - Minimal dependencies and small deployment footprint
 - A simple, fluent Java API
 - Server-side batch rendering where startup time and throughput matter
