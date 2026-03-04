@@ -259,7 +259,7 @@ SVG → PNG conversion benchmarks across 19 SVG test files (lower is better):
 | Clip paths     |   **4.2 ms**    |    26.5 ms     |      6.0 ms       |       6.4× ✅       |       1.4× ✅        |
 | Masks ⚠️       |   **8.9 ms**    |    21.5 ms     |     3.7 ms ⚠️     |       2.4× ✅       |         ← ⚠️         |
 | Markers        |   **3.9 ms**    |    13.1 ms     |      4.7 ms       |       3.4× ✅       |       1.2× ✅        |
-| Filters ⚠️     |     45.0 ms     |  **35.1 ms**   |     4.5 ms ⚠️     |        0.78×        |         ← ⚠️         |
+| Filters ⚠️     |  **45.0 ms**    |    35.1 ms     |     4.5 ms ⚠️     |    EchoSVG 1.3×     |         ← ⚠️         |
 | Embedded image |   **4.3 ms**    |    16.4 ms     |      7.2 ms       |       3.8× ✅       |       1.7× ✅        |
 | Text advanced  |   **5.4 ms**    |    26.1 ms     |      8.9 ms       |       4.8× ✅       |       1.7× ✅        |
 
