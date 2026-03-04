@@ -1,0 +1,47 @@
+name: Native Image CLI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - '.github/workflows/native-image.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - '.github/workflows/native-image.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up GraalVM JDK 25
+        uses: graalvm/setup-graalvm@v1
+        with:
+          distribution: graalvm
+          java-version: '25'
+          cache: maven
+          components: native-image
+      - name: Build shaded CLI JAR
+        env:
+          MAVEN_OPTS: --enable-preview
+        run: ./mvnw -DskipTests package --no-transfer-progress
+      - name: Build native image
+        run: |
+          shopt -s nullglob
+          cli_jars=(target/*-cli.jar)
+          if [ ${#cli_jars[@]} -eq 0 ]; then
+            echo "No shaded CLI jar found in target/"
+            exit 1
+          fi
+          native-image --enable-preview -o jairosvg -jar "${cli_jars[0]}"
+      - name: Smoke test native executable
+        run: ./jairosvg --help
