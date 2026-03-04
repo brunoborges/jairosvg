@@ -60,13 +60,13 @@ Run the benchmark yourself: `jbang comparison/benchmark.java`
 ### Gradle
 
 ```groovy
-implementation 'io.brunoborges:jairosvg:1.0.0'
+implementation 'io.brunoborges:jairosvg:1.0.1'
 ```
 
 ### JBang (quick run)
 
 ```bash
-jbang --deps io.brunoborges:jairosvg:1.0.0 MyScript.java
+jbang --deps io.brunoborges:jairosvg:1.0.1 MyScript.java
 ```
 
 ## Quick Start
@@ -109,6 +109,18 @@ BufferedImage image = JairoSVG.builder()
 
 ### Command Line
 
+Install with JBang
+```bash
+jbang app install io.brunoborges:jairosvg:LATEST
+
+# SVG → PNG
+jairosvg input.svg -o output.png
+
+# SVG → PDF with 2x scale
+java input.svg -f pdf -s 2 -o output.pdf
+```
+
+Manually build:
 ```bash
 # Build the CLI
 mvn package
