@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -53,5 +54,20 @@ class CliTest {
         assertNotNull(image);
         assertEquals(100, image.getWidth());
         assertEquals(100, image.getHeight());
+    }
+
+    @Test
+    void testNativeImageConfigurationPresent() throws Exception {
+        var resourcePath = "/META-INF/native-image/io.brunoborges/jairosvg/native-image.properties";
+        try (var in = CliTest.class.getResourceAsStream(resourcePath)) {
+            assertNotNull(in);
+            var props = new Properties();
+            props.load(in);
+            var args = props.getProperty("Args");
+            assertNotNull(args);
+            assertTrue(args.contains("--enable-preview"));
+            assertTrue(args.contains("-H:Class=io.brunoborges.jairosvg.cli.Main"));
+            assertTrue(args.contains("-H:IncludeResources=io/brunoborges/jairosvg/css/colors\\.properties"));
+        }
     }
 }
