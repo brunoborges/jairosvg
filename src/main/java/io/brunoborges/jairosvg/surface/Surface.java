@@ -266,6 +266,11 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         if (filterStr != null) {
             filterName = UrlHelper.parseUrl(filterStr).fragment();
         }
+        String maskName = null;
+        String maskStr = node.get("mask");
+        if (maskStr != null) {
+            maskName = UrlHelper.parseUrl(maskStr).fragment();
+        }
 
         double opacity = parseDoubleOr(node.get("opacity"), 1);
 
@@ -273,19 +278,19 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
             Defs.prepareFilter(this, node, filterName);
         }
 
-        Graphics2D filterBaseContext = null;
-        Graphics2D filterContext = null;
-        BufferedImage filterSourceImage = null;
-        if (filterName != null) {
-            filterBaseContext = context;
-            filterSourceImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-            filterContext = filterSourceImage.createGraphics();
-            filterContext.setRenderingHints(filterBaseContext.getRenderingHints());
-            filterContext.setTransform(filterBaseContext.getTransform());
-            filterContext.setClip(filterBaseContext.getClip());
-            filterContext.setComposite(filterBaseContext.getComposite());
-            filterContext.setStroke(filterBaseContext.getStroke());
-            context = filterContext;
+        Graphics2D effectBaseContext = null;
+        Graphics2D effectContext = null;
+        BufferedImage effectSourceImage = null;
+        if (filterName != null || maskName != null) {
+            effectBaseContext = context;
+            effectSourceImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            effectContext = effectSourceImage.createGraphics();
+            effectContext.setRenderingHints(effectBaseContext.getRenderingHints());
+            effectContext.setTransform(effectBaseContext.getTransform());
+            effectContext.setClip(effectBaseContext.getClip());
+            effectContext.setComposite(effectBaseContext.getComposite());
+            effectContext.setStroke(effectBaseContext.getStroke());
+            context = effectContext;
         }
 
         // Set stroke properties
@@ -426,11 +431,17 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         context.setComposite(savedComposite);
         context.setStroke(savedStroke);
 
-        if (filterContext != null) {
-            BufferedImage filteredImage = Defs.applyFilter(this, filterName, filterSourceImage);
-            context = filterBaseContext;
-            filterBaseContext.drawImage(filteredImage, 0, 0, null);
-            filterContext.dispose();
+        if (effectContext != null) {
+            BufferedImage renderedImage = effectSourceImage;
+            if (filterName != null) {
+                renderedImage = Defs.applyFilter(this, filterName, renderedImage);
+            }
+            if (maskName != null) {
+                renderedImage = Defs.paintMask(this, node, maskName, renderedImage);
+            }
+            context = effectBaseContext;
+            effectBaseContext.drawImage(renderedImage, 0, 0, null);
+            effectContext.dispose();
         }
 
         this.parentNode = oldParentNode;

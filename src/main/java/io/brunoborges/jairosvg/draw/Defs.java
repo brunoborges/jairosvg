@@ -41,6 +41,10 @@ import io.brunoborges.jairosvg.util.UrlHelper;
  */
 public final class Defs {
 
+    private static final double LUMINANCE_RED_COEFF = 0.2126;
+    private static final double LUMINANCE_GREEN_COEFF = 0.7152;
+    private static final double LUMINANCE_BLUE_COEFF = 0.0722;
+
     private Defs() {
     }
 
@@ -495,13 +499,64 @@ public final class Defs {
         return last;
     }
 
-    /** Handle mask (simplified). */
-    public static void paintMask(Surface surface, Node node, String name, double opacity) {
-        // Simplified mask - just apply opacity
-        if (opacity < 1) {
-            surface.context.setComposite(
-                    java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC_OVER, (float) opacity));
+    /** Render and apply luminance mask to an off-screen source image. */
+    public static BufferedImage paintMask(Surface surface, Node node, String name, BufferedImage sourceImage) {
+        Node maskNode = surface.masks.get(name);
+        if (maskNode == null) {
+            return sourceImage;
         }
+
+        BufferedImage maskImage = new BufferedImage(sourceImage.getWidth(), sourceImage.getHeight(),
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics2D maskG2d = maskImage.createGraphics();
+        maskG2d.setRenderingHints(surface.context.getRenderingHints());
+
+        Graphics2D savedContext = surface.context;
+        GeneralPath savedPath = surface.path;
+        double savedWidth = surface.contextWidth;
+        double savedHeight = surface.contextHeight;
+
+        surface.context = maskG2d;
+        surface.path = new GeneralPath();
+        surface.contextWidth = savedWidth;
+        surface.contextHeight = savedHeight;
+
+        for (Node child : maskNode.children) {
+            surface.draw(child);
+        }
+
+        surface.context = savedContext;
+        surface.path = savedPath;
+        surface.contextWidth = savedWidth;
+        surface.contextHeight = savedHeight;
+        maskG2d.dispose();
+
+        int width = sourceImage.getWidth();
+        int height = sourceImage.getHeight();
+        int[] sourcePixels = sourceImage.getRGB(0, 0, width, height, null, 0, width);
+        int[] maskPixels = maskImage.getRGB(0, 0, width, height, null, 0, width);
+        int[] outputPixels = new int[sourcePixels.length];
+
+        for (int i = 0; i < sourcePixels.length; i++) {
+            int src = sourcePixels[i];
+                int srcA = (src >>> 24) & 0xFF;
+                if (srcA == 0) {
+                    continue;
+                }
+                int m = maskPixels[i];
+                int ma = (m >>> 24) & 0xFF;
+                int mr = (m >>> 16) & 0xFF;
+                int mg = (m >>> 8) & 0xFF;
+                int mb = m & 0xFF;
+                double luminance = (LUMINANCE_RED_COEFF * mr + LUMINANCE_GREEN_COEFF * mg + LUMINANCE_BLUE_COEFF * mb)
+                        / 255.0;
+                double maskAlpha = (ma / 255.0) * luminance;
+                int outA = (int) Math.round(srcA * maskAlpha);
+                outputPixels[i] = (outA << 24) | (src & 0x00FFFFFF);
+        }
+        BufferedImage masked = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        masked.setRGB(0, 0, width, height, outputPixels, 0, width);
+        return masked;
     }
 
     /** Handle markers. */
