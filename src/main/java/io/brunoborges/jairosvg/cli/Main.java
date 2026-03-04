@@ -1,8 +1,11 @@
-package io.brunoborges.jairosvg;
+package io.brunoborges.jairosvg.cli;
 
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Map;
+
+import io.brunoborges.jairosvg.JairoSVG;
 
 /**
  * Command-line interface to JairoSVG. Port of CairoSVG __main__.py
@@ -48,7 +51,6 @@ public final class Main {
                 case "-s", "--scale" -> scale = Double.parseDouble(args[++i]);
                 case "-b", "--background" -> background = args[++i];
                 case "-n", "--negate-colors" -> negateColors = true;
-                case "-i", "--invert-images" -> invertImages = true;
                 case "-u", "--unsafe" -> unsafe = true;
                 case "--output-width" -> outputWidth = Double.parseDouble(args[++i]);
                 case "--output-height" -> outputHeight = Double.parseDouble(args[++i]);
@@ -79,8 +81,7 @@ public final class Main {
         }
 
         // Build conversion
-        var builder = JairoSVG.builder().dpi(dpi).scale(scale).unsafe(unsafe).negateColors(negateColors)
-                .invertImages(invertImages);
+        var builder = JairoSVG.builder().dpi(dpi).scale(scale).unsafe(unsafe).negateColors(negateColors);
 
         if (background != null)
             builder.backgroundColor(background);
