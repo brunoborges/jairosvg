@@ -168,7 +168,6 @@ EchoSVG integrates the **css4j** CSS parser, giving it significantly more advanc
 | PDF                    | ✅ (via Apache PDFBox 3.0) | ✅ (via FOP or transcoder) |   ✅ (via Cairo)   |
 | PostScript (PS)        |             ✅             |             ✅             |         ✅         |
 | EPS                    |             ✅             |             ❌             |         ❌         |
-| SVG (re-render)        |             ✅             |             ✅             |         ✅         |
 | JPEG                   |             ✅             |             ✅             |         ❌         |
 | TIFF                   |             ✅             |             ✅             |         ❌         |
 | In-memory image object |    ✅ (`BufferedImage`)    |    ✅ (`BufferedImage`)    | ✅ (Cairo surface) |

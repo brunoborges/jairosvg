@@ -2,12 +2,12 @@
 
 ## Project Overview
 
-JairoSVG is a Java port of [CairoSVG](https://cairosvg.org) (Python) — an SVG 1.1 to PNG/PDF/PS/SVG converter using Java2D. The architecture mirrors CairoSVG's module structure, mapping `cairo.Context` → `Graphics2D`, `cairo.ImageSurface` → `BufferedImage`, and `cairo.Matrix` → `AffineTransform`.
+JairoSVG is a Java port of [CairoSVG](https://cairosvg.org) (Python) — an SVG 1.1 to PNG/PDF/PS converter using Java2D. The architecture mirrors CairoSVG's module structure, mapping `cairo.Context` → `Graphics2D`, `cairo.ImageSurface` → `BufferedImage`, and `cairo.Matrix` → `AffineTransform`.
 
 ## Dependencies
 
 - **Required**: Java 25 with preview features
-- **Optional**: Apache PDFBox 3.0 — only needed for PDF output (`toPdf()`/`svg2pdf()`). All other formats (PNG, JPEG, TIFF, SVG, PS/EPS) work without it. Calling `toPdf()` without PDFBox on the classpath throws `UnsupportedOperationException`.
+- **Optional**: Apache PDFBox 3.0 — only needed for PDF output (`toPdf()`/`svg2pdf()`). All other formats (PNG, JPEG, TIFF, PS/EPS) work without it. Calling `toPdf()` without PDFBox on the classpath throws `UnsupportedOperationException`.
 
 ## Build & Test
 

@@ -11,7 +11,6 @@ JairoSVG is a module-by-module port of [CairoSVG](https://cairosvg.org)'s Python
 | `PngSurface` | `surface.py` | PNG output via `javax.imageio` |
 | `PdfSurface` | `surface.py` | PDF output via Apache PDFBox |
 | `PsSurface` | `surface.py` | PostScript output via `PrinterJob` |
-| `SvgSurface` | `surface.py` | SVG re-rendering output |
 | `Node` | `parser.py` | SVG DOM tree with CSS application |
 | `PathDrawer` | `path.py` | SVG path command parser (M, L, C, Q, A, ...) |
 | `ShapeDrawer` | `shapes.py` | Basic shapes (rect, circle, ellipse, ...) |
@@ -65,8 +64,7 @@ Surface.draw() — recursive element rendering
 Output Surface
     ├── PngSurface → BufferedImage → ImageIO.write()
     ├── PdfSurface → BufferedImage → PDFBox PDPage
-    ├── PsSurface → BufferedImage → PrinterJob
-    └── SvgSurface → XML StringBuilder
+    └── PsSurface → BufferedImage → PrinterJob
 ```
 
 ## Key Design Decisions

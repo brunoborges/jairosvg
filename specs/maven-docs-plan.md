@@ -119,7 +119,7 @@ Elevate JairoSVG from a working prototype to a polished open-source project with
 | Python Module     | Java Class(es)                          |
 |-------------------|-----------------------------------------|
 | `__init__.py`     | `JairoSVG` (public API)                 |
-| `surface.py`      | `Surface`, `PngSurface`, `PdfSurface`, `PsSurface`, `SvgSurface`, `EpsSurface` |
+| `surface.py`      | `Surface`, `PngSurface`, `PdfSurface`, `PsSurface`, `EpsSurface` |
 | `parser.py`       | `Node`, `Tree`                          |
 | `colors.py`       | `Colors`                                |
 | `helpers.py`      | `Helpers`                               |
@@ -153,8 +153,7 @@ Elevate JairoSVG from a working prototype to a polished open-source project with
 15. **svg-drawer**: Port root SVG element handler
 16. **png-surface**: PNG output surface
 17. **pdf-surface**: PDF output surface (using PDFBox)
-18. **svg-surface**: SVG output surface
-19. **public-api**: JairoSVG main API class (svg2png, svg2pdf, etc.)
+18. **public-api**: JairoSVG main API class (svg2png, svg2pdf, etc.)
 20. **cli**: Command-line interface
 21. **tests**: Basic integration tests
 

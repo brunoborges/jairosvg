@@ -13,7 +13,7 @@ import io.brunoborges.jairosvg.JairoSVG;
 public final class Main {
 
     private static final Map<String, String> FORMAT_EXTENSIONS = Map.of("png", "PNG", "jpeg", "JPEG", "jpg", "JPEG",
-            "tiff", "TIFF", "tif", "TIFF", "pdf", "PDF", "ps", "PS", "eps", "EPS", "svg", "SVG");
+            "tiff", "TIFF", "tif", "TIFF", "pdf", "PDF", "ps", "PS", "eps", "EPS");
 
     public static void main(String[] args) throws Exception {
         if (args.length == 0 || "--help".equals(args[0]) || "-h".equals(args[0])) {
@@ -114,7 +114,6 @@ public final class Main {
             case "JPEG" -> builder.toJpeg(out);
             case "TIFF" -> builder.toTiff(out);
             case "PDF" -> builder.toPdf(out);
-            case "SVG" -> builder.toSvg(out);
             case "PS", "EPS" -> {
                 byte[] data = builder.toPs();
                 out.write(data);
@@ -135,7 +134,7 @@ public final class Main {
 
                 Options:
                   -o, --output FILE      Output filename (default: stdout)
-                  -f, --format FORMAT    Output format: png, jpeg, tiff, pdf, ps, eps, svg
+                  -f, --format FORMAT    Output format: png, jpeg, tiff, pdf, ps, eps
                   -d, --dpi DPI          DPI ratio (default: 96)
                   -W, --width PIXELS     Parent container width
                   -H, --height PIXELS    Parent container height

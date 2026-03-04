@@ -1,9 +1,12 @@
 package io.brunoborges.jairosvg.dom;
 
+import static io.brunoborges.jairosvg.util.Helpers.PATH_LETTERS;
+import static io.brunoborges.jairosvg.util.Helpers.normalize;
+import static io.brunoborges.jairosvg.util.Helpers.pointWithRemainder;
+import static io.brunoborges.jairosvg.util.Helpers.size;
+
 import io.brunoborges.jairosvg.surface.Surface;
 import io.brunoborges.jairosvg.util.ParsedPoint;
-
-import static io.brunoborges.jairosvg.util.Helpers.*;
 
 /**
  * Bounding box calculations for SVG shapes and paths. Port of CairoSVG

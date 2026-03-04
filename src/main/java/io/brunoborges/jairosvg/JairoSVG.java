@@ -11,8 +11,7 @@ import io.brunoborges.jairosvg.dom.Node;
 import io.brunoborges.jairosvg.surface.*;
 
 /**
- * JairoSVG - A Java port of CairoSVG. SVG 1.1 to PNG, PDF, PS and SVG
- * converter.
+ * JairoSVG - A Java port of CairoSVG. SVG 1.1 to PNG, PDF, and PS converter.
  *
  * <p>
  * Usage:
@@ -46,11 +45,6 @@ public final class JairoSVG {
     /** Convert SVG bytes to PDF bytes. */
     public static byte[] svg2pdf(byte[] svgBytes) throws Exception {
         return builder().fromBytes(svgBytes).toPdf();
-    }
-
-    /** Convert SVG bytes to SVG bytes (re-render). */
-    public static byte[] svg2svg(byte[] svgBytes) throws Exception {
-        return builder().fromBytes(svgBytes).toSvg();
     }
 
     /** Convert SVG file to PNG file. */
@@ -97,7 +91,6 @@ public final class JairoSVG {
         private boolean unsafe = false;
         private String backgroundColor;
         private boolean negateColors = false;
-        private boolean invertImages = false;
         private Double outputWidth;
         private Double outputHeight;
         private int pngCompressionLevel = -1;
@@ -165,11 +158,6 @@ public final class JairoSVG {
 
         public ConversionBuilder negateColors(boolean negate) {
             this.negateColors = negate;
-            return this;
-        }
-
-        public ConversionBuilder invertImages(boolean invert) {
-            this.invertImages = invert;
             return this;
         }
 
@@ -270,16 +258,6 @@ public final class JairoSVG {
             convert(new PdfSurface(), out);
         }
 
-        /** Convert to SVG bytes. */
-        public byte[] toSvg() throws Exception {
-            return convert(new SvgSurface());
-        }
-
-        /** Convert to SVG and write to output stream. */
-        public void toSvg(OutputStream out) throws Exception {
-            convert(new SvgSurface(), out);
-        }
-
         /** Convert to PS bytes. */
         public byte[] toPs() throws Exception {
             return convert(new PsSurface());
@@ -315,7 +293,7 @@ public final class JairoSVG {
             // invertImages handling would require a BufferedImage mapper
 
             surface.init(tree, out, dpi, null, parentWidth, parentHeight, scale, outputWidth, outputHeight,
-                    backgroundColor, colorMapper, null);
+                    backgroundColor, colorMapper);
         }
 
         private Node parseInput() throws Exception {

@@ -241,8 +241,8 @@ public final class UrlHelper {
     private static byte[] fetchHttp(String url) throws IOException {
         try {
             HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder().uri(new URI(url)).header("User-Agent", "JairoSVG " + JairoSVG.VERSION)
-                    .GET().build();
+            HttpRequest request = HttpRequest.newBuilder().uri(new URI(url))
+                    .header("User-Agent", "JairoSVG " + JairoSVG.VERSION).GET().build();
             HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
             return response.body();
         } catch (URISyntaxException | InterruptedException e) {

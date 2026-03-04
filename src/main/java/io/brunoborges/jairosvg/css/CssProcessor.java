@@ -1,7 +1,14 @@
 package io.brunoborges.jairosvg.css;
 
-import java.util.*;
-import java.util.regex.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import io.brunoborges.jairosvg.dom.Node;
 import io.brunoborges.jairosvg.util.UrlHelper;
@@ -12,22 +19,17 @@ import io.brunoborges.jairosvg.util.UrlHelper;
  */
 public final class CssProcessor {
 
-    private static final java.util.regex.Pattern COMMENT_PATTERN = java.util.regex.Pattern.compile("/\\*.*?\\*/",
-            java.util.regex.Pattern.DOTALL);
-    private static final java.util.regex.Pattern IMPORT_PATTERN = java.util.regex.Pattern.compile("@import[^;]*;");
-    private static final java.util.regex.Pattern RULE_PATTERN = java.util.regex.Pattern
-            .compile("([^{}]+)\\{([^}]*)\\}");
-    private static final java.util.regex.Pattern WHITESPACE = java.util.regex.Pattern.compile("\\s+");
-    private static final java.util.regex.Pattern PSEUDO_ELEMENT_PATTERN = java.util.regex.Pattern.compile("::[\\w-]+");
-    private static final java.util.regex.Pattern NOT_PATTERN = java.util.regex.Pattern.compile(":not\\(([^()]*)\\)");
-    private static final java.util.regex.Pattern FIRST_CHILD_PATTERN = java.util.regex.Pattern
-            .compile(":first-child\\b");
-    private static final java.util.regex.Pattern LAST_CHILD_PATTERN = java.util.regex.Pattern.compile(":last-child\\b");
-    private static final java.util.regex.Pattern NTH_CHILD_PATTERN = java.util.regex.Pattern
-            .compile(":nth-child\\(([^)]*)\\)");
-    private static final java.util.regex.Pattern NTH_CHILD_AN_B_PATTERN = java.util.regex.Pattern
-            .compile("([+-]?\\d*)n([+-]\\d+)?");
-    private static final java.util.regex.Pattern PSEUDO_ATTR_PATTERN = java.util.regex.Pattern
+    private static final Pattern COMMENT_PATTERN = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
+    private static final Pattern IMPORT_PATTERN = Pattern.compile("@import[^;]*;");
+    private static final Pattern RULE_PATTERN = Pattern.compile("([^{}]+)\\{([^}]*)\\}");
+    private static final Pattern WHITESPACE = Pattern.compile("\\s+");
+    private static final Pattern PSEUDO_ELEMENT_PATTERN = Pattern.compile("::[\\w-]+");
+    private static final Pattern NOT_PATTERN = Pattern.compile(":not\\(([^()]*)\\)");
+    private static final Pattern FIRST_CHILD_PATTERN = Pattern.compile(":first-child\\b");
+    private static final Pattern LAST_CHILD_PATTERN = Pattern.compile(":last-child\\b");
+    private static final Pattern NTH_CHILD_PATTERN = Pattern.compile(":nth-child\\(([^)]*)\\)");
+    private static final Pattern NTH_CHILD_AN_B_PATTERN = Pattern.compile("([+-]?\\d*)n([+-]\\d+)?");
+    private static final Pattern PSEUDO_ATTR_PATTERN = Pattern
             .compile("(\\w[\\w-]*)\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)')");
     private static final String VAR_FUNCTION = "var(";
 
@@ -288,10 +290,7 @@ public final class CssProcessor {
         if (node.parent == null)
             return false;
         var siblings = node.parent.children;
-        for (int i = siblings.size() - 1; i >= 0; i--) {
-            return siblings.get(i) == node;
-        }
-        return false;
+        return !siblings.isEmpty() && siblings.get(siblings.size() - 1) == node;
     }
 
     private static boolean matchesNthChild(Node node, String expr) {

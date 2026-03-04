@@ -1,12 +1,29 @@
 package io.brunoborges.jairosvg.surface;
 
-import java.awt.*;
+import static io.brunoborges.jairosvg.util.Helpers.getViewbox;
+import static io.brunoborges.jairosvg.util.Helpers.nodeFormat;
+import static io.brunoborges.jairosvg.util.Helpers.normalize;
+import static io.brunoborges.jairosvg.util.Helpers.preserveRatio;
+import static io.brunoborges.jairosvg.util.Helpers.size;
+
+import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Composite;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import io.brunoborges.jairosvg.css.Colors;
@@ -21,16 +38,11 @@ import io.brunoborges.jairosvg.draw.TextDrawer;
 import io.brunoborges.jairosvg.util.Helpers;
 import io.brunoborges.jairosvg.util.UrlHelper;
 
-import static io.brunoborges.jairosvg.util.Helpers.*;
-
 /**
  * Abstract base surface for SVG rendering using Java2D. Port of CairoSVG
  * surface.py
  */
-public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSurface, PsSurface, SvgSurface {
-
-    private static final Set<String> PATH_TAGS = Set.of("circle", "ellipse", "line", "path", "polygon", "polyline",
-            "rect");
+public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSurface, PsSurface {
 
     private static final Set<String> INVISIBLE_TAGS = Set.of("clipPath", "filter", "font", "font-face", "glyph",
             "linearGradient", "marker", "mask", "missing-glyph", "pattern", "radialGradient", "symbol");
@@ -70,7 +82,6 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
 
     // Color mapping
     private UnaryOperator<Colors.RGBA> mapRgba;
-    private UnaryOperator<BufferedImage> mapImage;
 
     // Stroke caches
     private final Map<String, float[]> dashArrayCache = new HashMap<>();
@@ -82,12 +93,11 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     /** Initialize the surface. */
     public void init(Node tree, OutputStream output, double dpi, Surface parentSurface, Double parentWidth,
             Double parentHeight, double scale, Double outputWidth, Double outputHeight, String backgroundColor,
-            UnaryOperator<Colors.RGBA> mapRgba, UnaryOperator<BufferedImage> mapImage) {
+            UnaryOperator<Colors.RGBA> mapRgba) {
 
         this.output = output;
         this.dpi = dpi;
         this.mapRgba = mapRgba;
-        this.mapImage = mapImage;
         this.contextWidth = parentWidth != null ? parentWidth : 0;
         this.contextHeight = parentHeight != null ? parentHeight : 0;
         this.rootNode = tree;
@@ -252,11 +262,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         if (filterStr != null) {
             filterName = UrlHelper.parseUrl(filterStr).fragment();
         }
-        String maskName = null;
-        String maskStr = node.get("mask");
-        if (maskStr != null) {
-            maskName = UrlHelper.parseUrl(maskStr).fragment();
-        }
+
         double opacity = parseDoubleOr(node.get("opacity"), 1);
 
         if (filterName != null) {
@@ -277,10 +283,6 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
             filterContext.setStroke(filterBaseContext.getStroke());
             context = filterContext;
         }
-
-        // Move to (x, y)
-        double nodeX = size(this, node.get("x"), "x");
-        double nodeY = size(this, node.get("y"), "y");
 
         // Set stroke properties
         configureStroke(node);

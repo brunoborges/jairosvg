@@ -29,12 +29,6 @@ byte[] pdf = JairoSVG.svg2pdf(String url);
 byte[] ps = JairoSVG.svg2ps(byte[] svgData);
 ```
 
-### SVG to SVG (re-render)
-
-```java
-byte[] svg = JairoSVG.svg2svg(byte[] svgData);
-```
-
 ### File to File
 
 ```java
@@ -62,7 +56,7 @@ JairoSVG.builder()
     .pngCompressionLevel(6)    // PNG: 0 (fastest) to 9 (smallest), default ~6
     .jpegQuality(0.75f)        // JPEG: 0.0 (smallest) to 1.0 (best), default ~0.75
     .tiffCompressionType("LZW") // TIFF: "Deflate", "LZW", "JPEG", "PackBits", etc.
-    .toPng();                  // or .toJpeg(), .toTiff(), .toPdf(), .toPs(), .toEps(), .toSvg(), .toImage()
+    .toPng();                  // or .toJpeg(), .toTiff(), .toPdf(), .toPs(), .toEps(), .toImage()
 ```
 
 ### Output Methods
@@ -75,7 +69,6 @@ JairoSVG.builder()
 | `.toPdf()` | `byte[]` | PDF document data |
 | `.toPs()` | `byte[]` | PostScript data |
 | `.toEps()` | `byte[]` | Encapsulated PostScript data |
-| `.toSvg()` | `byte[]` | Re-rendered SVG |
 | `.toImage()` | `BufferedImage` | Java2D image object |
 
 ### Image Compression / Quality

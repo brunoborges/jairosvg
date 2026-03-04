@@ -1,6 +1,20 @@
 package io.brunoborges.jairosvg.draw;
 
-import java.awt.*;
+import static io.brunoborges.jairosvg.util.Helpers.clipMarkerBox;
+import static io.brunoborges.jairosvg.util.Helpers.pointAngle;
+import static io.brunoborges.jairosvg.util.Helpers.preserveRatio;
+import static io.brunoborges.jairosvg.util.Helpers.size;
+
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.LinearGradientPaint;
+import java.awt.MultipleGradientPaint;
+import java.awt.Paint;
+import java.awt.RadialGradientPaint;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.TexturePaint;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
@@ -9,8 +23,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import io.brunoborges.jairosvg.css.Colors;
@@ -20,8 +34,6 @@ import io.brunoborges.jairosvg.dom.SvgFont;
 import io.brunoborges.jairosvg.surface.Surface;
 import io.brunoborges.jairosvg.util.Helpers;
 import io.brunoborges.jairosvg.util.UrlHelper;
-
-import static io.brunoborges.jairosvg.util.Helpers.*;
 
 /**
  * SVG definitions: gradients, patterns, clips, masks, filters, markers, use.
@@ -145,7 +157,6 @@ public final class Defs {
         Paint paint;
 
         if ("linearGradient".equals(gradientNode.tag)) {
-            String ref = userSpace ? "x" : null;
             float x1, y1, x2, y2;
 
             if (userSpace) {

@@ -1,11 +1,15 @@
 package io.brunoborges.jairosvg.surface;
 
 import java.awt.Graphics2D;
-import java.awt.print.*;
+import java.awt.print.PageFormat;
+import java.awt.print.Paper;
+import java.awt.print.Printable;
+import java.awt.print.PrinterJob;
 import java.io.IOException;
 
-import javax.print.*;
-import javax.print.attribute.*;
+import javax.print.DocFlavor;
+import javax.print.StreamPrintService;
+import javax.print.StreamPrintServiceFactory;
 
 /**
  * PostScript output surface. Uses Java's printing API to generate PS output.

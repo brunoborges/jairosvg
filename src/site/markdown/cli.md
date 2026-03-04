@@ -13,7 +13,7 @@ Where `INPUT` is a path to an SVG file or a URL.
 | Option | Short | Description | Default |
 |--------|-------|-------------|---------|
 | `--output FILE` | `-o` | Output filename | stdout |
-| `--format FORMAT` | `-f` | Output format: `png`, `jpeg`, `tiff`, `pdf`, `ps`, `eps`, `svg` | `png` |
+| `--format FORMAT` | `-f` | Output format: `png`, `jpeg`, `tiff`, `pdf`, `ps`, `eps` | `png` |
 | `--dpi DPI` | `-d` | Resolution in dots per inch | `96` |
 | `--scale FACTOR` | `-s` | Scale factor | `1` |
 | `--background COLOR` | `-b` | Background color (name, hex, rgb) | transparent |

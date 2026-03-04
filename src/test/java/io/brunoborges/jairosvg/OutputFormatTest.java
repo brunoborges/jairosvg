@@ -67,17 +67,4 @@ class OutputFormatTest {
         assertEquals(100, image.getHeight());
     }
 
-    @Test
-    void testSvgToSvg() throws Exception {
-        String svg = """
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-                  <rect width="100" height="100" fill="red"/>
-                </svg>
-                """;
-
-        byte[] result = JairoSVG.svg2svg(svg.getBytes(StandardCharsets.UTF_8));
-        assertNotNull(result);
-        String resultStr = new String(result, StandardCharsets.UTF_8);
-        assertTrue(resultStr.contains("<svg"));
-    }
 }
