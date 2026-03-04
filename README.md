@@ -19,7 +19,7 @@ A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to 
 - 🛡️ **Secure**: XML external entity (XXE) protection by default
 - 🧰 **Flexible API**: Static methods, fluent builder, CLI
 
-## Benchmark
+## Benchmark and Feature Comparison
 
 SVG → PNG conversion (lower is better):
 
@@ -33,7 +33,7 @@ SVG → PNG conversion (lower is better):
 
 _JairoSVG is 5-10x faster than EchoSVG and 1.2-2.2x faster than CairoSVG's native C backend._
 
-Run the benchmark yourself: `jbang comparison/benchmark.java`
+Run the benchmark yourself: `jbang comparison/benchmark.java` — see [comparison/README.md](comparison/README.md) for full benchmark results, PNG file size comparisons, and feature matrices across JairoSVG, CairoSVG, and EchoSVG.
 
 ## Installation
 
