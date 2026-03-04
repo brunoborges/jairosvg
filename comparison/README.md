@@ -6,17 +6,17 @@ A comprehensive comparison of three SVG libraries — **JairoSVG** (Java), **Ech
 
 ## Overview
 
-|                       | JairoSVG                                         | EchoSVG                                                    | CairoSVG                               |
-| --------------------- | ------------------------------------------------ | ---------------------------------------------------------- | -------------------------------------- |
-| **Language**          | Java 25+                                         | Java 11+                                                   | Python 3.6+                            |
-| **Origin**            | Java port of [CairoSVG]                          | Fork of [Apache Batik]                                     | Original project                       |
-| **Maintainer**        | Bruno Borges                                     | css4j project                                              | CourtBouillon / Kozea                  |
-| **Primary goal**      | Fast, lightweight SVG → raster/vector conversion | Full-featured SVG toolkit: render, manipulate, and convert | SVG → PNG/PDF/PS conversion            |
-| **License**           | LGPL-3.0                                         | Apache-2.0                                                 | LGPL-3.0                               |
-| **Repository**        | [brunoborges/jairosvg]                           | [css4j/echosvg]                                            | [Kozea/CairoSVG]                       |
-| **Current version**   | 1.0.1                                            | 2.4                                                        | 2.7+                                   |
-| **SVG spec target**   | SVG 1.1                                          | SVG 1.1 + partial SVG 2                                    | SVG 1.1                                |
-| **Rendering backend** | Java2D                                           | GVT (Batik) → Java2D                                       | Cairo (C library)                      |
+|                       | JairoSVG                                                       | EchoSVG                                                    | CairoSVG                               |
+| --------------------- | -------------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------- |
+| **Language**          | Java 25+                                                       | Java 11+                                                   | Python 3.6+                            |
+| **Origin**            | Java port of [CairoSVG]                                        | Fork of [Apache Batik]                                     | Original project                       |
+| **Maintainer**        | Bruno Borges                                                   | css4j project                                              | CourtBouillon / Kozea                  |
+| **Primary goal**      | Fast, lightweight SVG → raster/vector conversion               | Full-featured SVG toolkit: render, manipulate, and convert | SVG → PNG/PDF/PS conversion            |
+| **License**           | LGPL-3.0                                                       | Apache-2.0                                                 | LGPL-3.0                               |
+| **Repository**        | [brunoborges/jairosvg]                                         | [css4j/echosvg]                                            | [Kozea/CairoSVG]                       |
+| **Current version**   | 1.0.1                                                          | 2.4                                                        | 2.7+                                   |
+| **SVG spec target**   | SVG 1.1                                                        | SVG 1.1 + partial SVG 2                                    | SVG 1.1                                |
+| **Rendering backend** | Java2D                                                         | GVT (Batik) → Java2D                                       | Cairo (C library)                      |
 | **Key strength**      | Speed (3–31× faster than EchoSVG, 1–2.6× faster than CairoSVG) | Feature completeness and standard compliance               | Native C performance, mature ecosystem |
 
 ---
@@ -241,62 +241,62 @@ cairosvg.svg2png(url="input.svg", write_to="output.png",
 
 SVG → PNG conversion benchmarks across 19 SVG test files (lower is better):
 
-| Test Case         | JairoSVG (Java) | EchoSVG (Java) | CairoSVG (Python) | JairoSVG vs EchoSVG | JairoSVG vs CairoSVG |
-| ----------------- | :-------------: | :------------: | :---------------: | :-----------------: | :------------------: |
-| Basic shapes      |   **3.5 ms**    |    16.6 ms     |      4.3 ms       |       4.8× ✅       |        1.2× ✅        |
-| Gradients         |   **4.3 ms**    |   134.8 ms     |     11.3 ms       |      31.0× ✅       |        2.6× ✅        |
-| Complex paths     |   **4.5 ms**    |    23.1 ms     |      4.6 ms       |       5.2× ✅       |        1.0× ≈        |
-| Text rendering    |   **4.8 ms**    |    22.9 ms     |      6.2 ms       |       4.8× ✅       |        1.3× ✅        |
-| Transforms        |     4.1 ms      |    14.6 ms     |    **4.0 ms**     |       3.6× ✅       |        1.0× ≈        |
-| Stroke styles     |     3.7 ms      |    11.9 ms     |    **3.5 ms**     |       3.2× ✅       |        1.0× ≈        |
-| Opacity blend     |     3.4 ms      |    17.7 ms     |    **3.3 ms**     |       5.2× ✅       |        1.0× ≈        |
-| Viewbox aspect    |   **4.8 ms**    |    19.7 ms     |      5.3 ms       |       4.1× ✅       |        1.1× ✅        |
-| CSS styling       |   **3.4 ms**    |    15.2 ms     |      4.1 ms       |       4.5× ✅       |        1.2× ✅        |
-| Use and defs      |   **4.0 ms**    |    14.3 ms     |      4.4 ms       |       3.6× ✅       |        1.1× ✅        |
-| Star polygon      |     3.2 ms      |    14.6 ms     |    **3.1 ms**     |       4.5× ✅       |        1.0× ≈        |
-| Nested svg        |   **4.6 ms**    |    19.4 ms     |      5.0 ms       |       4.3× ✅       |        1.1× ✅        |
-| Patterns          |     4.6 ms      |    16.2 ms     |    **4.6 ms**     |       3.5× ✅       |        1.0× ≈        |
-| Clip paths        |   **4.2 ms**    |    26.5 ms     |      6.0 ms       |       6.4× ✅       |        1.4× ✅        |
-| Masks             |   **3.5 ms**    |    21.5 ms     |      3.7 ms       |       6.1× ✅       |        1.1× ✅        |
-| Markers           |   **3.9 ms**    |    13.1 ms     |      4.7 ms       |       3.4× ✅       |        1.2× ✅        |
-| Filters ⚠️        |    45.0 ms      |    35.1 ms     |    **4.5 ms**     |       ← ⚠️         |        ← ⚠️          |
-| Embedded image    |   **4.3 ms**    |    16.4 ms     |      7.2 ms       |       3.8× ✅       |        1.7× ✅        |
-| Text advanced     |   **5.4 ms**    |    26.1 ms     |      8.9 ms       |       4.8× ✅       |        1.7× ✅        |
+| Test Case      | JairoSVG (Java) | EchoSVG (Java) | CairoSVG (Python) | JairoSVG vs EchoSVG | JairoSVG vs CairoSVG |
+| -------------- | :-------------: | :------------: | :---------------: | :-----------------: | :------------------: |
+| Basic shapes   |   **3.5 ms**    |    16.6 ms     |      4.3 ms       |       4.8× ✅       |       1.2× ✅        |
+| Gradients      |   **4.3 ms**    |    134.8 ms    |      11.3 ms      |      31.0× ✅       |       2.6× ✅        |
+| Complex paths  |   **4.5 ms**    |    23.1 ms     |      4.6 ms       |       5.2× ✅       |        1.0× ≈        |
+| Text rendering |   **4.8 ms**    |    22.9 ms     |      6.2 ms       |       4.8× ✅       |       1.3× ✅        |
+| Transforms     |     4.1 ms      |    14.6 ms     |    **4.0 ms**     |       3.6× ✅       |        1.0× ≈        |
+| Stroke styles  |     3.7 ms      |    11.9 ms     |    **3.5 ms**     |       3.2× ✅       |        1.0× ≈        |
+| Opacity blend  |     3.4 ms      |    17.7 ms     |    **3.3 ms**     |       5.2× ✅       |        1.0× ≈        |
+| Viewbox aspect |   **4.8 ms**    |    19.7 ms     |      5.3 ms       |       4.1× ✅       |       1.1× ✅        |
+| CSS styling    |   **3.4 ms**    |    15.2 ms     |      4.1 ms       |       4.5× ✅       |       1.2× ✅        |
+| Use and defs   |   **4.0 ms**    |    14.3 ms     |      4.4 ms       |       3.6× ✅       |       1.1× ✅        |
+| Star polygon   |     3.2 ms      |    14.6 ms     |    **3.1 ms**     |       4.5× ✅       |        1.0× ≈        |
+| Nested svg     |   **4.6 ms**    |    19.4 ms     |      5.0 ms       |       4.3× ✅       |       1.1× ✅        |
+| Patterns       |     4.6 ms      |    16.2 ms     |    **4.6 ms**     |       3.5× ✅       |        1.0× ≈        |
+| Clip paths     |   **4.2 ms**    |    26.5 ms     |      6.0 ms       |       6.4× ✅       |       1.4× ✅        |
+| Masks ⚠️       |   **8.9 ms**    |    21.5 ms     |     3.7 ms ⚠️     |       2.4× ✅       |         ← ⚠️         |
+| Markers        |   **3.9 ms**    |    13.1 ms     |      4.7 ms       |       3.4× ✅       |       1.2× ✅        |
+| Filters ⚠️     |     45.0 ms     |  **35.1 ms**   |     4.5 ms ⚠️     |        0.78×        |         ← ⚠️         |
+| Embedded image |   **4.3 ms**    |    16.4 ms     |      7.2 ms       |       3.8× ✅       |       1.7× ✅        |
+| Text advanced  |   **5.4 ms**    |    26.1 ms     |      8.9 ms       |       4.8× ✅       |       1.7× ✅        |
 
 _JairoSVG is **3–31× faster** than EchoSVG and **1–2.6× faster** than CairoSVG in most scenarios._
 
-> **⚠️ Filters caveat:** CairoSVG does **not** render `feGaussianBlur` or `feDropShadow` filters — it silently skips them, which is why it appears 10× faster on the Filters test. JairoSVG and EchoSVG both perform the actual blur computation. When comparing filter-heavy SVGs, CairoSVG's speed advantage is due to **missing features**, not faster rendering.
+> **⚠️ Filters/Masks caveat:** CairoSVG does **not** correctly render masks (missing gradient and circle content) or `feGaussianBlur`/`feDropShadow` filters — it silently skips them, which is why it appears faster on those tests. JairoSVG and EchoSVG both perform the actual computation. CairoSVG's speed advantage in these cases is due to **missing features**, not faster rendering.
 
 > **Note:** Benchmarks were run with 20 warm-up iterations and 1000 measured iterations per SVG file. Results may vary by hardware and SVG complexity.
 
 ### PNG Output File Sizes
 
-JairoSVG produces **6.8% smaller** PNGs overall compared to CairoSVG (using the same zlib compression level 6):
+JairoSVG produces **8.1% smaller** PNGs overall compared to CairoSVG (using the same zlib compression level 6):
 
-| Test Case         | JairoSVG |  CairoSVG  | Difference |
-| ----------------- | -------: | ---------: | ---------: |
-| Basic shapes      |    6,718 |      8,920 |    −24.7%  |
-| Gradients         |   25,554 |     23,637 |     +8.1%  |
-| Complex paths     |   12,657 |     15,633 |    −19.0%  |
-| Text rendering    |   14,872 |     16,317 |     −8.9%  |
-| Transforms        |    5,461 |      6,001 |     −9.0%  |
-| Stroke styles     |    3,363 |      4,478 |    −24.9%  |
-| Opacity blend     |    8,409 |      9,853 |    −14.7%  |
-| Viewbox aspect    |   11,616 |     11,444 |     +1.5%  |
-| CSS styling       |    8,153 |     10,816 |    −24.6%  |
-| Use and defs      |    5,074 |      9,712 |    −47.8%  |
-| Star polygon      |    6,228 |      8,911 |    −30.1%  |
-| Nested svg        |   11,322 |     11,880 |     −4.7%  |
-| Patterns          |    9,598 |     11,095 |    −13.5%  |
-| Clip paths        |    9,361 |     13,552 |    −30.9%  |
-| Masks             |    1,458 |      1,161 |    +25.6%  |
-| Markers           |    6,334 |      8,378 |    −24.4%  |
-| Filters ⚠️        |   31,059 |      8,520 |   +264.5%  |
-| Embedded image    |   12,860 |     21,228 |    −39.4%  |
-| Text advanced     |   20,003 |     23,864 |    −16.2%  |
-| **Total**         | **210,100** | **225,400** | **−6.8%** |
+| Test Case      |    JairoSVG |    CairoSVG | Difference |
+| -------------- | ----------: | ----------: | ---------: |
+| Basic shapes   |       6,718 |       8,920 |     −24.7% |
+| Gradients      |      25,554 |      23,637 |      +8.1% |
+| Complex paths  |      12,657 |      15,633 |     −19.0% |
+| Text rendering |      14,872 |      16,317 |      −8.9% |
+| Transforms     |       5,461 |       6,001 |      −9.0% |
+| Stroke styles  |       3,363 |       4,478 |     −24.9% |
+| Opacity blend  |       8,409 |       9,853 |     −14.7% |
+| Viewbox aspect |      11,616 |      11,444 |      +1.5% |
+| CSS styling    |       8,153 |      10,816 |     −24.6% |
+| Use and defs   |       5,074 |       9,712 |     −47.8% |
+| Star polygon   |       6,228 |       8,911 |     −30.1% |
+| Nested svg     |      11,322 |      11,880 |      −4.7% |
+| Patterns       |       9,598 |      11,095 |     −13.5% |
+| Clip paths     |       9,361 |      13,552 |     −30.9% |
+| Masks ⚠️       |       1,458 |       1,161 |     +25.6% |
+| Markers        |       6,334 |       8,378 |     −24.4% |
+| Filters ⚠️     |      31,059 |       8,520 |    +264.5% |
+| Embedded image |       9,995 |      21,228 |     −52.9% |
+| Text advanced  |      20,003 |      23,864 |     −16.2% |
+| **Total**      | **207,235** | **225,400** |  **−8.1%** |
 
-> **⚠️ Filters/Masks:** Where CairoSVG produces much smaller output, it is because CairoSVG **does not render** certain filter effects (blur, drop-shadow) — resulting in simpler images that compress better. JairoSVG renders these effects correctly, producing visually accurate but larger PNGs.
+> **⚠️ Filters/Masks:** Where CairoSVG produces much smaller output, it is because CairoSVG **does not render** certain features correctly — filter effects (blur, drop-shadow) are silently skipped, and masks are rendered without gradient/circle content. This results in simpler images that compress better. JairoSVG renders these effects correctly, producing visually accurate but larger PNGs.
 
 ### Running the Benchmark
 
@@ -308,6 +308,7 @@ jbang comparison/benchmark.java
 ```
 
 Options:
+
 ```bash
 # Run specific SVG categories only
 jbang comparison/benchmark.java filters embedded
@@ -354,154 +355,173 @@ JairoSVG and CairoSVG share the same security posture: no scripting support (eli
 Side-by-side visual comparison of 19 SVG test cases across all three libraries.
 
 ### 01 — Basic Shapes
+
 Rectangles, circles, ellipses, and lines with solid fills and strokes.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|           Input SVG            |                   JairoSVG                    |                   EchoSVG                   |                   CairoSVG                    |
+| :----------------------------: | :-------------------------------------------: | :-----------------------------------------: | :-------------------------------------------: |
 | [SVG](svg/01_basic_shapes.svg) | ![JairoSVG](png/jairosvg/01_basic_shapes.png) | ![EchoSVG](png/echosvg/01_basic_shapes.png) | ![CairoSVG](png/cairosvg/01_basic_shapes.png) |
 
 ### 02 — Gradients
+
 Linear and radial gradients with color stops and spread methods.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|          Input SVG          |                  JairoSVG                  |                 EchoSVG                  |                  CairoSVG                  |
+| :-------------------------: | :----------------------------------------: | :--------------------------------------: | :----------------------------------------: |
 | [SVG](svg/02_gradients.svg) | ![JairoSVG](png/jairosvg/02_gradients.png) | ![EchoSVG](png/echosvg/02_gradients.png) | ![CairoSVG](png/cairosvg/02_gradients.png) |
 
 ### 03 — Complex Paths
+
 Cubic/quadratic Bézier curves, arcs, and complex path commands.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|            Input SVG            |                    JairoSVG                    |                   EchoSVG                    |                    CairoSVG                    |
+| :-----------------------------: | :--------------------------------------------: | :------------------------------------------: | :--------------------------------------------: |
 | [SVG](svg/03_complex_paths.svg) | ![JairoSVG](png/jairosvg/03_complex_paths.png) | ![EchoSVG](png/echosvg/03_complex_paths.png) | ![CairoSVG](png/cairosvg/03_complex_paths.png) |
 
 ### 04 — Text Rendering
+
 Text rendering with different fonts, sizes, weights, and tspan.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|            Input SVG             |                    JairoSVG                     |                    EchoSVG                    |                    CairoSVG                     |
+| :------------------------------: | :---------------------------------------------: | :-------------------------------------------: | :---------------------------------------------: |
 | [SVG](svg/04_text_rendering.svg) | ![JairoSVG](png/jairosvg/04_text_rendering.png) | ![EchoSVG](png/echosvg/04_text_rendering.png) | ![CairoSVG](png/cairosvg/04_text_rendering.png) |
 
 ### 05 — Transforms
+
 Translate, rotate, scale, skewX, and nested group transforms.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|          Input SVG           |                  JairoSVG                   |                  EchoSVG                  |                  CairoSVG                   |
+| :--------------------------: | :-----------------------------------------: | :---------------------------------------: | :-----------------------------------------: |
 | [SVG](svg/05_transforms.svg) | ![JairoSVG](png/jairosvg/05_transforms.png) | ![EchoSVG](png/echosvg/05_transforms.png) | ![CairoSVG](png/cairosvg/05_transforms.png) |
 
 ### 06 — Stroke Styles
+
 Dash arrays, line caps (butt/round/square), and line joins.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|            Input SVG            |                    JairoSVG                    |                   EchoSVG                    |                    CairoSVG                    |
+| :-----------------------------: | :--------------------------------------------: | :------------------------------------------: | :--------------------------------------------: |
 | [SVG](svg/06_stroke_styles.svg) | ![JairoSVG](png/jairosvg/06_stroke_styles.png) | ![EchoSVG](png/echosvg/06_stroke_styles.png) | ![CairoSVG](png/cairosvg/06_stroke_styles.png) |
 
 ### 07 — Opacity & Blending
+
 Fill opacity, stroke opacity, and layered element opacity.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|            Input SVG            |                    JairoSVG                    |                   EchoSVG                    |                    CairoSVG                    |
+| :-----------------------------: | :--------------------------------------------: | :------------------------------------------: | :--------------------------------------------: |
 | [SVG](svg/07_opacity_blend.svg) | ![JairoSVG](png/jairosvg/07_opacity_blend.png) | ![EchoSVG](png/echosvg/07_opacity_blend.png) | ![CairoSVG](png/cairosvg/07_opacity_blend.png) |
 
 ### 08 — ViewBox & Aspect Ratio
+
 viewBox scaling with different preserveAspectRatio values.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|            Input SVG             |                    JairoSVG                     |                    EchoSVG                    |                    CairoSVG                     |
+| :------------------------------: | :---------------------------------------------: | :-------------------------------------------: | :---------------------------------------------: |
 | [SVG](svg/08_viewbox_aspect.svg) | ![JairoSVG](png/jairosvg/08_viewbox_aspect.png) | ![EchoSVG](png/echosvg/08_viewbox_aspect.png) | ![CairoSVG](png/cairosvg/08_viewbox_aspect.png) |
 
 ### 09 — CSS Styling
+
 CSS `<style>` block with class and ID selectors.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|           Input SVG           |                   JairoSVG                   |                  EchoSVG                   |                   CairoSVG                   |
+| :---------------------------: | :------------------------------------------: | :----------------------------------------: | :------------------------------------------: |
 | [SVG](svg/09_css_styling.svg) | ![JairoSVG](png/jairosvg/09_css_styling.png) | ![EchoSVG](png/echosvg/09_css_styling.png) | ![CairoSVG](png/cairosvg/09_css_styling.png) |
 
 ### 10 — Use & Defs
+
 `<use>` element references, `<clipPath>`, and `<defs>` reuse.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|           Input SVG            |                   JairoSVG                    |                   EchoSVG                   |                   CairoSVG                    |
+| :----------------------------: | :-------------------------------------------: | :-----------------------------------------: | :-------------------------------------------: |
 | [SVG](svg/10_use_and_defs.svg) | ![JairoSVG](png/jairosvg/10_use_and_defs.png) | ![EchoSVG](png/echosvg/10_use_and_defs.png) | ![CairoSVG](png/cairosvg/10_use_and_defs.png) |
 
 ### 11 — Star Polygon
+
 Complex star polygon with fill-rule evenodd.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|           Input SVG            |                   JairoSVG                    |                   EchoSVG                   |                   CairoSVG                    |
+| :----------------------------: | :-------------------------------------------: | :-----------------------------------------: | :-------------------------------------------: |
 | [SVG](svg/11_star_polygon.svg) | ![JairoSVG](png/jairosvg/11_star_polygon.png) | ![EchoSVG](png/echosvg/11_star_polygon.png) | ![CairoSVG](png/cairosvg/11_star_polygon.png) |
 
 ### 12 — Nested SVG
+
 Nested `<svg>` elements with independent viewports.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|          Input SVG           |                  JairoSVG                   |                  EchoSVG                  |                  CairoSVG                   |
+| :--------------------------: | :-----------------------------------------: | :---------------------------------------: | :-----------------------------------------: |
 | [SVG](svg/12_nested_svg.svg) | ![JairoSVG](png/jairosvg/12_nested_svg.png) | ![EchoSVG](png/echosvg/12_nested_svg.png) | ![CairoSVG](png/cairosvg/12_nested_svg.png) |
 
 ### 13 — Patterns
+
 Tiled pattern fills: dots, cross-hatch stripes, and grid lines.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|         Input SVG          |                 JairoSVG                  |                 EchoSVG                 |                 CairoSVG                  |
+| :------------------------: | :---------------------------------------: | :-------------------------------------: | :---------------------------------------: |
 | [SVG](svg/13_patterns.svg) | ![JairoSVG](png/jairosvg/13_patterns.png) | ![EchoSVG](png/echosvg/13_patterns.png) | ![CairoSVG](png/cairosvg/13_patterns.png) |
 
 ### 14 — Clip Paths
+
 Star and text clip paths applied to gradient fills.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|          Input SVG           |                  JairoSVG                   |                  EchoSVG                  |                  CairoSVG                   |
+| :--------------------------: | :-----------------------------------------: | :---------------------------------------: | :-----------------------------------------: |
 | [SVG](svg/14_clip_paths.svg) | ![JairoSVG](png/jairosvg/14_clip_paths.png) | ![EchoSVG](png/echosvg/14_clip_paths.png) | ![CairoSVG](png/cairosvg/14_clip_paths.png) |
 
 ### 15 — Masks
+
 Horizontal, vertical, and circular gradient masks with luminance blending.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|        Input SVG        |                JairoSVG                |               EchoSVG                |                CairoSVG                |
+| :---------------------: | :------------------------------------: | :----------------------------------: | :------------------------------------: |
 | [SVG](svg/15_masks.svg) | ![JairoSVG](png/jairosvg/15_masks.png) | ![EchoSVG](png/echosvg/15_masks.png) | ![CairoSVG](png/cairosvg/15_masks.png) |
 
 ### 16 — Markers
+
 Arrow, dot, and square markers on lines, polylines, and curves.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|         Input SVG         |                 JairoSVG                 |                EchoSVG                 |                 CairoSVG                 |
+| :-----------------------: | :--------------------------------------: | :------------------------------------: | :--------------------------------------: |
 | [SVG](svg/16_markers.svg) | ![JairoSVG](png/jairosvg/16_markers.png) | ![EchoSVG](png/echosvg/16_markers.png) | ![CairoSVG](png/cairosvg/16_markers.png) |
 
 ### 17 — Filters
+
 Gaussian blur and drop-shadow filters on shapes and text.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|         Input SVG         |                 JairoSVG                 |                EchoSVG                 |                 CairoSVG                 |
+| :-----------------------: | :--------------------------------------: | :------------------------------------: | :--------------------------------------: |
 | [SVG](svg/17_filters.svg) | ![JairoSVG](png/jairosvg/17_filters.png) | ![EchoSVG](png/echosvg/17_filters.png) | ![CairoSVG](png/cairosvg/17_filters.png) |
 
 ### 18 — Embedded Images
+
 Base64-encoded PNG images with clipping, transforms, and opacity.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|            Input SVG             |                    JairoSVG                     |                    EchoSVG                    |                    CairoSVG                     |
+| :------------------------------: | :---------------------------------------------: | :-------------------------------------------: | :---------------------------------------------: |
 | [SVG](svg/18_embedded_image.svg) | ![JairoSVG](png/jairosvg/18_embedded_image.png) | ![EchoSVG](png/echosvg/18_embedded_image.png) | ![CairoSVG](png/cairosvg/18_embedded_image.png) |
 
 ### 19 — Advanced Text
+
 Multi-span text (tspan), text-decoration, textPath on curves, and rotated text.
 
-| Input SVG | JairoSVG | EchoSVG | CairoSVG |
-|:---------:|:--------:|:-------:|:--------:|
+|            Input SVG            |                    JairoSVG                    |                   EchoSVG                    |                    CairoSVG                    |
+| :-----------------------------: | :--------------------------------------------: | :------------------------------------------: | :--------------------------------------------: |
 | [SVG](svg/19_text_advanced.svg) | ![JairoSVG](png/jairosvg/19_text_advanced.png) | ![EchoSVG](png/echosvg/19_text_advanced.png) | ![CairoSVG](png/cairosvg/19_text_advanced.png) |
 
 ---
 
 ## Summary
 
-| Dimension          | JairoSVG                            | EchoSVG                                      | CairoSVG              |
-| ------------------ | ----------------------------------- | -------------------------------------------- | --------------------- |
-| **Best for**       | Fast Java SVG conversion            | Full SVG toolkit (DOM, scripting, animation) | Python SVG conversion |
-| **SVG spec**       | SVG 1.1 (static)                    | SVG 1.1 + partial SVG 2                      | SVG 1.1 (static)      |
-| **CSS**            | Basic + structural pseudo selectors | Advanced (CSS Level 4, css4j)                | Basic (via tinycss2)  |
+| Dimension          | JairoSVG                                               | EchoSVG                                      | CairoSVG                                       |
+| ------------------ | ------------------------------------------------------ | -------------------------------------------- | ---------------------------------------------- |
+| **Best for**       | Fast Java SVG conversion                               | Full SVG toolkit (DOM, scripting, animation) | Python SVG conversion                          |
+| **SVG spec**       | SVG 1.1 (static)                                       | SVG 1.1 + partial SVG 2                      | SVG 1.1 (static)                               |
+| **CSS**            | Basic + structural pseudo selectors                    | Advanced (CSS Level 4, css4j)                | Basic (via tinycss2)                           |
 | **Performance**    | 3–31× faster than EchoSVG; 1–2.5× faster than CairoSVG | Slowest (GVT overhead)                       | Fast (native C), but skips some filter effects |
-| **API simplicity** | One-liner / builder                 | Transcoder pattern                           | One-liner functions   |
-| **Codebase**       | ~4K LOC, 1 dep                      | ~200K+ LOC, many modules                     | ~4K LOC, 5 deps       |
-| **Animation**      | ❌                                  | ✅                                           | ❌                    |
-| **Scripting**      | ❌                                  | ✅                                           | ❌                    |
-| **GUI viewer**     | ❌                                  | ✅                                           | ❌                    |
-| **License**        | LGPL-3.0                            | Apache-2.0                                   | LGPL-3.0              |
+| **API simplicity** | One-liner / builder                                    | Transcoder pattern                           | One-liner functions                            |
+| **Codebase**       | ~4K LOC, 1 dep                                         | ~200K+ LOC, many modules                     | ~4K LOC, 5 deps                                |
+| **Animation**      | ❌                                                     | ✅                                           | ❌                                             |
+| **Scripting**      | ❌                                                     | ✅                                           | ❌                                             |
+| **GUI viewer**     | ❌                                                     | ✅                                           | ❌                                             |
+| **License**        | LGPL-3.0                                               | Apache-2.0                                   | LGPL-3.0                                       |
 
 ---
 
@@ -566,6 +586,7 @@ jbang comparison/generate.java
 **All three libraries are complementary:** JairoSVG and CairoSVG share DNA and excel as fast conversion engines (Java and Python respectively), while EchoSVG is a full SVG runtime.
 
 <!-- Link references -->
+
 [CairoSVG]: https://cairosvg.org
 [Apache Batik]: https://xmlgraphics.apache.org/batik/
 [brunoborges/jairosvg]: https://github.com/brunoborges/jairosvg
