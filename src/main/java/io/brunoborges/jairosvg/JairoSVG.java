@@ -31,7 +31,7 @@ import io.brunoborges.jairosvg.surface.*;
  */
 public final class JairoSVG {
 
-    public static final String VERSION = "1.0.0";
+    public static final String VERSION = "1.0.1";
 
     private JairoSVG() {
     }
