@@ -4,7 +4,7 @@
 //RUNTIME_OPTIONS --enable-preview -Xmx512m
 //REPOS mavenCentral,mavenLocal
 //REPOS css4j=https://css4j.github.io/maven/
-//DEPS io.brunoborges:jairosvg:1.0.2-SNAPSHOT
+//DEPS io.brunoborges:jairosvg:1.0.3-SNAPSHOT
 //DEPS io.sf.carte:echosvg-transcoder:2.4
 //DEPS me.tongfei:progressbar:0.10.2
 
