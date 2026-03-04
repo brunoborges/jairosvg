@@ -273,6 +273,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         }
 
         double opacity = parseDoubleOr(node.get("opacity"), 1);
+        boolean groupOpacity = opacity < 1 && !node.children.isEmpty();
 
         if (filterName != null) {
             Defs.prepareFilter(this, node, filterName);
@@ -281,7 +282,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         Graphics2D effectBaseContext = null;
         Graphics2D effectContext = null;
         BufferedImage effectSourceImage = null;
-        if (filterName != null || maskName != null) {
+        if (filterName != null || maskName != null || groupOpacity) {
             effectBaseContext = context;
             effectSourceImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
             effectContext = effectSourceImage.createGraphics();
@@ -420,11 +421,6 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
             }
         }
 
-        // Apply opacity for groups
-        if (opacity < 1 && !node.children.isEmpty()) {
-            context.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) opacity));
-        }
-
         // Restore state
         context.setTransform(savedTransform);
         context.setClip(savedClip);
@@ -440,7 +436,13 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                 renderedImage = Defs.paintMask(this, node, maskName, renderedImage);
             }
             context = effectBaseContext;
+            if (groupOpacity) {
+                effectBaseContext.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) opacity));
+            }
             effectBaseContext.drawImage(renderedImage, 0, 0, null);
+            if (groupOpacity) {
+                effectBaseContext.setComposite(savedComposite);
+            }
             effectContext.dispose();
         }
 
