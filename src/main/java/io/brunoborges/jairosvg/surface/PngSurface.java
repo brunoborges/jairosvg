@@ -1,11 +1,13 @@
 package io.brunoborges.jairosvg.surface;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 /**
@@ -39,12 +41,12 @@ public final class PngSurface extends Surface {
     /**
      * Write a BufferedImage as PNG to the given ImageOutputStream.
      */
-    static void writePng(java.awt.image.BufferedImage img, javax.imageio.stream.ImageOutputStream ios)
+    static void writePng(BufferedImage img, ImageOutputStream ios)
             throws IOException {
         writePng(img, ios, -1);
     }
 
-    static void writePng(java.awt.image.BufferedImage img, javax.imageio.stream.ImageOutputStream ios,
+    static void writePng(BufferedImage img, ImageOutputStream ios,
             int compressionLevel) throws IOException {
         synchronized (PNG_WRITER) {
             try {
