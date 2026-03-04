@@ -25,13 +25,13 @@ SVG → PNG conversion (lower is better):
 
 | Test Case                | JairoSVG (Java) | EchoSVG (Java) | CairoSVG (Python) |
 | ------------------------ | :-------------: | :------------: | :---------------: |
-| Simple shapes            |   **1.4 ms**    |     9.0 ms     |      2.0 ms       |
-| Gradients + transforms   |   **3.6 ms**    |    35.1 ms     |      5.3 ms       |
-| Complex paths + text     |   **5.4 ms**    |    29.4 ms     |      6.3 ms       |
-| Defs + use + clipPath    |   **4.1 ms**    |    35.9 ms     |      8.7 ms       |
-| Markers + dashed strokes |   **4.4 ms**    |    25.5 ms     |      5.2 ms       |
+| Simple shapes            |   **3.5 ms**    |    16.6 ms     |      4.3 ms       |
+| Gradients                |   **4.3 ms**    |   134.8 ms     |     11.3 ms       |
+| Complex paths + text     |   **4.7 ms**    |    23.0 ms     |      5.4 ms       |
+| Defs + use + clipPath    |   **4.1 ms**    |    20.4 ms     |      5.2 ms       |
+| Markers + strokes        |   **3.8 ms**    |    12.5 ms     |      4.1 ms       |
 
-_JairoSVG is 5-10x faster than EchoSVG and 1.2-2.2x faster than CairoSVG's native C backend._
+_JairoSVG is 3–31× faster than EchoSVG and 1–2.6× faster than CairoSVG's native C backend._
 
 Run the benchmark yourself: `jbang comparison/benchmark.java` — see [comparison/README.md](comparison/README.md) for full benchmark results, PNG file size comparisons, and feature matrices across JairoSVG, CairoSVG, and EchoSVG.
 
