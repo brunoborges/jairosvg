@@ -23,15 +23,15 @@ A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to 
 
 SVG → PNG conversion (lower is better):
 
-| Test Case | JairoSVG (Java) | EchoSVG (Java) | CairoSVG (Python) |
-|-----------|:---:|:---:|:---:|
-| Simple shapes | **1.4 ms** | 9.0 ms | 2.0 ms |
-| Gradients + transforms | **3.6 ms** | 35.1 ms | 5.3 ms |
-| Complex paths + text | **5.4 ms** | 29.4 ms | 6.3 ms |
-| Defs + use + clipPath | **4.1 ms** | 35.9 ms | 8.7 ms |
-| Markers + dashed strokes | **4.4 ms** | 25.5 ms | 5.2 ms |
+| Test Case                | JairoSVG (Java) | EchoSVG (Java) | CairoSVG (Python) |
+| ------------------------ | :-------------: | :------------: | :---------------: |
+| Simple shapes            |   **1.4 ms**    |     9.0 ms     |      2.0 ms       |
+| Gradients + transforms   |   **3.6 ms**    |    35.1 ms     |      5.3 ms       |
+| Complex paths + text     |   **5.4 ms**    |    29.4 ms     |      6.3 ms       |
+| Defs + use + clipPath    |   **4.1 ms**    |    35.9 ms     |      8.7 ms       |
+| Markers + dashed strokes |   **4.4 ms**    |    25.5 ms     |      5.2 ms       |
 
-*JairoSVG is 5-10x faster than EchoSVG and 1.2-2.2x faster than CairoSVG's native C backend.*
+_JairoSVG is 5-10x faster than EchoSVG and 1.2-2.2x faster than CairoSVG's native C backend._
 
 Run the benchmark yourself: `jbang comparison/benchmark.java`
 
@@ -122,20 +122,20 @@ java --enable-preview -jar target/jairosvg-1.0.1-cli.jar input.svg -f pdf -s 2 -
 
 ### CLI Options
 
-| Option | Description |
-|--------|-------------|
-| `-o, --output FILE` | Output filename |
-| `-f, --format FORMAT` | Output format: `png`, `jpeg`, `tiff`, `pdf`, `ps`, `eps`, `svg` |
-| `-d, --dpi DPI` | Resolution (default: 96) |
-| `-s, --scale FACTOR` | Scale factor (default: 1) |
-| `-b, --background COLOR` | Background color |
-| `-W, --width PIXELS` | Parent container width |
-| `-H, --height PIXELS` | Parent container height |
-| `--output-width PIXELS` | Desired output width |
-| `--output-height PIXELS` | Desired output height |
-| `-n, --negate-colors` | Negate vector colors |
-| `-i, --invert-images` | Invert raster image colors |
-| `-u, --unsafe` | Allow external file access |
+| Option                   | Description                                                     |
+| ------------------------ | --------------------------------------------------------------- |
+| `-o, --output FILE`      | Output filename                                                 |
+| `-f, --format FORMAT`    | Output format: `png`, `jpeg`, `tiff`, `pdf`, `ps`, `eps`, `svg` |
+| `-d, --dpi DPI`          | Resolution (default: 96)                                        |
+| `-s, --scale FACTOR`     | Scale factor (default: 1)                                       |
+| `-b, --background COLOR` | Background color                                                |
+| `-W, --width PIXELS`     | Parent container width                                          |
+| `-H, --height PIXELS`    | Parent container height                                         |
+| `--output-width PIXELS`  | Desired output width                                            |
+| `--output-height PIXELS` | Desired output height                                           |
+| `-n, --negate-colors`    | Negate vector colors                                            |
+| `-i, --invert-images`    | Invert raster image colors                                      |
+| `-u, --unsafe`           | Allow external file access                                      |
 
 ## Supported SVG Features
 
@@ -156,21 +156,22 @@ java --enable-preview -jar target/jairosvg-1.0.1-cli.jar input.svg -f pdf -s 2 -
 
 JairoSVG is a module-by-module port of CairoSVG's Python codebase to Java 25:
 
-| Java Class | Python Module | Role |
-|------------|---------------|------|
-| `JairoSVG` | `__init__.py` | Public API + Builder |
-| `Surface` | `surface.py` | Java2D rendering engine |
-| `Node` | `parser.py` | SVG DOM tree |
-| `PathDrawer` | `path.py` | SVG path commands |
-| `ShapeDrawer` | `shapes.py` | Basic shapes |
-| `TextDrawer` | `text.py` | Text rendering |
-| `Defs` | `defs.py` | Gradients, clips, use |
-| `Colors` | `colors.py` | Color parsing (170+ named) |
-| `Helpers` | `helpers.py` | Units, transforms |
-| `CssProcessor` | `css.py` | CSS parsing |
-| `Main` | `__main__.py` | CLI |
+| Java Class     | Python Module | Role                       |
+| -------------- | ------------- | -------------------------- |
+| `JairoSVG`     | `__init__.py` | Public API + Builder       |
+| `Surface`      | `surface.py`  | Java2D rendering engine    |
+| `Node`         | `parser.py`   | SVG DOM tree               |
+| `PathDrawer`   | `path.py`     | SVG path commands          |
+| `ShapeDrawer`  | `shapes.py`   | Basic shapes               |
+| `TextDrawer`   | `text.py`     | Text rendering             |
+| `Defs`         | `defs.py`     | Gradients, clips, use      |
+| `Colors`       | `colors.py`   | Color parsing (170+ named) |
+| `Helpers`      | `helpers.py`  | Units, transforms          |
+| `CssProcessor` | `css.py`      | CSS parsing                |
+| `Main`         | `__main__.py` | CLI                        |
 
 **Key technology mapping:**
+
 - `cairo.Context` → `java.awt.Graphics2D`
 - `cairo.ImageSurface` → `java.awt.image.BufferedImage`
 - `cairo.Matrix` → `java.awt.geom.AffineTransform`
