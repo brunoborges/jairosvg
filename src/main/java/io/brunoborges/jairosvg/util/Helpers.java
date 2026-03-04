@@ -32,8 +32,7 @@ public final class Helpers {
     private static final String[] EMPTY_PAINT = {null, null};
     private static final double[] DEFAULT_RATIO = {1, 1, 0, 0};
 
-    private Helpers() {
-    }
+    private static final int CALC_PREFIX_LENGTH = 5; // length of "calc("
 
     public static class PointError extends RuntimeException {
         public PointError() {
@@ -427,6 +426,13 @@ public final class Helpers {
             return Double.parseDouble(string);
         }
 
+        // Handle CSS calc() expressions
+        String stripped = string.strip();
+        if (stripped.length() > CALC_PREFIX_LENGTH
+                && stripped.substring(0, CALC_PREFIX_LENGTH).equalsIgnoreCase("calc(")) {
+            return evalCalc(surface, stripped, reference);
+        }
+
         if (surface == null)
             return 0;
 
@@ -577,5 +583,158 @@ public final class Helpers {
             case "bottom" -> surface.contextHeight;
             default -> size(surface, value, isX ? "x" : "y");
         };
+    }
+
+    /**
+     * Evaluate a CSS calc() expression, e.g. {@code calc(100% - 20px)}. Supports +,
+     * -, *, / and nested parentheses.
+     */
+    private static double evalCalc(Surface surface, String expr, String reference) {
+        // expr starts with "calc(" (case-insensitive); find matching closing paren
+        int innerStart = CALC_PREFIX_LENGTH; // skip "calc("
+        int depth = 1, i = innerStart;
+        while (i < expr.length() && depth > 0) {
+            char c = expr.charAt(i);
+            if (c == '(')
+                depth++;
+            else if (c == ')')
+                depth--;
+            i++;
+        }
+        String inner = expr.substring(innerStart, i - 1).strip();
+        int[] pos = {0};
+        return calcAddSub(surface, inner, reference, pos);
+    }
+
+    /** Parse addition/subtraction in a calc expression (lowest precedence). */
+    private static double calcAddSub(Surface surface, String expr, String reference, int[] pos) {
+        double left = calcMulDiv(surface, expr, reference, pos);
+        while (pos[0] < expr.length()) {
+            skipCalcWhitespace(expr, pos);
+            if (pos[0] >= expr.length())
+                break;
+            char op = expr.charAt(pos[0]);
+            if (op != '+' && op != '-')
+                break;
+            pos[0]++;
+            double right = calcMulDiv(surface, expr, reference, pos);
+            if (op == '+')
+                left += right;
+            else
+                left -= right;
+        }
+        return left;
+    }
+
+    /** Parse multiplication/division in a calc expression (higher precedence). */
+    private static double calcMulDiv(Surface surface, String expr, String reference, int[] pos) {
+        double left = calcFactor(surface, expr, reference, pos);
+        while (pos[0] < expr.length()) {
+            skipCalcWhitespace(expr, pos);
+            if (pos[0] >= expr.length())
+                break;
+            char op = expr.charAt(pos[0]);
+            if (op != '*' && op != '/')
+                break;
+            pos[0]++;
+            double right = calcFactor(surface, expr, reference, pos);
+            if (op == '*')
+                left *= right;
+            else
+                left /= right;
+        }
+        return left;
+    }
+
+    /**
+     * Parse a calc factor: a parenthesised sub-expression, a nested calc(), or a
+     * CSS length/percentage value.
+     */
+    private static double calcFactor(Surface surface, String expr, String reference, int[] pos) {
+        skipCalcWhitespace(expr, pos);
+        if (pos[0] >= expr.length())
+            return 0;
+
+        char first = expr.charAt(pos[0]);
+
+        // Parenthesised sub-expression or nested calc(...)
+        if (first == '(') {
+            pos[0]++; // skip '('
+            double val = calcAddSub(surface, expr, reference, pos);
+            skipCalcWhitespace(expr, pos);
+            if (pos[0] < expr.length() && expr.charAt(pos[0]) == ')')
+                pos[0]++;
+            return val;
+        }
+
+        // Nested calc() keyword
+        if (pos[0] + CALC_PREFIX_LENGTH <= expr.length()
+                && expr.substring(pos[0], pos[0] + CALC_PREFIX_LENGTH).equalsIgnoreCase("calc(")) {
+            int nestedStart = pos[0];
+            int depth = 0;
+            while (pos[0] < expr.length()) {
+                char c = expr.charAt(pos[0]);
+                if (c == '(')
+                    depth++;
+                else if (c == ')') {
+                    depth--;
+                    if (depth == 0) {
+                        pos[0]++;
+                        break;
+                    }
+                }
+                pos[0]++;
+            }
+            return evalCalc(surface, expr.substring(nestedStart, pos[0]), reference);
+        }
+
+        // CSS value token: optional sign, digits/dot, optional exponent, optional unit
+        int start = pos[0];
+
+        // Optional sign
+        if (pos[0] < expr.length() && (first == '-' || first == '+')) {
+            pos[0]++;
+        }
+
+        // Numeric part (digits and decimal point)
+        while (pos[0] < expr.length() && (Character.isDigit(expr.charAt(pos[0])) || expr.charAt(pos[0]) == '.')) {
+            pos[0]++;
+        }
+
+        // Optional exponent: e/E followed by optional sign then digits
+        if (pos[0] < expr.length() && (expr.charAt(pos[0]) == 'e' || expr.charAt(pos[0]) == 'E')) {
+            int savedPos = pos[0];
+            pos[0]++;
+            if (pos[0] < expr.length() && (expr.charAt(pos[0]) == '+' || expr.charAt(pos[0]) == '-')) {
+                pos[0]++;
+            }
+            if (pos[0] < expr.length() && Character.isDigit(expr.charAt(pos[0]))) {
+                while (pos[0] < expr.length() && Character.isDigit(expr.charAt(pos[0])))
+                    pos[0]++;
+            } else {
+                pos[0] = savedPos; // not a valid exponent — 'e' starts the unit suffix
+            }
+        }
+
+        // Optional unit suffix (letters, e.g. px, em, rem, pt, cm, mm, in, pc)
+        while (pos[0] < expr.length() && Character.isLetter(expr.charAt(pos[0]))) {
+            pos[0]++;
+        }
+        // Percentage sign
+        if (pos[0] < expr.length() && expr.charAt(pos[0]) == '%') {
+            pos[0]++;
+        }
+
+        String token = expr.substring(start, pos[0]).strip();
+        if (token.isEmpty())
+            return 0;
+        return size(surface, token, reference);
+    }
+
+    /** Advance past whitespace characters in a calc expression string. */
+    private static void skipCalcWhitespace(String s, int[] pos) {
+        while (pos[0] < s.length() && Character.isWhitespace(s.charAt(pos[0]))) {
+            pos[0]++;
+        }
     }
 }
