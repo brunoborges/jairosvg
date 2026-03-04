@@ -495,13 +495,59 @@ public final class Defs {
         return last;
     }
 
-    /** Handle mask (simplified). */
-    public static void paintMask(Surface surface, Node node, String name, double opacity) {
-        // Simplified mask - just apply opacity
-        if (opacity < 1) {
-            surface.context.setComposite(
-                    java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC_OVER, (float) opacity));
+    /** Render and apply luminance mask to an off-screen source image. */
+    public static BufferedImage paintMask(Surface surface, Node node, String name, BufferedImage sourceImage) {
+        Node maskNode = surface.masks.get(name);
+        if (maskNode == null) {
+            return sourceImage;
         }
+
+        BufferedImage maskImage = new BufferedImage(sourceImage.getWidth(), sourceImage.getHeight(),
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics2D maskG2d = maskImage.createGraphics();
+        maskG2d.setRenderingHints(surface.context.getRenderingHints());
+
+        Graphics2D savedContext = surface.context;
+        GeneralPath savedPath = surface.path;
+        double savedWidth = surface.contextWidth;
+        double savedHeight = surface.contextHeight;
+
+        surface.context = maskG2d;
+        surface.path = new GeneralPath();
+        surface.contextWidth = savedWidth;
+        surface.contextHeight = savedHeight;
+
+        for (Node child : maskNode.children) {
+            surface.draw(child);
+        }
+
+        surface.context = savedContext;
+        surface.path = savedPath;
+        surface.contextWidth = savedWidth;
+        surface.contextHeight = savedHeight;
+        maskG2d.dispose();
+
+        BufferedImage masked = new BufferedImage(sourceImage.getWidth(), sourceImage.getHeight(),
+                BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < sourceImage.getHeight(); y++) {
+            for (int x = 0; x < sourceImage.getWidth(); x++) {
+                int src = sourceImage.getRGB(x, y);
+                int srcA = (src >>> 24) & 0xFF;
+                if (srcA == 0) {
+                    continue;
+                }
+                int m = maskImage.getRGB(x, y);
+                int ma = (m >>> 24) & 0xFF;
+                int mr = (m >>> 16) & 0xFF;
+                int mg = (m >>> 8) & 0xFF;
+                int mb = m & 0xFF;
+                double luminance = (0.2126 * mr + 0.7152 * mg + 0.0722 * mb) / 255.0;
+                double maskAlpha = (ma / 255.0) * luminance;
+                int outA = (int) Math.round(srcA * maskAlpha);
+                masked.setRGB(x, y, (outA << 24) | (src & 0x00FFFFFF));
+            }
+        }
+        return masked;
     }
 
     /** Handle markers. */

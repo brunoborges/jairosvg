@@ -327,6 +327,57 @@ class ShapeRenderingTest {
     }
 
     @Test
+    void testMaskRenderingWithGradientAndLuminance() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
+                  <defs>
+                    <linearGradient id="fadeLR" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="white"/>
+                      <stop offset="100%" stop-color="black"/>
+                    </linearGradient>
+                    <linearGradient id="fadeTB" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stop-color="white"/>
+                      <stop offset="100%" stop-color="black"/>
+                    </linearGradient>
+                    <mask id="hMask">
+                      <rect width="400" height="300" fill="url(#fadeLR)"/>
+                    </mask>
+                    <mask id="vMask">
+                      <rect width="400" height="300" fill="url(#fadeTB)"/>
+                    </mask>
+                    <mask id="circleMask">
+                      <rect width="400" height="300" fill="black"/>
+                      <circle cx="300" cy="200" r="80" fill="white"/>
+                      <circle cx="300" cy="200" r="40" fill="gray"/>
+                    </mask>
+                  </defs>
+                  <rect width="400" height="300" fill="#1e272e"/>
+                  <rect x="10" y="10" width="180" height="130" fill="#e74c3c" mask="url(#hMask)"/>
+                  <rect x="210" y="10" width="180" height="130" fill="#3498db" mask="url(#vMask)"/>
+                  <rect x="10" y="150" width="380" height="140" fill="#2ecc71" mask="url(#circleMask)"/>
+                </svg>
+                """;
+
+        BufferedImage image = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
+
+        int leftRed = (image.getRGB(20, 70) >> 16) & 0xFF;
+        int rightRed = (image.getRGB(180, 70) >> 16) & 0xFF;
+        assertTrue(leftRed > rightRed, "Horizontal mask should fade red from left to right");
+
+        int topBlue = image.getRGB(300, 20) & 0xFF;
+        int bottomBlue = image.getRGB(300, 120) & 0xFF;
+        assertTrue(topBlue > bottomBlue, "Vertical mask should fade blue from top to bottom");
+
+        int outsideGreen = (image.getRGB(180, 200) >> 8) & 0xFF;
+        int outerRingGreen = (image.getRGB(300, 150) >> 8) & 0xFF;
+        int innerGrayGreen = (image.getRGB(300, 200) >> 8) & 0xFF;
+        assertTrue(outerRingGreen > outsideGreen, "White circle mask area should reveal green content");
+        assertTrue(innerGrayGreen > outsideGreen && innerGrayGreen < outerRingGreen,
+                "Gray circle should produce partial luminance masking");
+    }
+
+    @Test
     void testTextPathFollowsCurve() throws Exception {
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
