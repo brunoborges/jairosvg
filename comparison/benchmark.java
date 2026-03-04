@@ -1,6 +1,6 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//JAVA 25
-//COMPILE_OPTIONS --enable-preview --release 25
+//JAVA 26
+//COMPILE_OPTIONS --enable-preview --release 26
 //RUNTIME_OPTIONS --enable-preview -Xmx512m
 //REPOS mavenCentral,mavenLocal
 //REPOS css4j=https://css4j.github.io/maven/
