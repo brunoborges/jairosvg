@@ -41,6 +41,10 @@ import io.brunoborges.jairosvg.util.UrlHelper;
  */
 public final class Defs {
 
+    private static final double LUMINANCE_RED_COEFF = 0.2126;
+    private static final double LUMINANCE_GREEN_COEFF = 0.7152;
+    private static final double LUMINANCE_BLUE_COEFF = 0.0722;
+
     private Defs() {
     }
 
@@ -527,26 +531,31 @@ public final class Defs {
         surface.contextHeight = savedHeight;
         maskG2d.dispose();
 
-        BufferedImage masked = new BufferedImage(sourceImage.getWidth(), sourceImage.getHeight(),
-                BufferedImage.TYPE_INT_ARGB);
-        for (int y = 0; y < sourceImage.getHeight(); y++) {
-            for (int x = 0; x < sourceImage.getWidth(); x++) {
-                int src = sourceImage.getRGB(x, y);
+        int width = sourceImage.getWidth();
+        int height = sourceImage.getHeight();
+        int[] sourcePixels = sourceImage.getRGB(0, 0, width, height, null, 0, width);
+        int[] maskPixels = maskImage.getRGB(0, 0, width, height, null, 0, width);
+        int[] outputPixels = new int[sourcePixels.length];
+
+        for (int i = 0; i < sourcePixels.length; i++) {
+            int src = sourcePixels[i];
                 int srcA = (src >>> 24) & 0xFF;
                 if (srcA == 0) {
                     continue;
                 }
-                int m = maskImage.getRGB(x, y);
+                int m = maskPixels[i];
                 int ma = (m >>> 24) & 0xFF;
                 int mr = (m >>> 16) & 0xFF;
                 int mg = (m >>> 8) & 0xFF;
                 int mb = m & 0xFF;
-                double luminance = (0.2126 * mr + 0.7152 * mg + 0.0722 * mb) / 255.0;
+                double luminance = (LUMINANCE_RED_COEFF * mr + LUMINANCE_GREEN_COEFF * mg + LUMINANCE_BLUE_COEFF * mb)
+                        / 255.0;
                 double maskAlpha = (ma / 255.0) * luminance;
                 int outA = (int) Math.round(srcA * maskAlpha);
-                masked.setRGB(x, y, (outA << 24) | (src & 0x00FFFFFF));
-            }
+                outputPixels[i] = (outA << 24) | (src & 0x00FFFFFF);
         }
+        BufferedImage masked = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        masked.setRGB(0, 0, width, height, outputPixels, 0, width);
         return masked;
     }
 
