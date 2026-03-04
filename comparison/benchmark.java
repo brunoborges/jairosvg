@@ -6,11 +6,15 @@
 //REPOS css4j=https://css4j.github.io/maven/
 //DEPS io.brunoborges:jairosvg:1.0.2-SNAPSHOT
 //DEPS io.sf.carte:echosvg-transcoder:2.4
+//DEPS me.tongfei:progressbar:0.10.2
 
 import io.brunoborges.jairosvg.JairoSVG;
 import io.sf.carte.echosvg.transcoder.TranscoderInput;
 import io.sf.carte.echosvg.transcoder.TranscoderOutput;
 import io.sf.carte.echosvg.transcoder.image.PNGTranscoder;
+import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
+import me.tongfei.progressbar.ProgressBarStyle;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -59,11 +63,12 @@ public class benchmark {
         return baos.toByteArray();
     }
 
-    static double[] bench(String label, SvgConverter converter, String svg) throws Exception {
+    static double[] bench(String label, SvgConverter converter, String svg, ProgressBar pb) throws Exception {
         // Warmup
         for (int i = 0; i < WARMUP; i++) {
             byte[] r = converter.convert(svg);
             if (r == null) throw new RuntimeException("null");
+            pb.step();
         }
         System.gc();
         Thread.sleep(100);
@@ -76,6 +81,7 @@ public class benchmark {
             long end = System.nanoTime();
             times[i] = (end - start) / 1_000_000.0;
             if (result == null || result.length == 0) throw new RuntimeException("Empty result");
+            pb.step();
         }
 
         Arrays.sort(times);
@@ -179,40 +185,61 @@ public class benchmark {
         SvgConverter jairosvg = svg -> JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
         SvgConverter echosvg = svg -> echoConvert(svg);
 
-        for (SvgCase c : cases) {
+        for (int ci = 0; ci < cases.size(); ci++) {
+            SvgCase c = cases.get(ci);
             System.gc();
-            System.out.println("\n▸ " + c.name());
+            System.out.println("\n▸ " + c.name() + "  [" + (ci + 1) + "/" + cases.size() + "]");
 
-            double[] jTimes = bench("JairoSVG", jairosvg, c.content());
+            // Total steps for Java engines: (warmup + iterations) each
+            int javaEngines = 1 + (runEcho ? 1 : 0);
+            int totalSteps = javaEngines * (WARMUP + ITERATIONS) + (runCairo ? 1 : 0);
+
+            double[] jTimes, eTimes = null, cTimes = null;
+
+            try (var pb = new ProgressBarBuilder()
+                    .setTaskName("  Progress")
+                    .setInitialMax(totalSteps)
+                    .setStyle(ProgressBarStyle.ASCII)
+                    .setUpdateIntervalMillis(250)
+                    .build()) {
+
+                jTimes = bench("JairoSVG", jairosvg, c.content(), pb);
+
+                if (runEcho) {
+                    System.gc(); Thread.sleep(100);
+                    eTimes = bench("EchoSVG", echosvg, c.content(), pb);
+                }
+
+                if (runCairo) {
+                    System.gc(); Thread.sleep(100);
+                    cTimes = benchCairoSVG(c.content());
+                    pb.step();
+                }
+            }
+
+            // Print results after progress bar is done
             printStats("JairoSVG  (Java/Java2D)", jTimes);
             double jAvg = Arrays.stream(jTimes).average().orElse(0);
 
             double eAvg = 0;
-            if (runEcho) {
-                System.gc(); Thread.sleep(100);
-                double[] eTimes = bench("EchoSVG", echosvg, c.content());
+            if (eTimes != null) {
                 printStats("EchoSVG   (Java/Batik)", eTimes);
                 eAvg = Arrays.stream(eTimes).average().orElse(0);
             }
 
             double cAvg = 0;
-            double[] cTimes = null;
-            if (runCairo) {
-                System.gc(); Thread.sleep(100);
-                cTimes = benchCairoSVG(c.content());
-                if (cTimes != null) {
-                    printStats("CairoSVG  (Python/Cairo)", cTimes);
-                    cAvg = Arrays.stream(cTimes).average().orElse(0);
-                }
+            if (cTimes != null) {
+                printStats("CairoSVG  (Python/Cairo)", cTimes);
+                cAvg = Arrays.stream(cTimes).average().orElse(0);
             }
 
             System.out.println();
-            if (runEcho) {
+            if (eTimes != null) {
                 printComparison("JairoSVG", jAvg, "EchoSVG", eAvg);
             }
             if (cTimes != null) {
                 printComparison("JairoSVG", jAvg, "CairoSVG", cAvg);
-                if (runEcho) {
+                if (eTimes != null) {
                     printComparison("EchoSVG", eAvg, "CairoSVG", cAvg);
                 }
             }
