@@ -171,6 +171,44 @@ class ShapeRenderingTest {
     }
 
     @Test
+    void testImageRenderingPixelated() throws Exception {
+        // 2x2 PNG: red(TL), green(TR), blue(BL), white(BR) - scaled to 100x100
+        String b64 = "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEklEQVR4nGP4z8DwHwyBNBgAAEnICff5q7YNAAAAAElFTkSuQmCC";
+        String pixelatedSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <image x="0" y="0" width="100" height="100" image-rendering="pixelated"
+                    href="data:image/png;base64,%s"/>
+                </svg>
+                """.formatted(b64);
+        String bilinearSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <image x="0" y="0" width="100" height="100"
+                    href="data:image/png;base64,%s"/>
+                </svg>
+                """.formatted(b64);
+        BufferedImage pixelated = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(pixelatedSvg.getBytes(StandardCharsets.UTF_8))));
+        BufferedImage bilinear = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(bilinearSvg.getBytes(StandardCharsets.UTF_8))));
+        // At center (50,50), pixelated should show a hard boundary — pure color from
+        // one quadrant
+        // Bilinear should blend all 4 source pixels, producing intermediate colors
+        int pixelatedCenter = pixelated.getRGB(50, 50);
+        int bilinearCenter = bilinear.getRGB(50, 50);
+        // Pixelated center should be one of the four source colors (no blending)
+        // Bilinear center should be a blend of all four
+        int bCenterR = (bilinearCenter >> 16) & 0xFF;
+        int bCenterG = (bilinearCenter >> 8) & 0xFF;
+        int bCenterB = bilinearCenter & 0xFF;
+        // Bilinear blend of red+green+blue+white at center ≈ mid-range values
+        assertTrue(bCenterR > 50 && bCenterR < 250, "Bilinear center red should be blended: " + bCenterR);
+        assertTrue(bCenterG > 50 && bCenterG < 250, "Bilinear center green should be blended: " + bCenterG);
+        // Pixelated and bilinear should differ at center due to interpolation
+        // difference
+        assertNotEquals(pixelatedCenter, bilinearCenter, "Pixelated vs bilinear should differ at center");
+    }
+
+    @Test
     void testGaussianBlurFilterRenders() throws Exception {
         int shapeX = 30;
         int shapeY = 30;

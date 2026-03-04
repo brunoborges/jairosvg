@@ -111,8 +111,7 @@ public final class ImageHandler {
                 surface.context.setComposite(
                         java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC_OVER, (float) opacity));
             }
-            surface.context.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
-                    java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            surface.context.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, imageInterpolation(node));
 
             BufferedImage imageToDraw = img;
             int drawX = 0;
@@ -146,5 +145,18 @@ public final class ImageHandler {
         String start = new String(data, 0, Math.min(data.length, 256));
         return start.contains("<svg") || start.startsWith("<?xml") || start.startsWith("<!DOC")
                 || (data[0] == 0x1f && data[1] == (byte) 0x8b); // gzip
+    }
+
+    /** Resolve interpolation hint from the image-rendering CSS property. */
+    private static Object imageInterpolation(Node node) {
+        String rendering = node.get("image-rendering");
+        if (rendering != null) {
+            return switch (rendering) {
+                case "pixelated", "crisp-edges", "optimizeSpeed" ->
+                    java.awt.RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
+                default -> java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR;
+            };
+        }
+        return java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR;
     }
 }

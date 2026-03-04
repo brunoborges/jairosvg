@@ -41,13 +41,11 @@ public final class PngSurface extends Surface {
     /**
      * Write a BufferedImage as PNG to the given ImageOutputStream.
      */
-    static void writePng(BufferedImage img, ImageOutputStream ios)
-            throws IOException {
+    static void writePng(BufferedImage img, ImageOutputStream ios) throws IOException {
         writePng(img, ios, -1);
     }
 
-    static void writePng(BufferedImage img, ImageOutputStream ios,
-            int compressionLevel) throws IOException {
+    static void writePng(BufferedImage img, ImageOutputStream ios, int compressionLevel) throws IOException {
         synchronized (PNG_WRITER) {
             try {
                 PNG_WRITER.setOutput(ios);
