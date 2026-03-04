@@ -2,6 +2,25 @@
 
 A comprehensive comparison of three SVG libraries — **JairoSVG** (Java), **EchoSVG** (Java), and **CairoSVG** (Python) — to help developers choose the right tool for their SVG rendering needs. JairoSVG is a Java port of [CairoSVG], so this comparison also tracks porting fidelity.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture & Design](#architecture--design)
+- [SVG Element Support](#svg-element-support)
+- [SVG Attributes & Features](#svg-attributes--features)
+- [CSS & Styling](#css--styling)
+- [Output Formats](#output-formats)
+- [API & Developer Experience](#api--developer-experience)
+- [Benchmark](#benchmark)
+  - [PNG Output File Sizes](#png-output-file-sizes)
+  - [Running the Benchmark](#running-the-benchmark)
+- [Dependencies & Footprint](#dependencies--footprint)
+- [Security](#security)
+- [Visual Rendering Comparison](#visual-rendering-comparison)
+- [Summary](#summary)
+- [When to Choose Which](#when-to-choose-which)
+- [Regenerating](#regenerating)
+
 ---
 
 ## Overview
