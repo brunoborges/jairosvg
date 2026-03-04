@@ -135,6 +135,7 @@ java --enable-preview -jar target/jairosvg-1.0.1-cli.jar input.svg -f pdf -s 2 -
 Build a GraalVM native CLI:
 ```bash
 # Create native executable from the shaded CLI JAR
+# Required native-image arguments are read from the JAR's META-INF/native-image config
 native-image -jar target/jairosvg-1.0.1-cli.jar
 ./jairosvg input.svg -o output.png
 ```
