@@ -217,7 +217,8 @@ public final class UrlHelper {
         }
     }
 
-    private static byte[] decodeDataUrl(String dataUrl) {
+    /** Decode a data: URI into raw bytes. */
+    public static byte[] decodeDataUrl(String dataUrl) {
         // data:[<mediatype>][;base64],<data>
         String data = dataUrl.substring(5); // remove "data:"
         int commaIdx = data.indexOf(',');

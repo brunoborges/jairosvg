@@ -26,18 +26,28 @@ public final class ImageHandler {
         if (href == null || href.isEmpty())
             return;
 
-        String baseUrl = node.get("{http://www.w3.org/XML/1998/namespace}base");
-        if (baseUrl == null && node.url != null) {
-            int lastSlash = node.url.lastIndexOf('/');
-            baseUrl = lastSlash >= 0 ? node.url.substring(0, lastSlash + 1) : null;
-        }
-
-        UrlHelper.ParsedUrl url = UrlHelper.parseUrl(href, baseUrl);
+        // Fast path for data: URIs — skip URL parsing overhead
         byte[] imageBytes;
-        try {
-            imageBytes = node.fetchUrl(url, "image/*");
-        } catch (IOException e) {
-            return;
+        String cacheKey;
+        String resolvedUrl;
+        if (href.startsWith("data:")) {
+            cacheKey = href;
+            resolvedUrl = href;
+            imageBytes = UrlHelper.decodeDataUrl(href);
+        } else {
+            String baseUrl = node.get("{http://www.w3.org/XML/1998/namespace}base");
+            if (baseUrl == null && node.url != null) {
+                int lastSlash = node.url.lastIndexOf('/');
+                baseUrl = lastSlash >= 0 ? node.url.substring(0, lastSlash + 1) : null;
+            }
+            UrlHelper.ParsedUrl url = UrlHelper.parseUrl(href, baseUrl);
+            cacheKey = url.getUrl();
+            resolvedUrl = cacheKey;
+            try {
+                imageBytes = node.fetchUrl(url, "image/*");
+            } catch (IOException e) {
+                return;
+            }
         }
 
         if (imageBytes == null || imageBytes.length < 5)
@@ -55,7 +65,7 @@ public final class ImageHandler {
         // Check if it's an SVG image
         if (isSvgContent(imageBytes)) {
             try {
-                Node tree = Node.parseTree(imageBytes, url.getUrl(), node.urlFetcher, node.unsafe);
+                Node tree = Node.parseTree(imageBytes, resolvedUrl, node.urlFetcher, node.unsafe);
                 double[] nf = nodeFormat(surface, tree, false);
                 double treeWidth = nf[0], treeHeight = nf[1];
                 if (treeWidth == 0)
@@ -85,11 +95,15 @@ public final class ImageHandler {
             return;
         }
 
-        // Raster image
+        // Raster image — use cache to avoid repeated ImageIO.read() for same href
         try {
-            BufferedImage img = ImageIO.read(new ByteArrayInputStream(imageBytes));
-            if (img == null)
-                return;
+            BufferedImage img = surface.rasterImageCache.get(cacheKey);
+            if (img == null) {
+                img = ImageIO.read(new ByteArrayInputStream(imageBytes));
+                if (img == null)
+                    return;
+                surface.rasterImageCache.put(cacheKey, img);
+            }
 
             node.imageWidth = img.getWidth();
             node.imageHeight = img.getHeight();

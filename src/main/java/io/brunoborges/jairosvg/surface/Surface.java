@@ -87,6 +87,9 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     private final Map<String, float[]> dashArrayCache = new HashMap<>();
     private final Map<String, BasicStroke> strokeCache = new HashMap<>();
 
+    // Raster image cache (keyed by data: URI or resolved URL)
+    public Map<String, BufferedImage> rasterImageCache = new HashMap<>();
+
     public Surface() {
     }
 
@@ -111,6 +114,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
             this.filters = parentSurface.filters;
             this.images = parentSurface.images;
             this.fonts = parentSurface.fonts;
+            this.rasterImageCache = parentSurface.rasterImageCache;
         }
 
         this.fontSize = size(this, "12pt");
