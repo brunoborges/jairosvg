@@ -21,7 +21,14 @@ A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to 
 
 ## Benchmark and Feature Comparison
 
-SVG → PNG conversion (lower is better):
+<p align="center">
+  <a href="comparison/benchmark.png"><img src="comparison/benchmark.png" width="256" alt="SVG to PNG benchmark latency chart"/></a>
+  &nbsp;&nbsp;
+  <a href="comparison/benchmark-size.png"><img src="comparison/benchmark-size.png" width="256" alt="PNG output file sizes chart"/></a>
+  <br/><sub><i>Click to enlarge</i></sub>
+</p>
+
+### Sample SVG → PNG conversion benchmark (lower is better):
 
 | Test Case                | JairoSVG (Java) | EchoSVG (Java) | CairoSVG (Python) |
 | ------------------------ | :-------------: | :------------: | :---------------: |
@@ -33,7 +40,9 @@ SVG → PNG conversion (lower is better):
 
 _JairoSVG is 3–31× faster than EchoSVG and 1–2.6× faster than CairoSVG's native C backend._
 
-Run the benchmark yourself: `jbang comparison/benchmark.java` — see [comparison/README.md](comparison/README.md) for full benchmark results, PNG file size comparisons, and feature matrices across JairoSVG, CairoSVG, and EchoSVG.
+Run the benchmark yourself: `jbang comparison/benchmark.java`.
+
+See **[comparison/README.md](comparison/README.md)** for full benchmark results, PNG file size comparisons, and feature matrices across JairoSVG, CairoSVG, and EchoSVG.
 
 ## Installation
 
