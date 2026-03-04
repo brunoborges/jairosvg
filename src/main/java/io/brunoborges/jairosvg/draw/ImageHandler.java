@@ -5,6 +5,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import io.brunoborges.jairosvg.dom.Node;
 import io.brunoborges.jairosvg.surface.Surface;
@@ -99,7 +100,10 @@ public final class ImageHandler {
         try {
             BufferedImage img = surface.rasterImageCache.get(cacheKey);
             if (img == null) {
-                img = ImageIO.read(new ByteArrayInputStream(imageBytes));
+                // Use MemoryCacheImageInputStream to avoid temp file I/O
+                var iis = new MemoryCacheImageInputStream(new ByteArrayInputStream(imageBytes));
+                img = ImageIO.read(iis);
+
                 if (img == null)
                     return;
                 surface.rasterImageCache.put(cacheKey, img);
