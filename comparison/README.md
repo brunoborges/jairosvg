@@ -17,7 +17,7 @@ A comprehensive comparison of three SVG libraries — **JairoSVG** (Java), **Ech
 | **Current version**   | 1.0.1                                            | 2.4                                                        | 2.7+                                   |
 | **SVG spec target**   | SVG 1.1                                          | SVG 1.1 + partial SVG 2                                    | SVG 1.1                                |
 | **Rendering backend** | Java2D                                           | GVT (Batik) → Java2D                                       | Cairo (C library)                      |
-| **Key strength**      | Speed (3–31× faster than EchoSVG, 1–2.5× faster than CairoSVG) | Feature completeness and standard compliance               | Native C performance, mature ecosystem |
+| **Key strength**      | Speed (3–31× faster than EchoSVG, 1–2.6× faster than CairoSVG) | Feature completeness and standard compliance               | Native C performance, mature ecosystem |
 
 ---
 
@@ -243,29 +243,29 @@ SVG → PNG conversion benchmarks across 19 SVG test files (lower is better):
 
 | Test Case         | JairoSVG (Java) | EchoSVG (Java) | CairoSVG (Python) | JairoSVG vs EchoSVG | JairoSVG vs CairoSVG |
 | ----------------- | :-------------: | :------------: | :---------------: | :-----------------: | :------------------: |
-| Basic shapes      |   **3.6 ms**    |    17.1 ms     |      4.4 ms       |       4.7× ✅       |        1.2× ✅        |
-| Gradients         |   **4.3 ms**    |    135.1 ms    |     11.0 ms       |      31.1× ✅       |        2.5× ✅        |
-| Complex paths     |   **4.5 ms**    |    23.5 ms     |      4.7 ms       |       5.2× ✅       |        1.0× ≈        |
-| Text rendering    |   **4.9 ms**    |    23.6 ms     |      6.4 ms       |       4.8× ✅       |        1.3× ✅        |
-| Transforms        |     4.2 ms      |    14.9 ms     |    **4.1 ms**     |       3.6× ✅       |        1.0× ≈        |
-| Stroke styles     |     3.8 ms      |    12.5 ms     |    **3.7 ms**     |       3.2× ✅       |        1.0× ≈        |
-| Opacity blend     |     3.5 ms      |    18.7 ms     |    **3.4 ms**     |       5.4× ✅       |        1.0× ≈        |
-| Viewbox aspect    |   **5.0 ms**    |    20.1 ms     |      5.5 ms       |       4.0× ✅       |        1.1× ✅        |
-| CSS styling       |   **3.4 ms**    |    15.4 ms     |      4.2 ms       |       4.5× ✅       |        1.2× ✅        |
-| Use and defs      |   **4.1 ms**    |    14.7 ms     |      4.5 ms       |       3.5× ✅       |        1.1× ✅        |
-| Star polygon      |     3.3 ms      |    14.8 ms     |    **3.1 ms**     |       4.6× ✅       |        1.0× ≈        |
-| Nested svg        |   **4.7 ms**    |    20.0 ms     |      5.3 ms       |       4.3× ✅       |        1.1× ✅        |
-| Patterns          |     4.7 ms      |    16.6 ms     |    **4.7 ms**     |       3.5× ✅       |        1.0× ≈        |
-| Clip paths        |   **4.2 ms**    |    27.5 ms     |      6.3 ms       |       6.5× ✅       |        1.5× ✅        |
-| Masks             |   **3.6 ms**    |    22.9 ms     |      3.8 ms       |       6.5× ✅       |        1.1× ✅        |
-| Markers           |   **4.1 ms**    |    13.3 ms     |      4.8 ms       |       3.2× ✅       |        1.2× ✅        |
-| Filters ⚠️        |    45.7 ms      |    35.6 ms     |    **4.6 ms**     |       ← ⚠️         |        ← ⚠️          |
-| Embedded image    |   **14.2 ms**   |    16.8 ms     |      7.3 ms       |       1.2× ✅       |    CairoSVG 1.9×     |
-| Text advanced     |   **5.5 ms**    |    26.6 ms     |      9.1 ms       |       4.9× ✅       |        1.7× ✅        |
+| Basic shapes      |   **3.5 ms**    |    16.6 ms     |      4.3 ms       |       4.8× ✅       |        1.2× ✅        |
+| Gradients         |   **4.3 ms**    |   134.8 ms     |     11.3 ms       |      31.0× ✅       |        2.6× ✅        |
+| Complex paths     |   **4.5 ms**    |    23.1 ms     |      4.6 ms       |       5.2× ✅       |        1.0× ≈        |
+| Text rendering    |   **4.8 ms**    |    22.9 ms     |      6.2 ms       |       4.8× ✅       |        1.3× ✅        |
+| Transforms        |     4.1 ms      |    14.6 ms     |    **4.0 ms**     |       3.6× ✅       |        1.0× ≈        |
+| Stroke styles     |     3.7 ms      |    11.9 ms     |    **3.5 ms**     |       3.2× ✅       |        1.0× ≈        |
+| Opacity blend     |     3.4 ms      |    17.7 ms     |    **3.3 ms**     |       5.2× ✅       |        1.0× ≈        |
+| Viewbox aspect    |   **4.8 ms**    |    19.7 ms     |      5.3 ms       |       4.1× ✅       |        1.1× ✅        |
+| CSS styling       |   **3.4 ms**    |    15.2 ms     |      4.1 ms       |       4.5× ✅       |        1.2× ✅        |
+| Use and defs      |   **4.0 ms**    |    14.3 ms     |      4.4 ms       |       3.6× ✅       |        1.1× ✅        |
+| Star polygon      |     3.2 ms      |    14.6 ms     |    **3.1 ms**     |       4.5× ✅       |        1.0× ≈        |
+| Nested svg        |   **4.6 ms**    |    19.4 ms     |      5.0 ms       |       4.3× ✅       |        1.1× ✅        |
+| Patterns          |     4.6 ms      |    16.2 ms     |    **4.6 ms**     |       3.5× ✅       |        1.0× ≈        |
+| Clip paths        |   **4.2 ms**    |    26.5 ms     |      6.0 ms       |       6.4× ✅       |        1.4× ✅        |
+| Masks             |   **3.5 ms**    |    21.5 ms     |      3.7 ms       |       6.1× ✅       |        1.1× ✅        |
+| Markers           |   **3.9 ms**    |    13.1 ms     |      4.7 ms       |       3.4× ✅       |        1.2× ✅        |
+| Filters ⚠️        |    45.0 ms      |    35.1 ms     |    **4.5 ms**     |       ← ⚠️         |        ← ⚠️          |
+| Embedded image    |   **4.3 ms**    |    16.4 ms     |      7.2 ms       |       3.8× ✅       |        1.7× ✅        |
+| Text advanced     |   **5.4 ms**    |    26.1 ms     |      8.9 ms       |       4.8× ✅       |        1.7× ✅        |
 
-_JairoSVG is **3–31× faster** than EchoSVG and **1–2.5× faster** than CairoSVG in most scenarios._
+_JairoSVG is **3–31× faster** than EchoSVG and **1–2.6× faster** than CairoSVG in most scenarios._
 
-> **⚠️ Filters caveat:** CairoSVG does **not** render `feGaussianBlur` or `feDropShadow` filters — it silently skips them, which is why it appears 10× faster on the Filters test. JairoSVG and EchoSVG both perform the actual blur computation. The same applies to the Embedded image test where CairoSVG skips certain processing. When comparing filter-heavy SVGs, CairoSVG's speed advantage is due to **missing features**, not faster rendering.
+> **⚠️ Filters caveat:** CairoSVG does **not** render `feGaussianBlur` or `feDropShadow` filters — it silently skips them, which is why it appears 10× faster on the Filters test. JairoSVG and EchoSVG both perform the actual blur computation. When comparing filter-heavy SVGs, CairoSVG's speed advantage is due to **missing features**, not faster rendering.
 
 > **Note:** Benchmarks were run with 20 warm-up iterations and 1000 measured iterations per SVG file. Results may vary by hardware and SVG complexity.
 
