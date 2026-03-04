@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="720" viewBox="0 0 760 720">
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  </style>
+
+  <!-- Background -->
+  <rect width="760" height="720" rx="16" fill="#0f172a"/>
+
+  <!-- Title -->
+  <text x="380" y="40" text-anchor="middle" font-size="20" font-weight="600" font-style="italic" fill="#f1f5f9">SVG → PNG Benchmark — Average Latency (ms)</text>
+  <text x="380" y="60" text-anchor="middle" font-size="13" font-style="italic" fill="#64748b">sorted ascending within each test case</text>
+
+  <!-- Legend -->
+  <rect x="145" y="75" width="12" height="12" rx="3" fill="#4ade80"/>
+  <text x="163" y="86" font-size="12" fill="#94a3b8">JairoSVG (Java)</text>
+  <rect x="300" y="75" width="12" height="12" rx="3" fill="#fb923c"/>
+  <text x="318" y="86" font-size="12" fill="#94a3b8">CairoSVG (Python)</text>
+  <rect x="472" y="75" width="12" height="12" rx="3" fill="#f87171"/>
+  <text x="490" y="86" font-size="12" fill="#94a3b8">EchoSVG (Java)</text>
+
+  <!-- Separator under legend -->
+  <line x1="30" y1="102" x2="730" y2="102" stroke="#1e293b" stroke-width="1"/>
+
+  <!-- ═══════════════════ Group 1: Simple shapes ═══════════════════ -->
+  <text x="230" y="120" font-size="11" font-weight="500" fill="#64748b" letter-spacing="0.3">Simple shapes</text>
+
+  <text x="215" y="148" text-anchor="end" font-size="14" font-weight="600" fill="#cbd5e1">JairoSVG</text>
+  <rect x="230" y="134" width="15" height="20" rx="5" fill="#4ade80"/>
+  <text x="722" y="148" text-anchor="end" font-size="14" font-weight="600" fill="#4ade80">1.4 ms</text>
+
+  <text x="215" y="176" text-anchor="end" font-size="14" font-weight="600" fill="#cbd5e1">CairoSVG</text>
+  <rect x="230" y="162" width="21" height="20" rx="5" fill="#fb923c"/>
+  <text x="722" y="176" text-anchor="end" font-size="14" font-weight="600" fill="#fb923c">2.0 ms</text>
+
+  <text x="215" y="204" text-anchor="end" font-size="14" font-weight="600" fill="#cbd5e1">EchoSVG</text>
+  <rect x="230" y="190" width="95" height="20" rx="5" fill="#f87171"/>
+  <text x="722" y="204" text-anchor="end" font-size="14" font-weight="600" fill="#f87171">9.0 ms</text>
+
+  <line x1="30" y1="218" x2="730" y2="218" stroke="#1e293b" stroke-width="1"/>
+
+  <!-- ═══════════════════ Group 2: Gradients + transforms ═══════════════════ -->
+  <text x="230" y="236" font-size="11" font-weight="500" fill="#64748b" letter-spacing="0.3">Gradients + transforms</text>
+
+  <text x="215" y="264" text-anchor="end" font-size="14" font-weight="600" fill="#cbd5e1">JairoSVG</text>
+  <rect x="230" y="250" width="38" height="20" rx="5" fill="#4ade80"/>
+  <text x="722" y="264" text-anchor="end" font-size="14" font-weight="600" fill="#4ade80">3.6 ms</text>
+
+  <text x="215" y="292" text-anchor="end" font-size="14" font-weight="600" fill="#cbd5e1">CairoSVG</text>
+  <rect x="230" y="278" width="56" height="20" rx="5" fill="#fb923c"/>
+  <text x="722" y="292" text-anchor="end" font-size="14" font-weight="600" fill="#fb923c">5.3 ms</text>
+
+  <text x="215" y="320" text-anchor="end" font-size="14" font-weight="600" fill="#cbd5e1">EchoSVG</text>
+  <rect x="230" y="306" width="372" height="20" rx="5" fill="#f87171"/>
+  <text x="722" y="320" text-anchor="end" font-size="14" font-weight="600" fill="#f87171">35.1 ms</text>
+
+  <line x1="30" y1="334" x2="730" y2="334" stroke="#1e293b" stroke-width="1"/>
+
+  <!-- ═══════════════════ Group 3: Complex paths + text ═══════════════════ -->
+  <text x="230" y="352" font-size="11" font-weight="500" fill="#64748b" letter-spacing="0.3">Complex paths + text</text>
+
+  <text x="215" y="380" text-anchor="end" font-size="14" font-weight="600" fill="#cbd5e1">JairoSVG</text>
+  <rect x="230" y="366" width="57" height="20" rx="5" fill="#4ade80"/>
+  <text x="722" y="380" text-anchor="end" font-size="14" font-weight="600" fill="#4ade80">5.4 ms</text>
+
+  <text x="215" y="408" text-anchor="end" font-size="14" font-weight="600" fill="#cbd5e1">CairoSVG</text>
+  <rect x="230" y="394" width="67" height="20" rx="5" fill="#fb923c"/>
+  <text x="722" y="408" text-anchor="end" font-size="14" font-weight="600" fill="#fb923c">6.3 ms</text>
+
+  <text x="215" y="436" text-anchor="end" font-size="14" font-weight="600" fill="#cbd5e1">EchoSVG</text>
+  <rect x="230" y="422" width="311" height="20" rx="5" fill="#f87171"/>
+  <text x="722" y="436" text-anchor="end" font-size="14" font-weight="600" fill="#f87171">29.4 ms</text>
+
+  <line x1="30" y1="450" x2="730" y2="450" stroke="#1e293b" stroke-width="1"/>
+
+  <!-- ═══════════════════ Group 4: Defs + use + clipPath ═══════════════════ -->
+  <text x="230" y="468" font-size="11" font-weight="500" fill="#64748b" letter-spacing="0.3">Defs + use + clipPath</text>
+
+  <text x="215" y="496" text-anchor="end" font-size="14" font-weight="600" fill="#cbd5e1">JairoSVG</text>
+  <rect x="230" y="482" width="43" height="20" rx="5" fill="#4ade80"/>
+  <text x="722" y="496" text-anchor="end" font-size="14" font-weight="600" fill="#4ade80">4.1 ms</text>
+
+  <text x="215" y="524" text-anchor="end" font-size="14" font-weight="600" fill="#cbd5e1">CairoSVG</text>
+  <rect x="230" y="510" width="92" height="20" rx="5" fill="#fb923c"/>
+  <text x="722" y="524" text-anchor="end" font-size="14" font-weight="600" fill="#fb923c">8.7 ms</text>
+
+  <text x="215" y="552" text-anchor="end" font-size="14" font-weight="600" fill="#cbd5e1">EchoSVG</text>
+  <rect x="230" y="538" width="380" height="20" rx="5" fill="#f87171"/>
+  <text x="722" y="552" text-anchor="end" font-size="14" font-weight="600" fill="#f87171">35.9 ms</text>
+
+  <line x1="30" y1="566" x2="730" y2="566" stroke="#1e293b" stroke-width="1"/>
+
+  <!-- ═══════════════════ Group 5: Markers + dashed strokes ═══════════════════ -->
+  <text x="230" y="584" font-size="11" font-weight="500" fill="#64748b" letter-spacing="0.3">Markers + dashed strokes</text>
+
+  <text x="215" y="612" text-anchor="end" font-size="14" font-weight="600" fill="#cbd5e1">JairoSVG</text>
+  <rect x="230" y="598" width="47" height="20" rx="5" fill="#4ade80"/>
+  <text x="722" y="612" text-anchor="end" font-size="14" font-weight="600" fill="#4ade80">4.4 ms</text>
+
+  <text x="215" y="640" text-anchor="end" font-size="14" font-weight="600" fill="#cbd5e1">CairoSVG</text>
+  <rect x="230" y="626" width="55" height="20" rx="5" fill="#fb923c"/>
+  <text x="722" y="640" text-anchor="end" font-size="14" font-weight="600" fill="#fb923c">5.2 ms</text>
+
+  <text x="215" y="668" text-anchor="end" font-size="14" font-weight="600" fill="#cbd5e1">EchoSVG</text>
+  <rect x="230" y="654" width="270" height="20" rx="5" fill="#f87171"/>
+  <text x="722" y="668" text-anchor="end" font-size="14" font-weight="600" fill="#f87171">25.5 ms</text>
+
+</svg>

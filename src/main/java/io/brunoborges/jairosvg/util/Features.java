@@ -3,8 +3,6 @@ package io.brunoborges.jairosvg.util;
 import java.util.Locale;
 import java.util.Set;
 
-import org.w3c.dom.Element;
-
 /**
  * SVG conditional processing helpers. Port of CairoSVG features.py
  */
@@ -47,16 +45,12 @@ public final class Features {
     }
 
     /** Check the node matches the conditional processing attributes. */
-    public static boolean matchFeatures(Element node) {
-        if (node == null)
-            return true;
-        if (node.hasAttribute("requiredExtensions"))
+    public static boolean matchFeatures(String requiredFeatures, String requiredExtensions, String systemLanguage) {
+        if (requiredExtensions != null && !requiredExtensions.isEmpty())
             return false;
-        String features = node.getAttribute("requiredFeatures");
-        if (!features.isEmpty() && !hasFeatures(features))
+        if (requiredFeatures != null && !requiredFeatures.isEmpty() && !hasFeatures(requiredFeatures))
             return false;
-        String languages = node.getAttribute("systemLanguage");
-        if (!languages.isEmpty() && !supportLanguages(languages))
+        if (systemLanguage != null && !systemLanguage.isEmpty() && !supportLanguages(systemLanguage))
             return false;
         return true;
     }

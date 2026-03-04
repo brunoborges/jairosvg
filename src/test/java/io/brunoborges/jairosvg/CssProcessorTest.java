@@ -1,11 +1,10 @@
 package io.brunoborges.jairosvg;
 
 import io.brunoborges.jairosvg.css.CssProcessor;
+import io.brunoborges.jairosvg.dom.Node;
 
 import org.junit.jupiter.api.Test;
-import org.w3c.dom.Element;
 
-import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -33,7 +32,7 @@ class CssProcessorTest {
 
     @Test
     void testCssPseudoClassesAndPseudoElementsSelectorMatching() throws Exception {
-        Element root = parseSvgElement("""
+        Node root = parseToNodeTree("""
                 <svg xmlns="http://www.w3.org/2000/svg">
                   <g>
                     <rect id="first"/>
@@ -42,10 +41,11 @@ class CssProcessorTest {
                   </g>
                 </svg>
                 """);
-        var rects = root.getElementsByTagNameNS("http://www.w3.org/2000/svg", "rect");
-        Element first = (Element) rects.item(0);
-        Element second = (Element) rects.item(1);
-        Element third = (Element) rects.item(2);
+        // Navigate: root(svg) -> g -> children
+        Node g = root.children.get(0);
+        Node first = g.children.get(0);
+        Node second = g.children.get(1);
+        Node third = g.children.get(2);
 
         assertTrue(CssProcessor.matchesSelector(first, "rect:first-child"));
         assertFalse(CssProcessor.matchesSelector(second, "rect:first-child"));
@@ -63,7 +63,7 @@ class CssProcessorTest {
 
     @Test
     void testCssPseudoClassesInStylesheetApplication() throws Exception {
-        Element root = parseSvgElement("""
+        Node root = parseToNodeTree("""
                 <svg xmlns="http://www.w3.org/2000/svg">
                   <g>
                     <rect id="first"/>
@@ -72,10 +72,10 @@ class CssProcessorTest {
                   </g>
                 </svg>
                 """);
-        var rects = root.getElementsByTagNameNS("http://www.w3.org/2000/svg", "rect");
-        Element first = (Element) rects.item(0);
-        Element second = (Element) rects.item(1);
-        Element third = (Element) rects.item(2);
+        Node g = root.children.get(0);
+        Node first = g.children.get(0);
+        Node second = g.children.get(1);
+        Node third = g.children.get(2);
 
         List<CssProcessor.StyleRule> rules = new ArrayList<>();
         CssProcessor.parseStylesheet("""
@@ -117,11 +117,8 @@ class CssProcessorTest {
         assertEquals("rgb(255, 0, 0)", CssProcessor.resolveCustomProperties(attributes.get("stroke"), attributes));
     }
 
-    private static Element parseSvgElement(String xml) throws Exception {
-        var factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        var builder = factory.newDocumentBuilder();
-        var document = builder.parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
-        return document.getDocumentElement();
+    /** Parse SVG string into a raw Node tree (without CSS application). */
+    private static Node parseToNodeTree(String xml) throws Exception {
+        return Node.parseTree(xml.getBytes(StandardCharsets.UTF_8));
     }
 }

@@ -5,12 +5,12 @@ import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
+import org.xml.sax.helpers.DefaultHandler;
 
 import io.brunoborges.jairosvg.css.CssProcessor;
 import io.brunoborges.jairosvg.util.Features;
@@ -23,31 +23,31 @@ import io.brunoborges.jairosvg.util.UrlHelper;
  */
 public class Node {
 
-    private static final DocumentBuilderFactory SAFE_FACTORY;
-    private static final DocumentBuilderFactory UNSAFE_FACTORY;
+    private static final SAXParserFactory SAFE_SAX_FACTORY;
+    private static final SAXParserFactory UNSAFE_SAX_FACTORY;
     static {
-        SAFE_FACTORY = DocumentBuilderFactory.newInstance();
-        SAFE_FACTORY.setNamespaceAware(true);
+        SAFE_SAX_FACTORY = SAXParserFactory.newInstance();
+        SAFE_SAX_FACTORY.setNamespaceAware(true);
         try {
-            SAFE_FACTORY.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            SAFE_FACTORY.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            SAFE_SAX_FACTORY.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            SAFE_SAX_FACTORY.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
         } catch (Exception e) {
             throw new ExceptionInInitializerError(e);
         }
-        UNSAFE_FACTORY = DocumentBuilderFactory.newInstance();
-        UNSAFE_FACTORY.setNamespaceAware(true);
+        UNSAFE_SAX_FACTORY = SAXParserFactory.newInstance();
+        UNSAFE_SAX_FACTORY.setNamespaceAware(true);
     }
 
-    private static final ThreadLocal<DocumentBuilder> SAFE_BUILDER = ThreadLocal.withInitial(() -> {
+    private static final ThreadLocal<SAXParser> SAFE_PARSER = ThreadLocal.withInitial(() -> {
         try {
-            return SAFE_FACTORY.newDocumentBuilder();
+            return SAFE_SAX_FACTORY.newSAXParser();
         } catch (Exception e) {
             throw new ExceptionInInitializerError(e);
         }
     });
-    private static final ThreadLocal<DocumentBuilder> UNSAFE_BUILDER = ThreadLocal.withInitial(() -> {
+    private static final ThreadLocal<SAXParser> UNSAFE_PARSER = ThreadLocal.withInitial(() -> {
         try {
-            return UNSAFE_FACTORY.newDocumentBuilder();
+            return UNSAFE_SAX_FACTORY.newSAXParser();
         } catch (Exception e) {
             throw new ExceptionInInitializerError(e);
         }
@@ -66,7 +66,6 @@ public class Node {
     public Node parent;
     public boolean root = false;
     public List<Node> children;
-    public Element xmlTree;
     public double imageWidth;
     public double imageHeight;
     public List<Object> vertices;
@@ -74,7 +73,7 @@ public class Node {
     public UrlHelper.UrlFetcher urlFetcher;
 
     private final Map<String, String> attributes;
-    private List<CssProcessor.StyleRule> styleRules;
+    private Set<String> elementAttrKeys;
 
     /**
      * Lightweight constructor for programmatic node creation (e.g. SVG font glyph
@@ -85,28 +84,24 @@ public class Node {
         this.children = new ArrayList<>();
     }
 
-    /** Create a Node from a DOM Element. */
-    public Node(Element element, Node parent, List<CssProcessor.StyleRule> styleRules, UrlHelper.UrlFetcher urlFetcher,
+    /**
+     * Create a raw Node from SAX-parsed data. Inherits attributes from parent but
+     * does NOT apply CSS. Call {@link #applyCss} after the full tree is built.
+     */
+    Node(String tag, String text, Map<String, String> elementAttrs, Node parent, UrlHelper.UrlFetcher urlFetcher,
             boolean unsafe) {
         int parentAttrCount = parent != null ? parent.attributes.size() : 0;
-        int elementAttrCount = element.getAttributes().getLength();
+        int elementAttrCount = elementAttrs != null ? elementAttrs.size() : 0;
         this.attributes = LinkedHashMap.newLinkedHashMap(parentAttrCount + elementAttrCount + 8);
 
-        this.xmlTree = element;
+        this.tag = tag;
+        this.text = text;
         this.urlFetcher = urlFetcher;
         this.unsafe = unsafe;
-        this.styleRules = styleRules;
+        this.children = new ArrayList<>();
 
-        // Determine tag name (strip namespace for SVG elements)
-        String nsUri = element.getNamespaceURI();
-        if (nsUri == null || "http://www.w3.org/2000/svg".equals(nsUri) || nsUri.isEmpty()) {
-            this.tag = element.getLocalName() != null ? element.getLocalName() : element.getTagName();
-        } else {
-            this.tag = "{" + nsUri + "}"
-                    + (element.getLocalName() != null ? element.getLocalName() : element.getTagName());
-        }
-
-        this.text = getDirectText(element);
+        // Remember element's own attribute keys for re-inheritance in applyCss
+        this.elementAttrKeys = elementAttrs != null ? Set.copyOf(elementAttrs.keySet()) : Set.of();
 
         // Inherit from parent
         if (parent != null) {
@@ -119,28 +114,41 @@ public class Node {
             }
         }
 
-        // Copy element attributes
-        var attrs = element.getAttributes();
-        for (int i = 0; i < attrs.getLength(); i++) {
-            var attr = attrs.item(i);
-            String name = attr.getNodeName();
-            if (name.startsWith("xmlns"))
-                continue;
-            this.attributes.put(name, attr.getNodeValue());
+        // Copy element attributes (overrides inherited)
+        if (elementAttrs != null) {
+            this.attributes.putAll(elementAttrs);
+        }
+    }
+
+    /**
+     * Apply CSS rules, inline styles, custom properties, currentColor, and inherit
+     * resolution. Must be called after the full tree is built so that sibling-based
+     * CSS selectors (:first-child, :last-child, :nth-child) work correctly.
+     */
+    void applyCss(List<CssProcessor.StyleRule> styleRules) {
+        // Re-inherit from parent to pick up CSS-applied attributes (e.g. custom
+        // properties set via stylesheet rules on an ancestor)
+        if (parent != null) {
+            for (var entry : parent.attributes.entrySet()) {
+                String key = entry.getKey();
+                if (!NOT_INHERITED_ATTRIBUTES.contains(key) && !elementAttrKeys.contains(key)) {
+                    this.attributes.put(key, entry.getValue());
+                }
+            }
         }
 
         // Apply CSS rules from stylesheets (non-important first, important after inline
         // styles)
         CssProcessor.MatchResult matchResult = null;
-        if (styleRules != null) {
-            matchResult = CssProcessor.getAllMatchingDeclarations(element, styleRules);
+        if (styleRules != null && !styleRules.isEmpty()) {
+            matchResult = CssProcessor.getAllMatchingDeclarations(this, styleRules);
             for (var decl : matchResult.normal()) {
                 this.attributes.put(decl.name(), decl.value());
             }
         }
 
         // Apply inline style
-        String style = element.getAttribute("style");
+        String style = this.attributes.get("style");
         if (style != null && !style.isEmpty()) {
             var parsed = CssProcessor.parseDeclarations(style);
             for (var decl : parsed[0]) {
@@ -194,32 +202,13 @@ public class Node {
             }
         }
 
-        // Build children
-        var childNodes = element.getChildNodes();
-        this.children = new ArrayList<>(childNodes.getLength());
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            if (childNodes.item(i) instanceof Element childElem) {
-                if (Features.matchFeatures(childElem)) {
-                    this.children.add(new Node(childElem, this, styleRules, urlFetcher, unsafe));
-                    if ("switch".equals(this.tag))
-                        break;
-                }
-            }
-        }
-    }
+        // Free element attribute keys (no longer needed after CSS application)
+        this.elementAttrKeys = null;
 
-    /** Get direct text content of element (not from children). */
-    private static String getDirectText(Element element) {
-        var childNodes = element.getChildNodes();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            if (childNodes.item(i).getNodeType() == org.w3c.dom.Node.TEXT_NODE
-                    || childNodes.item(i).getNodeType() == org.w3c.dom.Node.CDATA_SECTION_NODE) {
-                sb.append(childNodes.item(i).getTextContent());
-            }
+        // Recurse into children
+        for (Node child : this.children) {
+            child.applyCss(styleRules);
         }
-        String result = sb.toString();
-        return result.isEmpty() ? null : result;
     }
 
     public String get(String key) {
@@ -283,28 +272,39 @@ public class Node {
             bytestring = new GZIPInputStream(new ByteArrayInputStream(bytestring)).readAllBytes();
         }
 
-        DocumentBuilder builder = unsafe ? UNSAFE_BUILDER.get() : SAFE_BUILDER.get();
-        Document doc = builder.parse(new InputSource(new ByteArrayInputStream(bytestring)));
-        Element root = doc.getDocumentElement();
-
         UrlHelper.UrlFetcher fetcher = urlFetcher;
         if (fetcher == null) {
             fetcher = unsafe ? UrlHelper::fetch : UrlHelper::safeFetch;
         }
 
-        // Parse external CSS stylesheets from <?xml-stylesheet?> processing
-        // instructions
+        // Parse SVG via SAX directly into Node tree
+        SaxTreeBuilder handler = new SaxTreeBuilder(fetcher, unsafe);
+        SAXParser parser = unsafe ? UNSAFE_PARSER.get() : SAFE_PARSER.get();
+        try {
+            parser.parse(new InputSource(new ByteArrayInputStream(bytestring)), handler);
+        } finally {
+            parser.reset();
+        }
+
+        Node tree = handler.getRoot();
+        if (tree == null) {
+            throw new IllegalArgumentException("Empty SVG document.");
+        }
+        tree.url = url;
+        tree.root = true;
+
+        // Parse CSS stylesheets from <?xml-stylesheet?> processing instructions
         List<CssProcessor.StyleRule> styleRules = new ArrayList<>();
-        if (unsafe) {
-            styleRules.addAll(CssProcessor.parseExternalStylesheets(doc, fetcher, url));
+        if (unsafe && !handler.getStylesheetPIs().isEmpty()) {
+            styleRules.addAll(CssProcessor.parseExternalStylesheets(handler.getStylesheetPIs(), fetcher, url));
         }
 
         // Parse CSS stylesheets from <style> elements
-        styleRules.addAll(CssProcessor.parseStylesheets(root));
+        styleRules.addAll(CssProcessor.parseStylesheets(tree));
 
-        Node tree = new Node(root, null, styleRules, fetcher, unsafe);
-        tree.url = url;
-        tree.root = true;
+        // Apply CSS to the full tree
+        tree.applyCss(styleRules);
+
         return tree;
     }
 
@@ -314,5 +314,121 @@ public class Node {
 
     public static Node parseTree(byte[] bytestring) throws Exception {
         return parseTree(bytestring, null, null, false);
+    }
+
+    // ---------- SAX Handler ----------
+
+    /** SAX ContentHandler that builds a Node tree directly from SAX events. */
+    private static class SaxTreeBuilder extends DefaultHandler {
+
+        private final UrlHelper.UrlFetcher urlFetcher;
+        private final boolean unsafe;
+        private Node root;
+        private final Deque<Node> stack = new ArrayDeque<>();
+        private final Deque<StringBuilder> textStack = new ArrayDeque<>();
+        private final List<String> stylesheetPIs = new ArrayList<>();
+        // Track skipping depth for elements that fail feature matching
+        private int skipDepth = 0;
+
+        SaxTreeBuilder(UrlHelper.UrlFetcher urlFetcher, boolean unsafe) {
+            this.urlFetcher = urlFetcher;
+            this.unsafe = unsafe;
+        }
+
+        Node getRoot() {
+            return root;
+        }
+
+        List<String> getStylesheetPIs() {
+            return stylesheetPIs;
+        }
+
+        @Override
+        public void processingInstruction(String target, String data) {
+            if ("xml-stylesheet".equals(target)) {
+                stylesheetPIs.add(data);
+            }
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes saxAttrs) {
+            if (skipDepth > 0) {
+                skipDepth++;
+                return;
+            }
+
+            // Check features using raw SAX attributes
+            String reqFeatures = saxAttrs.getValue("requiredFeatures");
+            String reqExtensions = saxAttrs.getValue("requiredExtensions");
+            String sysLanguage = saxAttrs.getValue("systemLanguage");
+            if (!Features.matchFeatures(reqFeatures, reqExtensions, sysLanguage)) {
+                skipDepth = 1;
+                return;
+            }
+
+            // Determine tag name (strip SVG namespace, prefix others)
+            String tag;
+            if (uri == null || "http://www.w3.org/2000/svg".equals(uri) || uri.isEmpty()) {
+                tag = localName != null && !localName.isEmpty() ? localName : qName;
+            } else {
+                String name = localName != null && !localName.isEmpty() ? localName : qName;
+                tag = "{" + uri + "}" + name;
+            }
+
+            // Extract attributes (skip xmlns declarations)
+            Map<String, String> attrs = LinkedHashMap.newLinkedHashMap(saxAttrs.getLength());
+            for (int i = 0; i < saxAttrs.getLength(); i++) {
+                String name = saxAttrs.getQName(i);
+                if (name.startsWith("xmlns"))
+                    continue;
+                attrs.put(name, saxAttrs.getValue(i));
+            }
+
+            Node parent = stack.isEmpty() ? null : stack.peek();
+            Node node = new Node(tag, null, attrs, parent, urlFetcher, unsafe);
+
+            if (parent != null) {
+                // For <switch> elements, only add the first matching child
+                if (!"switch".equals(parent.tag) || parent.children.isEmpty()) {
+                    parent.children.add(node);
+                } else {
+                    // Skip remaining children of <switch> after first match
+                    skipDepth = 1;
+                    return;
+                }
+            }
+
+            if (root == null) {
+                root = node;
+            }
+
+            stack.push(node);
+            textStack.push(new StringBuilder());
+        }
+
+        @Override
+        public void characters(char[] ch, int start, int length) {
+            if (skipDepth > 0 || textStack.isEmpty())
+                return;
+            textStack.peek().append(ch, start, length);
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) {
+            if (skipDepth > 0) {
+                skipDepth--;
+                return;
+            }
+
+            if (stack.isEmpty())
+                return;
+
+            Node node = stack.pop();
+            StringBuilder textBuf = textStack.pop();
+
+            // Set direct text content (only text before first child element)
+            String text = textBuf.toString();
+            node.text = text.isEmpty() ? null : text;
+        }
     }
 }

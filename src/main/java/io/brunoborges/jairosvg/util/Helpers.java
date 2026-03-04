@@ -401,15 +401,6 @@ public final class Helpers {
         node.set("rotate", sb.toString());
     }
 
-    /** Flatten text of a node and its children. */
-    public static String flatten(org.w3c.dom.Element node) {
-        StringBuilder sb = new StringBuilder();
-        if (node.getTextContent() != null) {
-            sb.append(node.getTextContent());
-        }
-        return sb.toString();
-    }
-
     /**
      * Check if a string contains only plain numeric characters (digits, dot, minus,
      * plus, e/E).

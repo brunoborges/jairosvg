@@ -159,7 +159,8 @@ class ShapeRenderingTest {
                 </svg>
                 """.formatted(imageHref);
 
-        BufferedImage image = ImageIO.read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
+        BufferedImage image = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
         BufferedImage opaqueImage = ImageIO
                 .read(new ByteArrayInputStream(JairoSVG.svg2png(opaqueSvg.getBytes(StandardCharsets.UTF_8))));
         int pixel = image.getRGB(5, 5);

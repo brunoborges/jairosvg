@@ -3,6 +3,7 @@ package io.brunoborges.jairosvg.css;
 import java.util.*;
 import java.util.regex.*;
 
+import io.brunoborges.jairosvg.dom.Node;
 import io.brunoborges.jairosvg.util.UrlHelper;
 
 /**
@@ -76,47 +77,42 @@ public final class CssProcessor {
         return result;
     }
 
-    /** Extract stylesheets from <style> elements in the SVG tree. */
-    public static List<StyleRule> parseStylesheets(org.w3c.dom.Element root) {
+    /** Extract stylesheets from &lt;style&gt; elements in the Node tree. */
+    public static List<StyleRule> parseStylesheets(Node root) {
         List<StyleRule> rules = new ArrayList<>();
         extractStyleElements(root, rules);
         return rules;
     }
 
     /**
-     * Extract external stylesheets referenced via {@code <?xml-stylesheet?>}
-     * processing instructions. Only loads stylesheets with {@code type="text/css"}.
+     * Parse external stylesheet data from captured {@code <?xml-stylesheet?>}
+     * processing instruction data strings. Only loads stylesheets with
+     * {@code type="text/css"}.
      */
-    public static List<StyleRule> parseExternalStylesheets(org.w3c.dom.Document doc, UrlHelper.UrlFetcher fetcher,
+    public static List<StyleRule> parseExternalStylesheets(List<String> piDataList, UrlHelper.UrlFetcher fetcher,
             String baseUrl) {
         List<StyleRule> rules = new ArrayList<>();
-        var childNodes = doc.getChildNodes();
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            var node = childNodes.item(i);
-            if (node.getNodeType() == org.w3c.dom.Node.PROCESSING_INSTRUCTION_NODE
-                    && "xml-stylesheet".equals(node.getNodeName())) {
-                var pi = (org.w3c.dom.ProcessingInstruction) node;
-                var attrs = parsePseudoAttributes(pi.getData());
-                String type = attrs.getOrDefault("type", "");
-                String normalizedType = "";
-                if (type != null) {
-                    int semicolonIndex = type.indexOf(';');
-                    if (semicolonIndex >= 0) {
-                        type = type.substring(0, semicolonIndex);
-                    }
-                    normalizedType = type.trim().toLowerCase(java.util.Locale.ROOT);
+        for (String piData : piDataList) {
+            var attrs = parsePseudoAttributes(piData);
+            String type = attrs.getOrDefault("type", "");
+            String normalizedType = "";
+            if (type != null) {
+                int semicolonIndex = type.indexOf(';');
+                if (semicolonIndex >= 0) {
+                    type = type.substring(0, semicolonIndex);
                 }
-                String href = attrs.get("href");
-                if ("text/css".equals(normalizedType) && href != null && !href.isEmpty()) {
-                    try {
-                        String resolvedUrl = resolveHref(href, baseUrl);
-                        byte[] cssBytes = fetcher.fetch(resolvedUrl, "text/css");
-                        if (cssBytes != null && cssBytes.length > 0) {
-                            parseStylesheet(new String(cssBytes, java.nio.charset.StandardCharsets.UTF_8), rules);
-                        }
-                    } catch (Exception e) {
-                        // Skip stylesheets that cannot be loaded
+                normalizedType = type.trim().toLowerCase(java.util.Locale.ROOT);
+            }
+            String href = attrs.get("href");
+            if ("text/css".equals(normalizedType) && href != null && !href.isEmpty()) {
+                try {
+                    String resolvedUrl = resolveHref(href, baseUrl);
+                    byte[] cssBytes = fetcher.fetch(resolvedUrl, "text/css");
+                    if (cssBytes != null && cssBytes.length > 0) {
+                        parseStylesheet(new String(cssBytes, java.nio.charset.StandardCharsets.UTF_8), rules);
                     }
+                } catch (Exception e) {
+                    // Skip stylesheets that cannot be loaded
                 }
             }
         }
@@ -147,21 +143,14 @@ public final class CssProcessor {
     public record StyleRule(String selector, List<Declaration> declarations, boolean important) {
     }
 
-    private static void extractStyleElements(org.w3c.dom.Element element, List<StyleRule> rules) {
-        var childNodes = element.getChildNodes();
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            if (childNodes.item(i) instanceof org.w3c.dom.Element child) {
-                String localName = child.getLocalName();
-                if (localName == null)
-                    localName = child.getTagName();
-                if ("style".equals(localName)) {
-                    String cssText = child.getTextContent();
-                    if (cssText != null) {
-                        parseStylesheet(cssText, rules);
-                    }
+    private static void extractStyleElements(Node node, List<StyleRule> rules) {
+        for (Node child : node.children) {
+            if ("style".equals(child.tag)) {
+                if (child.text != null) {
+                    parseStylesheet(child.text, rules);
                 }
-                extractStyleElements(child, rules);
             }
+            extractStyleElements(child, rules);
         }
     }
 
@@ -193,28 +182,28 @@ public final class CssProcessor {
         }
     }
 
-    /** Check if an element matches a simple CSS selector. */
-    public static boolean matchesSelector(org.w3c.dom.Element element, String selector) {
+    /** Check if a Node matches a simple CSS selector. */
+    public static boolean matchesSelector(Node node, String selector) {
         selector = selector.strip();
         selector = PSEUDO_ELEMENT_PATTERN.matcher(selector).replaceAll("").strip();
 
         Matcher notMatcher = NOT_PATTERN.matcher(selector);
         while (notMatcher.find()) {
             String negated = notMatcher.group(1).strip();
-            if (negated.isEmpty() || matchesSelector(element, negated))
+            if (negated.isEmpty() || matchesSelector(node, negated))
                 return false;
             selector = notMatcher.replaceFirst("").strip();
             notMatcher = NOT_PATTERN.matcher(selector);
         }
 
         if (FIRST_CHILD_PATTERN.matcher(selector).find()) {
-            if (!isFirstChild(element))
+            if (!isFirstChild(node))
                 return false;
             selector = FIRST_CHILD_PATTERN.matcher(selector).replaceAll("").strip();
         }
 
         if (LAST_CHILD_PATTERN.matcher(selector).find()) {
-            if (!isLastChild(element))
+            if (!isLastChild(node))
                 return false;
             selector = LAST_CHILD_PATTERN.matcher(selector).replaceAll("").strip();
         }
@@ -222,7 +211,7 @@ public final class CssProcessor {
         Matcher nthMatcher = NTH_CHILD_PATTERN.matcher(selector);
         while (nthMatcher.find()) {
             String nthExpr = nthMatcher.group(1).strip();
-            if (!matchesNthChild(element, nthExpr))
+            if (!matchesNthChild(node, nthExpr))
                 return false;
             selector = nthMatcher.replaceFirst("").strip();
             nthMatcher = NTH_CHILD_PATTERN.matcher(selector);
@@ -236,19 +225,17 @@ public final class CssProcessor {
             return true;
 
         // Type selector
-        String localName = element.getLocalName();
-        if (localName == null)
-            localName = element.getTagName();
+        String localName = node.tag;
 
         // ID selector
         if (selector.startsWith("#")) {
-            String id = element.getAttribute("id");
+            String id = node.get("id");
             return selector.substring(1).equals(id);
         }
 
         // Class selector
         if (selector.startsWith(".")) {
-            String className = element.getAttribute("class");
+            String className = node.get("class");
             if (className != null) {
                 for (String cls : WHITESPACE.split(className)) {
                     if (selector.substring(1).equals(cls))
@@ -265,7 +252,7 @@ public final class CssProcessor {
             String cls = selector.substring(dotIdx + 1);
             if (!type.isEmpty() && !type.equals(localName))
                 return false;
-            String className = element.getAttribute("class");
+            String className = node.get("class");
             if (className == null)
                 return false;
             for (String c : WHITESPACE.split(className)) {
@@ -281,52 +268,41 @@ public final class CssProcessor {
             String id = selector.substring(hashIdx + 1);
             if (!type.isEmpty() && !type.equals(localName))
                 return false;
-            return id.equals(element.getAttribute("id"));
+            return id.equals(node.get("id"));
         }
 
         // Simple type selector
         return selector.equals(localName);
     }
 
-    private static boolean isFirstChild(org.w3c.dom.Element element) {
-        var parent = element.getParentNode();
-        if (parent == null)
+    private static boolean isFirstChild(Node node) {
+        if (node.parent == null)
             return false;
-        var siblings = parent.getChildNodes();
-        for (int i = 0; i < siblings.getLength(); i++) {
-            if (siblings.item(i) instanceof org.w3c.dom.Element sibling) {
-                return sibling == element;
-            }
+        for (Node sibling : node.parent.children) {
+            return sibling == node;
         }
         return false;
     }
 
-    private static boolean isLastChild(org.w3c.dom.Element element) {
-        var parent = element.getParentNode();
-        if (parent == null)
+    private static boolean isLastChild(Node node) {
+        if (node.parent == null)
             return false;
-        var siblings = parent.getChildNodes();
-        for (int i = siblings.getLength() - 1; i >= 0; i--) {
-            if (siblings.item(i) instanceof org.w3c.dom.Element sibling) {
-                return sibling == element;
-            }
+        var siblings = node.parent.children;
+        for (int i = siblings.size() - 1; i >= 0; i--) {
+            return siblings.get(i) == node;
         }
         return false;
     }
 
-    private static boolean matchesNthChild(org.w3c.dom.Element element, String expr) {
-        var parent = element.getParentNode();
-        if (parent == null)
+    private static boolean matchesNthChild(Node node, String expr) {
+        if (node.parent == null)
             return false;
 
         int index = 0;
-        var siblings = parent.getChildNodes();
-        for (int i = 0; i < siblings.getLength(); i++) {
-            if (siblings.item(i) instanceof org.w3c.dom.Element sibling) {
-                index++;
-                if (sibling == element)
-                    break;
-            }
+        for (Node sibling : node.parent.children) {
+            index++;
+            if (sibling == node)
+                break;
         }
         if (index == 0)
             return false;
@@ -371,23 +347,22 @@ public final class CssProcessor {
     }
 
     /** Get all matching CSS declarations in a single pass through the rules. */
-    public static MatchResult getAllMatchingDeclarations(org.w3c.dom.Element element, List<StyleRule> rules) {
+    public static MatchResult getAllMatchingDeclarations(Node node, List<StyleRule> rules) {
         List<Declaration> normal = new ArrayList<>();
         List<Declaration> important = new ArrayList<>();
         for (StyleRule rule : rules) {
-            if (matchesSelector(element, rule.selector())) {
+            if (matchesSelector(node, rule.selector())) {
                 (rule.important() ? important : normal).addAll(rule.declarations());
             }
         }
         return new MatchResult(normal, important);
     }
 
-    /** Get CSS declarations that apply to this element from a list of rules. */
-    public static List<Declaration> getMatchingDeclarations(org.w3c.dom.Element element, List<StyleRule> rules,
-            boolean important) {
+    /** Get CSS declarations that apply to this node from a list of rules. */
+    public static List<Declaration> getMatchingDeclarations(Node node, List<StyleRule> rules, boolean important) {
         List<Declaration> result = new ArrayList<>();
         for (StyleRule rule : rules) {
-            if (rule.important() == important && matchesSelector(element, rule.selector())) {
+            if (rule.important() == important && matchesSelector(node, rule.selector())) {
                 result.addAll(rule.declarations());
             }
         }
