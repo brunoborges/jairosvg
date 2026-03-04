@@ -5,7 +5,7 @@
       "description": "SVG to PNG/PDF/PS converter - Java port of CairoSVG"
     },
     "benchmark": {
-      "script-ref": "benchmark.java",
+      "script-ref": "comparison/benchmark.java",
       "description": "SVG → PNG benchmark: JairoSVG vs EchoSVG vs CairoSVG"
     }
   }

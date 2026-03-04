@@ -40,7 +40,7 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
-          jbang benchmark.java | tee /tmp/benchmark-output.txt
+          jbang comparison/benchmark.java | tee /tmp/benchmark-output.txt
 
       - name: Post Summary
         run: |

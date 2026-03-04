@@ -33,7 +33,7 @@ SVG → PNG conversion (lower is better):
 
 *JairoSVG is 5-10x faster than EchoSVG and 1.2-2.2x faster than CairoSVG's native C backend.*
 
-Run the benchmark yourself: `jbang benchmark.java`
+Run the benchmark yourself: `jbang comparison/benchmark.java`
 
 ## Installation
 

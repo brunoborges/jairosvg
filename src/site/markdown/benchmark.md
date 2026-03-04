@@ -45,7 +45,7 @@ Prerequisites: [JBang](https://www.jbang.dev/), Python 3 with CairoSVG (`pip ins
 ./mvnw install -DskipTests
 
 # Run benchmark
-jbang benchmark.java
+jbang comparison/benchmark.java
 ```
 
-The benchmark script is at the project root: [`benchmark.java`](https://github.com/brunoborges/jairosvg/blob/main/benchmark.java).
+The benchmark script is in the comparison folder: [`comparison/benchmark.java`](https://github.com/brunoborges/jairosvg/blob/main/comparison/benchmark.java).

@@ -30,7 +30,7 @@ Requires **Java 25** with preview features enabled. Uses the Maven wrapper (`./m
 ./mvnw install -DskipTests
 
 # Run benchmark (requires jbang + local install)
-jbang benchmark.java
+jbang comparison/benchmark.java
 
 # Generate comparison PNGs (requires jbang + local install + python3 cairosvg)
 jbang comparison/generate.java
