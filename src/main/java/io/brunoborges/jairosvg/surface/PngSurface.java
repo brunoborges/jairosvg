@@ -23,11 +23,11 @@ public final class PngSurface extends Surface {
         PNG_WRITER = writers.next();
     }
 
-    private int compressionLevel = -1; // -1 = default (JDK default is ~6)
+    private int compressionLevel = 6; // Match CairoSVG/libpng default (Z_DEFAULT_COMPRESSION)
 
     /**
      * Set PNG compression level (0-9). 0 = no compression (fastest), 9 = max
-     * compression (smallest). Default uses the JDK default (~6).
+     * compression (smallest). Default is 6, matching CairoSVG/libpng.
      */
     public void setCompressionLevel(int level) {
         if (level < 0 || level > 9) {
