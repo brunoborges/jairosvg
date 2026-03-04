@@ -28,10 +28,12 @@ jobs:
           cache: maven
           components: native-image
       - name: Build shaded CLI JAR
+        env:
+          MAVEN_OPTS: --enable-preview
         run: ./mvnw -DskipTests package --no-transfer-progress
       - name: Build native image
         run: |
           CLI_JAR=$(ls target/*-cli.jar | head -n 1)
-          native-image -jar "$CLI_JAR"
+          native-image --enable-preview -jar "$CLI_JAR"
       - name: Smoke test native executable
         run: ./jairosvg --help
