@@ -243,29 +243,29 @@ SVG → PNG conversion benchmarks across 19 SVG test files (lower is better):
 
 | Test Case      | JairoSVG (Java) | EchoSVG (Java) | CairoSVG (Python) | JairoSVG vs EchoSVG | JairoSVG vs CairoSVG |
 | -------------- | :-------------: | :------------: | :---------------: | :-----------------: | :------------------: |
-| Basic shapes   |   **3.5 ms**    |    16.6 ms     |      4.3 ms       |       4.8× ✅       |       1.2× ✅        |
-| Gradients      |   **4.3 ms**    |    134.8 ms    |      11.3 ms      |      31.0× ✅       |       2.6× ✅        |
-| Complex paths  |   **4.5 ms**    |    23.1 ms     |      4.6 ms       |       5.2× ✅       |        1.0× ≈        |
-| Text rendering |   **4.8 ms**    |    22.9 ms     |      6.2 ms       |       4.8× ✅       |       1.3× ✅        |
-| Transforms     |     4.1 ms      |    14.6 ms     |    **4.0 ms**     |       3.6× ✅       |        1.0× ≈        |
-| Stroke styles  |     3.7 ms      |    11.9 ms     |    **3.5 ms**     |       3.2× ✅       |        1.0× ≈        |
-| Opacity blend  |     3.4 ms      |    17.7 ms     |    **3.3 ms**     |       5.2× ✅       |        1.0× ≈        |
-| Viewbox aspect |   **4.8 ms**    |    19.7 ms     |      5.3 ms       |       4.1× ✅       |       1.1× ✅        |
-| CSS styling    |   **3.4 ms**    |    15.2 ms     |      4.1 ms       |       4.5× ✅       |       1.2× ✅        |
-| Use and defs   |   **4.0 ms**    |    14.3 ms     |      4.4 ms       |       3.6× ✅       |       1.1× ✅        |
-| Star polygon   |     3.2 ms      |    14.6 ms     |    **3.1 ms**     |       4.5× ✅       |        1.0× ≈        |
-| Nested svg     |   **4.6 ms**    |    19.4 ms     |      5.0 ms       |       4.3× ✅       |       1.1× ✅        |
-| Patterns       |     4.6 ms      |    16.2 ms     |    **4.6 ms**     |       3.5× ✅       |        1.0× ≈        |
-| Clip paths     |   **4.2 ms**    |    26.5 ms     |      6.0 ms       |       6.4× ✅       |       1.4× ✅        |
-| Masks ⚠️       |   **8.9 ms**    |    21.5 ms     |     3.7 ms ⚠️     |       2.4× ✅       |         ← ⚠️         |
-| Markers        |   **3.9 ms**    |    13.1 ms     |      4.7 ms       |       3.4× ✅       |       1.2× ✅        |
-| Filters ⚠️     |  **45.0 ms**    |    35.1 ms     |     4.5 ms ⚠️     |    EchoSVG 1.3×     |         ← ⚠️         |
-| Embedded image |   **4.3 ms**    |    16.4 ms     |      7.2 ms       |       3.8× ✅       |       1.7× ✅        |
-| Text advanced  |   **5.4 ms**    |    26.1 ms     |      8.9 ms       |       4.8× ✅       |       1.7× ✅        |
+| [Basic shapes](#01--basic-shapes)     |   **3.5 ms**    |    16.6 ms     |      4.3 ms       |       4.8× ✅       |       1.2× ✅        |
+| [Gradients](#02--gradients)           |   **4.3 ms**    |    134.8 ms    |      11.3 ms      |      31.0× ✅       |       2.6× ✅        |
+| [Complex paths](#03--complex-paths)   |   **4.5 ms**    |    23.1 ms     |      4.6 ms       |       5.2× ✅       |        1.0× ≈        |
+| [Text rendering](#04--text-rendering) |   **4.8 ms**    |    22.9 ms     |      6.2 ms       |       4.8× ✅       |       1.3× ✅        |
+| [Transforms](#05--transforms)         |     4.1 ms      |    14.6 ms     |    **4.0 ms**     |       3.6× ✅       |        1.0× ≈        |
+| [Stroke styles](#06--stroke-styles)   |     3.7 ms      |    11.9 ms     |    **3.5 ms**     |       3.2× ✅       |        1.0× ≈        |
+| [Opacity blend](#07--opacity--blending) |     3.4 ms      |    17.7 ms     |    **3.3 ms**     |       5.2× ✅       |        1.0× ≈        |
+| [Viewbox aspect](#08--viewbox--aspect-ratio) |   **4.8 ms**    |    19.7 ms     |      5.3 ms       |       4.1× ✅       |       1.1× ✅        |
+| [CSS styling](#09--css-styling)       |   **3.4 ms**    |    15.2 ms     |      4.1 ms       |       4.5× ✅       |       1.2× ✅        |
+| [Use and defs](#10--use--defs)        |   **4.0 ms**    |    14.3 ms     |      4.4 ms       |       3.6× ✅       |       1.1× ✅        |
+| [Star polygon](#11--star-polygon)     |     3.2 ms      |    14.6 ms     |    **3.1 ms**     |       4.5× ✅       |        1.0× ≈        |
+| [Nested svg](#12--nested-svg)         |   **4.6 ms**    |    19.4 ms     |      5.0 ms       |       4.3× ✅       |       1.1× ✅        |
+| [Patterns](#13--patterns)             |     4.6 ms      |    16.2 ms     |    **4.6 ms**     |       3.5× ✅       |        1.0× ≈        |
+| [Clip paths](#14--clip-paths)         |   **4.2 ms**    |    26.5 ms     |      6.0 ms       |       6.4× ✅       |       1.4× ✅        |
+| [Masks](#15--masks) ⚠️               |   **8.9 ms**    |    21.5 ms     |     3.7 ms ⚠️     |       2.4× ✅       |         ← ⚠️         |
+| [Markers](#16--markers)               |   **3.9 ms**    |    13.1 ms     |      4.7 ms       |       3.4× ✅       |       1.2× ✅        |
+| [Filters](#17--filters) ⚠️           |  **45.0 ms**    |  35.1 ms ⚠️    |     4.5 ms ⚠️     |         ← ⚠️       |         ← ⚠️         |
+| [Embedded image](#18--embedded-images) |   **4.3 ms**    |    16.4 ms     |      7.2 ms       |       3.8× ✅       |       1.7× ✅        |
+| [Text advanced](#19--advanced-text)   |   **5.4 ms**    |    26.1 ms     |      8.9 ms       |       4.8× ✅       |       1.7× ✅        |
 
 _JairoSVG is **3–31× faster** than EchoSVG and **1–2.6× faster** than CairoSVG in most scenarios._
 
-> **⚠️ Filters/Masks caveat:** CairoSVG does **not** correctly render masks (missing gradient and circle content) or `feGaussianBlur`/`feDropShadow` filters — it silently skips them, which is why it appears faster on those tests. JairoSVG and EchoSVG both perform the actual computation. CairoSVG's speed advantage in these cases is due to **missing features**, not faster rendering.
+> **⚠️ Filters/Masks caveat:** CairoSVG does **not** correctly render masks (missing gradient and circle content) or `feGaussianBlur`/`feDropShadow` filters — it silently skips them. EchoSVG also has partial filter support. Both appear faster on those tests because they skip rendering work. JairoSVG performs the actual computation, so its speed reflects the true cost of correct rendering.
 
 > **Note:** Benchmarks were run with 20 warm-up iterations and 1000 measured iterations per SVG file. Results may vary by hardware and SVG complexity.
 
