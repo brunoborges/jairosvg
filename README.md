@@ -109,6 +109,18 @@ BufferedImage image = JairoSVG.builder()
 
 ### Command Line
 
+Install with JBang
+```bash
+jbang app install io.brunoborges:jairosvg:LATEST
+
+# SVG → PNG
+jairosvg input.svg -o output.png
+
+# SVG → PDF with 2x scale
+java input.svg -f pdf -s 2 -o output.pdf
+```
+
+Manually build:
 ```bash
 # Build the CLI
 mvn package
