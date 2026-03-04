@@ -64,6 +64,14 @@ public class Node {
             "height", "id", "mask", "opacity", "overflow", "rotate", "stop-color", "stop-opacity", "style", "transform",
             "transform-origin", "viewBox", "width", "x", "y", "dx", "dy", "{http://www.w3.org/1999/xlink}href", "href");
 
+    /**
+     * Returns the set of attribute keys that are NOT inherited from parent to
+     * child.
+     */
+    public static Set<String> notInheritedAttributes() {
+        return NOT_INHERITED_ATTRIBUTES;
+    }
+
     private static final Set<String> COLOR_ATTRIBUTES = Set.of("fill", "flood-color", "lighting-color", "stop-color",
             "stroke");
 

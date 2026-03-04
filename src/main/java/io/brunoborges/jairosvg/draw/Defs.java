@@ -440,6 +440,19 @@ public final class Defs {
         if (refNode == null)
             return;
 
+        // Propagate inheritable presentation attributes from <use> to the referenced
+        // node (SVG spec: <use> acts as parent for inheritance). Save originals to
+        // restore after drawing.
+        var notInherited = Node.notInheritedAttributes();
+        Map<String, String> saved = new HashMap<>();
+        for (var entry : node.entries()) {
+            String key = entry.getKey();
+            if (!notInherited.contains(key) && !refNode.has(key)) {
+                saved.put(key, null);
+                refNode.set(key, entry.getValue());
+            }
+        }
+
         var savedTransform = surface.context.getTransform();
         surface.context.translate(x, y);
 
@@ -458,6 +471,11 @@ public final class Defs {
         }
 
         surface.context.setTransform(savedTransform);
+
+        // Restore: remove attributes that were injected
+        for (var key : saved.keySet()) {
+            refNode.remove(key);
+        }
     }
 
     /** Handle filter preparation. */
@@ -539,20 +557,20 @@ public final class Defs {
 
         for (int i = 0; i < sourcePixels.length; i++) {
             int src = sourcePixels[i];
-                int srcA = (src >>> 24) & 0xFF;
-                if (srcA == 0) {
-                    continue;
-                }
-                int m = maskPixels[i];
-                int ma = (m >>> 24) & 0xFF;
-                int mr = (m >>> 16) & 0xFF;
-                int mg = (m >>> 8) & 0xFF;
-                int mb = m & 0xFF;
-                double luminance = (LUMINANCE_RED_COEFF * mr + LUMINANCE_GREEN_COEFF * mg + LUMINANCE_BLUE_COEFF * mb)
-                        / 255.0;
-                double maskAlpha = (ma / 255.0) * luminance;
-                int outA = (int) Math.round(srcA * maskAlpha);
-                outputPixels[i] = (outA << 24) | (src & 0x00FFFFFF);
+            int srcA = (src >>> 24) & 0xFF;
+            if (srcA == 0) {
+                continue;
+            }
+            int m = maskPixels[i];
+            int ma = (m >>> 24) & 0xFF;
+            int mr = (m >>> 16) & 0xFF;
+            int mg = (m >>> 8) & 0xFF;
+            int mb = m & 0xFF;
+            double luminance = (LUMINANCE_RED_COEFF * mr + LUMINANCE_GREEN_COEFF * mg + LUMINANCE_BLUE_COEFF * mb)
+                    / 255.0;
+            double maskAlpha = (ma / 255.0) * luminance;
+            int outA = (int) Math.round(srcA * maskAlpha);
+            outputPixels[i] = (outA << 24) | (src & 0x00FFFFFF);
         }
         BufferedImage masked = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         masked.setRGB(0, 0, width, height, outputPixels, 0, width);

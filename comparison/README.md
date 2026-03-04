@@ -271,7 +271,7 @@ _JairoSVG is **3–31× faster** than EchoSVG and **1–2.6× faster** than Cair
 
 ### PNG Output File Sizes
 
-JairoSVG produces **8.1% smaller** PNGs overall compared to CairoSVG (using the same zlib compression level 6):
+JairoSVG produces **7.8% smaller** PNGs overall compared to CairoSVG (using the same zlib compression level 6):
 
 | Test Case      |    JairoSVG |    CairoSVG | Difference |
 | -------------- | ----------: | ----------: | ---------: |
@@ -284,7 +284,7 @@ JairoSVG produces **8.1% smaller** PNGs overall compared to CairoSVG (using the 
 | Opacity blend  |       8,409 |       9,853 |     −14.7% |
 | Viewbox aspect |      11,616 |      11,444 |      +1.5% |
 | CSS styling    |       8,153 |      10,816 |     −24.6% |
-| Use and defs   |       5,074 |       9,712 |     −47.8% |
+| Use and defs   |       5,646 |       9,712 |     −41.9% |
 | Star polygon   |       6,228 |       8,911 |     −30.1% |
 | Nested svg     |      11,322 |      11,880 |      −4.7% |
 | Patterns       |       9,598 |      11,095 |     −13.5% |
@@ -294,7 +294,7 @@ JairoSVG produces **8.1% smaller** PNGs overall compared to CairoSVG (using the 
 | Filters ⚠️     |      31,059 |       8,520 |    +264.5% |
 | Embedded image |       9,995 |      21,228 |     −52.9% |
 | Text advanced  |      20,003 |      23,864 |     −16.2% |
-| **Total**      | **207,235** | **225,400** |  **−8.1%** |
+| **Total**      | **207,807** | **225,400** |  **−7.8%** |
 
 > **⚠️ Filters/Masks:** Where CairoSVG produces much smaller output, it is because CairoSVG **does not render** certain features correctly — filter effects (blur, drop-shadow) are silently skipped, and masks are rendered without gradient/circle content. This results in simpler images that compress better. JairoSVG renders these effects correctly, producing visually accurate but larger PNGs.
 
