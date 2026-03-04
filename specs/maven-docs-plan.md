@@ -71,7 +71,7 @@ Elevate JairoSVG from a working prototype to a polished open-source project with
   - Link to full documentation site
   - Contributing section
   - License
-- [ ] Add JBang install example: `jbang io.brunoborges:jairosvg:1.0.0 input.svg -o output.png`
+- [ ] Add JBang install example: `jbang io.brunoborges:jairosvg:1.0.1 input.svg -o output.png`
 
 ### Phase 5: Community Health Files
 - [ ] `LICENSE` — LGPLv3 full text file
