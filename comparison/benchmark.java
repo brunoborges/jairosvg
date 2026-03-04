@@ -139,10 +139,39 @@ public class benchmark {
     }
 
     public static void main(String[] args) throws Exception {
-        List<SvgCase> cases = loadSvgCases();
+        List<SvgCase> allCases = loadSvgCases();
+
+        // Parse args: filter by name substring, --no-cairosvg, --no-echosvg
+        Set<String> nameFilters = new LinkedHashSet<>();
+        boolean runCairo = true;
+        boolean runEcho = true;
+        for (String arg : args) {
+            if ("--no-cairosvg".equals(arg)) {
+                runCairo = false;
+            } else if ("--no-echosvg".equals(arg)) {
+                runEcho = false;
+            } else {
+                nameFilters.add(arg.toLowerCase());
+            }
+        }
+
+        List<SvgCase> cases = nameFilters.isEmpty() ? allCases
+                : allCases.stream()
+                        .filter(c -> nameFilters.stream()
+                                .anyMatch(f -> c.name().toLowerCase().contains(f)))
+                        .toList();
+
+        if (cases.isEmpty()) {
+            System.err.println("No matching SVG cases. Available:");
+            allCases.forEach(c -> System.err.println("  " + c.name()));
+            System.exit(1);
+        }
 
         System.out.println("=".repeat(98));
-        System.out.println("  SVG → PNG Benchmark: JairoSVG (Java) vs EchoSVG (Java) vs CairoSVG (Python)");
+        System.out.print("  SVG → PNG Benchmark: JairoSVG");
+        if (runEcho) System.out.print(" vs EchoSVG");
+        if (runCairo) System.out.print(" vs CairoSVG");
+        System.out.println();
         System.out.printf("  Warmup: %d iterations, Measurement: %d iterations, SVG files: %d%n",
                 WARMUP, ITERATIONS, cases.size());
         System.out.println("=".repeat(98));
@@ -156,26 +185,36 @@ public class benchmark {
 
             double[] jTimes = bench("JairoSVG", jairosvg, c.content());
             printStats("JairoSVG  (Java/Java2D)", jTimes);
+            double jAvg = Arrays.stream(jTimes).average().orElse(0);
 
-            System.gc(); Thread.sleep(100);
-            double[] eTimes = bench("EchoSVG", echosvg, c.content());
-            printStats("EchoSVG   (Java/Batik)", eTimes);
-
-            System.gc(); Thread.sleep(100);
-            double[] cTimes = benchCairoSVG(c.content());
-            if (cTimes != null) {
-                printStats("CairoSVG  (Python/Cairo)", cTimes);
+            double eAvg = 0;
+            if (runEcho) {
+                System.gc(); Thread.sleep(100);
+                double[] eTimes = bench("EchoSVG", echosvg, c.content());
+                printStats("EchoSVG   (Java/Batik)", eTimes);
+                eAvg = Arrays.stream(eTimes).average().orElse(0);
             }
 
-            double jAvg = Arrays.stream(jTimes).average().orElse(0);
-            double eAvg = Arrays.stream(eTimes).average().orElse(0);
-            double cAvg = cTimes != null ? Arrays.stream(cTimes).average().orElse(0) : 0;
+            double cAvg = 0;
+            double[] cTimes = null;
+            if (runCairo) {
+                System.gc(); Thread.sleep(100);
+                cTimes = benchCairoSVG(c.content());
+                if (cTimes != null) {
+                    printStats("CairoSVG  (Python/Cairo)", cTimes);
+                    cAvg = Arrays.stream(cTimes).average().orElse(0);
+                }
+            }
 
             System.out.println();
-            printComparison("JairoSVG", jAvg, "EchoSVG", eAvg);
+            if (runEcho) {
+                printComparison("JairoSVG", jAvg, "EchoSVG", eAvg);
+            }
             if (cTimes != null) {
                 printComparison("JairoSVG", jAvg, "CairoSVG", cAvg);
-                printComparison("EchoSVG", eAvg, "CairoSVG", cAvg);
+                if (runEcho) {
+                    printComparison("EchoSVG", eAvg, "CairoSVG", cAvg);
+                }
             }
         }
 
