@@ -43,7 +43,7 @@ Run the benchmark yourself: `jbang comparison/benchmark.java` — see [compariso
 <dependency>
     <groupId>io.brunoborges</groupId>
     <artifactId>jairosvg</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 
@@ -60,13 +60,13 @@ Run the benchmark yourself: `jbang comparison/benchmark.java` — see [compariso
 ### Gradle
 
 ```groovy
-implementation 'io.brunoborges:jairosvg:1.0.1'
+implementation 'io.brunoborges:jairosvg:1.0.2'
 ```
 
 ### JBang (quick run)
 
 ```bash
-jbang --deps io.brunoborges:jairosvg:1.0.1 MyScript.java
+jbang --deps io.brunoborges:jairosvg:1.0.2 MyScript.java
 ```
 
 ## Quick Start
@@ -126,17 +126,17 @@ Manually build:
 mvn package
 
 # SVG → PNG
-java --enable-preview -jar target/jairosvg-1.0.1-cli.jar input.svg -o output.png
+java --enable-preview -jar target/jairosvg-1.0.2-cli.jar input.svg -o output.png
 
 # SVG → PDF with 2x scale
-java --enable-preview -jar target/jairosvg-1.0.1-cli.jar input.svg -f pdf -s 2 -o output.pdf
+java --enable-preview -jar target/jairosvg-1.0.2-cli.jar input.svg -f pdf -s 2 -o output.pdf
 ```
 
 Build a GraalVM native CLI:
 ```bash
 # Create native executable from the shaded CLI JAR
 # Required native-image arguments are read from the JAR's META-INF/native-image config
-native-image -jar target/jairosvg-1.0.1-cli.jar
+native-image -jar target/jairosvg-1.0.2-cli.jar
 ./jairosvg input.svg -o output.png
 ```
 

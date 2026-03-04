@@ -14,7 +14,7 @@ A comprehensive comparison of three SVG libraries — **JairoSVG** (Java), **Ech
 | **Primary goal**      | Fast, lightweight SVG → raster/vector conversion               | Full-featured SVG toolkit: render, manipulate, and convert | SVG → PNG/PDF/PS conversion            |
 | **License**           | LGPL-3.0                                                       | Apache-2.0                                                 | LGPL-3.0                               |
 | **Repository**        | [brunoborges/jairosvg]                                         | [css4j/echosvg]                                            | [Kozea/CairoSVG]                       |
-| **Current version**   | 1.0.1                                                          | 2.4                                                        | 2.7+                                   |
+| **Current version**   | 1.0.2                                                          | 2.4                                                        | 2.7+                                   |
 | **SVG spec target**   | SVG 1.1                                                        | SVG 1.1 + partial SVG 2                                    | SVG 1.1                                |
 | **Rendering backend** | Java2D                                                         | GVT (Batik) → Java2D                                       | Cairo (C library)                      |
 | **Key strength**      | Speed (3–31× faster than EchoSVG, 1–2.6× faster than CairoSVG) | Feature completeness and standard compliance               | Native C performance, mature ecosystem |
