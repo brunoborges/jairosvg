@@ -20,7 +20,9 @@ public final class SvgSurface extends Surface {
 
         // Encode the rendered image as a PNG data URI within a new SVG
         var pngBytes = new java.io.ByteArrayOutputStream();
-        ParallelPngEncoder.encode(image, pngBytes, -1);
+        try (var ios = new javax.imageio.stream.MemoryCacheImageOutputStream(pngBytes)) {
+            PngSurface.writePng(image, ios);
+        }
         String base64 = Base64.getEncoder().encodeToString(pngBytes.toByteArray());
 
         Writer writer = new OutputStreamWriter(output, StandardCharsets.UTF_8);
