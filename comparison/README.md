@@ -242,15 +242,17 @@ cairosvg.svg2png(url="input.svg", write_to="output.png",
 
 SVG → PNG conversion benchmarks (lower is better):
 
-| Test Case              | JairoSVG (Java) | EchoSVG (Java) | CairoSVG (Python) |
-| ---------------------- | :-------------: | :------------: | :---------------: |
-| Simple shapes          |   **3.7 ms**    |     9.5 ms     |      1.9 ms       |
-| Gradients + transforms |   **6.7 ms**    |    34.5 ms     |      5.2 ms       |
-| Complex paths + text   |   **8.1 ms**    |    29.7 ms     |      6.1 ms       |
+| Test Case                | JairoSVG (Java) | EchoSVG (Java) | CairoSVG (Python) |
+| ------------------------ | :-------------: | :------------: | :---------------: |
+| Simple shapes            |   **1.4 ms**    |     9.0 ms     |      2.0 ms       |
+| Gradients + transforms   |   **3.6 ms**    |    35.1 ms     |      5.3 ms       |
+| Complex paths + text     |   **5.4 ms**    |    29.4 ms     |      6.3 ms       |
+| Defs + use + clipPath    |   **4.1 ms**    |    35.9 ms     |      8.7 ms       |
+| Markers + dashed strokes |   **4.4 ms**    |    25.5 ms     |      5.2 ms       |
 
-_JairoSVG is 2–5× faster than EchoSVG and within 1.3–1.9× of CairoSVG's native C backend._
+_JairoSVG is 5–10× faster than EchoSVG and 1.2–2.2× faster than CairoSVG's native C backend._
 
-> **Note:** Benchmarks were run with 20 warm-up iterations and 50 measured iterations. CairoSVG's performance advantage comes from Cairo's native C rendering engine. EchoSVG's overhead comes partly from GVT scene graph construction. Results may vary by hardware and SVG complexity.
+> **Note:** Benchmarks were run with 20 warm-up iterations and 1000 measured iterations. CairoSVG's performance advantage comes from Cairo's native C rendering engine. EchoSVG's overhead comes partly from GVT scene graph construction. Results may vary by hardware and SVG complexity.
 
 ### Running the Benchmark
 
