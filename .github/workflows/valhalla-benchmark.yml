@@ -8,6 +8,7 @@ on:
 jobs:
   benchmark:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
@@ -46,6 +47,10 @@ jobs:
         run: |
           curl -Ls https://sh.jbang.dev | bash -s - app setup
           echo "$HOME/.jbang/bin" >> $GITHUB_PATH
+
+      - name: Configure JBang to use Valhalla JDK
+        run: |
+          jbang jdk install 26 "$JAVA_HOME"
 
       - name: Run Benchmark (JairoSVG only)
         shell: bash
