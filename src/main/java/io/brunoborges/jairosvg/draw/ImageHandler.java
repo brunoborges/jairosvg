@@ -101,8 +101,9 @@ public final class ImageHandler {
             BufferedImage img = surface.rasterImageCache.get(cacheKey);
             if (img == null) {
                 // Use MemoryCacheImageInputStream to avoid temp file I/O
-                var iis = new MemoryCacheImageInputStream(new ByteArrayInputStream(imageBytes));
-                img = ImageIO.read(iis);
+                try (var iis = new MemoryCacheImageInputStream(new ByteArrayInputStream(imageBytes))) {
+                    img = ImageIO.read(iis);
+                }
 
                 if (img == null)
                     return;
