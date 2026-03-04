@@ -24,7 +24,7 @@ public final class UrlHelper {
     }
 
     /** A parsed URL wrapper. */
-    public record ParsedUrl(String scheme, String authority, String path, String query, String fragment) {
+    public value record ParsedUrl(String scheme, String authority, String path, String query, String fragment) {
         public String getUrl() {
             var sb = new StringBuilder();
             if (scheme != null && !scheme.isEmpty()) {

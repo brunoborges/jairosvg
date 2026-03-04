@@ -15,7 +15,7 @@ import io.brunoborges.jairosvg.util.ParsedPoint;
 public final class BoundingBox {
 
     /** Bounding box as (minX, minY, width, height). */
-    public record Box(double minX, double minY, double width, double height) {
+    public value record Box(double minX, double minY, double width, double height) {
     }
 
     public static final Box EMPTY = new Box(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, 0, 0);

@@ -55,7 +55,7 @@ public final class SvgFont {
     }
 
     /** A single glyph definition with a pre-parsed cached path. */
-    public record Glyph(GeneralPath cachedPath, double horizAdvX) {
+    public value record Glyph(GeneralPath cachedPath, double horizAdvX) {
     }
 
     /**
@@ -142,7 +142,7 @@ public final class SvgFont {
     /**
      * Result of a glyph lookup: the matched glyph and how many chars were consumed.
      */
-    public record GlyphMatch(Glyph glyph, int charsConsumed) {
+    public value record GlyphMatch(Glyph glyph, int charsConsumed) {
     }
 
     /**

@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 public final class Colors {
 
     /** RGBA color as (r, g, b, a) with each component in [0.0, 1.0]. */
-    public record RGBA(double r, double g, double b, double a) {
+    public value record RGBA(double r, double g, double b, double a) {
         public static final RGBA TRANSPARENT = new RGBA(0, 0, 0, 0);
         public static final RGBA BLACK = new RGBA(0, 0, 0, 1);
     }

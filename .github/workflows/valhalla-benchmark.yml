@@ -1,0 +1,64 @@
+name: Valhalla Benchmark
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['test/valhalla']
+
+jobs:
+  benchmark:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download Valhalla JDK 26 EA
+        run: |
+          set -e
+          case "$(uname -s)-$(uname -m)" in
+            Linux-x86_64)  ARCH="linux-x64" ;;
+            Darwin-x86_64) ARCH="macos-x64" ;;
+            Darwin-arm64)  ARCH="macos-aarch64" ;;
+            *) echo "Unsupported platform: $(uname -s)-$(uname -m)"; exit 1 ;;
+          esac
+          URL="https://download.java.net/java/early_access/valhalla/26/1/openjdk-26-jep401ea2+1-1_${ARCH}_bin.tar.gz"
+          echo "Downloading: $URL"
+          curl -sL "$URL" | tar xz
+          # Find the java home (macOS has .jdk/Contents/Home, Linux has jdk-26/)
+          if [ -d jdk-26.jdk/Contents/Home ]; then
+            echo "JAVA_HOME=$PWD/jdk-26.jdk/Contents/Home" >> $GITHUB_ENV
+          else
+            echo "JAVA_HOME=$PWD/jdk-26" >> $GITHUB_ENV
+          fi
+
+      - name: Verify JDK
+        run: |
+          $JAVA_HOME/bin/java --version
+
+      - name: Build JairoSVG with Valhalla
+        run: ./mvnw install -DskipTests --no-transfer-progress
+
+      - name: Install JBang
+        run: |
+          curl -Ls https://sh.jbang.dev | bash -s - app setup
+          echo "$HOME/.jbang/bin" >> $GITHUB_PATH
+
+      - name: Run Benchmark (JairoSVG only)
+        shell: bash
+        run: |
+          set -eo pipefail
+          jbang --java 26 comparison/benchmark.java --no-cairosvg --no-echosvg | tee /tmp/benchmark-output.txt
+
+      - name: Post Summary
+        run: |
+          echo '## Valhalla Benchmark Results (${{ matrix.os }})' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo 'Running with value records on Valhalla JDK 26 EA (JEP 401)' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat /tmp/benchmark-output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

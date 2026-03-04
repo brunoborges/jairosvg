@@ -37,7 +37,7 @@ public final class CssProcessor {
     }
 
     /** A CSS declaration: (property-name, value). */
-    public record Declaration(String name, String value) {
+    public value record Declaration(String name, String value) {
     }
 
     /** Parse inline style declarations into normal and important lists. */
@@ -142,7 +142,7 @@ public final class CssProcessor {
     }
 
     /** A CSS rule with selector and declarations. */
-    public record StyleRule(String selector, List<Declaration> declarations, boolean important) {
+    public value record StyleRule(String selector, List<Declaration> declarations, boolean important) {
     }
 
     private static void extractStyleElements(Node node, List<StyleRule> rules) {
@@ -342,7 +342,7 @@ public final class CssProcessor {
     }
 
     /** Both normal and important declarations from a single pass. */
-    public record MatchResult(List<Declaration> normal, List<Declaration> important) {
+    public value record MatchResult(List<Declaration> normal, List<Declaration> important) {
     }
 
     /** Get all matching CSS declarations in a single pass through the rules. */
