@@ -59,10 +59,10 @@ The effort labels are:
 
 ### When triggered manually (`workflow_dispatch`):
 
-1. List all open issues in the repository
+1. List all **open** issues in the repository
 2. Filter to issues that do NOT already have any of the three effort labels (`effort: small`, `effort: medium`, `effort: large`)
-3. For each unlabeled issue:
+3. For each unlabeled open issue:
    - Analyze the implementation complexity as described above
    - Apply exactly ONE effort label
    - Add a brief comment explaining the reasoning
-4. Skip issues that already have an effort label
+4. Skip issues that already have an effort label or are closed
