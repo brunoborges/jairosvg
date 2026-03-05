@@ -86,6 +86,27 @@ class ShapeRenderingTest {
     }
 
     @Test
+    void testForeignObjectDoesNotRenderChildren() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <foreignObject x="10" y="10" width="80" height="80">
+                    <body xmlns="http://www.w3.org/1999/xhtml">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">
+                        <rect width="80" height="80" fill="red"/>
+                      </svg>
+                    </body>
+                  </foreignObject>
+                </svg>
+                """;
+
+        BufferedImage image = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
+        int center = image.getRGB(50, 50);
+        int alpha = (center >> 24) & 0xFF;
+        assertEquals(0, alpha, "foreignObject content should be skipped gracefully");
+    }
+
+    @Test
     void testPathSvgToPng() throws Exception {
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
