@@ -6,8 +6,12 @@
 //REPOS css4j=https://css4j.github.io/maven/
 //DEPS io.brunoborges:jairosvg:1.0.3-SNAPSHOT
 //DEPS io.sf.carte:echosvg-transcoder:2.4
+//DEPS com.github.weisj:jsvg:2.0.0
 //DEPS me.tongfei:progressbar:0.10.2
 
+import com.github.weisj.jsvg.SVGDocument;
+import com.github.weisj.jsvg.parser.LoaderContext;
+import com.github.weisj.jsvg.parser.SVGLoader;
 import io.brunoborges.jairosvg.JairoSVG;
 import io.sf.carte.echosvg.transcoder.TranscoderInput;
 import io.sf.carte.echosvg.transcoder.TranscoderOutput;
@@ -16,11 +20,14 @@ import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import java.util.stream.*;
+import javax.imageio.ImageIO;
 
 public class benchmark {
 
@@ -60,6 +67,26 @@ public class benchmark {
         var input = new TranscoderInput(new StringReader(svg));
         var baos = new ByteArrayOutputStream();
         transcoder.transcode(input, new TranscoderOutput(baos));
+        return baos.toByteArray();
+    }
+
+    static byte[] jsvgConvert(String svg) throws Exception {
+        SVGLoader loader = new SVGLoader();
+        SVGDocument doc = loader.load(
+                new ByteArrayInputStream(svg.getBytes(StandardCharsets.UTF_8)),
+                null,
+                LoaderContext.createDefault());
+        if (doc == null) throw new RuntimeException("jsvg returned null document");
+        var size = doc.size();
+        int w = Math.max(1, (int) size.width);
+        int h = Math.max(1, (int) size.height);
+        BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = image.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        doc.render(null, g);
+        g.dispose();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "PNG", baos);
         return baos.toByteArray();
     }
 
@@ -147,15 +174,18 @@ public class benchmark {
     public static void main(String[] args) throws Exception {
         List<SvgCase> allCases = loadSvgCases();
 
-        // Parse args: filter by name substring, --no-cairosvg, --no-echosvg
+        // Parse args: filter by name substring, --no-cairosvg, --no-echosvg, --no-jsvg
         Set<String> nameFilters = new LinkedHashSet<>();
         boolean runCairo = true;
         boolean runEcho = true;
+        boolean runJsvg = true;
         for (String arg : args) {
             if ("--no-cairosvg".equals(arg)) {
                 runCairo = false;
             } else if ("--no-echosvg".equals(arg)) {
                 runEcho = false;
+            } else if ("--no-jsvg".equals(arg)) {
+                runJsvg = false;
             } else {
                 nameFilters.add(arg.toLowerCase());
             }
@@ -176,6 +206,7 @@ public class benchmark {
         System.out.println("=".repeat(98));
         System.out.print("  SVG → PNG Benchmark: JairoSVG");
         if (runEcho) System.out.print(" vs EchoSVG");
+        if (runJsvg) System.out.print(" vs JSVG");
         if (runCairo) System.out.print(" vs CairoSVG");
         System.out.println();
         System.out.printf("  Warmup: %d iterations, Measurement: %d iterations, SVG files: %d%n",
@@ -184,6 +215,7 @@ public class benchmark {
 
         SvgConverter jairosvg = svg -> JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
         SvgConverter echosvg = svg -> echoConvert(svg);
+        SvgConverter jsvg = svg -> jsvgConvert(svg);
 
         for (int ci = 0; ci < cases.size(); ci++) {
             SvgCase c = cases.get(ci);
@@ -191,10 +223,10 @@ public class benchmark {
             System.out.println("\n▸ " + c.name() + "  [" + (ci + 1) + "/" + cases.size() + "]");
 
             // Total steps for Java engines: (warmup + iterations) each
-            int javaEngines = 1 + (runEcho ? 1 : 0);
+            int javaEngines = 1 + (runEcho ? 1 : 0) + (runJsvg ? 1 : 0);
             int totalSteps = javaEngines * (WARMUP + ITERATIONS) + (runCairo ? 1 : 0);
 
-            double[] jTimes, eTimes = null, cTimes = null;
+            double[] jTimes, eTimes = null, sTimes = null, cTimes = null;
 
             try (var pb = new ProgressBarBuilder()
                     .setTaskName("  Progress")
@@ -208,6 +240,11 @@ public class benchmark {
                 if (runEcho) {
                     System.gc(); Thread.sleep(100);
                     eTimes = bench("EchoSVG", echosvg, c.content(), pb);
+                }
+
+                if (runJsvg) {
+                    System.gc(); Thread.sleep(100);
+                    sTimes = bench("JSVG", jsvg, c.content(), pb);
                 }
 
                 if (runCairo) {
@@ -227,6 +264,12 @@ public class benchmark {
                 eAvg = Arrays.stream(eTimes).average().orElse(0);
             }
 
+            double sAvg = 0;
+            if (sTimes != null) {
+                printStats("JSVG      (Java/Java2D)", sTimes);
+                sAvg = Arrays.stream(sTimes).average().orElse(0);
+            }
+
             double cAvg = 0;
             if (cTimes != null) {
                 printStats("CairoSVG  (Python/Cairo)", cTimes);
@@ -237,10 +280,16 @@ public class benchmark {
             if (eTimes != null) {
                 printComparison("JairoSVG", jAvg, "EchoSVG", eAvg);
             }
+            if (sTimes != null) {
+                printComparison("JairoSVG", jAvg, "JSVG", sAvg);
+            }
             if (cTimes != null) {
                 printComparison("JairoSVG", jAvg, "CairoSVG", cAvg);
                 if (eTimes != null) {
                     printComparison("EchoSVG", eAvg, "CairoSVG", cAvg);
+                }
+                if (sTimes != null) {
+                    printComparison("JSVG", sAvg, "CairoSVG", cAvg);
                 }
             }
         }
