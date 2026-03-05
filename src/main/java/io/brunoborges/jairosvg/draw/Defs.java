@@ -49,6 +49,7 @@ public final class Defs {
     private static final double LUMINANCE_RED_COEFF = 0.2126;
     private static final double LUMINANCE_GREEN_COEFF = 0.7152;
     private static final double LUMINANCE_BLUE_COEFF = 0.0722;
+    private static final int MIN_IMAGE_BYTES = 5;
 
     private Defs() {
     }
@@ -883,7 +884,7 @@ public final class Defs {
 
         try {
             byte[] imageBytes = node.fetchUrl(parsedUrl, "image/*");
-            if (imageBytes == null || imageBytes.length < 5) {
+            if (imageBytes == null || imageBytes.length < MIN_IMAGE_BYTES) {
                 return output;
             }
             var input = new MemoryCacheImageInputStream(new ByteArrayInputStream(imageBytes));
@@ -921,8 +922,8 @@ public final class Defs {
 
         surface.context = imageContext;
         surface.path = new GeneralPath();
-        surface.contextWidth = savedWidth;
-        surface.contextHeight = savedHeight;
+        surface.contextWidth = output.getWidth();
+        surface.contextHeight = output.getHeight();
 
         surface.draw(node);
 

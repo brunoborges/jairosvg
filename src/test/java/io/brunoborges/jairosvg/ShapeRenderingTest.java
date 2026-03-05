@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ShapeRenderingTest {
     private static final int MIN_COLOR_CHANNEL_THRESHOLD = 120;
+    private static final String FE_IMAGE_TEST_B64 = "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAEElEQVR4nGN47mMDRwzEcQBfYhbxYdU3aQAAAABJRU5ErkJggg==";
 
     @Test
     void testSimpleRectSvgToPng() throws Exception {
@@ -333,7 +334,6 @@ class ShapeRenderingTest {
 
     @Test
     void testFeImageFilterRendersDataImage() throws Exception {
-        String b64 = "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAEElEQVR4nGN47mMDRwzEcQBfYhbxYdU3aQAAAABJRU5ErkJggg==";
         String filteredSvg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                   <defs>
@@ -344,7 +344,7 @@ class ShapeRenderingTest {
                   <rect width="100" height="100" fill="white"/>
                   <rect x="20" y="20" width="60" height="60" fill="#0000ff" filter="url(#img)"/>
                 </svg>
-                """.formatted(b64);
+                """.formatted(FE_IMAGE_TEST_B64);
         String plainSvg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                   <rect width="100" height="100" fill="white"/>
@@ -368,7 +368,6 @@ class ShapeRenderingTest {
 
     @Test
     void testFeImageFilterRendersInlineImageReference() throws Exception {
-        String b64 = "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAEElEQVR4nGN47mMDRwzEcQBfYhbxYdU3aQAAAABJRU5ErkJggg==";
         String filteredSvg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                   <defs>
@@ -381,7 +380,7 @@ class ShapeRenderingTest {
                   <rect width="100" height="100" fill="white"/>
                   <rect x="20" y="20" width="60" height="60" fill="#0000ff" filter="url(#imgRef)"/>
                 </svg>
-                """.formatted(b64);
+                """.formatted(FE_IMAGE_TEST_B64);
         String plainSvg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                   <rect width="100" height="100" fill="white"/>
