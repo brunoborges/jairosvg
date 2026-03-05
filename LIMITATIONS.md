@@ -2,6 +2,11 @@
 
 JairoSVG focuses on SVG 1.1 rendering with Java2D and currently has a few intentional limitations.
 
+## No Animation Timeline Support
+
+- JairoSVG is a static renderer and does not evaluate SVG animation timelines.
+- SMIL animation elements are not supported, including `<animate>`, `<animateTransform>`, `<animateMotion>`, and `<set>`.
+
 ## Unsupported Embedded Content
 
 - `<foreignObject>` is not rendered.
