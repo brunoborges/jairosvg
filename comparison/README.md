@@ -262,7 +262,7 @@ cairosvg.svg2png(url="input.svg", write_to="output.png",
 SVG → PNG conversion benchmarks across 19 SVG test files (lower is better):
 
 | Test Case                                    | JairoSVG (Java) | EchoSVG (Java) | CairoSVG (Python) | JairoSVG vs EchoSVG | JairoSVG vs CairoSVG |
-| -------------------------------------------- | :-------------: | :------------: | :---------------: | :-----------------: | :------------------: :--------------------------------------: |
+| -------------------------------------------- | :-------------: | :------------: | :---------------: | :-----------------: | :------------------: |
 | [Basic shapes](#01--basic-shapes)            |   **3.5 ms**    |    16.6 ms     |      4.3 ms       |       4.8× ✅       |       1.2× ✅        |
 | [Gradients](#02--gradients)                  |   **4.3 ms**    |    134.8 ms    |      11.3 ms      |      31.0× ✅       |       2.6× ✅        |
 | [Complex paths](#03--complex-paths)          |   **4.5 ms**    |    23.1 ms     |      4.6 ms       |       5.2× ✅       |        1.0× ≈        |
