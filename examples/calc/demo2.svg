@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="280">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d0d1a"/>
+      <stop offset="100%" stop-color="#1a2a4a"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00d2ff"/>
+      <stop offset="100%" stop-color="#3a7bd5"/>
+    </linearGradient>
+  </defs>
+  <rect width="440" height="280" fill="url(#bg)"/>
+
+  <text x="220" y="28" font-family="sans-serif" font-size="15" fill="white"
+        text-anchor="middle" font-weight="bold">calc() — Percentage + px Mixed</text>
+
+  <!-- Track labels -->
+  <text x="10" y="60" font-family="sans-serif" font-size="11" fill="#aad4f5">Track: width=calc(100% - 80px)</text>
+  <text x="10" y="110" font-family="sans-serif" font-size="11" fill="#aad4f5">92%: width=calc((100% - 80px) * 0.92)</text>
+  <text x="10" y="160" font-family="sans-serif" font-size="11" fill="#aad4f5">60%: width=calc((100% - 80px) * 0.60)</text>
+  <text x="10" y="210" font-family="sans-serif" font-size="11" fill="#aad4f5">x=calc(50% - 40px), centered label</text>
+
+  <!-- Full track -->
+  <rect x="10" y="64" width="calc(100% - 80px)" height="22" fill="#1a1a3e" rx="11"/>
+  <!-- 92% fill -->
+  <rect x="10" y="64" width="calc((100% - 80px) * 0.92)" height="22" fill="url(#bar)" rx="11"/>
+
+  <!-- Track 2 -->
+  <rect x="10" y="114" width="calc(100% - 80px)" height="22" fill="#1a1a3e" rx="11"/>
+  <!-- 60% fill -->
+  <rect x="10" y="114" width="calc((100% - 80px) * 0.60)" height="22" fill="url(#bar)" rx="11"/>
+
+  <!-- Centered text using calc(50% - 40px) for x positioning -->
+  <rect x="calc(50% - 60px)" y="218" width="120" height="28" fill="#0f3460" rx="14"/>
+  <text x="calc(50% - 60px + 60px)" y="237" font-family="monospace" font-size="11" fill="white" text-anchor="middle">x=calc(50%-60px)</text>
+
+  <!-- Percentage labels -->
+  <text x="calc(100% - 75px)" y="80" font-family="monospace" font-size="11" fill="white">92%</text>
+  <text x="calc(100% - 75px)" y="130" font-family="monospace" font-size="11" fill="white">60%</text>
+</svg>

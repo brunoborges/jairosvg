@@ -378,6 +378,105 @@ class ShapeRenderingTest {
     }
 
     @Test
+    void testCalcInWidthAndHeight() throws Exception {
+        // calc(200px - 100px) = 100, calc(50px + 50px) = 100
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="calc(200px - 100px)" height="calc(50px + 50px)">
+                  <rect x="0" y="0" width="100%" height="100%" fill="green"/>
+                </svg>
+                """;
+
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
+        assertEquals(100, image.getWidth());
+        assertEquals(100, image.getHeight());
+
+        // Verify green fill
+        int pixel = image.getRGB(50, 50);
+        int green = (pixel >> 8) & 0xFF;
+        assertTrue(green > MIN_COLOR_CHANNEL_THRESHOLD, "Expected green fill from calc-sized SVG");
+    }
+
+    @Test
+    void testCalcInRectPositionAndSize() throws Exception {
+        // Rect at x=calc(10px+10px)=20, width=calc(100px - 20px)=80
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <rect x="calc(10px + 10px)" y="0" width="calc(100px - 20px)" height="100" fill="blue"/>
+                </svg>
+                """;
+
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
+
+        // pixel at x=10 should be transparent (before the rect starts at x=20)
+        int pixelBefore = image.getRGB(10, 50);
+        int alphaBefore = (pixelBefore >> 24) & 0xFF;
+        assertEquals(0, alphaBefore, "Pixel before calc-positioned rect should be transparent");
+
+        // pixel at x=25 should be blue (inside the rect starting at x=20)
+        int pixelInside = image.getRGB(25, 50);
+        int blueInside = pixelInside & 0xFF;
+        assertTrue(blueInside > MIN_COLOR_CHANNEL_THRESHOLD, "Expected blue fill inside calc-positioned rect");
+    }
+
+    @Test
+    void testCalcWithPercentage() throws Exception {
+        // 200px wide SVG; x="calc(50% - 10px)" = 100-10 = 90
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <rect x="calc(50% - 10px)" y="0" width="20" height="100" fill="red"/>
+                </svg>
+                """;
+
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
+
+        // x=90..110 should be red, outside should be transparent
+        int pixelBefore = image.getRGB(80, 50);
+        int alphaBefore = (pixelBefore >> 24) & 0xFF;
+        assertEquals(0, alphaBefore, "Pixel before calc(50%-10px) rect should be transparent");
+
+        int pixelInside = image.getRGB(100, 50);
+        int redInside = (pixelInside >> 16) & 0xFF;
+        assertTrue(redInside > MIN_COLOR_CHANNEL_THRESHOLD, "Expected red fill inside calc(50%-10px) rect");
+    }
+
+    @Test
+    void testCalcWithMultiplication() throws Exception {
+        // width="calc(2 * 40px)" = 80; height="calc(100px / 2)" = 50
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="calc(2 * 40px)" height="calc(100px / 2)">
+                  <rect x="0" y="0" width="100%" height="100%" fill="purple"/>
+                </svg>
+                """;
+
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
+        assertEquals(80, image.getWidth());
+        assertEquals(50, image.getHeight());
+    }
+
+    @Test
+    void testCalcNestedParentheses() throws Exception {
+        // width="calc((100px - 20px) * 2)" = 160
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="calc((100px - 20px) * 2)" height="50">
+                  <rect x="0" y="0" width="100%" height="100%" fill="teal"/>
+                </svg>
+                """;
+
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
+        assertEquals(160, image.getWidth());
+    }
+
+    @Test
     void testTextPathFollowsCurve() throws Exception {
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="380">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff6b6b"/>
+      <stop offset="100%" stop-color="#feca57"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#48dbfb"/>
+      <stop offset="100%" stop-color="#0abde3"/>
+    </linearGradient>
+    <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1dd1a1"/>
+      <stop offset="100%" stop-color="#10ac84"/>
+    </linearGradient>
+    <linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a29bfe"/>
+      <stop offset="100%" stop-color="#6c5ce7"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="380" fill="#2c3e50"/>
+
+  <text x="200" y="28" font-family="sans-serif" font-size="15" fill="white"
+        text-anchor="middle" font-weight="bold">calc() — Nested: (100% - 20px) * 2</text>
+
+  <!-- 2x2 grid: gap=10px, padding left/right=10px
+       cellWidth = calc(50% - 15px)  [half minus half-gap minus half-margin]
+       row1 y = 40
+       row2 y = calc(40px + (50% - 60px) + 10px) — simplified to pixel values for clarity
+  -->
+
+  <!-- Top-left cell -->
+  <rect x="10" y="40"
+        width="calc(50% - 15px)" height="calc(50% - 50px)"
+        fill="url(#g1)" rx="8"/>
+  <text x="calc((50% - 15px) / 2 + 10px)" y="calc(40px + (50% - 50px) / 2 + 5px)"
+        font-family="monospace" font-size="10" fill="white" text-anchor="middle">w=calc(50%-15px)</text>
+
+  <!-- Top-right cell -->
+  <rect x="calc(50% + 5px)" y="40"
+        width="calc(50% - 15px)" height="calc(50% - 50px)"
+        fill="url(#g2)" rx="8"/>
+  <text x="calc(50% + 5px + (50% - 15px) / 2)" y="calc(40px + (50% - 50px) / 2 + 5px)"
+        font-family="monospace" font-size="10" fill="white" text-anchor="middle">x=calc(50%+5px)</text>
+
+  <!-- Bottom-left cell -->
+  <rect x="10" y="calc(50% + 10px)"
+        width="calc(50% - 15px)" height="calc(50% - 50px)"
+        fill="url(#g3)" rx="8"/>
+  <text x="calc((50% - 15px) / 2 + 10px)" y="calc(50% + 10px + (50% - 50px) / 2 + 5px)"
+        font-family="monospace" font-size="10" fill="white" text-anchor="middle">y=calc(50%+10px)</text>
+
+  <!-- Bottom-right cell -->
+  <rect x="calc(50% + 5px)" y="calc(50% + 10px)"
+        width="calc(50% - 15px)" height="calc(50% - 50px)"
+        fill="url(#g4)" rx="8"/>
+  <text x="calc(50% + 5px + (50% - 15px) / 2)" y="calc(50% + 10px + (50% - 50px) / 2 + 5px)"
+        font-family="monospace" font-size="10" fill="white" text-anchor="middle">nested calc()</text>
+</svg>
