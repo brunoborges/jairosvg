@@ -69,6 +69,23 @@ class ShapeRenderingTest {
     }
 
     @Test
+    void testMetadataTitleAndDescDoNotRenderChildren() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <metadata><rect x="10" y="10" width="80" height="80" fill="red"/></metadata>
+                  <title><rect x="10" y="10" width="80" height="80" fill="green"/></title>
+                  <desc><rect x="10" y="10" width="80" height="80" fill="blue"/></desc>
+                </svg>
+                """;
+
+        BufferedImage image = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
+        int center = image.getRGB(50, 50);
+        int alpha = (center >> 24) & 0xFF;
+        assertEquals(0, alpha, "Metadata/title/desc are descriptive tags and must not render their children");
+    }
+
+    @Test
     void testPathSvgToPng() throws Exception {
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">

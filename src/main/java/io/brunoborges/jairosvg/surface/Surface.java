@@ -44,8 +44,9 @@ import io.brunoborges.jairosvg.util.UrlHelper;
  */
 public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSurface, PsSurface {
 
-    private static final Set<String> INVISIBLE_TAGS = Set.of("clipPath", "filter", "font", "font-face", "glyph",
-            "linearGradient", "marker", "mask", "missing-glyph", "pattern", "radialGradient", "symbol");
+    private static final Set<String> INVISIBLE_TAGS = Set.of("clipPath", "desc", "filter", "font", "font-face",
+            "glyph", "linearGradient", "marker", "mask", "metadata", "missing-glyph", "pattern", "radialGradient",
+            "symbol", "title");
 
     private static final java.util.regex.Pattern WHITESPACE = java.util.regex.Pattern.compile("\\s+");
     private static final float[] NO_DASH = new float[0];
