@@ -3,6 +3,8 @@ description: Automatically estimate implementation effort for new issues and lab
 on:
   issues:
     types: [opened]
+  issue_comment:
+    types: [created]
   workflow_dispatch:
     inputs:
       process_all:
@@ -56,6 +58,15 @@ The effort labels are:
    - Whether similar patterns already exist in the codebase
 3. Apply exactly ONE effort label: `effort: small`, `effort: medium`, or `effort: large`
 4. Add a brief comment (2-4 sentences) explaining the reasoning for the effort estimate
+
+### When triggered by a slash command (`issue_comment` with `/effort`):
+
+1. Check if the comment body starts with `/effort` (case-insensitive). If it does not, **do nothing** and exit immediately.
+2. Read the issue that the comment was posted on
+3. If the issue already has an effort label (`effort: small`, `effort: medium`, or `effort: large`), skip it — do nothing
+4. Analyze the implementation complexity as described above
+5. Apply exactly ONE effort label
+6. Add a brief comment explaining the reasoning
 
 ### When triggered manually (`workflow_dispatch`):
 
