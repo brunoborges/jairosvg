@@ -281,7 +281,7 @@ ImageIO.write(image, "PNG", new File("output.png"));
 
 ## Benchmark
 
-SVG → PNG conversion benchmarks across 19 SVG test files (lower is better):
+SVG → PNG conversion benchmarks across 20 SVG test files (lower is better):
 
 | Test Case                                    | JairoSVG (Java) | EchoSVG (Java) | CairoSVG (Python) | JairoSVG vs EchoSVG | JairoSVG vs CairoSVG |
 | -------------------------------------------- | :-------------: | :------------: | :---------------: | :-----------------: | :------------------: |
@@ -381,7 +381,7 @@ jbang comparison/benchmark.java --no-jsvg
 jbang comparison/benchmark.java --warmup=5 --iterations=100
 ```
 
-The benchmark loads all SVG files from `comparison/svg/` (currently 19 files). Each runs 20 warm-up iterations followed by 1000 measured iterations. Stats reported: average, median, p95, and minimum times.
+The benchmark loads all SVG files from `comparison/svg/` (currently 20 files). Each runs 20 warm-up iterations followed by 1000 measured iterations. Stats reported: average, median, p95, and minimum times.
 
 ---
 
@@ -416,7 +416,7 @@ JairoSVG, CairoSVG, and JSVG share a similar security posture: no scripting supp
 
 ## Visual Rendering Comparison
 
-Side-by-side visual comparison of 19 SVG test cases across all four libraries.
+Side-by-side visual comparison of 20 SVG test cases across all four libraries.
 
 ### 01 — Basic Shapes
 
@@ -569,6 +569,14 @@ Multi-span text (tspan), text-decoration, textPath on curves, and rotated text.
 | Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
 | :-------: | :------: | :-----: | :------: | :--: |
 | [SVG](svg/19_text_advanced.svg) | ![JairoSVG](png/jairosvg/19_text_advanced.png) | ![EchoSVG](png/echosvg/19_text_advanced.png) | ![CairoSVG](png/cairosvg/19_text_advanced.png) | ![JSVG](png/jsvg/19_text_advanced.png) |
+
+### 20 — feBlend Modes
+
+`<feBlend>` with `normal`, `multiply`, `screen`, `darken`, and `lighten` mode outputs.
+
+|             Input SVG              |                     JairoSVG                      |                     EchoSVG                     |                     CairoSVG                      |
+| :--------------------------------: | :-----------------------------------------------: | :---------------------------------------------: | :-----------------------------------------------: |
+| [SVG](svg/20_fe_blend_modes.svg) | ![JairoSVG](png/jairosvg/20_fe_blend_modes.png) | ![EchoSVG](png/echosvg/20_fe_blend_modes.png) | ![CairoSVG](png/cairosvg/20_fe_blend_modes.png) |
 
 ---
 

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="240">
+  <defs>
+    <filter id="blendNormal">
+      <feFlood flood-color="#ff6b6b" flood-opacity="0.85" result="a"/>
+      <feFlood flood-color="#4dabf7" flood-opacity="0.75" result="b"/>
+      <feBlend in="a" in2="b" mode="normal"/>
+    </filter>
+    <filter id="blendMultiply">
+      <feFlood flood-color="#ff6b6b" flood-opacity="0.85" result="a"/>
+      <feFlood flood-color="#4dabf7" flood-opacity="0.75" result="b"/>
+      <feBlend in="a" in2="b" mode="multiply"/>
+    </filter>
+    <filter id="blendScreen">
+      <feFlood flood-color="#ff6b6b" flood-opacity="0.85" result="a"/>
+      <feFlood flood-color="#4dabf7" flood-opacity="0.75" result="b"/>
+      <feBlend in="a" in2="b" mode="screen"/>
+    </filter>
+    <filter id="blendDarken">
+      <feFlood flood-color="#ff6b6b" flood-opacity="0.85" result="a"/>
+      <feFlood flood-color="#4dabf7" flood-opacity="0.75" result="b"/>
+      <feBlend in="a" in2="b" mode="darken"/>
+    </filter>
+    <filter id="blendLighten">
+      <feFlood flood-color="#ff6b6b" flood-opacity="0.85" result="a"/>
+      <feFlood flood-color="#4dabf7" flood-opacity="0.75" result="b"/>
+      <feBlend in="a" in2="b" mode="lighten"/>
+    </filter>
+  </defs>
+
+  <rect width="960" height="240" fill="#f8f9fa"/>
+
+  <g font-family="Arial, sans-serif" font-size="15" fill="#343a40" text-anchor="middle">
+    <text x="96" y="38">normal</text>
+    <text x="288" y="38">multiply</text>
+    <text x="480" y="38">screen</text>
+    <text x="672" y="38">darken</text>
+    <text x="864" y="38">lighten</text>
+  </g>
+
+  <g fill="#ced4da" stroke="#adb5bd" stroke-width="1">
+    <rect x="24" y="52" width="144" height="144" rx="10"/>
+    <rect x="216" y="52" width="144" height="144" rx="10"/>
+    <rect x="408" y="52" width="144" height="144" rx="10"/>
+    <rect x="600" y="52" width="144" height="144" rx="10"/>
+    <rect x="792" y="52" width="144" height="144" rx="10"/>
+  </g>
+
+  <rect x="24" y="52" width="144" height="144" rx="10" filter="url(#blendNormal)"/>
+  <rect x="216" y="52" width="144" height="144" rx="10" filter="url(#blendMultiply)"/>
+  <rect x="408" y="52" width="144" height="144" rx="10" filter="url(#blendScreen)"/>
+  <rect x="600" y="52" width="144" height="144" rx="10" filter="url(#blendDarken)"/>
+  <rect x="792" y="52" width="144" height="144" rx="10" filter="url(#blendLighten)"/>
+
+  <text x="480" y="224" text-anchor="middle" font-size="13" font-family="Arial, sans-serif" fill="#495057">
+    feBlend mode comparison using two flood inputs (#ff6b6b @ 0.85 and #4dabf7 @ 0.75)
+  </text>
+</svg>
