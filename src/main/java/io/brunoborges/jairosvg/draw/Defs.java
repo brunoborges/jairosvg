@@ -502,6 +502,8 @@ public final class Defs {
                     offset(input, size(surface, child.get("dx", "0")), size(surface, child.get("dy", "0")));
                 case "feFlood" -> flood(sourceGraphic.getWidth(), sourceGraphic.getHeight(),
                         child.get("flood-color", "black"), parseDoubleOr(child.get("flood-opacity"), 1));
+                case "feBlend" -> blend(input, resolveInput(results, child.get("in2"), last, sourceGraphic),
+                        child.get("mode", "normal"));
                 case "feMerge" -> merge(results, child, sourceGraphic.getWidth(), sourceGraphic.getHeight(), last);
                 case "feDropShadow" -> dropShadow(surface, input, child);
                 case "feTile" -> tile(input);
@@ -815,6 +817,66 @@ public final class Defs {
         g.fillRect(0, 0, width, height);
         g.dispose();
         return output;
+    }
+
+    private static BufferedImage blend(BufferedImage input, BufferedImage destination, String mode) {
+        int width = Math.max(input.getWidth(), destination.getWidth());
+        int height = Math.max(input.getHeight(), destination.getHeight());
+        BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int src = x < input.getWidth() && y < input.getHeight() ? input.getRGB(x, y) : 0;
+                int dst = x < destination.getWidth() && y < destination.getHeight() ? destination.getRGB(x, y) : 0;
+                output.setRGB(x, y, blendPixel(src, dst, mode));
+            }
+        }
+        return output;
+    }
+
+    private static int blendPixel(int src, int dst, String mode) {
+        double srcA = ((src >>> 24) & 0xFF) / 255.0;
+        double dstA = ((dst >>> 24) & 0xFF) / 255.0;
+        if (srcA == 0 && dstA == 0) {
+            return 0;
+        }
+
+        double srcR = ((src >>> 16) & 0xFF) / 255.0;
+        double srcG = ((src >>> 8) & 0xFF) / 255.0;
+        double srcB = (src & 0xFF) / 255.0;
+        double dstR = ((dst >>> 16) & 0xFF) / 255.0;
+        double dstG = ((dst >>> 8) & 0xFF) / 255.0;
+        double dstB = (dst & 0xFF) / 255.0;
+
+        double outA = srcA + dstA - srcA * dstA;
+        double outR = blendChannel(srcR, dstR, srcA, dstA, mode, outA);
+        double outG = blendChannel(srcG, dstG, srcA, dstA, mode, outA);
+        double outB = blendChannel(srcB, dstB, srcA, dstA, mode, outA);
+
+        int a = (int) Math.round(outA * 255);
+        int r = (int) Math.round(outR * 255);
+        int g = (int) Math.round(outG * 255);
+        int b = (int) Math.round(outB * 255);
+        return (clampChannel(a) << 24) | (clampChannel(r) << 16) | (clampChannel(g) << 8) | clampChannel(b);
+    }
+
+    private static double blendChannel(double src, double dst, double srcA, double dstA, String mode, double outA) {
+        if (outA == 0) {
+            return 0;
+        }
+        double blended = switch (mode) {
+            case "multiply" -> dst * src;
+            case "screen" -> dst + src - dst * src;
+            case "darken" -> Math.min(dst, src);
+            case "lighten" -> Math.max(dst, src);
+            default -> src;
+        };
+        // SVG feBlend compositing: destination-only + source-only + blended overlap.
+        double preMultiplied = (1 - srcA) * dstA * dst + (1 - dstA) * srcA * src + srcA * dstA * blended;
+        return Math.clamp(preMultiplied / outA, 0, 1);
+    }
+
+    private static int clampChannel(int value) {
+        return Math.clamp(value, 0, 255);
     }
 
     private static BufferedImage merge(Map<String, BufferedImage> results, Node mergeNode, int width, int height,
