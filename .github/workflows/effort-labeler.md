@@ -11,6 +11,10 @@ on:
         description: "Process all open issues missing an effort label"
         type: boolean
         default: true
+if: >
+  github.event_name != 'issue_comment' ||
+  startsWith(github.event.comment.body, '/effort') ||
+  startsWith(github.event.comment.body, '/Effort')
 permissions:
   contents: read
   issues: read
