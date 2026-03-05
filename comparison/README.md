@@ -19,6 +19,7 @@ A comprehensive comparison of three SVG libraries — **JairoSVG** (Java), **Ech
 - [Visual Rendering Comparison](#visual-rendering-comparison)
 - [Summary](#summary)
 - [When to Choose Which](#when-to-choose-which)
+- [What About ImageMagick?](#what-about-imagemagick)
 - [Regenerating](#regenerating)
 
 ---
@@ -589,6 +590,39 @@ Since JairoSVG is a port of CairoSVG, most features should be at parity. Key dif
 | Gzip-compressed `.svgz` input     |            ❌            |             ✅             |
 
 JairoSVG adds features beyond CairoSVG (fluent builder API, `BufferedImage` output, EPS support) while maintaining the same core rendering approach.
+
+---
+
+## What About ImageMagick?
+
+[ImageMagick](https://imagemagick.org/) is a popular command-line image processing toolkit that supports SVG as an input format. However, testing against the same 19 SVG test cases used in this comparison reveals that **ImageMagick is not a reliable SVG-to-PNG converter**. Out of 19 test cases, ImageMagick **failed on 11** (58%) — crashing, producing errors, or generating incorrect output.
+
+### Failure Summary
+
+| Category | Affected Test Cases | Error |
+| --- | --- | --- |
+| **Font resolution** | 04, 08, 09, 12, 13, 14, 17 | `unable to read font ''` — ImageMagick cannot resolve font families from SVG `<style>` blocks or `font-family` attributes |
+| **Crashes (segfaults)** | 05, 18, 19 | `malloc: pointer being freed was not allocated` / `Trace/BPT trap` — the built-in MSVG renderer crashes on complex transforms, embedded base64 images, and advanced text |
+| **Gradient/paint references** | 15 | `unrecognized color 'fadeLR'` — fails to resolve `url(#id)` gradient references used in masks |
+
+### Root Cause
+
+ImageMagick's built-in SVG renderer (MSVG) is a minimal implementation that lacks:
+
+- **CSS `<style>` parsing** — inline stylesheets are largely ignored
+- **Font fallback** — if the exact font isn't found on the system, rendering fails entirely
+- **Gradient/paint server resolution** — `url(#id)` references in fill/stroke are not reliably resolved
+- **Robust memory management** — complex SVG inputs trigger segfaults and aborts
+
+Even when ImageMagick can be configured to delegate SVG rendering to an external library (e.g., librsvg via `--delegate`), the default installation does not include this, and the built-in renderer is what most users encounter.
+
+### Performance
+
+Even for the 8 test cases where ImageMagick succeeds, performance is significantly worse than all three dedicated SVG libraries. Each conversion spawns a new `magick` process, so there is unavoidable process startup overhead. In the Gradients scenario, for example, **ImageMagick is roughly 10× slower than JairoSVG**.
+
+### Verdict
+
+ImageMagick is an excellent tool for raster image manipulation (resize, crop, compose, format conversion), but its SVG support is too limited for production use. For reliable SVG → PNG conversion, use a dedicated SVG library like JairoSVG, EchoSVG, or CairoSVG.
 
 ---
 
