@@ -6,7 +6,7 @@
     },
     "benchmark": {
       "script-ref": "comparison/benchmark.java",
-      "description": "SVG → PNG benchmark: JairoSVG vs EchoSVG vs CairoSVG"
+      "description": "SVG → PNG benchmark: JairoSVG vs EchoSVG vs JSVG vs CairoSVG"
     }
   }
 }

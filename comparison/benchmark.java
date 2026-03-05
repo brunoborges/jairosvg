@@ -6,8 +6,12 @@
 //REPOS css4j=https://css4j.github.io/maven/
 //DEPS io.brunoborges:jairosvg:1.0.3-SNAPSHOT
 //DEPS io.sf.carte:echosvg-transcoder:2.4
+//DEPS com.github.weisj:jsvg:2.0.0
 //DEPS me.tongfei:progressbar:0.10.2
 
+import com.github.weisj.jsvg.SVGDocument;
+import com.github.weisj.jsvg.parser.LoaderContext;
+import com.github.weisj.jsvg.parser.SVGLoader;
 import io.brunoborges.jairosvg.JairoSVG;
 import io.sf.carte.echosvg.transcoder.TranscoderInput;
 import io.sf.carte.echosvg.transcoder.TranscoderOutput;
@@ -16,16 +20,24 @@ import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import java.util.stream.*;
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 public class benchmark {
 
-    static final int WARMUP = 20;
-    static final int ITERATIONS = 1000;
+    static int WARMUP = 20;
+    static int ITERATIONS = 1000;
 
     static final Path SVG_DIR = Path.of("comparison/svg");
 
@@ -60,6 +72,62 @@ public class benchmark {
         var input = new TranscoderInput(new StringReader(svg));
         var baos = new ByteArrayOutputStream();
         transcoder.transcode(input, new TranscoderOutput(baos));
+        return baos.toByteArray();
+    }
+
+    // PNG writer + compression param cached for JSVG, matching JairoSVG's compression level 6
+    private static final ImageWriter JSVG_PNG_WRITER;
+    private static final ImageWriteParam JSVG_PNG_PARAM;
+
+    static {
+        var writers = ImageIO.getImageWritersByFormatName("PNG");
+        if (!writers.hasNext()) throw new RuntimeException("No PNG ImageWriter found");
+        JSVG_PNG_WRITER = writers.next();
+        JSVG_PNG_PARAM = JSVG_PNG_WRITER.getDefaultWriteParam();
+        JSVG_PNG_PARAM.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+        // Level 6 → quality 1.0 - (6 / 9.0) ≈ 0.333, matching JairoSVG/CairoSVG default
+        JSVG_PNG_PARAM.setCompressionQuality(1.0f - (6 / 9.0f));
+    }
+
+    /**
+     * JSVG converter with rendering hints and PNG compression normalized to
+     * match JairoSVG defaults, so the benchmark compares SVG rendering engines
+     * on equal footing rather than measuring quality-setting differences.
+     *
+     * Hints matched: KEY_ANTIALIASING, KEY_TEXT_ANTIALIASING, KEY_RENDERING,
+     *                KEY_STROKE_CONTROL, KEY_FRACTIONALMETRICS
+     * PNG compression: level 6 (same as JairoSVG/CairoSVG/libpng default)
+     */
+    static byte[] jsvgConvert(String svg) throws Exception {
+        SVGLoader loader = new SVGLoader();
+        SVGDocument doc = loader.load(
+                new ByteArrayInputStream(svg.getBytes(StandardCharsets.UTF_8)),
+                null,
+                LoaderContext.createDefault());
+        if (doc == null) throw new RuntimeException("jsvg returned null document");
+        var size = doc.size();
+        int w = Math.max(1, (int) size.width);
+        int h = Math.max(1, (int) size.height);
+        BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = image.createGraphics();
+        // Match JairoSVG's rendering hints for a fair comparison
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+        g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        doc.render(null, g);
+        g.dispose();
+        // Encode PNG with compression level 6, matching JairoSVG
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        synchronized (JSVG_PNG_WRITER) {
+            try {
+                JSVG_PNG_WRITER.setOutput(new MemoryCacheImageOutputStream(baos));
+                JSVG_PNG_WRITER.write(null, new IIOImage(image, null, null), JSVG_PNG_PARAM);
+            } finally {
+                JSVG_PNG_WRITER.reset();
+            }
+        }
         return baos.toByteArray();
     }
 
@@ -147,15 +215,23 @@ public class benchmark {
     public static void main(String[] args) throws Exception {
         List<SvgCase> allCases = loadSvgCases();
 
-        // Parse args: filter by name substring, --no-cairosvg, --no-echosvg
+        // Parse args: filter by name substring, --no-cairosvg, --no-echosvg, --no-jsvg,
+        //              --warmup=N, --iterations=N
         Set<String> nameFilters = new LinkedHashSet<>();
         boolean runCairo = true;
         boolean runEcho = true;
+        boolean runJsvg = true;
         for (String arg : args) {
             if ("--no-cairosvg".equals(arg)) {
                 runCairo = false;
             } else if ("--no-echosvg".equals(arg)) {
                 runEcho = false;
+            } else if ("--no-jsvg".equals(arg)) {
+                runJsvg = false;
+            } else if (arg.startsWith("--warmup=")) {
+                WARMUP = Integer.parseInt(arg.substring("--warmup=".length()));
+            } else if (arg.startsWith("--iterations=")) {
+                ITERATIONS = Integer.parseInt(arg.substring("--iterations=".length()));
             } else {
                 nameFilters.add(arg.toLowerCase());
             }
@@ -176,6 +252,7 @@ public class benchmark {
         System.out.println("=".repeat(98));
         System.out.print("  SVG → PNG Benchmark: JairoSVG");
         if (runEcho) System.out.print(" vs EchoSVG");
+        if (runJsvg) System.out.print(" vs JSVG");
         if (runCairo) System.out.print(" vs CairoSVG");
         System.out.println();
         System.out.printf("  Warmup: %d iterations, Measurement: %d iterations, SVG files: %d%n",
@@ -184,6 +261,7 @@ public class benchmark {
 
         SvgConverter jairosvg = svg -> JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
         SvgConverter echosvg = svg -> echoConvert(svg);
+        SvgConverter jsvg = svg -> jsvgConvert(svg);
 
         for (int ci = 0; ci < cases.size(); ci++) {
             SvgCase c = cases.get(ci);
@@ -191,10 +269,10 @@ public class benchmark {
             System.out.println("\n▸ " + c.name() + "  [" + (ci + 1) + "/" + cases.size() + "]");
 
             // Total steps for Java engines: (warmup + iterations) each
-            int javaEngines = 1 + (runEcho ? 1 : 0);
+            int javaEngines = 1 + (runEcho ? 1 : 0) + (runJsvg ? 1 : 0);
             int totalSteps = javaEngines * (WARMUP + ITERATIONS) + (runCairo ? 1 : 0);
 
-            double[] jTimes, eTimes = null, cTimes = null;
+            double[] jTimes, eTimes = null, sTimes = null, cTimes = null;
 
             try (var pb = new ProgressBarBuilder()
                     .setTaskName("  Progress")
@@ -208,6 +286,11 @@ public class benchmark {
                 if (runEcho) {
                     System.gc(); Thread.sleep(100);
                     eTimes = bench("EchoSVG", echosvg, c.content(), pb);
+                }
+
+                if (runJsvg) {
+                    System.gc(); Thread.sleep(100);
+                    sTimes = bench("JSVG", jsvg, c.content(), pb);
                 }
 
                 if (runCairo) {
@@ -227,6 +310,12 @@ public class benchmark {
                 eAvg = Arrays.stream(eTimes).average().orElse(0);
             }
 
+            double sAvg = 0;
+            if (sTimes != null) {
+                printStats("JSVG      (Java/Java2D)", sTimes);
+                sAvg = Arrays.stream(sTimes).average().orElse(0);
+            }
+
             double cAvg = 0;
             if (cTimes != null) {
                 printStats("CairoSVG  (Python/Cairo)", cTimes);
@@ -237,10 +326,16 @@ public class benchmark {
             if (eTimes != null) {
                 printComparison("JairoSVG", jAvg, "EchoSVG", eAvg);
             }
+            if (sTimes != null) {
+                printComparison("JairoSVG", jAvg, "JSVG", sAvg);
+            }
             if (cTimes != null) {
                 printComparison("JairoSVG", jAvg, "CairoSVG", cAvg);
                 if (eTimes != null) {
                     printComparison("EchoSVG", eAvg, "CairoSVG", cAvg);
+                }
+                if (sTimes != null) {
+                    printComparison("JSVG", sAvg, "CairoSVG", cAvg);
                 }
             }
         }
