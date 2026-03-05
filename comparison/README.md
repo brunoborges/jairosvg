@@ -336,6 +336,7 @@ jbang comparison/benchmark.java filters embedded
 # Skip engines
 jbang comparison/benchmark.java --no-cairosvg
 jbang comparison/benchmark.java --no-echosvg
+jbang comparison/benchmark.java --no-jsvg
 ```
 
 The benchmark loads all SVG files from `comparison/svg/` (currently 19 files). Each runs 20 warm-up iterations followed by 1000 measured iterations. Stats reported: average, median, p95, and minimum times.
