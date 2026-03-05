@@ -332,6 +332,78 @@ class ShapeRenderingTest {
     }
 
     @Test
+    void testFeImageFilterRendersDataImage() throws Exception {
+        String b64 = "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAEElEQVR4nGN47mMDRwzEcQBfYhbxYdU3aQAAAABJRU5ErkJggg==";
+        String filteredSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="img">
+                      <feImage href="data:image/png;base64,%s"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="white"/>
+                  <rect x="20" y="20" width="60" height="60" fill="#0000ff" filter="url(#img)"/>
+                </svg>
+                """.formatted(b64);
+        String plainSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <rect x="20" y="20" width="60" height="60" fill="#0000ff"/>
+                </svg>
+                """;
+
+        BufferedImage filteredImage = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(filteredSvg.getBytes(StandardCharsets.UTF_8))));
+        BufferedImage plainImage = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(plainSvg.getBytes(StandardCharsets.UTF_8))));
+
+        int filteredPixel = filteredImage.getRGB(50, 50);
+        int plainPixel = plainImage.getRGB(50, 50);
+        int filteredRed = (filteredPixel >> 16) & 0xFF;
+        int filteredBlue = filteredPixel & 0xFF;
+
+        assertNotEquals(plainPixel, filteredPixel);
+        assertTrue(filteredRed > filteredBlue);
+    }
+
+    @Test
+    void testFeImageFilterRendersInlineImageReference() throws Exception {
+        String b64 = "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAEElEQVR4nGN47mMDRwzEcQBfYhbxYdU3aQAAAABJRU5ErkJggg==";
+        String filteredSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <image id="source" x="0" y="0" width="100" height="100"
+                        href="data:image/png;base64,%s"/>
+                    <filter id="imgRef">
+                      <feImage href="#source"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="white"/>
+                  <rect x="20" y="20" width="60" height="60" fill="#0000ff" filter="url(#imgRef)"/>
+                </svg>
+                """.formatted(b64);
+        String plainSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <rect x="20" y="20" width="60" height="60" fill="#0000ff"/>
+                </svg>
+                """;
+
+        BufferedImage filteredImage = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(filteredSvg.getBytes(StandardCharsets.UTF_8))));
+        BufferedImage plainImage = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(plainSvg.getBytes(StandardCharsets.UTF_8))));
+
+        int filteredPixel = filteredImage.getRGB(50, 50);
+        int plainPixel = plainImage.getRGB(50, 50);
+        int filteredRed = (filteredPixel >> 16) & 0xFF;
+        int filteredBlue = filteredPixel & 0xFF;
+
+        assertNotEquals(plainPixel, filteredPixel);
+        assertTrue(filteredRed > filteredBlue);
+    }
+
+    @Test
     void testMarkersRenderOnLinePolylineAndPath() throws Exception {
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120">
