@@ -87,110 +87,116 @@ EchoSVG inherits Apache Batik's **modular, enterprise-grade architecture** built
 
 CairoSVG is a **Python library** built on the **Cairo 2D graphics library** (C). It uses `tinycss2` and `cssselect2` for CSS parsing, `lxml` or `ElementTree` for XML, and `Pillow` for raster image handling. The architecture is a set of Python modules (`surface.py`, `shapes.py`, `path.py`, `text.py`, `defs.py`, etc.) that JairoSVG mirrors directly.
 
+### JSVG
+
+JSVG is a **lightweight Java SVG renderer** designed for AWT/Swing applications. It renders SVGs directly onto `Graphics2D` contexts with minimal memory usage (~50% less than svgSalamander, ~98% less than Batik). Used in production by **IntelliJ IDEA**, **Apache NetBeans**, **Eclipse SWT**, and **FlatLaf**. JSVG is a *renderer*, not a converter — it does not produce PNG/PDF output directly; users render to `BufferedImage` and handle file encoding themselves.
+
 ### Architecture Comparison
 
-| Aspect               | JairoSVG                | EchoSVG                  | CairoSVG                                  |
-| -------------------- | ----------------------- | ------------------------ | ----------------------------------------- |
-| **Core rendering**   | Java2D (`Graphics2D`)   | GVT → Java2D             | Cairo (C library)                         |
-| **CSS engine**       | Custom lightweight      | css4j (CSS4 support)     | tinycss2 + cssselect2                     |
-| **SVG DOM**          | Read-only `Node` tree   | Full mutable W3C DOM     | ElementTree (read-only)                   |
-| **Module structure** | Single JAR, ~20 classes | 20+ Gradle modules       | Single Python package                     |
-| **Animation engine** | None                    | Full SMIL                | None                                      |
-| **Scripting**        | None                    | Mozilla Rhino (JS)       | None                                      |
-| **Filter pipeline**  | Basic                   | Full primitives          | 3 primitives (feBlend, feFlood, feOffset) |
-| **Font handling**    | Java AWT fonts          | AWT + SVG fonts          | Cairo font system                         |
-| **Extensibility**    | Minimal (source-level)  | High (bridges, handlers) | Minimal (source-level)                    |
+| Aspect               | JairoSVG                | EchoSVG                  | CairoSVG                                  | JSVG                              |
+| -------------------- | ----------------------- | ------------------------ | ----------------------------------------- | --------------------------------- |
+| **Core rendering**   | Java2D (`Graphics2D`)   | GVT → Java2D             | Cairo (C library)                         | Java2D (`Graphics2D`)            |
+| **CSS engine**       | Custom lightweight      | css4j (CSS4 support)     | tinycss2 + cssselect2                     | Built-in (partial)               |
+| **SVG DOM**          | Read-only `Node` tree   | Full mutable W3C DOM     | ElementTree (read-only)                   | `SVGDocument` (pre-processed)    |
+| **Module structure** | Single JAR, ~20 classes | 20+ Gradle modules       | Single Python package                     | Single JAR, ~30K LOC             |
+| **Animation engine** | None                    | Full SMIL                | None                                      | ⚠️ Partial (experimental)         |
+| **Scripting**        | None                    | Mozilla Rhino (JS)       | None                                      | None                             |
+| **Filter pipeline**  | Basic                   | Full primitives          | 3 primitives (feBlend, feFlood, feOffset) | Most primitives (15+ supported)  |
+| **Font handling**    | Java AWT fonts          | AWT + SVG fonts          | Cairo font system                         | Java AWT fonts                   |
+| **Extensibility**    | Minimal (source-level)  | High (bridges, handlers) | Minimal (source-level)                    | `DomProcessor` + `LoaderContext` |
 
 ---
 
 ## SVG Element Support
 
-| SVG Element                                                   |                                JairoSVG                                 |       EchoSVG        |                            CairoSVG                             |
-| ------------------------------------------------------------- | :---------------------------------------------------------------------: | :------------------: | :-------------------------------------------------------------: |
-| `<svg>`, `<g>`                                                |                                   ✅                                    |          ✅          |                               ✅                                |
-| `<rect>`, `<circle>`, `<ellipse>`                             |                                   ✅                                    |          ✅          |                               ✅                                |
-| `<line>`, `<polyline>`, `<polygon>`                           |                                   ✅                                    |          ✅          |                               ✅                                |
-| `<path>` (all commands)                                       |                                   ✅                                    |          ✅          |                               ✅                                |
-| `<text>`, `<tspan>`                                           |                                   ✅                                    |          ✅          |                               ✅                                |
-| `<textPath>`                                                  |                                   ✅                                    |          ✅          |                               ✅                                |
-| `<image>` (raster + nested SVG)                               |                                   ✅                                    |          ✅          |                         ✅ (via Pillow)                         |
-| `<use>`, `<defs>`                                             |                                   ✅                                    |          ✅          |                               ✅                                |
-| `<symbol>`                                                    |                                   ✅                                    |          ✅          |                               ❌                                |
-| `<linearGradient>`, `<radialGradient>`                        |                                   ✅                                    |          ✅          |                               ✅                                |
-| `<pattern>`                                                   |                                   ✅                                    |          ✅          |                           ⚠️ (naive)                            |
-| `<clipPath>`                                                  |                                   ✅                                    |          ✅          |                               ✅                                |
-| `<mask>`                                                      |                                   ✅                                    |          ✅          |                         ⚠️ (alpha only)                         |
-| `<filter>`                                                    | ✅ (`feGaussianBlur`, `feDropShadow`, `feOffset`, `feFlood`, `feMerge`) | ✅ (full primitives) | ⚠️ (`feBlend`, `feFlood`, `feOffset` only; no blur/drop-shadow) |
-| `<marker>`                                                    |                                   ✅                                    |          ✅          |                           ✅ (basic)                            |
-| `<metadata>`, `<title>`, `<desc>`                             |                        ✅ (parsed, not rendered)                        |          ✅          |                          ❌ (ignored)                           |
-| `<foreignObject>`                                             |                               ❌ ([#15])                                |          ✅          |                               ❌                                |
-| `<animate>`, `<animateTransform>`, `<animateMotion>`, `<set>` |                               ❌ ([#16])                                |      ✅ (SMIL)       |                               ❌                                |
-| SVG Fonts (`<font>`, `<glyph>`)                               |                                   ✅                                    |          ✅          |                               ❌                                |
-| `<script>`                                                    |                               ❌ ([#18])                                |    ✅ (Rhino JS)     |                               ❌                                |
-| `<cursor>`                                                    |                               ❌ ([#19])                                |          ✅          |                               ❌                                |
+| SVG Element                                                   |                                JairoSVG                                 |       EchoSVG        |                            CairoSVG                             |                                      JSVG                                       |
+| ------------------------------------------------------------- | :---------------------------------------------------------------------: | :------------------: | :-------------------------------------------------------------: | :------------------------------------------------------------------------------: |
+| `<svg>`, `<g>`                                                |                                   ✅                                    |          ✅          |                               ✅                                |                                        ✅                                        |
+| `<rect>`, `<circle>`, `<ellipse>`                             |                                   ✅                                    |          ✅          |                               ✅                                |                                        ✅                                        |
+| `<line>`, `<polyline>`, `<polygon>`                           |                                   ✅                                    |          ✅          |                               ✅                                |                                        ✅                                        |
+| `<path>` (all commands)                                       |                                   ✅                                    |          ✅          |                               ✅                                |                                        ✅                                        |
+| `<text>`, `<tspan>`                                           |                                   ✅                                    |          ✅          |                               ✅                                |                                        ✅                                        |
+| `<textPath>`                                                  |                                   ✅                                    |          ✅          |                               ✅                                |                                        ✅                                        |
+| `<image>` (raster + nested SVG)                               |                                   ✅                                    |          ✅          |                         ✅ (via Pillow)                         |                                        ✅                                        |
+| `<use>`, `<defs>`                                             |                                   ✅                                    |          ✅          |                               ✅                                |                                        ✅                                        |
+| `<symbol>`                                                    |                                   ✅                                    |          ✅          |                               ❌                                |                                        ✅                                        |
+| `<linearGradient>`, `<radialGradient>`                        |                                   ✅                                    |          ✅          |                               ✅                                |                                        ✅                                        |
+| `<pattern>`                                                   |                                   ✅                                    |          ✅          |                           ⚠️ (naive)                            |                                        ✅                                        |
+| `<clipPath>`                                                  |                                   ✅                                    |          ✅          |                               ✅                                |                                        ✅                                        |
+| `<mask>`                                                      |                                   ✅                                    |          ✅          |                         ⚠️ (alpha only)                         |                                        ✅                                        |
+| `<filter>`                                                    | ✅ (`feGaussianBlur`, `feDropShadow`, `feOffset`, `feFlood`, `feMerge`) | ✅ (full primitives) | ⚠️ (`feBlend`, `feFlood`, `feOffset` only; no blur/drop-shadow) | ✅ (most primitives; no `feImage`, `feTile`, `feMorphology`, lighting effects) |
+| `<marker>`                                                    |                                   ✅                                    |          ✅          |                           ✅ (basic)                            |                                        ✅                                        |
+| `<metadata>`, `<title>`, `<desc>`                             |                        ✅ (parsed, not rendered)                        |          ✅          |                          ❌ (ignored)                           |                              ✅ (parsed, not rendered)                              |
+| `<foreignObject>`                                             |                               ❌ ([#15])                                |          ✅          |                               ❌                                |                                        ❌                                        |
+| `<animate>`, `<animateTransform>`, `<animateMotion>`, `<set>` |                               ❌ ([#16])                                |      ✅ (SMIL)       |                               ❌                                |                          ⚠️ (partial `animate`/`animateTransform`)                          |
+| SVG Fonts (`<font>`, `<glyph>`)                               |                                   ✅                                    |          ✅          |                               ❌                                |                                        ❌                                        |
+| `<script>`                                                    |                               ❌ ([#18])                                |    ✅ (Rhino JS)     |                               ❌                                |                                        ❌                                        |
+| `<cursor>`                                                    |                               ❌ ([#19])                                |          ✅          |                               ❌                                |                                        ❌                                        |
 
 ---
 
 ## SVG Attributes & Features
 
-| Feature                                                     |  JairoSVG  | EchoSVG |  CairoSVG  |
-| ----------------------------------------------------------- | :--------: | :-----: | :--------: |
-| `viewBox` + `preserveAspectRatio`                           |     ✅     |   ✅    |     ✅     |
-| Transforms (translate, rotate, scale, skewX, skewY, matrix) |     ✅     |   ✅    |     ✅     |
-| Nested `<svg>` (independent viewports)                      |     ✅     |   ✅    |     ✅     |
-| Opacity (element, fill, stroke)                             |     ✅     |   ✅    |     ✅     |
-| `fill-rule` (nonzero / evenodd)                             |     ✅     |   ✅    |     ✅     |
-| Stroke properties (dasharray, linecap, linejoin)            |     ✅     |   ✅    |     ✅     |
-| Gradient `spreadMethod` (pad / reflect / repeat)            |     ✅     |   ✅    |     ✅     |
-| `gradientUnits`, `gradientTransform`                        |     ✅     |   ✅    |     ✅     |
-| `patternTransform`                                          |     ✅     |   ✅    |     ❌     |
-| `fill="url(#id)"` references                                |     ✅     |   ✅    |     ✅     |
-| Units (px, pt, em, %, cm, mm, in)                           |     ✅     |   ✅    |     ✅     |
-| `font` shorthand                                            |     ✅     |   ✅    |     ❌     |
-| `font-family`, `font-size`, `font-weight`                   |     ✅     |   ✅    | ✅ (basic) |
-| `letter-spacing`, `text-anchor`                             |     ✅     |   ✅    |     ✅     |
-| `text-decoration`                                           |     ✅     |   ✅    |     ❌     |
-| Named colors (170+)                                         |     ✅     |   ✅    |     ✅     |
-| `currentColor`                                              |     ✅     |   ✅    |     ✅     |
-| `rgb()` / `rgba()` / hex colors                             |     ✅     |   ✅    |     ✅     |
-| `hsl()` / `hsla()`                                          |     ✅     |   ✅    |     ❌     |
-| CSS Color Level 4 (`oklch`, `lab`, etc.)                    | ❌ ([#23]) |   ✅    |     ❌     |
+| Feature                                                     |  JairoSVG  | EchoSVG |  CairoSVG  |   JSVG   |
+| ----------------------------------------------------------- | :--------: | :-----: | :--------: | :------: |
+| `viewBox` + `preserveAspectRatio`                           |     ✅     |   ✅    |     ✅     |    ✅    |
+| Transforms (translate, rotate, scale, skewX, skewY, matrix) |     ✅     |   ✅    |     ✅     |    ✅    |
+| Nested `<svg>` (independent viewports)                      |     ✅     |   ✅    |     ✅     |    ✅    |
+| Opacity (element, fill, stroke)                             |     ✅     |   ✅    |     ✅     |    ✅    |
+| `fill-rule` (nonzero / evenodd)                             |     ✅     |   ✅    |     ✅     |    ✅    |
+| Stroke properties (dasharray, linecap, linejoin)            |     ✅     |   ✅    |     ✅     |    ✅    |
+| Gradient `spreadMethod` (pad / reflect / repeat)            |     ✅     |   ✅    |     ✅     |    ✅    |
+| `gradientUnits`, `gradientTransform`                        |     ✅     |   ✅    |     ✅     |    ✅    |
+| `patternTransform`                                          |     ✅     |   ✅    |     ❌     |    ✅    |
+| `fill="url(#id)"` references                                |     ✅     |   ✅    |     ✅     |    ✅    |
+| Units (px, pt, em, %, cm, mm, in)                           |     ✅     |   ✅    |     ✅     |    ✅    |
+| `font` shorthand                                            |     ✅     |   ✅    |     ❌     |    ✅    |
+| `font-family`, `font-size`, `font-weight`                   |     ✅     |   ✅    | ✅ (basic) |    ✅    |
+| `letter-spacing`, `text-anchor`                             |     ✅     |   ✅    |     ✅     |    ✅    |
+| `text-decoration`                                           |     ✅     |   ✅    |     ❌     |    ✅    |
+| Named colors (170+)                                         |     ✅     |   ✅    |     ✅     |    ✅    |
+| `currentColor`                                              |     ✅     |   ✅    |     ✅     |    ✅    |
+| `rgb()` / `rgba()` / hex colors                             |     ✅     |   ✅    |     ✅     |    ✅    |
+| `hsl()` / `hsla()`                                          |     ✅     |   ✅    |     ❌     |    ✅    |
+| CSS Color Level 4 (`oklch`, `lab`, etc.)                    | ❌ ([#23]) |   ✅    |     ❌     |    ❌    |
 
 ---
 
 ## CSS & Styling
 
-| Feature                               |                                            JairoSVG                                            |    EchoSVG     |         CairoSVG         |
-| ------------------------------------- | :--------------------------------------------------------------------------------------------: | :------------: | :----------------------: |
-| Inline `style` attribute              |                                               ✅                                               |       ✅       |            ✅            |
-| `<style>` block (CSS stylesheet)      |                                               ✅                                               |       ✅       |            ✅            |
-| External CSS via `<?xml-stylesheet?>` |                                    ✅ (requires `--unsafe`)                                    |       ✅       |        ✅ (basic)        |
-| Class selectors                       |                                               ✅                                               |       ✅       |            ✅            |
-| ID selectors                          |                                               ✅                                               |       ✅       |            ✅            |
-| Descendant / child selectors          |                                           ✅ (basic)                                           |       ✅       |   ✅ (via cssselect2)    |
-| Pseudo-classes / pseudo-elements      | ✅ (`:first-child`, `:last-child`, `:nth-child()`, `:not()`, `::first-line`, `::first-letter`) |    Partial     | Partial (via cssselect2) |
-| CSS Level 4 selectors                 |                                           ❌ ([#26])                                           | ✅ (via css4j) |            ❌            |
-| CSS custom properties (variables)     |                                               ✅                                               |       ✅       |            ❌            |
-| CSS `calc()`                          |                                           ❌ ([#28])                                           |       ✅       |            ❌            |
-| CSS nesting                           |                                               ❌                                               |       ❌       |            ❌            |
-| `@import` rules                       |                                           ❌ ([#29])                                           |       ✅       |            ❌            |
-| `@supports` rules                     |                                           ❌ ([#30])                                           |       ✅       |            ❌            |
+| Feature                               |                                            JairoSVG                                            |    EchoSVG     |         CairoSVG         |       JSVG        |
+| ------------------------------------- | :--------------------------------------------------------------------------------------------: | :------------: | :----------------------: | :---------------: |
+| Inline `style` attribute              |                                               ✅                                               |       ✅       |            ✅            |        ✅         |
+| `<style>` block (CSS stylesheet)      |                                               ✅                                               |       ✅       |            ✅            |    ⚠️ (partial)    |
+| External CSS via `<?xml-stylesheet?>` |                                    ✅ (requires `--unsafe`)                                    |       ✅       |        ✅ (basic)        |        ❌         |
+| Class selectors                       |                                               ✅                                               |       ✅       |            ✅            |        ✅         |
+| ID selectors                          |                                               ✅                                               |       ✅       |            ✅            |        ✅         |
+| Descendant / child selectors          |                                           ✅ (basic)                                           |       ✅       |   ✅ (via cssselect2)    |    ⚠️ (partial)    |
+| Pseudo-classes / pseudo-elements      | ✅ (`:first-child`, `:last-child`, `:nth-child()`, `:not()`, `::first-line`, `::first-letter`) |    Partial     | Partial (via cssselect2) |        ❌         |
+| CSS Level 4 selectors                 |                                           ❌ ([#26])                                           | ✅ (via css4j) |            ❌            |        ❌         |
+| CSS custom properties (variables)     |                                               ✅                                               |       ✅       |            ❌            |        ❌         |
+| CSS `calc()`                          |                                           ❌ ([#28])                                           |       ✅       |            ❌            |        ❌         |
+| CSS nesting                           |                                               ❌                                               |       ❌       |            ❌            |        ❌         |
+| `@import` rules                       |                                           ❌ ([#29])                                           |       ✅       |            ❌            |        ❌         |
+| `@supports` rules                     |                                           ❌ ([#30])                                           |       ✅       |            ❌            |        ❌         |
 
-EchoSVG integrates the **css4j** CSS parser, giving it significantly more advanced CSS support. CairoSVG uses **tinycss2** + **cssselect2**, providing solid basic CSS support. JairoSVG's lightweight built-in processor covers the common patterns used in SVG files.
+EchoSVG integrates the **css4j** CSS parser, giving it significantly more advanced CSS support. CairoSVG uses **tinycss2** + **cssselect2**, providing solid basic CSS support. JairoSVG's lightweight built-in processor covers the common patterns used in SVG files. JSVG has partial `<style>` support focused on the CSS patterns most common in SVG icon sets.
 
 ---
 
 ## Output Formats
 
-| Format                 |          JairoSVG          |          EchoSVG           |      CairoSVG      |
-| ---------------------- | :------------------------: | :------------------------: | :----------------: |
-| PNG                    |             ✅             |             ✅             |         ✅         |
-| PDF                    | ✅ (via Apache PDFBox 3.0) | ✅ (via FOP or transcoder) |   ✅ (via Cairo)   |
-| PostScript (PS)        |             ✅             |             ✅             |         ✅         |
-| EPS                    |             ✅             |             ❌             |         ❌         |
-| JPEG                   |             ✅             |             ✅             |         ❌         |
-| TIFF                   |             ✅             |             ✅             |         ❌         |
-| In-memory image object |    ✅ (`BufferedImage`)    |    ✅ (`BufferedImage`)    | ✅ (Cairo surface) |
+| Format                 |          JairoSVG          |          EchoSVG           |      CairoSVG      |               JSVG                |
+| ---------------------- | :------------------------: | :------------------------: | :----------------: | :-------------------------------: |
+| PNG                    |             ✅             |             ✅             |         ✅         | ⚠️ (render + `ImageIO` by user)   |
+| PDF                    | ✅ (via Apache PDFBox 3.0) | ✅ (via FOP or transcoder) |   ✅ (via Cairo)   |                ❌                 |
+| PostScript (PS)        |             ✅             |             ✅             |         ✅         |                ❌                 |
+| EPS                    |             ✅             |             ❌             |         ❌         |                ❌                 |
+| JPEG                   |             ✅             |             ✅             |         ❌         | ⚠️ (render + `ImageIO` by user)   |
+| TIFF                   |             ✅             |             ✅             |         ❌         | ⚠️ (render + `ImageIO` by user)   |
+| In-memory image object |    ✅ (`BufferedImage`)    |    ✅ (`BufferedImage`)    | ✅ (Cairo surface) |       ✅ (`BufferedImage`)        |
+
+> **Note:** JSVG is a *renderer*, not a converter. It renders SVG to any `Graphics2D` context (including `BufferedImage`), but does not include built-in file export. Users must handle PNG/JPEG encoding themselves via `ImageIO`.
 
 ---
 
@@ -234,26 +240,42 @@ cairosvg.svg2png(url="input.svg", write_to="output.png",
                  dpi=150, scale=2, background_color="#ffffff")
 ```
 
+### JSVG — Loader + Render (Java)
+
+```java
+SVGLoader loader = new SVGLoader();
+SVGDocument doc = loader.load(new File("icon.svg").toURI().toURL());
+
+FloatSize size = doc.size();
+BufferedImage image = new BufferedImage((int) size.width, (int) size.height,
+        BufferedImage.TYPE_INT_ARGB);
+Graphics2D g = image.createGraphics();
+doc.render(null, g);
+g.dispose();
+
+ImageIO.write(image, "PNG", new File("output.png"));
+```
+
 ### API Comparison
 
-| Feature                            |         JairoSVG         |        EchoSVG        |      CairoSVG      |
-| ---------------------------------- | :----------------------: | :-------------------: | :----------------: |
-| Simple static method API           |            ✅            |  ❌ (transcoder API)  |         ✅         |
-| Fluent builder API                 |            ✅            |          ❌           | ❌ (keyword args)  |
-| Transcoder API (Batik-style)       |            ❌            |          ✅           |         ❌         |
-| Full SVG DOM (W3C DOM)             |            ❌            |          ✅           |         ❌         |
-| SVG DOM manipulation at runtime    |            ❌            |          ✅           |         ❌         |
-| Swing / GUI viewer component       |            ❌            |          ✅           |         ❌         |
-| CLI tool                           |            ✅            |    ✅ (rasterizer)    |         ✅         |
-| DPI control                        |            ✅            |          ✅           |         ✅         |
-| Scale factor                       |            ✅            |          ✅           |         ✅         |
-| Background color override          |            ✅            |          ✅           |         ✅         |
-| Color negation                     |            ✅            |          ❌           |         ✅         |
-| Output width / height override     |            ✅            |          ✅           |         ✅         |
-| External file access control (XXE) | ✅ (disabled by default) |   ✅ (configurable)   | ✅ (`unsafe` flag) |
-| URL input (http/https)             |            ✅            |          ✅           |         ✅         |
-| JBang support                      |            ✅            |          ❌           |        N/A         |
-| GraalVM Native Image compatible    |    ✅ (no reflection)    | ⚠️ (reflection-heavy) |        N/A         |
+| Feature                            |         JairoSVG         |        EchoSVG        |      CairoSVG      |             JSVG              |
+| ---------------------------------- | :----------------------: | :-------------------: | :----------------: | :---------------------------: |
+| Simple static method API           |            ✅            |  ❌ (transcoder API)  |         ✅         |     ❌ (loader + render)      |
+| Fluent builder API                 |            ✅            |          ❌           | ❌ (keyword args)  |              ❌               |
+| Transcoder API (Batik-style)       |            ❌            |          ✅           |         ❌         |              ❌               |
+| Full SVG DOM (W3C DOM)             |            ❌            |          ✅           |         ❌         |              ❌               |
+| SVG DOM manipulation at runtime    |            ❌            |          ✅           |         ❌         |    ⚠️ (via `DomProcessor`)     |
+| Swing / GUI viewer component       |            ❌            |          ✅           |         ❌         |  ✅ (render to `Graphics2D`)  |
+| CLI tool                           |            ✅            |    ✅ (rasterizer)    |         ✅         |              ❌               |
+| DPI control                        |            ✅            |          ✅           |         ✅         | ❌ (user scales via `ViewBox`) |
+| Scale factor                       |            ✅            |          ✅           |         ✅         |      ✅ (via `ViewBox`)       |
+| Background color override          |            ✅            |          ✅           |         ✅         |    ❌ (user fills manually)    |
+| Color negation                     |            ✅            |          ❌           |         ✅         |              ❌               |
+| Output width / height override     |            ✅            |          ✅           |         ✅         |      ✅ (via `ViewBox`)       |
+| External file access control (XXE) | ✅ (disabled by default) |   ✅ (configurable)   | ✅ (`unsafe` flag) |  ✅ (via `LoaderContext`)     |
+| URL input (http/https)             |            ✅            |          ✅           |         ✅         |       ✅ (via `URL`)          |
+| JBang support                      |            ✅            |          ❌           |        N/A         |              ❌               |
+| GraalVM Native Image compatible    |    ✅ (no reflection)    | ⚠️ (reflection-heavy) |        N/A         |          ✅ (likely)          |
 
 ---
 
@@ -293,16 +315,16 @@ _JairoSVG is **3–31× faster** than EchoSVG and **1–2.6× faster** than Cair
 
 Both JairoSVG and JSVG use Java2D as their rendering backend, but they ship with **different default quality settings**, which directly affects benchmark performance:
 
-| Setting                       | JairoSVG default             | JSVG default (out-of-the-box)     | Performance impact |
-| ----------------------------- | ---------------------------- | --------------------------------- | :----------------: |
-| `KEY_ANTIALIASING`            | `VALUE_ANTIALIAS_ON`         | Not set (platform default)        |        Low         |
-| `KEY_TEXT_ANTIALIASING`       | `VALUE_TEXT_ANTIALIAS_ON`    | Not set (platform default)        |        Low         |
-| `KEY_RENDERING`               | `VALUE_RENDER_QUALITY`       | Not set (defaults to speed)       |      **High**      |
-| `KEY_STROKE_CONTROL`          | `VALUE_STROKE_PURE`          | Not set (defaults to `NORMALIZE`) |      **High**      |
-| `KEY_FRACTIONALMETRICS`       | `VALUE_FRACTIONALMETRICS_ON` | Not set (defaults to `OFF`)       |       Medium       |
-| **PNG compression level**     | 6 (matches CairoSVG/libpng) | `ImageIO.write()` default         |       Medium       |
+| Setting                       | JairoSVG default             | JSVG default (out-of-the-box)          | Performance impact |
+| ----------------------------- | ---------------------------- | -------------------------------------- | :----------------: |
+| `KEY_ANTIALIASING`            | `VALUE_ANTIALIAS_ON`         | `VALUE_ANTIALIAS_ON` (auto-set)        |        Low         |
+| `KEY_TEXT_ANTIALIASING`       | `VALUE_TEXT_ANTIALIAS_ON`    | Not set (platform default)             |        Low         |
+| `KEY_RENDERING`               | `VALUE_RENDER_QUALITY`       | Not set (defaults to speed)            |      **High**      |
+| `KEY_STROKE_CONTROL`          | `VALUE_STROKE_PURE`          | `VALUE_STROKE_PURE` (auto-set)         |       Equal        |
+| `KEY_FRACTIONALMETRICS`       | `VALUE_FRACTIONALMETRICS_ON` | Not set (defaults to `OFF`)            |       Medium       |
+| **PNG compression level**     | 6 (matches CairoSVG/libpng) | N/A (no built-in PNG; user uses `ImageIO`) |       Medium       |
 
-`VALUE_RENDER_QUALITY` forces Java2D to use higher-fidelity rendering pipelines, and `VALUE_STROKE_PURE` computes precise sub-pixel stroke positions instead of snapping to pixel grid. Both improve visual accuracy at the cost of speed.
+JSVG automatically sets `KEY_ANTIALIASING` and `KEY_STROKE_CONTROL` to the values above when they are at their defaults. The key difference is `VALUE_RENDER_QUALITY` — JairoSVG forces Java2D to use higher-fidelity rendering pipelines — and `VALUE_FRACTIONALMETRICS_ON` which computes precise floating-point text metrics.
 
 **In the benchmark**, we normalize JSVG to use the same rendering hints and PNG compression level as JairoSVG, so that the comparison measures SVG engine efficiency rather than quality-setting differences.
 
