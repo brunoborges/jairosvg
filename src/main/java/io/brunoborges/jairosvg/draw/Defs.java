@@ -860,15 +860,15 @@ public final class Defs {
     }
 
     private static BufferedImage tile(BufferedImage input) {
-        Rectangle2D bounds = alphaBounds(input);
+        int[] bounds = alphaBounds(input);
         if (bounds == null) {
             return input;
         }
 
-        int tileX = (int) bounds.getX();
-        int tileY = (int) bounds.getY();
-        int tileWidth = (int) bounds.getWidth();
-        int tileHeight = (int) bounds.getHeight();
+        int tileX = bounds[0];
+        int tileY = bounds[1];
+        int tileWidth = bounds[2];
+        int tileHeight = bounds[3];
         BufferedImage tile = copyRegion(input, tileX, tileY, tileWidth, tileHeight);
 
         BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -882,15 +882,19 @@ public final class Defs {
         return output;
     }
 
-    private static Rectangle2D alphaBounds(BufferedImage image) {
+    private static int[] alphaBounds(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
         int minX = image.getWidth();
         int minY = image.getHeight();
         int maxX = -1;
         int maxY = -1;
+        int[] pixels = image.getRGB(0, 0, width, height, null, 0, width);
 
-        for (int y = 0; y < image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
-                int alpha = (image.getRGB(x, y) >>> 24) & 0xFF;
+        for (int y = 0; y < height; y++) {
+            int rowOffset = y * width;
+            for (int x = 0; x < width; x++) {
+                int alpha = (pixels[rowOffset + x] >>> 24) & 0xFF;
                 if (alpha == 0) {
                     continue;
                 }
@@ -905,7 +909,7 @@ public final class Defs {
             return null;
         }
 
-        return new Rectangle2D.Double(minX, minY, maxX - minX + 1, maxY - minY + 1);
+        return new int[] { minX, minY, maxX - minX + 1, maxY - minY + 1 };
     }
 
     private static BufferedImage copyRegion(BufferedImage source, int x, int y, int width, int height) {

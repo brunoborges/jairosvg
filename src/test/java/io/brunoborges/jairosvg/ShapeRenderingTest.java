@@ -356,9 +356,15 @@ class ShapeRenderingTest {
         BufferedImage plainImage = ImageIO
                 .read(new ByteArrayInputStream(JairoSVG.svg2png(plainSvg.getBytes(StandardCharsets.UTF_8))));
 
+        int minXOutsideSourceRect = 40;
+        int minYOutsideSourceRect = 30;
+        int maxXOutsideSourceRect = 115;
+        int maxYOutsideSourceRect = 55;
         boolean repeatedTileFound = false;
-        for (int y = 30; y < 55 && !repeatedTileFound; y++) {
-            for (int x = 40; x < 115; x++) {
+        // Search a far area well outside the original source rectangle (10,10)-(20,20).
+        // If feTile works, repeated red tiles must appear in this region.
+        for (int y = minYOutsideSourceRect; y < maxYOutsideSourceRect && !repeatedTileFound; y++) {
+            for (int x = minXOutsideSourceRect; x < maxXOutsideSourceRect; x++) {
                 if (plainImage.getRGB(x, y) != filteredImage.getRGB(x, y)) {
                     repeatedTileFound = true;
                     break;
