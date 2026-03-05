@@ -638,7 +638,7 @@ Since JairoSVG is a port of CairoSVG, most features should be at parity. Key dif
 | `font` shorthand                  |            ✅            |             ❌             |
 | EPS output                        |            ✅            |             ❌             |
 | External CSS `<?xml-stylesheet?>` | ✅ (requires `--unsafe`) |             ✅             |
-| Gzip-compressed `.svgz` input     |            ❌            |             ✅             |
+| Gzip-compressed `.svgz` input     |            ✅            |             ✅             |
 
 JairoSVG adds features beyond CairoSVG (fluent builder API, `BufferedImage` output, EPS support) while maintaining the same core rendering approach.
 
