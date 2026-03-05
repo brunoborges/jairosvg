@@ -28,12 +28,16 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import java.util.stream.*;
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 public class benchmark {
 
-    static final int WARMUP = 20;
-    static final int ITERATIONS = 1000;
+    static int WARMUP = 20;
+    static int ITERATIONS = 1000;
 
     static final Path SVG_DIR = Path.of("comparison/svg");
 
@@ -71,6 +75,29 @@ public class benchmark {
         return baos.toByteArray();
     }
 
+    // PNG writer + compression param cached for JSVG, matching JairoSVG's compression level 6
+    private static final ImageWriter JSVG_PNG_WRITER;
+    private static final ImageWriteParam JSVG_PNG_PARAM;
+
+    static {
+        var writers = ImageIO.getImageWritersByFormatName("PNG");
+        if (!writers.hasNext()) throw new RuntimeException("No PNG ImageWriter found");
+        JSVG_PNG_WRITER = writers.next();
+        JSVG_PNG_PARAM = JSVG_PNG_WRITER.getDefaultWriteParam();
+        JSVG_PNG_PARAM.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+        // Level 6 → quality 1.0 - (6 / 9.0) ≈ 0.333, matching JairoSVG/CairoSVG default
+        JSVG_PNG_PARAM.setCompressionQuality(1.0f - (6 / 9.0f));
+    }
+
+    /**
+     * JSVG converter with rendering hints and PNG compression normalized to
+     * match JairoSVG defaults, so the benchmark compares SVG rendering engines
+     * on equal footing rather than measuring quality-setting differences.
+     *
+     * Hints matched: KEY_ANTIALIASING, KEY_TEXT_ANTIALIASING, KEY_RENDERING,
+     *                KEY_STROKE_CONTROL, KEY_FRACTIONALMETRICS
+     * PNG compression: level 6 (same as JairoSVG/CairoSVG/libpng default)
+     */
     static byte[] jsvgConvert(String svg) throws Exception {
         SVGLoader loader = new SVGLoader();
         SVGDocument doc = loader.load(
@@ -83,11 +110,24 @@ public class benchmark {
         int h = Math.max(1, (int) size.height);
         BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
+        // Match JairoSVG's rendering hints for a fair comparison
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+        g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         doc.render(null, g);
         g.dispose();
+        // Encode PNG with compression level 6, matching JairoSVG
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(image, "PNG", baos);
+        synchronized (JSVG_PNG_WRITER) {
+            try {
+                JSVG_PNG_WRITER.setOutput(new MemoryCacheImageOutputStream(baos));
+                JSVG_PNG_WRITER.write(null, new IIOImage(image, null, null), JSVG_PNG_PARAM);
+            } finally {
+                JSVG_PNG_WRITER.reset();
+            }
+        }
         return baos.toByteArray();
     }
 
@@ -175,7 +215,8 @@ public class benchmark {
     public static void main(String[] args) throws Exception {
         List<SvgCase> allCases = loadSvgCases();
 
-        // Parse args: filter by name substring, --no-cairosvg, --no-echosvg, --no-jsvg
+        // Parse args: filter by name substring, --no-cairosvg, --no-echosvg, --no-jsvg,
+        //              --warmup=N, --iterations=N
         Set<String> nameFilters = new LinkedHashSet<>();
         boolean runCairo = true;
         boolean runEcho = true;
@@ -187,6 +228,10 @@ public class benchmark {
                 runEcho = false;
             } else if ("--no-jsvg".equals(arg)) {
                 runJsvg = false;
+            } else if (arg.startsWith("--warmup=")) {
+                WARMUP = Integer.parseInt(arg.substring("--warmup=".length()));
+            } else if (arg.startsWith("--iterations=")) {
+                ITERATIONS = Integer.parseInt(arg.substring("--iterations=".length()));
             } else {
                 nameFilters.add(arg.toLowerCase());
             }

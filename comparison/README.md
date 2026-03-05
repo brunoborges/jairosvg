@@ -289,6 +289,23 @@ _JairoSVG is **3–31× faster** than EchoSVG and **1–2.6× faster** than Cair
 
 > **Note:** Benchmarks were run with 20 warm-up iterations and 1000 measured iterations per SVG file. Results may vary by hardware and SVG complexity.
 
+#### Default Rendering Settings: JairoSVG vs JSVG
+
+Both JairoSVG and JSVG use Java2D as their rendering backend, but they ship with **different default quality settings**, which directly affects benchmark performance:
+
+| Setting                       | JairoSVG default             | JSVG default (out-of-the-box)     | Performance impact |
+| ----------------------------- | ---------------------------- | --------------------------------- | :----------------: |
+| `KEY_ANTIALIASING`            | `VALUE_ANTIALIAS_ON`         | Not set (platform default)        |        Low         |
+| `KEY_TEXT_ANTIALIASING`       | `VALUE_TEXT_ANTIALIAS_ON`    | Not set (platform default)        |        Low         |
+| `KEY_RENDERING`               | `VALUE_RENDER_QUALITY`       | Not set (defaults to speed)       |      **High**      |
+| `KEY_STROKE_CONTROL`          | `VALUE_STROKE_PURE`          | Not set (defaults to `NORMALIZE`) |      **High**      |
+| `KEY_FRACTIONALMETRICS`       | `VALUE_FRACTIONALMETRICS_ON` | Not set (defaults to `OFF`)       |       Medium       |
+| **PNG compression level**     | 6 (matches CairoSVG/libpng) | `ImageIO.write()` default         |       Medium       |
+
+`VALUE_RENDER_QUALITY` forces Java2D to use higher-fidelity rendering pipelines, and `VALUE_STROKE_PURE` computes precise sub-pixel stroke positions instead of snapping to pixel grid. Both improve visual accuracy at the cost of speed.
+
+**In the benchmark**, we normalize JSVG to use the same rendering hints and PNG compression level as JairoSVG, so that the comparison measures SVG engine efficiency rather than quality-setting differences.
+
 ### PNG Output File Sizes
 
 JairoSVG produces **7.8% smaller** PNGs overall compared to CairoSVG (using the same zlib compression level 6):
@@ -337,6 +354,9 @@ jbang comparison/benchmark.java filters embedded
 jbang comparison/benchmark.java --no-cairosvg
 jbang comparison/benchmark.java --no-echosvg
 jbang comparison/benchmark.java --no-jsvg
+
+# Adjust warmup and measurement iterations (defaults: 20 and 1000)
+jbang comparison/benchmark.java --warmup=5 --iterations=100
 ```
 
 The benchmark loads all SVG files from `comparison/svg/` (currently 19 files). Each runs 20 warm-up iterations followed by 1000 measured iterations. Stats reported: average, median, p95, and minimum times.
