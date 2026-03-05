@@ -332,7 +332,7 @@ class ShapeRenderingTest {
     }
 
     @Test
-    void testFeBlendSupportsStandardModes() throws Exception {
+    void testFeBlendFilterPrimitiveWithStandardBlendModes() throws Exception {
         String[] modes = {"normal", "multiply", "screen", "darken", "lighten"};
         for (String mode : modes) {
             String svg = """

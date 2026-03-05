@@ -818,14 +818,14 @@ public final class Defs {
         return output;
     }
 
-    private static BufferedImage blend(BufferedImage input, BufferedImage input2, String mode) {
-        int width = Math.max(input.getWidth(), input2.getWidth());
-        int height = Math.max(input.getHeight(), input2.getHeight());
+    private static BufferedImage blend(BufferedImage input, BufferedImage destination, String mode) {
+        int width = Math.max(input.getWidth(), destination.getWidth());
+        int height = Math.max(input.getHeight(), destination.getHeight());
         BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int src = x < input.getWidth() && y < input.getHeight() ? input.getRGB(x, y) : 0;
-                int dst = x < input2.getWidth() && y < input2.getHeight() ? input2.getRGB(x, y) : 0;
+                int dst = x < destination.getWidth() && y < destination.getHeight() ? destination.getRGB(x, y) : 0;
                 output.setRGB(x, y, blendPixel(src, dst, mode));
             }
         }
@@ -869,6 +869,7 @@ public final class Defs {
             case "lighten" -> Math.max(dst, src);
             default -> src;
         };
+        // SVG feBlend compositing: destination-only + source-only + blended overlap.
         double preMultiplied = (1 - srcA) * dstA * dst + (1 - dstA) * srcA * src + srcA * dstA * blended;
         return Math.clamp(preMultiplied / outA, 0, 1);
     }
