@@ -391,7 +391,7 @@ The benchmark loads all SVG files from `comparison/svg/` (currently 19 files). E
 | ------------------------ | ------------------------------------------- | ------------------------- | ------------------------------------------------------- | ------------------------------- |
 | **Runtime dependencies** | 0 (PDFBox optional)                         | Many (css4j, xml-apis, …) | 5 (cairocffi, tinycss2, cssselect2, defusedxml, Pillow) | 0                               |
 | **Disk footprint**       | **~130 KB** (PNG only), ~2.1 MB with PDFBox | ~5.7 MB (25 JARs)        | ~16.6 MB (Python pkgs + Pillow + Cairo C lib)           | ~350 KB                         |
-| **Artifact size**        | ~1 fat JAR                                  | Many modular JARs         | Single Python package                                   | 1 JAR                           |
+| **Artifact size**        | 1 JAR (~130 KB) + CLI shaded JAR             | Many modular JARs         | Single Python package                                   | 1 JAR                           |
 | **Source files**         | 20                                          | 20+ modules               | ~10 modules                                             | ~30K LOC                        |
 | **Lines of code**        | ~4,100                                      | ~200,000+                 | ~4,000                                                  | ~30,000                         |
 | **Platform req.**        | Java 25+ (`--enable-preview`)               | Java 11–24                | Python 3.6+ / Cairo C lib                               | Java 11+                        |
