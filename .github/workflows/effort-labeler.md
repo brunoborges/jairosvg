@@ -13,8 +13,7 @@ on:
         default: true
 if: >
   github.event_name != 'issue_comment' ||
-  startsWith(github.event.comment.body, '/effort') ||
-  startsWith(github.event.comment.body, '/Effort')
+  startsWith(github.event.comment.body, '/effort')
 permissions:
   contents: read
   issues: read
