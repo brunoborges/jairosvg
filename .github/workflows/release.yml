@@ -68,3 +68,25 @@ jobs:
           ./scripts/bump-version.sh snapshot ${NEXT_VERSION}
           git commit -am "Bump version to ${NEXT_VERSION}-SNAPSHOT"
           git push origin main
+
+      - name: Close released milestone and create next
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          IFS='.' read -r major minor patch <<< "${{ inputs.version }}"
+          NEXT_VERSION="${major}.${minor}.$((patch + 1))"
+
+          # Close the milestone for the released version (if it exists)
+          MILESTONE_NUMBER=$(gh api "repos/${{ github.repository }}/milestones?state=open&per_page=100" \
+            --jq ".[] | select(.title == \"${{ inputs.version }}\") | .number")
+          if [ -n "$MILESTONE_NUMBER" ]; then
+            gh api "repos/${{ github.repository }}/milestones/$MILESTONE_NUMBER" \
+              -X PATCH -f state=closed --silent
+            echo "Closed milestone ${{ inputs.version }}"
+          fi
+
+          # Create the next milestone
+          gh api "repos/${{ github.repository }}/milestones" \
+            -f title="${NEXT_VERSION}" -f state=open \
+            -f description="Next development release" --silent
+          echo "Created milestone ${NEXT_VERSION}"
