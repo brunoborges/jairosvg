@@ -308,30 +308,30 @@ Both JairoSVG and JSVG use Java2D as their rendering backend, but they ship with
 
 ### PNG Output File Sizes
 
-JairoSVG produces **7.8% smaller** PNGs than CairoSVG and **10.4% smaller** than JSVG (all using the same zlib compression level 6 — see [default rendering settings](#default-rendering-settings-jairosvg-vs-jsvg)):
+JairoSVG produces the smallest PNGs overall — **7.8% smaller** than CairoSVG, **10.4% smaller** than JSVG, and **13.2% smaller** than EchoSVG (all using zlib compression level 6 — see [default rendering settings](#default-rendering-settings-jairosvg-vs-jsvg)):
 
-| Test Case      |    JairoSVG |    CairoSVG |        JSVG | vs CairoSVG | vs JSVG |
-| -------------- | ----------: | ----------: | ----------: | ----------: | ------: |
-| Basic shapes   |       6,718 |       8,920 |       7,031 |      −24.7% |   −4.5% |
-| Gradients      |      25,554 |      23,637 |      26,410 |       +8.1% |   −3.2% |
-| Complex paths  |      12,657 |      15,633 |      12,730 |      −19.0% |   −0.6% |
-| Text rendering |      14,872 |      16,317 |      16,732 |       −8.9% |  −11.1% |
-| Transforms     |       5,461 |       6,001 |       5,827 |       −9.0% |   −6.3% |
-| Stroke styles  |       3,363 |       4,478 |       4,074 |      −24.9% |  −17.5% |
-| Opacity blend  |       8,409 |       9,853 |       8,788 |      −14.7% |   −4.3% |
-| Viewbox aspect |      11,616 |      11,444 |      13,425 |       +1.5% |  −13.5% |
-| CSS styling    |       8,153 |      10,816 |       9,110 |      −24.6% |  −10.5% |
-| Use and defs   |       5,646 |       9,712 |       6,144 |      −41.9% |   −8.1% |
-| Star polygon   |       6,228 |       8,911 |       6,455 |      −30.1% |   −3.5% |
-| Nested svg     |      11,322 |      11,880 |      12,735 |       −4.7% |  −11.1% |
-| Patterns       |       9,598 |      11,095 |      11,224 |      −13.5% |  −14.5% |
-| Clip paths     |       9,361 |      13,552 |      10,671 |      −30.9% |  −12.3% |
-| Masks ⚠️       |       1,458 |       1,161 |       6,209 |      +25.6% |  −76.5% |
-| Markers        |       6,334 |       8,378 |       6,727 |      −24.4% |   −5.8% |
-| Filters ⚠️     |      31,059 |       8,520 |      32,647 |     +264.5% |   −4.9% |
-| Embedded image |       9,995 |      21,228 |      12,442 |      −52.9% |  −19.7% |
-| Text advanced  |      20,003 |      23,864 |      22,638 |      −16.2% |  −11.6% |
-| **Total**      | **207,807** | **225,400** | **232,019** |    **−7.8%** | **−10.4%** |
+| Test Case      |    JairoSVG |     EchoSVG |    CairoSVG |        JSVG |
+| -------------- | ----------: | ----------: | ----------: | ----------: |
+| Basic shapes   |       6,718 |       8,159 |       8,920 |       7,031 |
+| Gradients      |      25,554 |      25,018 |      23,637 |      26,410 |
+| Complex paths  |      12,657 |      16,936 |      15,633 |      12,730 |
+| Text rendering |      14,872 |      19,125 |      16,317 |      16,732 |
+| Transforms     |       5,461 |       5,261 |       6,001 |       5,827 |
+| Stroke styles  |       3,363 |       5,038 |       4,478 |       4,074 |
+| Opacity blend  |       8,409 |      10,201 |       9,853 |       8,788 |
+| Viewbox aspect |      11,616 |      12,769 |      11,444 |      13,425 |
+| CSS styling    |       8,153 |      11,144 |      10,816 |       9,110 |
+| Use and defs   |       5,646 |       6,122 |       9,712 |       6,144 |
+| Star polygon   |       6,228 |       8,862 |       8,911 |       6,455 |
+| Nested svg     |      11,322 |      12,522 |      11,880 |      12,735 |
+| Patterns       |       9,598 |      11,832 |      11,095 |      11,224 |
+| Clip paths     |       9,361 |      10,558 |      13,552 |      10,671 |
+| Masks ⚠️       |       1,458 |       5,566 |       1,161 |       6,209 |
+| Markers        |       6,334 |       8,117 |       8,378 |       6,727 |
+| Filters ⚠️     |      31,059 |      24,063 |       8,520 |      32,647 |
+| Embedded image |       9,995 |      11,994 |      21,228 |      12,442 |
+| Text advanced  |      20,003 |      26,256 |      23,864 |      22,638 |
+| **Total**      | **207,807** | **239,543** | **225,400** | **232,019** |
 
 > **⚠️ Filters/Masks:** Where CairoSVG produces much smaller output, it is because CairoSVG **does not render** certain features correctly — filter effects (blur, drop-shadow) are silently skipped, and masks are rendered without gradient/circle content. This results in simpler images that compress better. JairoSVG renders these effects correctly, producing visually accurate but larger PNGs.
 
