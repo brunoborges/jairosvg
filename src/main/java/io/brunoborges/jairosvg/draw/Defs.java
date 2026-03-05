@@ -504,6 +504,7 @@ public final class Defs {
                         child.get("flood-color", "black"), parseDoubleOr(child.get("flood-opacity"), 1));
                 case "feMerge" -> merge(results, child, sourceGraphic.getWidth(), sourceGraphic.getHeight(), last);
                 case "feDropShadow" -> dropShadow(surface, input, child);
+                case "feTile" -> tile(input);
                 default -> input;
             };
             String resultName = child.get("result");
@@ -856,6 +857,63 @@ public final class Defs {
         out.drawImage(input, 0, 0, null);
         out.dispose();
         return output;
+    }
+
+    private static BufferedImage tile(BufferedImage input) {
+        Rectangle2D bounds = alphaBounds(input);
+        if (bounds == null) {
+            return input;
+        }
+
+        int tileX = (int) bounds.getX();
+        int tileY = (int) bounds.getY();
+        int tileWidth = (int) bounds.getWidth();
+        int tileHeight = (int) bounds.getHeight();
+        BufferedImage tile = copyRegion(input, tileX, tileY, tileWidth, tileHeight);
+
+        BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = output.createGraphics();
+        for (int y = 0; y < output.getHeight(); y += tileHeight) {
+            for (int x = 0; x < output.getWidth(); x += tileWidth) {
+                g.drawImage(tile, x, y, null);
+            }
+        }
+        g.dispose();
+        return output;
+    }
+
+    private static Rectangle2D alphaBounds(BufferedImage image) {
+        int minX = image.getWidth();
+        int minY = image.getHeight();
+        int maxX = -1;
+        int maxY = -1;
+
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int alpha = (image.getRGB(x, y) >>> 24) & 0xFF;
+                if (alpha == 0) {
+                    continue;
+                }
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+            }
+        }
+
+        if (maxX < minX || maxY < minY) {
+            return null;
+        }
+
+        return new Rectangle2D.Double(minX, minY, maxX - minX + 1, maxY - minY + 1);
+    }
+
+    private static BufferedImage copyRegion(BufferedImage source, int x, int y, int width, int height) {
+        BufferedImage copy = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = copy.createGraphics();
+        g.drawImage(source, 0, 0, width, height, x, y, x + width, y + height, null);
+        g.dispose();
+        return copy;
     }
 
     private static BufferedImage gaussianBlur(BufferedImage input, double stdDeviation) {
