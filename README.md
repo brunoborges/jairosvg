@@ -223,6 +223,10 @@ cd jairosvg
 ./mvnw site
 ```
 
+## Limitations
+
+See [LIMITATIONS.md](LIMITATIONS.md) for known and intentional limitations (including unsupported embedded content such as `<foreignObject>`).
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on building, testing, and submitting pull requests.
