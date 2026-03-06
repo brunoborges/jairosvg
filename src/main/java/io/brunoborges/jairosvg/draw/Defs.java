@@ -552,6 +552,80 @@ public final class Defs {
         return last;
     }
 
+    /**
+     * Compute the filter region from the sourceGraphic's non-transparent bounds,
+     * extended by 10% on each side (SVG default filter region). If the filter node
+     * has explicit x/y/width/height attributes, those override the default. Returns
+     * a Rectangle, or null if the image is fully transparent.
+     */
+    public static java.awt.Rectangle computeFilterRegion(BufferedImage sourceGraphic, Node filterNode) {
+        int w = sourceGraphic.getWidth();
+        int h = sourceGraphic.getHeight();
+        int[] pixels = ((DataBufferInt) sourceGraphic.getRaster().getDataBuffer()).getData();
+        int minX = w, minY = h, maxX = -1, maxY = -1;
+        for (int y = 0; y < h; y++) {
+            int off = y * w;
+            for (int x = 0; x < w; x++) {
+                if ((pixels[off + x] >>> 24) != 0) {
+                    if (x < minX)
+                        minX = x;
+                    if (x > maxX)
+                        maxX = x;
+                    if (y < minY)
+                        minY = y;
+                    if (y > maxY)
+                        maxY = y;
+                }
+            }
+        }
+        if (maxX < minX) {
+            return null;
+        }
+        int bw = maxX - minX + 1;
+        int bh = maxY - minY + 1;
+
+        // Check for explicit filter region attributes on the <filter> element
+        if (filterNode != null && filterNode.has("width") && filterNode.has("height")) {
+            boolean userSpace = "userSpaceOnUse".equals(filterNode.get("filterUnits"));
+            if (userSpace) {
+                int fx = (int) parseDoubleOr(filterNode.get("x"), 0);
+                int fy = (int) parseDoubleOr(filterNode.get("y"), 0);
+                int fw = (int) parseDoubleOr(filterNode.get("width"), w);
+                int fh = (int) parseDoubleOr(filterNode.get("height"), h);
+                return new java.awt.Rectangle(fx, fy, fw, fh);
+            }
+            double pctX = parsePercentOrFraction(filterNode.get("x", "-10%"), -0.1);
+            double pctY = parsePercentOrFraction(filterNode.get("y", "-10%"), -0.1);
+            double pctW = parsePercentOrFraction(filterNode.get("width", "120%"), 1.2);
+            double pctH = parsePercentOrFraction(filterNode.get("height", "120%"), 1.2);
+            int fx = Math.max(0, (int) (minX + pctX * bw));
+            int fy = Math.max(0, (int) (minY + pctY * bh));
+            int fw = Math.min(w - fx, (int) (pctW * bw));
+            int fh = Math.min(h - fy, (int) (pctH * bh));
+            return new java.awt.Rectangle(fx, fy, fw, fh);
+        }
+
+        // Default: bbox + 10% padding
+        int padX = Math.max(1, (int) Math.ceil(bw * 0.1));
+        int padY = Math.max(1, (int) Math.ceil(bh * 0.1));
+        return new java.awt.Rectangle(Math.max(0, minX - padX), Math.max(0, minY - padY), Math.min(w, bw + 2 * padX),
+                Math.min(h, bh + 2 * padY));
+    }
+
+    private static double parsePercentOrFraction(String value, double defaultVal) {
+        if (value == null || value.isEmpty()) {
+            return defaultVal;
+        }
+        try {
+            if (value.endsWith("%")) {
+                return Double.parseDouble(value.substring(0, value.length() - 1)) / 100.0;
+            }
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            return defaultVal;
+        }
+    }
+
     private static BufferedImage pickBuffer(BufferedImage avoid1, BufferedImage avoid2, BufferedImage buf1,
             BufferedImage buf2, BufferedImage buf3) {
         if (buf1 != avoid1 && buf1 != avoid2) {
