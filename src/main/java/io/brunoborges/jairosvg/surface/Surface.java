@@ -430,7 +430,12 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
 
         if (effectContext != null) {
             BufferedImage renderedImage = effectSourceImage;
+            java.awt.Rectangle filterClip = null;
             if (filterName != null) {
+                // Compute the filter region BEFORE filtering so that primitives like
+                // feFlood don't bleed into other elements' areas when composited back.
+                Node filterNode = this.filters.get(filterName);
+                filterClip = Defs.computeFilterRegion(effectSourceImage, filterNode);
                 renderedImage = Defs.applyFilter(this, filterName, renderedImage);
             }
             if (maskName != null) {
@@ -440,7 +445,14 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
             if (groupOpacity) {
                 effectBaseContext.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) opacity));
             }
-            effectBaseContext.drawImage(renderedImage, 0, 0, null);
+            if (filterClip != null) {
+                Shape prevClip = effectBaseContext.getClip();
+                effectBaseContext.clip(filterClip);
+                effectBaseContext.drawImage(renderedImage, 0, 0, null);
+                effectBaseContext.setClip(prevClip);
+            } else {
+                effectBaseContext.drawImage(renderedImage, 0, 0, null);
+            }
             if (groupOpacity) {
                 effectBaseContext.setComposite(savedComposite);
             }

@@ -407,7 +407,7 @@ class ShapeRenderingTest {
         String filteredSvg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="120" height="60">
                   <defs>
-                    <filter id="tile">
+                    <filter id="tile" filterUnits="userSpaceOnUse" x="0" y="0" width="120" height="60">
                       <feTile/>
                     </filter>
                   </defs>
