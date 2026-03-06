@@ -403,6 +403,106 @@ class ShapeRenderingTest {
     }
 
     @Test
+    void testTileFilterRepeatsSourceGraphic() throws Exception {
+        String filteredSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="60">
+                  <defs>
+                    <filter id="tile">
+                      <feTile/>
+                    </filter>
+                  </defs>
+                  <rect width="120" height="60" fill="white"/>
+                  <rect x="10" y="10" width="10" height="10" fill="red" filter="url(#tile)"/>
+                </svg>
+                """;
+        String plainSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="60">
+                  <rect width="120" height="60" fill="white"/>
+                  <rect x="10" y="10" width="10" height="10" fill="red"/>
+                </svg>
+                """;
+
+        BufferedImage filteredImage = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(filteredSvg.getBytes(StandardCharsets.UTF_8))));
+        BufferedImage plainImage = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(plainSvg.getBytes(StandardCharsets.UTF_8))));
+
+        int minXOutsideSourceRect = 40;
+        int minYOutsideSourceRect = 30;
+        int maxXOutsideSourceRect = 115;
+        int maxYOutsideSourceRect = 55;
+        boolean repeatedTileFound = false;
+        // Search a far area well outside the original source rectangle (10,10)-(20,20).
+        // If feTile works, repeated red tiles must appear in this region.
+        for (int y = minYOutsideSourceRect; y < maxYOutsideSourceRect && !repeatedTileFound; y++) {
+            for (int x = minXOutsideSourceRect; x < maxXOutsideSourceRect; x++) {
+                if (plainImage.getRGB(x, y) != filteredImage.getRGB(x, y)) {
+                    repeatedTileFound = true;
+                    break;
+                }
+            }
+        }
+        assertTrue(repeatedTileFound);
+    }
+
+    @Test
+    void testFeBlendFilterPrimitiveWithStandardBlendModes() throws Exception {
+        String[] modes = {"normal", "multiply", "screen", "darken", "lighten"};
+        for (String mode : modes) {
+            String svg = """
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                      <defs>
+                        <filter id="blend">
+                          <feFlood flood-color="#808000" result="first"/>
+                          <feFlood flood-color="#0040ff" result="second"/>
+                          <feBlend in="first" in2="second" mode="%s"/>
+                        </filter>
+                      </defs>
+                      <rect width="100" height="100" fill="white" filter="url(#blend)"/>
+                    </svg>
+                    """.formatted(mode);
+
+            BufferedImage image = ImageIO
+                    .read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
+            int pixel = image.getRGB(50, 50);
+            int alpha = (pixel >>> 24) & 0xFF;
+            int red = (pixel >>> 16) & 0xFF;
+            int green = (pixel >>> 8) & 0xFF;
+            int blue = pixel & 0xFF;
+
+            assertEquals(255, alpha, "Expected opaque output for mode: " + mode);
+            switch (mode) {
+                case "normal" -> {
+                    assertEquals(128, red, "Unexpected red for mode: " + mode);
+                    assertEquals(128, green, "Unexpected green for mode: " + mode);
+                    assertEquals(0, blue, "Unexpected blue for mode: " + mode);
+                }
+                case "multiply" -> {
+                    assertEquals(0, red, "Unexpected red for mode: " + mode);
+                    assertEquals(32, green, "Unexpected green for mode: " + mode);
+                    assertEquals(0, blue, "Unexpected blue for mode: " + mode);
+                }
+                case "screen" -> {
+                    assertEquals(128, red, "Unexpected red for mode: " + mode);
+                    assertEquals(160, green, "Unexpected green for mode: " + mode);
+                    assertEquals(255, blue, "Unexpected blue for mode: " + mode);
+                }
+                case "darken" -> {
+                    assertEquals(0, red, "Unexpected red for mode: " + mode);
+                    assertEquals(64, green, "Unexpected green for mode: " + mode);
+                    assertEquals(0, blue, "Unexpected blue for mode: " + mode);
+                }
+                case "lighten" -> {
+                    assertEquals(128, red, "Unexpected red for mode: " + mode);
+                    assertEquals(128, green, "Unexpected green for mode: " + mode);
+                    assertEquals(255, blue, "Unexpected blue for mode: " + mode);
+                }
+                default -> fail("Unexpected blend mode under test: " + mode);
+            }
+        }
+    }
+
+    @Test
     void testMarkersRenderOnLinePolylineAndPath() throws Exception {
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120">
