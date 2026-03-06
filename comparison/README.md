@@ -381,6 +381,9 @@ jbang comparison/benchmark.java --no-cairosvg
 jbang comparison/benchmark.java --no-echosvg
 jbang comparison/benchmark.java --no-jsvg
 
+# Disable progress bar output (useful for CI logs)
+jbang comparison/benchmark.java --no-progress
+
 # Adjust warmup and measurement iterations (defaults: 20 and 1000)
 jbang comparison/benchmark.java --warmup=5 --iterations=100
 ```

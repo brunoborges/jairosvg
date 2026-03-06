@@ -133,7 +133,7 @@ public class benchmark {
         for (int i = 0; i < WARMUP; i++) {
             byte[] r = converter.convert(svgBytes);
             if (r == null) throw new RuntimeException("null");
-            pb.step();
+            if (pb != null) pb.step();
         }
         System.gc();
         Thread.sleep(100);
@@ -146,7 +146,7 @@ public class benchmark {
             long end = System.nanoTime();
             times[i] = (end - start) / 1_000_000.0;
             if (result == null || result.length == 0) throw new RuntimeException("Empty result");
-            pb.step();
+            if (pb != null) pb.step();
         }
 
         Arrays.sort(times);
@@ -213,11 +213,13 @@ public class benchmark {
         List<SvgCase> allCases = loadSvgCases();
 
         // Parse args: filter by name substring, --no-cairosvg, --no-echosvg, --no-jsvg,
+        //              --no-progress,
         //              --warmup=N, --iterations=N
         Set<String> nameFilters = new LinkedHashSet<>();
         boolean runCairo = true;
         boolean runEcho = true;
         boolean runJsvg = true;
+        boolean showProgress = true;
         for (String arg : args) {
             if ("--no-cairosvg".equals(arg)) {
                 runCairo = false;
@@ -225,6 +227,8 @@ public class benchmark {
                 runEcho = false;
             } else if ("--no-jsvg".equals(arg)) {
                 runJsvg = false;
+            } else if ("--no-progress".equals(arg)) {
+                showProgress = false;
             } else if (arg.startsWith("--warmup=")) {
                 WARMUP = Integer.parseInt(arg.substring("--warmup=".length()));
             } else if (arg.startsWith("--iterations=")) {
@@ -270,14 +274,16 @@ public class benchmark {
             int totalSteps = javaEngines * (WARMUP + ITERATIONS) + (runCairo ? 1 : 0);
 
             double[] jTimes, eTimes = null, sTimes = null, cTimes = null;
+            ProgressBar pb = showProgress
+                    ? new ProgressBarBuilder()
+                            .setTaskName("  Progress")
+                            .setInitialMax(totalSteps)
+                            .setStyle(ProgressBarStyle.ASCII)
+                            .setUpdateIntervalMillis(250)
+                            .build()
+                    : null;
 
-            try (var pb = new ProgressBarBuilder()
-                    .setTaskName("  Progress")
-                    .setInitialMax(totalSteps)
-                    .setStyle(ProgressBarStyle.ASCII)
-                    .setUpdateIntervalMillis(250)
-                    .build()) {
-
+            try {
                 jTimes = bench("JairoSVG", jairosvg, c.contentBytes(), pb);
 
                 if (runEcho) {
@@ -293,8 +299,10 @@ public class benchmark {
                 if (runCairo) {
                     System.gc(); Thread.sleep(100);
                     cTimes = benchCairoSVG(c.content());
-                    pb.step();
+                    if (pb != null) pb.step();
                 }
+            } finally {
+                if (pb != null) pb.close();
             }
 
             // Print results after progress bar is done
