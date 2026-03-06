@@ -207,11 +207,10 @@ public final class JairoSVG {
          * Can be called multiple times for different keys.
          *
          * <p>
-         * Defaults (applied if not overridden):
+         * Defaults (applied if not overridden, matching JSVG):
          * </p>
          * <ul>
          * <li>{@code KEY_ANTIALIASING} → {@code VALUE_ANTIALIAS_ON}</li>
-         * <li>{@code KEY_TEXT_ANTIALIASING} → {@code VALUE_TEXT_ANTIALIAS_ON}</li>
          * <li>{@code KEY_STROKE_CONTROL} → {@code VALUE_STROKE_PURE}</li>
          * </ul>
          *

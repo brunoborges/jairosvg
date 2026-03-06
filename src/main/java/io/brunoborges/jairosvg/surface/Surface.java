@@ -182,7 +182,6 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
 
     private void setupRenderingHints(Map<RenderingHints.Key, Object> overrides) {
         context.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        context.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         context.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
         if (overrides != null) {
             overrides.forEach(context::setRenderingHint);

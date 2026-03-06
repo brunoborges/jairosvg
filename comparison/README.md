@@ -322,15 +322,15 @@ Both JairoSVG and JSVG use Java2D as their rendering backend, but they ship with
 | Setting                       | JairoSVG default             | JSVG default (out-of-the-box)          | Performance impact |
 | ----------------------------- | ---------------------------- | -------------------------------------- | :----------------: |
 | `KEY_ANTIALIASING`            | `VALUE_ANTIALIAS_ON`         | `VALUE_ANTIALIAS_ON` (auto-set)        |        Low         |
-| `KEY_TEXT_ANTIALIASING`       | `VALUE_TEXT_ANTIALIAS_ON`    | Not set (platform default)             |        Low         |
-| `KEY_RENDERING`               | `VALUE_RENDER_QUALITY`       | Not set (defaults to speed)            |      **High**      |
+| `KEY_TEXT_ANTIALIASING`       | Not set (platform default)   | Not set (platform default)             |        Low         |
+| `KEY_RENDERING`               | Not set (defaults to speed)  | Not set (defaults to speed)            |      **High**      |
 | `KEY_STROKE_CONTROL`          | `VALUE_STROKE_PURE`          | `VALUE_STROKE_PURE` (auto-set)         |       Equal        |
-| `KEY_FRACTIONALMETRICS`       | `VALUE_FRACTIONALMETRICS_ON` | Not set (defaults to `OFF`)            |       Medium       |
+| `KEY_FRACTIONALMETRICS`       | Not set (defaults to `OFF`)  | Not set (defaults to `OFF`)            |       Medium       |
 | **PNG compression level**     | 6 (matches CairoSVG/libpng) | N/A (no built-in PNG; user uses `ImageIO`) |       Medium       |
 
-JSVG automatically sets `KEY_ANTIALIASING` and `KEY_STROKE_CONTROL` to the values above when they are at their defaults. The key difference is `VALUE_RENDER_QUALITY` — JairoSVG forces Java2D to use higher-fidelity rendering pipelines — and `VALUE_FRACTIONALMETRICS_ON` which computes precise floating-point text metrics.
+JSVG automatically sets `KEY_ANTIALIASING` and `KEY_STROKE_CONTROL` to the values above when they are at their defaults. JairoSVG now uses the same defaults as JSVG, so both renderers operate with identical quality settings out of the box. Users can customize any hint via `JairoSVG.builder().renderingHint(key, value)`.
 
-**In the benchmark**, we normalize JSVG to use the same rendering hints and PNG compression level as JairoSVG, so that the comparison measures SVG engine efficiency rather than quality-setting differences.
+**In the benchmark**, both JairoSVG and JSVG use identical rendering hints, so the comparison measures SVG engine efficiency directly.
 
 ### PNG Output File Sizes
 
