@@ -1,7 +1,7 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 //JAVA 25
 //COMPILE_OPTIONS --enable-preview --release 25
-//RUNTIME_OPTIONS --enable-preview -Xmx512m
+//RUNTIME_OPTIONS --enable-preview -XX:MaxRAMPercentage=75.0
 //REPOS mavenCentral,mavenLocal
 //REPOS css4j=https://css4j.github.io/maven/
 //DEPS io.brunoborges:jairosvg:1.0.3-SNAPSHOT
