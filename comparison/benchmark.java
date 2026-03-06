@@ -41,7 +41,7 @@ public class benchmark {
 
     static final Path SVG_DIR = Path.of("comparison/svg");
 
-    record SvgCase(String name, String content) {}
+    record SvgCase(String name, String content, byte[] contentBytes) {}
 
     static List<SvgCase> loadSvgCases() throws IOException {
         return Files.list(SVG_DIR)
@@ -55,7 +55,8 @@ public class benchmark {
                                 .replace(".svg", "")
                                 .replace('_', ' ');
                         label = label.substring(0, 1).toUpperCase() + label.substring(1);
-                        return new SvgCase(label, Files.readString(p));
+                        String content = Files.readString(p);
+                        return new SvgCase(label, content, content.getBytes(StandardCharsets.UTF_8));
                     } catch (IOException e) {
                         throw new UncheckedIOException(e);
                     }
@@ -64,12 +65,12 @@ public class benchmark {
     }
 
     interface SvgConverter {
-        byte[] convert(String svg) throws Exception;
+        byte[] convert(byte[] svgBytes) throws Exception;
     }
 
-    static byte[] echoConvert(String svg) throws Exception {
+    static byte[] echoConvert(byte[] svgBytes) throws Exception {
         var transcoder = new PNGTranscoder();
-        var input = new TranscoderInput(new StringReader(svg));
+        var input = new TranscoderInput(new ByteArrayInputStream(svgBytes));
         var baos = new ByteArrayOutputStream();
         transcoder.transcode(input, new TranscoderOutput(baos));
         return baos.toByteArray();
@@ -94,14 +95,13 @@ public class benchmark {
      * match JairoSVG defaults, so the benchmark compares SVG rendering engines
      * on equal footing rather than measuring quality-setting differences.
      *
-     * Hints matched: KEY_ANTIALIASING, KEY_TEXT_ANTIALIASING, KEY_RENDERING,
-     *                KEY_STROKE_CONTROL, KEY_FRACTIONALMETRICS
+     * Hints matched: KEY_ANTIALIASING, KEY_STROKE_CONTROL
      * PNG compression: level 6 (same as JairoSVG/CairoSVG/libpng default)
      */
-    static byte[] jsvgConvert(String svg) throws Exception {
+    static byte[] jsvgConvert(byte[] svgBytes) throws Exception {
         SVGLoader loader = new SVGLoader();
         SVGDocument doc = loader.load(
-                new ByteArrayInputStream(svg.getBytes(StandardCharsets.UTF_8)),
+                new ByteArrayInputStream(svgBytes),
                 null,
                 LoaderContext.createDefault());
         if (doc == null) throw new RuntimeException("jsvg returned null document");
@@ -112,10 +112,7 @@ public class benchmark {
         Graphics2D g = image.createGraphics();
         // Match JairoSVG's rendering hints for a fair comparison
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-        g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         doc.render(null, g);
         g.dispose();
         // Encode PNG with compression level 6, matching JairoSVG
@@ -131,10 +128,10 @@ public class benchmark {
         return baos.toByteArray();
     }
 
-    static double[] bench(String label, SvgConverter converter, String svg, ProgressBar pb) throws Exception {
+    static double[] bench(String label, SvgConverter converter, byte[] svgBytes, ProgressBar pb) throws Exception {
         // Warmup
         for (int i = 0; i < WARMUP; i++) {
-            byte[] r = converter.convert(svg);
+            byte[] r = converter.convert(svgBytes);
             if (r == null) throw new RuntimeException("null");
             pb.step();
         }
@@ -145,7 +142,7 @@ public class benchmark {
         double[] times = new double[ITERATIONS];
         for (int i = 0; i < ITERATIONS; i++) {
             long start = System.nanoTime();
-            byte[] result = converter.convert(svg);
+            byte[] result = converter.convert(svgBytes);
             long end = System.nanoTime();
             times[i] = (end - start) / 1_000_000.0;
             if (result == null || result.length == 0) throw new RuntimeException("Empty result");
@@ -259,9 +256,9 @@ public class benchmark {
                 WARMUP, ITERATIONS, cases.size());
         System.out.println("=".repeat(98));
 
-        SvgConverter jairosvg = svg -> JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
-        SvgConverter echosvg = svg -> echoConvert(svg);
-        SvgConverter jsvg = svg -> jsvgConvert(svg);
+        SvgConverter jairosvg = svgBytes -> JairoSVG.svg2png(svgBytes);
+        SvgConverter echosvg = svgBytes -> echoConvert(svgBytes);
+        SvgConverter jsvg = svgBytes -> jsvgConvert(svgBytes);
 
         for (int ci = 0; ci < cases.size(); ci++) {
             SvgCase c = cases.get(ci);
@@ -281,16 +278,16 @@ public class benchmark {
                     .setUpdateIntervalMillis(250)
                     .build()) {
 
-                jTimes = bench("JairoSVG", jairosvg, c.content(), pb);
+                jTimes = bench("JairoSVG", jairosvg, c.contentBytes(), pb);
 
                 if (runEcho) {
                     System.gc(); Thread.sleep(100);
-                    eTimes = bench("EchoSVG", echosvg, c.content(), pb);
+                    eTimes = bench("EchoSVG", echosvg, c.contentBytes(), pb);
                 }
 
                 if (runJsvg) {
                     System.gc(); Thread.sleep(100);
-                    sTimes = bench("JSVG", jsvg, c.content(), pb);
+                    sTimes = bench("JSVG", jsvg, c.contentBytes(), pb);
                 }
 
                 if (runCairo) {
