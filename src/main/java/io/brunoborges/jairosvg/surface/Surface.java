@@ -44,7 +44,7 @@ import io.brunoborges.jairosvg.util.UrlHelper;
  */
 public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSurface, PsSurface {
 
-    private static final Set<String> INVISIBLE_TAGS = Set.of("clipPath", "desc", "filter", "font", "font-face",
+    private static final Set<String> INVISIBLE_TAGS = Set.of("clipPath", "cursor", "desc", "filter", "font", "font-face",
             "foreignObject", "glyph", "linearGradient", "marker", "mask", "metadata", "missing-glyph", "pattern",
             "radialGradient", "symbol", "title");
 
