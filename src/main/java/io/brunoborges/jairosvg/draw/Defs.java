@@ -564,7 +564,8 @@ public final class Defs {
 
         int[] sourcePixels = ((DataBufferInt) sourceImage.getRaster().getDataBuffer()).getData();
         int[] maskPixels = ((DataBufferInt) maskImage.getRaster().getDataBuffer()).getData();
-        BufferedImage masked = new BufferedImage(sourceImage.getWidth(), sourceImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage masked = new BufferedImage(sourceImage.getWidth(), sourceImage.getHeight(),
+                BufferedImage.TYPE_INT_ARGB);
         int[] outputPixels = ((DataBufferInt) masked.getRaster().getDataBuffer()).getData();
 
         for (int i = 0; i < sourcePixels.length; i++) {
@@ -825,64 +826,103 @@ public final class Defs {
         return output;
     }
 
+    private static final int BLEND_NORMAL = 0;
+    private static final int BLEND_MULTIPLY = 1;
+    private static final int BLEND_SCREEN = 2;
+    private static final int BLEND_DARKEN = 3;
+    private static final int BLEND_LIGHTEN = 4;
+
+    private static int blendModeId(String mode) {
+        return switch (mode) {
+            case "multiply" -> BLEND_MULTIPLY;
+            case "screen" -> BLEND_SCREEN;
+            case "darken" -> BLEND_DARKEN;
+            case "lighten" -> BLEND_LIGHTEN;
+            default -> BLEND_NORMAL;
+        };
+    }
+
     private static BufferedImage blend(BufferedImage input, BufferedImage destination, String mode) {
         int width = Math.max(input.getWidth(), destination.getWidth());
         int height = Math.max(input.getHeight(), destination.getHeight());
+        boolean sameDimensions = input.getWidth() == width && input.getHeight() == height
+                && destination.getWidth() == width && destination.getHeight() == height;
+
+        if (sameDimensions) {
+            return blendDirect(input, destination, blendModeId(mode), width, height);
+        }
+
         BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        int modeId = blendModeId(mode);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int src = x < input.getWidth() && y < input.getHeight() ? input.getRGB(x, y) : 0;
                 int dst = x < destination.getWidth() && y < destination.getHeight() ? destination.getRGB(x, y) : 0;
-                output.setRGB(x, y, blendPixel(src, dst, mode));
+                output.setRGB(x, y, blendPixel(src, dst, modeId));
             }
         }
         return output;
     }
 
-    private static int blendPixel(int src, int dst, String mode) {
-        double srcA = ((src >>> 24) & 0xFF) / 255.0;
-        double dstA = ((dst >>> 24) & 0xFF) / 255.0;
-        if (srcA == 0 && dstA == 0) {
-            return 0;
+    private static BufferedImage blendDirect(BufferedImage input, BufferedImage destination, int modeId, int width,
+            int height) {
+        int[] srcPixels = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
+        int[] dstPixels = ((DataBufferInt) destination.getRaster().getDataBuffer()).getData();
+        BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        int[] outPixels = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
+        int len = srcPixels.length;
+
+        for (int i = 0; i < len; i++) {
+            outPixels[i] = blendPixel(srcPixels[i], dstPixels[i], modeId);
         }
-
-        double srcR = ((src >>> 16) & 0xFF) / 255.0;
-        double srcG = ((src >>> 8) & 0xFF) / 255.0;
-        double srcB = (src & 0xFF) / 255.0;
-        double dstR = ((dst >>> 16) & 0xFF) / 255.0;
-        double dstG = ((dst >>> 8) & 0xFF) / 255.0;
-        double dstB = (dst & 0xFF) / 255.0;
-
-        double outA = srcA + dstA - srcA * dstA;
-        double outR = blendChannel(srcR, dstR, srcA, dstA, mode, outA);
-        double outG = blendChannel(srcG, dstG, srcA, dstA, mode, outA);
-        double outB = blendChannel(srcB, dstB, srcA, dstA, mode, outA);
-
-        int a = (int) Math.round(outA * 255);
-        int r = (int) Math.round(outR * 255);
-        int g = (int) Math.round(outG * 255);
-        int b = (int) Math.round(outB * 255);
-        return (clampChannel(a) << 24) | (clampChannel(r) << 16) | (clampChannel(g) << 8) | clampChannel(b);
+        return output;
     }
 
-    private static double blendChannel(double src, double dst, double srcA, double dstA, String mode, double outA) {
-        if (outA == 0) {
+    private static int blendPixel(int src, int dst, int modeId) {
+        int srcA = (src >>> 24) & 0xFF;
+        int dstA = (dst >>> 24) & 0xFF;
+        if ((srcA | dstA) == 0) {
             return 0;
         }
-        double blended = switch (mode) {
-            case "multiply" -> dst * src;
-            case "screen" -> dst + src - dst * src;
-            case "darken" -> Math.min(dst, src);
-            case "lighten" -> Math.max(dst, src);
+
+        int srcR = (src >>> 16) & 0xFF;
+        int srcG = (src >>> 8) & 0xFF;
+        int srcB = src & 0xFF;
+        int dstR = (dst >>> 16) & 0xFF;
+        int dstG = (dst >>> 8) & 0xFF;
+        int dstB = dst & 0xFF;
+
+        // outA = srcA + dstA - srcA*dstA/255, scaled to 0-255
+        int outA = srcA + dstA - (srcA * dstA + 127) / 255;
+        if (outA <= 0) {
+            return 0;
+        }
+        if (outA > 255) {
+            outA = 255;
+        }
+
+        int outR = blendComposite(srcR, dstR, srcA, dstA, outA, modeId);
+        int outG = blendComposite(srcG, dstG, srcA, dstA, outA, modeId);
+        int outB = blendComposite(srcB, dstB, srcA, dstA, outA, modeId);
+
+        return (outA << 24) | (outR << 16) | (outG << 8) | outB;
+    }
+
+    private static int blendComposite(int src, int dst, int srcA, int dstA, int outA, int modeId) {
+        int blended = switch (modeId) {
+            case BLEND_MULTIPLY -> (dst * src + 127) / 255;
+            case BLEND_SCREEN -> dst + src - (dst * src + 127) / 255;
+            case BLEND_DARKEN -> Math.min(dst, src);
+            case BLEND_LIGHTEN -> Math.max(dst, src);
             default -> src;
         };
-        // SVG feBlend compositing: destination-only + source-only + blended overlap.
-        double preMultiplied = (1 - srcA) * dstA * dst + (1 - dstA) * srcA * src + srcA * dstA * blended;
-        return Math.clamp(preMultiplied / outA, 0, 1);
-    }
-
-    private static int clampChannel(int value) {
-        return Math.clamp(value, 0, 255);
+        // SVG feBlend: (1 - srcA) * dstA * dst + (1 - dstA) * srcA * src + srcA * dstA
+        // * blended
+        // All in 0-255 space, divide by 255 for each alpha multiply, then by outA to
+        // un-premultiply.
+        int premul = (255 - srcA) * dstA * dst + (255 - dstA) * srcA * src + srcA * dstA * blended;
+        int result = (premul + outA * 255 / 2) / (outA * 255);
+        return Math.clamp(result, 0, 255);
     }
 
     private static BufferedImage merge(Map<String, BufferedImage> results, Node mergeNode, int width, int height,
