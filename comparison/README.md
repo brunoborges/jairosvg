@@ -416,7 +416,7 @@ JairoSVG, CairoSVG, and JSVG share a similar security posture: no scripting supp
 
 ## Visual Rendering Comparison
 
-Side-by-side visual comparison of 20 SVG test cases across all four libraries.
+Side-by-side visual comparison of 23 SVG test cases across all four libraries.
 
 ### 01 — Basic Shapes
 
@@ -572,11 +572,29 @@ Multi-span text (tspan), text-decoration, textPath on curves, and rotated text.
 
 ### 20 — feBlend Modes
 
-`<feBlend>` with `normal`, `multiply`, `screen`, `darken`, and `lighten` mode outputs.
+feBlend modes: normal, multiply, screen, darken, and lighten.
 
-|             Input SVG              |                     JairoSVG                      |                     EchoSVG                     |                     CairoSVG                      |
-| :--------------------------------: | :-----------------------------------------------: | :---------------------------------------------: | :-----------------------------------------------: |
-| [SVG](svg/20_fe_blend_modes.svg) | ![JairoSVG](png/jairosvg/20_fe_blend_modes.png) | ![EchoSVG](png/echosvg/20_fe_blend_modes.png) | ![CairoSVG](png/cairosvg/20_fe_blend_modes.png) |
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/20_fe_blend_modes.svg) | ![JairoSVG](png/jairosvg/20_fe_blend_modes.png) | ![EchoSVG](png/echosvg/20_fe_blend_modes.png) | ![CairoSVG](png/cairosvg/20_fe_blend_modes.png) | ![JSVG](png/jsvg/20_fe_blend_modes.png) |
+
+### 20_fe_tile
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/20_fe_tile.svg) | ![JairoSVG](png/jairosvg/20_fe_tile.png) | ![EchoSVG](png/echosvg/20_fe_tile.png) | ![CairoSVG](png/cairosvg/20_fe_tile.png) | ![JSVG](png/jsvg/20_fe_tile.png) |
+
+### 20_feimage_data_uri
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/20_feimage_data_uri.svg) | ![JairoSVG](png/jairosvg/20_feimage_data_uri.png) | ![EchoSVG](png/echosvg/20_feimage_data_uri.png) | ![CairoSVG](png/cairosvg/20_feimage_data_uri.png) | ![JSVG](png/jsvg/20_feimage_data_uri.png) |
+
+### 21_feimage_inline_ref
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/21_feimage_inline_ref.svg) | ![JairoSVG](png/jairosvg/21_feimage_inline_ref.png) | ![EchoSVG](png/echosvg/21_feimage_inline_ref.png) | ![CairoSVG](png/cairosvg/21_feimage_inline_ref.png) | ![JSVG](png/jsvg/21_feimage_inline_ref.png) |
 
 ---
 
