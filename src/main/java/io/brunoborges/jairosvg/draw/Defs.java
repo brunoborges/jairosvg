@@ -918,6 +918,7 @@ public final class Defs {
         g.fillRect(0, 0, input.getWidth(), input.getHeight());
         g.dispose();
 
+        // Keep input/shadow alive while blurring and offsetting shadow.
         BufferedImage blurredShadow = gaussianBlur(shadow, stdDeviation, filterContext.acquire(input, shadow),
                 filterContext.acquire(input, shadow));
         BufferedImage offsetShadow = offset(blurredShadow, dx, dy, filterContext.acquire(input, blurredShadow));
@@ -1087,28 +1088,31 @@ public final class Defs {
     private static final class FilterContext {
         private final BufferedImage[] pool;
         private int next;
+        private final int width;
+        private final int height;
 
         private FilterContext(int width, int height, int poolSize) {
+            this.width = width;
+            this.height = height;
             this.pool = new BufferedImage[poolSize];
-            for (int i = 0; i < poolSize; i++) {
-                this.pool[i] = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            }
         }
 
         private BufferedImage acquire(BufferedImage... avoid) {
             for (int i = 0; i < pool.length; i++) {
-                BufferedImage candidate = pool[(next + i) % pool.length];
+                int index = (next + i) % pool.length;
+                BufferedImage candidate = pool[index];
+                if (candidate == null) {
+                    candidate = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+                    pool[index] = candidate;
+                }
                 if (isAvoided(candidate, avoid)) {
                     continue;
                 }
-                next = (next + i + 1) % pool.length;
+                next = (index + 1) % pool.length;
                 clearImage(candidate);
                 return candidate;
             }
-            BufferedImage fallback = pool[next];
-            next = (next + 1) % pool.length;
-            clearImage(fallback);
-            return fallback;
+            throw new IllegalStateException("No filter buffer available without clobbering active inputs");
         }
 
         private static boolean isAvoided(BufferedImage candidate, BufferedImage[] avoid) {
