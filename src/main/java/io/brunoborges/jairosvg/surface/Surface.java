@@ -98,6 +98,14 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     public void init(Node tree, OutputStream output, double dpi, Surface parentSurface, Double parentWidth,
             Double parentHeight, double scale, Double outputWidth, Double outputHeight, String backgroundColor,
             UnaryOperator<Colors.RGBA> mapRgba) {
+        init(tree, output, dpi, parentSurface, parentWidth, parentHeight, scale, outputWidth, outputHeight,
+                backgroundColor, mapRgba, null);
+    }
+
+    /** Initialize the surface with optional rendering hint overrides. */
+    public void init(Node tree, OutputStream output, double dpi, Surface parentSurface, Double parentWidth,
+            Double parentHeight, double scale, Double outputWidth, Double outputHeight, String backgroundColor,
+            UnaryOperator<Colors.RGBA> mapRgba, Map<RenderingHints.Key, Object> renderingHintOverrides) {
 
         this.output = output;
         this.dpi = dpi;
@@ -150,7 +158,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         }
 
         this.context = image.createGraphics();
-        setupRenderingHints();
+        setupRenderingHints(renderingHintOverrides);
 
         setContextSize(w, h, viewbox, tree);
         context.translate(0, 0);
@@ -172,12 +180,12 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         this.height = ih;
     }
 
-    private void setupRenderingHints() {
+    private void setupRenderingHints(Map<RenderingHints.Key, Object> overrides) {
         context.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        context.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        context.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         context.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-        context.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        if (overrides != null) {
+            overrides.forEach(context::setRenderingHint);
+        }
     }
 
     /** Set the context size and apply viewport transformations. */

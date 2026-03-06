@@ -1,9 +1,12 @@
 package io.brunoborges.jairosvg;
 
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.UnaryOperator;
 
 import io.brunoborges.jairosvg.css.Colors;
@@ -96,6 +99,7 @@ public final class JairoSVG {
         private int pngCompressionLevel = -1;
         private float jpegQuality = -1f;
         private String tiffCompressionType;
+        private Map<RenderingHints.Key, Object> renderingHints;
 
         ConversionBuilder() {
         }
@@ -198,6 +202,44 @@ public final class JairoSVG {
             return this;
         }
 
+        /**
+         * Set a Java2D rendering hint. Overrides the default value for the given key.
+         * Can be called multiple times for different keys.
+         *
+         * <p>
+         * Defaults (applied if not overridden, matching JSVG):
+         * </p>
+         * <ul>
+         * <li>{@code KEY_ANTIALIASING} → {@code VALUE_ANTIALIAS_ON}</li>
+         * <li>{@code KEY_STROKE_CONTROL} → {@code VALUE_STROKE_PURE}</li>
+         * </ul>
+         *
+         * <p>
+         * Example — enable quality rendering for higher fidelity:
+         * </p>
+         *
+         * <pre>{@code
+         * JairoSVG.builder().fromBytes(svg).renderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY)
+         * 		.toPng();
+         * }</pre>
+         *
+         * @param key
+         *            the rendering hint key (e.g.,
+         *            {@code RenderingHints.KEY_RENDERING})
+         * @param value
+         *            the rendering hint value (e.g.,
+         *            {@code RenderingHints.VALUE_RENDER_QUALITY})
+         * @return this builder
+         * @see java.awt.RenderingHints
+         */
+        public ConversionBuilder renderingHint(RenderingHints.Key key, Object value) {
+            if (this.renderingHints == null) {
+                this.renderingHints = new HashMap<>();
+            }
+            this.renderingHints.put(key, value);
+            return this;
+        }
+
         /** Convert to PNG bytes. */
         public byte[] toPng() throws Exception {
             var surface = new PngSurface();
@@ -293,7 +335,7 @@ public final class JairoSVG {
             // invertImages handling would require a BufferedImage mapper
 
             surface.init(tree, out, dpi, null, parentWidth, parentHeight, scale, outputWidth, outputHeight,
-                    backgroundColor, colorMapper);
+                    backgroundColor, colorMapper, renderingHints);
         }
 
         private Node parseInput() throws Exception {
