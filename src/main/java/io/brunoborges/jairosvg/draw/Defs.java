@@ -20,9 +20,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.ConvolveOp;
 import java.awt.image.DataBufferInt;
-import java.awt.image.Kernel;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -499,6 +497,12 @@ public final class Defs {
             return sourceGraphic;
         }
 
+        int w = sourceGraphic.getWidth();
+        int h = sourceGraphic.getHeight();
+        BufferedImage buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+
         Map<String, BufferedImage> results = new HashMap<>();
         results.put("SourceGraphic", sourceGraphic);
         BufferedImage last = sourceGraphic;
@@ -506,28 +510,69 @@ public final class Defs {
         for (Node child : filterNode.children) {
             BufferedImage input = resolveInput(results, child.get("in"), last, sourceGraphic);
             BufferedImage output = switch (child.tag) {
-                case "feGaussianBlur" -> gaussianBlur(input, parseDoubleOr(child.get("stdDeviation"), 0));
-                case "feOffset" ->
-                    offset(input, size(surface, child.get("dx", "0")), size(surface, child.get("dy", "0")));
-                case "feFlood" -> flood(sourceGraphic.getWidth(), sourceGraphic.getHeight(),
-                        child.get("flood-color", "black"), parseDoubleOr(child.get("flood-opacity"), 1));
+                case "feGaussianBlur" -> {
+                    BufferedImage temp = pickBuffer(input, null, buf1, buf2, buf3);
+                    BufferedImage out = pickBuffer(input, temp, buf1, buf2, buf3);
+                    yield gaussianBlur(input, parseDoubleOr(child.get("stdDeviation"), 0), temp, out);
+                }
+                case "feOffset" -> {
+                    BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
+                    yield offset(input, size(surface, child.get("dx", "0")), size(surface, child.get("dy", "0")), out);
+                }
+                case "feFlood" -> {
+                    BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
+                    yield flood(w, h, child.get("flood-color", "black"), parseDoubleOr(child.get("flood-opacity"), 1),
+                            out);
+                }
                 case "feBlend" -> blend(input, resolveInput(results, child.get("in2"), last, sourceGraphic),
                         child.get("mode", "normal"));
-                case "feMerge" -> merge(results, child, sourceGraphic.getWidth(), sourceGraphic.getHeight(), last);
-                case "feDropShadow" -> dropShadow(surface, input, child);
-                case "feImage" -> feImage(surface, child, sourceGraphic.getWidth(), sourceGraphic.getHeight());
+                case "feMerge" -> {
+                    BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
+                    yield merge(results, child, w, h, last, out);
+                }
+                case "feDropShadow" -> {
+                    boolean inputIsManaged = input == buf1 || input == buf2 || input == buf3;
+                    if (inputIsManaged) {
+                        yield dropShadow(surface, input, child);
+                    }
+                    yield dropShadowBuffered(surface, input, child, buf1, buf2, buf3);
+                }
+                case "feImage" -> feImage(surface, child, w, h);
                 case "feTile" -> tile(input);
                 default -> input;
             };
             String resultName = child.get("result");
             if (resultName != null && !resultName.isEmpty()) {
-                results.put(resultName, output);
+                results.put(resultName, cloneImage(output));
             }
             last = output;
             results.put("last", last);
         }
 
         return last;
+    }
+
+    private static BufferedImage pickBuffer(BufferedImage avoid1, BufferedImage avoid2, BufferedImage buf1,
+            BufferedImage buf2, BufferedImage buf3) {
+        if (buf1 != avoid1 && buf1 != avoid2) {
+            return buf1;
+        }
+        if (buf2 != avoid1 && buf2 != avoid2) {
+            return buf2;
+        }
+        return buf3;
+    }
+
+    private static void clearBuffer(BufferedImage buf) {
+        java.util.Arrays.fill(((DataBufferInt) buf.getRaster().getDataBuffer()).getData(), 0);
+    }
+
+    private static BufferedImage cloneImage(BufferedImage source) {
+        BufferedImage copy = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        int[] srcData = ((DataBufferInt) source.getRaster().getDataBuffer()).getData();
+        int[] dstData = ((DataBufferInt) copy.getRaster().getDataBuffer()).getData();
+        System.arraycopy(srcData, 0, dstData, 0, srcData.length);
+        return copy;
     }
 
     /** Render and apply luminance mask to an off-screen source image. */
@@ -807,16 +852,16 @@ public final class Defs {
         };
     }
 
-    private static BufferedImage offset(BufferedImage input, double dx, double dy) {
-        BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    private static BufferedImage offset(BufferedImage input, double dx, double dy, BufferedImage output) {
+        clearBuffer(output);
         Graphics2D g = output.createGraphics();
         g.drawImage(input, (int) Math.round(dx), (int) Math.round(dy), null);
         g.dispose();
         return output;
     }
 
-    private static BufferedImage flood(int width, int height, String color, double opacity) {
-        BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    private static BufferedImage flood(int width, int height, String color, double opacity, BufferedImage output) {
+        clearBuffer(output);
         Graphics2D g = output.createGraphics();
         Colors.RGBA floodColor = Colors.color(color, opacity);
         g.setColor(new Color((float) floodColor.r(), (float) floodColor.g(), (float) floodColor.b(),
@@ -926,8 +971,8 @@ public final class Defs {
     }
 
     private static BufferedImage merge(Map<String, BufferedImage> results, Node mergeNode, int width, int height,
-            BufferedImage last) {
-        BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            BufferedImage last, BufferedImage output) {
+        clearBuffer(output);
         Graphics2D g = output.createGraphics();
         for (Node mergeChild : mergeNode.children) {
             if (!"feMergeNode".equals(mergeChild.tag)) {
@@ -941,14 +986,25 @@ public final class Defs {
     }
 
     private static BufferedImage dropShadow(Surface surface, BufferedImage input, Node node) {
+        int w = input.getWidth();
+        int h = input.getHeight();
+        BufferedImage buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        return dropShadowBuffered(surface, input, node, buf1, buf2, buf3);
+    }
+
+    private static BufferedImage dropShadowBuffered(Surface surface, BufferedImage input, Node node, BufferedImage buf1,
+            BufferedImage buf2, BufferedImage buf3) {
         double stdDeviation = parseDouble(node.get("stdDeviation"));
         double dx = size(surface, node.get("dx", "0"));
         double dy = size(surface, node.get("dy", "0"));
         String floodColor = node.get("flood-color", "black");
         double floodOpacity = parseDoubleOr(node.get("flood-opacity"), 1);
 
-        BufferedImage shadow = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = shadow.createGraphics();
+        // Step 1: shadow colorization → buf1
+        clearBuffer(buf1);
+        Graphics2D g = buf1.createGraphics();
         g.drawImage(input, 0, 0, null);
         g.setComposite(AlphaComposite.SrcIn);
         Colors.RGBA rgba = Colors.color(floodColor, floodOpacity);
@@ -956,15 +1012,20 @@ public final class Defs {
         g.fillRect(0, 0, input.getWidth(), input.getHeight());
         g.dispose();
 
-        BufferedImage blurredShadow = gaussianBlur(shadow, stdDeviation);
-        BufferedImage offsetShadow = offset(blurredShadow, dx, dy);
+        // Step 2: blur shadow (buf1) → temp=buf2, output=buf3
+        BufferedImage blurredShadow = gaussianBlur(buf1, stdDeviation, buf2, buf3);
 
-        BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        Graphics2D out = output.createGraphics();
+        // Step 3: offset blurred shadow (buf3) → buf1 (shadow no longer needed)
+        BufferedImage offsetShadow = offset(blurredShadow, dx, dy, buf1);
+
+        // Step 4: composite offsetShadow + original input → buf2 (blur temp no longer
+        // needed)
+        clearBuffer(buf2);
+        Graphics2D out = buf2.createGraphics();
         out.drawImage(offsetShadow, 0, 0, null);
         out.drawImage(input, 0, 0, null);
         out.dispose();
-        return output;
+        return buf2;
     }
 
     private static BufferedImage feImage(Surface surface, Node node, int width, int height) {
@@ -1098,36 +1159,102 @@ public final class Defs {
         return copy;
     }
 
-    private static BufferedImage gaussianBlur(BufferedImage input, double stdDeviation) {
+    private static BufferedImage gaussianBlur(BufferedImage input, double stdDeviation, BufferedImage temp,
+            BufferedImage output) {
         if (stdDeviation <= 0) {
             return input;
         }
-        float[] kernelValues = gaussianKernel(stdDeviation);
-        Kernel horizontalKernel = new Kernel(kernelValues.length, 1, kernelValues);
-        Kernel verticalKernel = new Kernel(1, kernelValues.length, kernelValues);
-        ConvolveOp horizontalOp = new ConvolveOp(horizontalKernel, ConvolveOp.EDGE_NO_OP, null);
-        ConvolveOp verticalOp = new ConvolveOp(verticalKernel, ConvolveOp.EDGE_NO_OP, null);
-        BufferedImage temp = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        horizontalOp.filter(input, temp);
-        verticalOp.filter(temp, output);
+        int w = input.getWidth();
+        int h = input.getHeight();
+        int[] radii = boxRadii(stdDeviation);
+        int[] src = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
+        int[] tmp = ((DataBufferInt) temp.getRaster().getDataBuffer()).getData();
+        int[] dst = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
+        // 3-pass box blur approximation of Gaussian (W3C recommended)
+        boxBlurH(src, tmp, w, h, radii[0]);
+        boxBlurV(tmp, dst, w, h, radii[0]);
+        boxBlurH(dst, tmp, w, h, radii[1]);
+        boxBlurV(tmp, dst, w, h, radii[1]);
+        boxBlurH(dst, tmp, w, h, radii[2]);
+        boxBlurV(tmp, dst, w, h, radii[2]);
         return output;
     }
 
-    private static float[] gaussianKernel(double stdDeviation) {
-        int radius = Math.min(128, Math.max(1, (int) Math.ceil(stdDeviation * 3)));
-        int size = radius * 2 + 1;
-        float[] kernel = new float[size];
-        double sigma2 = stdDeviation * stdDeviation * 2;
-        double sum = 0;
-        for (int i = -radius; i <= radius; i++) {
-            double value = Math.exp(-(i * i) / sigma2);
-            kernel[i + radius] = (float) value;
-            sum += value;
+    // Compute 3 box-blur radii that approximate a Gaussian with the given sigma.
+    // See http://blog.ivank.net/fastest-gaussian-blur.html
+    private static int[] boxRadii(double sigma) {
+        double ideal = Math.sqrt((12 * sigma * sigma / 3) + 1);
+        int wl = (int) Math.floor(ideal);
+        if (wl % 2 == 0) {
+            wl--;
         }
-        for (int i = 0; i < size; i++) {
-            kernel[i] /= (float) sum;
+        int wu = wl + 2;
+        int m = (int) Math.round((12 * sigma * sigma - 3.0 * wl * wl - 12.0 * wl - 9) / (-4.0 * wl - 4));
+        return new int[]{(m > 0 ? wl : wu) / 2, (m > 1 ? wl : wu) / 2, (m > 2 ? wl : wu) / 2};
+    }
+
+    private static void boxBlurH(int[] src, int[] dst, int w, int h, int r) {
+        if (r <= 0) {
+            System.arraycopy(src, 0, dst, 0, src.length);
+            return;
         }
-        return kernel;
+        double inv = 1.0 / (r + r + 1);
+        for (int y = 0; y < h; y++) {
+            int off = y * w;
+            long sa = 0, sr = 0, sg = 0, sb = 0;
+            for (int i = -r; i <= r; i++) {
+                int px = src[off + Math.min(Math.max(i, 0), w - 1)];
+                sa += (px >>> 24);
+                sr += (px >> 16) & 0xFF;
+                sg += (px >> 8) & 0xFF;
+                sb += px & 0xFF;
+            }
+            for (int x = 0; x < w; x++) {
+                dst[off + x] = ((int) (sa * inv + 0.5) << 24) | ((int) (sr * inv + 0.5) << 16)
+                        | ((int) (sg * inv + 0.5) << 8) | (int) (sb * inv + 0.5);
+                int addPx = src[off + Math.min(x + r + 1, w - 1)];
+                sa += (addPx >>> 24);
+                sr += (addPx >> 16) & 0xFF;
+                sg += (addPx >> 8) & 0xFF;
+                sb += addPx & 0xFF;
+                int remPx = src[off + Math.max(x - r, 0)];
+                sa -= (remPx >>> 24);
+                sr -= (remPx >> 16) & 0xFF;
+                sg -= (remPx >> 8) & 0xFF;
+                sb -= remPx & 0xFF;
+            }
+        }
+    }
+
+    private static void boxBlurV(int[] src, int[] dst, int w, int h, int r) {
+        if (r <= 0) {
+            System.arraycopy(src, 0, dst, 0, src.length);
+            return;
+        }
+        double inv = 1.0 / (r + r + 1);
+        for (int x = 0; x < w; x++) {
+            long sa = 0, sr = 0, sg = 0, sb = 0;
+            for (int i = -r; i <= r; i++) {
+                int px = src[Math.min(Math.max(i, 0), h - 1) * w + x];
+                sa += (px >>> 24);
+                sr += (px >> 16) & 0xFF;
+                sg += (px >> 8) & 0xFF;
+                sb += px & 0xFF;
+            }
+            for (int y = 0; y < h; y++) {
+                dst[y * w + x] = ((int) (sa * inv + 0.5) << 24) | ((int) (sr * inv + 0.5) << 16)
+                        | ((int) (sg * inv + 0.5) << 8) | (int) (sb * inv + 0.5);
+                int addPx = src[Math.min(y + r + 1, h - 1) * w + x];
+                sa += (addPx >>> 24);
+                sr += (addPx >> 16) & 0xFF;
+                sg += (addPx >> 8) & 0xFF;
+                sb += addPx & 0xFF;
+                int remPx = src[Math.max(y - r, 0) * w + x];
+                sa -= (remPx >>> 24);
+                sr -= (remPx >> 16) & 0xFF;
+                sg -= (remPx >> 8) & 0xFF;
+                sb -= remPx & 0xFF;
+            }
+        }
     }
 }
