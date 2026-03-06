@@ -37,7 +37,7 @@ A comprehensive comparison of four SVG libraries — **JairoSVG** (Java), **Echo
 | **Current version**   | 1.0.2                                                          | 2.4                                                        | 2.7+                                   | 2.0.0                                             |
 | **SVG spec target**   | SVG 1.1                                                        | SVG 1.1 + partial SVG 2                                    | SVG 1.1                                | SVG 1.1 + partial SVG 2                           |
 | **Rendering backend** | Java2D                                                         | GVT (Batik) → Java2D                                       | Cairo (C library)                      | Java2D                                            |
-| **Key strength**      | Speed (3–31× faster than EchoSVG, 1–2.6× faster than CairoSVG) | Feature completeness and standard compliance               | Native C performance, mature ecosystem | Designed for Swing GUI embedding (IntelliJ, etc.) |
+| **Key strength**      | Speed (2–29× faster than EchoSVG, on par with JSVG, 1–2.4× faster than CairoSVG) | Feature completeness and standard compliance               | Native C performance, mature ecosystem | Designed for Swing GUI embedding (IntelliJ, etc.) |
 
 ---
 
@@ -281,33 +281,37 @@ ImageIO.write(image, "PNG", new File("output.png"));
 
 ## Benchmark
 
-SVG → PNG conversion benchmarks across 20 SVG test files (lower is better):
+SVG → PNG conversion benchmarks across 23 SVG test files (lower is better):
 
-| Test Case                                    | JairoSVG (Java) | EchoSVG (Java) | CairoSVG (Python) | JairoSVG vs EchoSVG | JairoSVG vs CairoSVG |
-| -------------------------------------------- | :-------------: | :------------: | :---------------: | :-----------------: | :------------------: |
-| [Basic shapes](#01--basic-shapes)            |   **3.5 ms**    |    16.6 ms     |      4.3 ms       |       4.8× ✅       |       1.2× ✅        |
-| [Gradients](#02--gradients)                  |   **4.3 ms**    |    134.8 ms    |      11.3 ms      |      31.0× ✅       |       2.6× ✅        |
-| [Complex paths](#03--complex-paths)          |   **4.5 ms**    |    23.1 ms     |      4.6 ms       |       5.2× ✅       |        1.0× ≈        |
-| [Text rendering](#04--text-rendering)        |   **4.8 ms**    |    22.9 ms     |      6.2 ms       |       4.8× ✅       |       1.3× ✅        |
-| [Transforms](#05--transforms)                |     4.1 ms      |    14.6 ms     |    **4.0 ms**     |       3.6× ✅       |        1.0× ≈        |
-| [Stroke styles](#06--stroke-styles)          |     3.7 ms      |    11.9 ms     |    **3.5 ms**     |       3.2× ✅       |        1.0× ≈        |
-| [Opacity blend](#07--opacity--blending)      |     3.4 ms      |    17.7 ms     |    **3.3 ms**     |       5.2× ✅       |        1.0× ≈        |
-| [Viewbox aspect](#08--viewbox--aspect-ratio) |   **4.8 ms**    |    19.7 ms     |      5.3 ms       |       4.1× ✅       |       1.1× ✅        |
-| [CSS styling](#09--css-styling)              |   **3.4 ms**    |    15.2 ms     |      4.1 ms       |       4.5× ✅       |       1.2× ✅        |
-| [Use and defs](#10--use--defs)               |   **4.0 ms**    |    14.3 ms     |      4.4 ms       |       3.6× ✅       |       1.1× ✅        |
-| [Star polygon](#11--star-polygon)            |     3.2 ms      |    14.6 ms     |    **3.1 ms**     |       4.5× ✅       |        1.0× ≈        |
-| [Nested svg](#12--nested-svg)                |   **4.6 ms**    |    19.4 ms     |      5.0 ms       |       4.3× ✅       |       1.1× ✅        |
-| [Patterns](#13--patterns)                    |     4.6 ms      |    16.2 ms     |    **4.6 ms**     |       3.5× ✅       |        1.0× ≈        |
-| [Clip paths](#14--clip-paths)                |   **4.2 ms**    |    26.5 ms     |      6.0 ms       |       6.4× ✅       |       1.4× ✅        |
-| [Masks](#15--masks) ⚠️                       |   **8.9 ms**    |    21.5 ms     |     3.7 ms ⚠️     |       2.4× ✅       |         ← ⚠️         |
-| [Markers](#16--markers)                      |   **3.9 ms**    |    13.1 ms     |      4.7 ms       |       3.4× ✅       |       1.2× ✅        |
-| [Filters](#17--filters) ⚠️                   |   **45.0 ms**   |   35.1 ms ⚠️   |     4.5 ms ⚠️     |        ← ⚠️         |         ← ⚠️         |
-| [Embedded image](#18--embedded-images)       |   **4.3 ms**    |    16.4 ms     |      7.2 ms       |       3.8× ✅       |       1.7× ✅        |
-| [Text advanced](#19--advanced-text)          |   **5.4 ms**    |    26.1 ms     |      8.9 ms       |       4.8× ✅       |       1.7× ✅        |
+| Test Case | JairoSVG (Java) | EchoSVG (Java) | JSVG (Java) | CairoSVG (Python) | vs EchoSVG | vs JSVG | vs CairoSVG |
+| --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| [Basic shapes](#01--basic-shapes) | **3.5 ms** | 17.3 ms | 3.7 ms | 4.4 ms | 4.9× ✅ | 1.1× ✅ | 1.2× ✅ |
+| [Gradients](#02--gradients) | 4.6 ms | 134.6 ms | **4.3 ms** | 10.9 ms | 29.4× ✅ | 1.1× ❌ | 2.4× ✅ |
+| [Complex paths](#03--complex-paths) | 4.5 ms | 24.6 ms | **4.3 ms** | 4.7 ms | 5.5× ✅ | 1.0× ≈ | 1.0× ≈ |
+| [Text rendering](#04--text-rendering) | **4.9 ms** | 23.3 ms | **4.9 ms** | 6.2 ms | 4.8× ✅ | 1.0× ≈ | 1.3× ✅ |
+| [Transforms](#05--transforms) | 4.1 ms | 14.5 ms | **3.8 ms** | 4.0 ms | 3.5× ✅ | 1.1× ❌ | 1.0× ≈ |
+| [Stroke styles](#06--stroke-styles) | 3.7 ms | 11.9 ms | **3.6 ms** | **3.5 ms** | 3.2× ✅ | 1.0× ≈ | 1.0× ≈ |
+| [Opacity blend](#07--opacity--blending) | 3.4 ms | 17.7 ms | **3.4 ms** | 3.4 ms | 5.2× ✅ | 1.0× ≈ | 1.0× ≈ |
+| [Viewbox aspect](#08--viewbox--aspect-ratio) | 5.0 ms | 19.7 ms | **4.7 ms** | 5.3 ms | 4.0× ✅ | 1.1× ❌ | 1.1× ✅ |
+| [CSS styling](#09--css-styling) | **3.4 ms** | 15.1 ms | **3.3 ms** | 4.1 ms | 4.5× ✅ | 1.0× ≈ | 1.2× ✅ |
+| [Use and defs](#10--use--defs) | 4.1 ms | 15.1 ms | **3.9 ms** | 4.4 ms | 3.7× ✅ | 1.1× ❌ | 1.1× ✅ |
+| [Star polygon](#11--star-polygon) | 3.2 ms | 14.5 ms | 3.2 ms | **3.1 ms** | 4.5× ✅ | 1.0× ≈ | 1.1× ❌ |
+| [Nested svg](#12--nested-svg) | 4.7 ms | 19.7 ms | **4.5 ms** | 5.0 ms | 4.2× ✅ | 1.0× ≈ | 1.1× ✅ |
+| [Patterns](#13--patterns) | **4.7 ms** | 16.4 ms | **4.6 ms** | **4.7 ms** | 3.5× ✅ | 1.0× ≈ | 1.0× ≈ |
+| [Clip paths](#14--clip-paths) | **4.3 ms** | 27.1 ms | 4.4 ms | 6.1 ms | 6.4× ✅ | 1.0× ≈ | 1.4× ✅ |
+| [Masks](#15--masks) ⚠️ | 5.2 ms | 24.2 ms | 4.8 ms | 3.8 ms ⚠️ | 4.6× ✅ | 1.1× ❌ | ← ⚠️ |
+| [Markers](#16--markers) | 3.9 ms | 13.3 ms | **3.9 ms** | 5.0 ms | 3.4× ✅ | 1.0× ≈ | 1.3× ✅ |
+| [Filters](#17--filters) ⚠️ | 21.8 ms | 35.8 ms | 8.7 ms | 4.7 ms ⚠️ | 1.6× ✅ | 2.5× ❌ | ← ⚠️ |
+| [Embedded image](#18--embedded-images) | **4.7 ms** | 16.8 ms | 15.2 ms | 7.3 ms | 3.5× ✅ | 3.2× ✅ | 1.5× ✅ |
+| [Text advanced](#19--advanced-text) | **5.5 ms** | 27.2 ms | 5.6 ms | 9.3 ms | 5.0× ✅ | 1.0× ≈ | 1.7× ✅ |
+| [Fe blend modes](#20--fe-blend-modes) ⚠️ | 26.1 ms | 28.9 ms | 20.5 ms | 13.2 ms ⚠️ | 1.1× ✅ | 1.3× ❌ | ← ⚠️ |
+| [Fe tile](#20--fe-tile) | 3.0 ms | 6.7 ms | **2.6 ms** | **2.5 ms** | 2.2× ✅ | 1.2× ❌ | 1.2× ❌ |
+| [Feimage data uri](#20--feimage-data-uri) | 2.0 ms | 5.7 ms | **1.6 ms** | 1.9 ms | 2.8× ✅ | 1.2× ❌ | 1.1× ❌ |
+| [Feimage inline ref](#21--feimage-inline-ref) | **1.8 ms** | 4.8 ms | 4.3 ms | 2.0 ms | 2.7× ✅ | 2.4× ✅ | 1.1× ✅ |
 
-_JairoSVG is **3–31× faster** than EchoSVG and **1–2.6× faster** than CairoSVG in most scenarios._
+_JairoSVG is **2–29× faster** than EchoSVG, **on par with JSVG** in most scenarios, and **1–2.4× faster** than CairoSVG in most scenarios._
 
-> **⚠️ Filters/Masks caveat:** CairoSVG does **not** correctly render masks (missing gradient and circle content) or `feGaussianBlur`/`feDropShadow` filters — it silently skips them. EchoSVG also has partial filter support. Both appear faster on those tests because they skip rendering work. JairoSVG performs the actual computation, so its speed reflects the true cost of correct rendering.
+> **⚠️ Filters/Masks/Blend caveat:** CairoSVG does **not** correctly render masks (missing gradient and circle content), `feGaussianBlur`/`feDropShadow` filters, or `feBlend` modes — it silently skips them. Both CairoSVG and EchoSVG appear faster on those tests because they skip rendering work. JairoSVG and JSVG perform the actual computation, so their speed reflects the true cost of correct rendering.
 
 > **Note:** Benchmarks were run with 20 warm-up iterations and 1000 measured iterations per SVG file. Results may vary by hardware and SVG complexity.
 
@@ -605,7 +609,7 @@ feBlend modes: normal, multiply, screen, darken, and lighten.
 | **Best for**       | Fast Java SVG conversion                               | Full SVG toolkit (DOM, scripting, animation) | Python SVG conversion                          | SVG rendering in Swing/Java2D GUIs     |
 | **SVG spec**       | SVG 1.1 (static)                                       | SVG 1.1 + partial SVG 2                      | SVG 1.1 (static)                               | SVG 1.1 + partial SVG 2               |
 | **CSS**            | Basic + structural pseudo selectors                    | Advanced (CSS Level 4, css4j)                | Basic (via tinycss2)                           | Good CSS support                       |
-| **Performance**    | 3–31× faster than EchoSVG; 1–2.5× faster than CairoSVG | Slowest (GVT overhead)                       | Fast (native C), but skips some filter effects | Fast (lightweight, designed for Swing) |
+| **Performance**    | 2–29× faster than EchoSVG; on par with JSVG; 1–2.4× faster than CairoSVG | Slowest (GVT overhead)                       | Fast (native C), but skips some filter effects | Fast (lightweight, designed for Swing) |
 | **API simplicity** | One-liner / builder                                    | Transcoder pattern                           | One-liner functions                            | SVGLoader + render()                   |
 | **Codebase**       | ~4K LOC, 1 dep                                         | ~200K+ LOC, many modules                     | ~4K LOC, 5 deps                                | ~30K LOC, minimal deps                 |
 | **Animation**      | ❌                                                     | ✅                                           | ❌                                             | ❌                                     |
