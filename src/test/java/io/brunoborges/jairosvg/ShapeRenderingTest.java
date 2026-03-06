@@ -602,7 +602,8 @@ class ShapeRenderingTest {
         BufferedImage image = ImageIO
                 .read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
         int alpha = (image.getRGB(10, 10) >>> 24) & 0xFF;
-        // rgba(0,255,0,0.5): 255 * 0.5 * 0.7152 ≈ 91 (allowing small integer-rounding variance)
+        // rgba(0,255,0,0.5): 255 * 0.5 * 0.7152 ≈ 91 (allowing small integer-rounding
+        // variance)
         assertTrue(alpha >= 89 && alpha <= 92, "Expected partial alpha from green luminance and 50% mask alpha");
     }
 
