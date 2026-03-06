@@ -50,7 +50,8 @@ public final class Defs {
     private static final int LUMINANCE_RED_COEFF_256 = 54;
     private static final int LUMINANCE_GREEN_COEFF_256 = 183;
     private static final int LUMINANCE_BLUE_COEFF_256 = 19;
-    private static final int LUMINANCE_COEFF_SUM_256 = 255 * 256;
+    private static final int LUMINANCE_NORMALIZATION_FACTOR = 255 * 256;
+    private static final int ALPHA_MAX = 255;
     private static final int MIN_IMAGE_BYTES = 5;
 
     private Defs() {
@@ -579,7 +580,7 @@ public final class Defs {
             int mb = m & 0xFF;
             int luminance256 = LUMINANCE_RED_COEFF_256 * mr + LUMINANCE_GREEN_COEFF_256 * mg
                     + LUMINANCE_BLUE_COEFF_256 * mb;
-            int outA = (int) ((long) srcA * ma * luminance256 / (255L * LUMINANCE_COEFF_SUM_256));
+            int outA = (int) ((long) srcA * ma * luminance256 / ((long) ALPHA_MAX * LUMINANCE_NORMALIZATION_FACTOR));
             outputPixels[i] = (outA << 24) | (src & 0x00FFFFFF);
         }
         return masked;
