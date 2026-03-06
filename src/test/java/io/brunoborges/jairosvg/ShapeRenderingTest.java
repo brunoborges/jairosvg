@@ -332,6 +332,49 @@ class ShapeRenderingTest {
     }
 
     @Test
+    void testTileFilterRepeatsSourceGraphic() throws Exception {
+        String filteredSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="60">
+                  <defs>
+                    <filter id="tile">
+                      <feTile/>
+                    </filter>
+                  </defs>
+                  <rect width="120" height="60" fill="white"/>
+                  <rect x="10" y="10" width="10" height="10" fill="red" filter="url(#tile)"/>
+                </svg>
+                """;
+        String plainSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="60">
+                  <rect width="120" height="60" fill="white"/>
+                  <rect x="10" y="10" width="10" height="10" fill="red"/>
+                </svg>
+                """;
+
+        BufferedImage filteredImage = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(filteredSvg.getBytes(StandardCharsets.UTF_8))));
+        BufferedImage plainImage = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(plainSvg.getBytes(StandardCharsets.UTF_8))));
+
+        int minXOutsideSourceRect = 40;
+        int minYOutsideSourceRect = 30;
+        int maxXOutsideSourceRect = 115;
+        int maxYOutsideSourceRect = 55;
+        boolean repeatedTileFound = false;
+        // Search a far area well outside the original source rectangle (10,10)-(20,20).
+        // If feTile works, repeated red tiles must appear in this region.
+        for (int y = minYOutsideSourceRect; y < maxYOutsideSourceRect && !repeatedTileFound; y++) {
+            for (int x = minXOutsideSourceRect; x < maxXOutsideSourceRect; x++) {
+                if (plainImage.getRGB(x, y) != filteredImage.getRGB(x, y)) {
+                    repeatedTileFound = true;
+                    break;
+                }
+            }
+        }
+        assertTrue(repeatedTileFound);
+    }
+
+    @Test
     void testFeBlendFilterPrimitiveWithStandardBlendModes() throws Exception {
         String[] modes = {"normal", "multiply", "screen", "darken", "lighten"};
         for (String mode : modes) {

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="220" viewBox="0 0 420 220">
+  <defs>
+    <filter id="tile-it">
+      <feTile />
+    </filter>
+  </defs>
+
+  <rect width="420" height="220" fill="#f7f9fb" />
+
+  <g filter="url(#tile-it)">
+    <g transform="translate(25 25)">
+      <rect x="0" y="0" width="38" height="38" rx="7" fill="#ff6b6b" />
+      <circle cx="19" cy="19" r="10" fill="#2c7be5" />
+      <circle cx="30" cy="8" r="4" fill="#ffd166" />
+    </g>
+  </g>
+</svg>

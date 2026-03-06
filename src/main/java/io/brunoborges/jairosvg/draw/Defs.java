@@ -506,6 +506,7 @@ public final class Defs {
                         child.get("mode", "normal"));
                 case "feMerge" -> merge(results, child, sourceGraphic.getWidth(), sourceGraphic.getHeight(), last);
                 case "feDropShadow" -> dropShadow(surface, input, child);
+                case "feTile" -> tile(input);
                 default -> input;
             };
             String resultName = child.get("result");
@@ -918,6 +919,67 @@ public final class Defs {
         out.drawImage(input, 0, 0, null);
         out.dispose();
         return output;
+    }
+
+    private static BufferedImage tile(BufferedImage input) {
+        int[] bounds = alphaBounds(input);
+        if (bounds == null) {
+            return input;
+        }
+
+        int tileX = bounds[0];
+        int tileY = bounds[1];
+        int tileWidth = bounds[2];
+        int tileHeight = bounds[3];
+        BufferedImage tile = copyRegion(input, tileX, tileY, tileWidth, tileHeight);
+
+        BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = output.createGraphics();
+        for (int y = 0; y < output.getHeight(); y += tileHeight) {
+            for (int x = 0; x < output.getWidth(); x += tileWidth) {
+                g.drawImage(tile, x, y, null);
+            }
+        }
+        g.dispose();
+        return output;
+    }
+
+    private static int[] alphaBounds(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        int minX = image.getWidth();
+        int minY = image.getHeight();
+        int maxX = -1;
+        int maxY = -1;
+        int[] pixels = image.getRGB(0, 0, width, height, null, 0, width);
+
+        for (int y = 0; y < height; y++) {
+            int rowOffset = y * width;
+            for (int x = 0; x < width; x++) {
+                int alpha = (pixels[rowOffset + x] >>> 24) & 0xFF;
+                if (alpha == 0) {
+                    continue;
+                }
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+            }
+        }
+
+        if (maxX < minX || maxY < minY) {
+            return null;
+        }
+
+        return new int[] { minX, minY, maxX - minX + 1, maxY - minY + 1 };
+    }
+
+    private static BufferedImage copyRegion(BufferedImage source, int x, int y, int width, int height) {
+        BufferedImage copy = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = copy.createGraphics();
+        g.drawImage(source, 0, 0, width, height, x, y, x + width, y + height, null);
+        g.dispose();
+        return copy;
     }
 
     private static BufferedImage gaussianBlur(BufferedImage input, double stdDeviation) {
