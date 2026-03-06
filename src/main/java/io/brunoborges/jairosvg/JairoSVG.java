@@ -213,7 +213,6 @@ public final class JairoSVG {
          * <li>{@code KEY_ANTIALIASING} → {@code VALUE_ANTIALIAS_ON}</li>
          * <li>{@code KEY_TEXT_ANTIALIASING} → {@code VALUE_TEXT_ANTIALIAS_ON}</li>
          * <li>{@code KEY_STROKE_CONTROL} → {@code VALUE_STROKE_PURE}</li>
-         * <li>{@code KEY_FRACTIONALMETRICS} → {@code VALUE_FRACTIONALMETRICS_ON}</li>
          * </ul>
          *
          * <p>
