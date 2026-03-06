@@ -22,10 +22,15 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.imageio.ImageIO;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import io.brunoborges.jairosvg.css.Colors;
 import io.brunoborges.jairosvg.dom.BoundingBox;
@@ -44,6 +49,7 @@ public final class Defs {
     private static final double LUMINANCE_RED_COEFF = 0.2126;
     private static final double LUMINANCE_GREEN_COEFF = 0.7152;
     private static final double LUMINANCE_BLUE_COEFF = 0.0722;
+    private static final int MIN_IMAGE_BYTES = 5;
 
     private Defs() {
     }
@@ -506,6 +512,7 @@ public final class Defs {
                         child.get("mode", "normal"));
                 case "feMerge" -> merge(results, child, sourceGraphic.getWidth(), sourceGraphic.getHeight(), last);
                 case "feDropShadow" -> dropShadow(surface, input, child);
+                case "feImage" -> feImage(surface, child, sourceGraphic.getWidth(), sourceGraphic.getHeight());
                 case "feTile" -> tile(input);
                 default -> input;
             };
@@ -921,6 +928,76 @@ public final class Defs {
         return output;
     }
 
+    private static BufferedImage feImage(Surface surface, Node node, int width, int height) {
+        BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        String href = node.getHref();
+        if (href == null || href.isEmpty()) {
+            return output;
+        }
+
+        UrlHelper.ParsedUrl parsedUrl = UrlHelper.parseUrl(href, resolveBaseUrl(node));
+        String refId = parsedUrl.fragment();
+        if (refId != null && !parsedUrl.hasNonFragmentParts()) {
+            Node imageNode = surface.images.get(refId);
+            if (imageNode != null) {
+                return renderNode(surface, imageNode, output);
+            }
+            return output;
+        }
+
+        try {
+            byte[] imageBytes = node.fetchUrl(parsedUrl, "image/*");
+            if (imageBytes == null || imageBytes.length < MIN_IMAGE_BYTES) {
+                return output;
+            }
+            var input = new MemoryCacheImageInputStream(new ByteArrayInputStream(imageBytes));
+            BufferedImage image = ImageIO.read(input);
+            if (image == null) {
+                return output;
+            }
+            Graphics2D g = output.createGraphics();
+            g.setRenderingHints(surface.context.getRenderingHints());
+            g.drawImage(image, 0, 0, width, height, null);
+            g.dispose();
+            return output;
+        } catch (IOException e) {
+            return output;
+        }
+    }
+
+    private static String resolveBaseUrl(Node node) {
+        String baseUrl = node.get("{http://www.w3.org/XML/1998/namespace}base");
+        if (baseUrl == null && node.url != null) {
+            int lastSlash = node.url.lastIndexOf('/');
+            baseUrl = lastSlash >= 0 ? node.url.substring(0, lastSlash + 1) : null;
+        }
+        return baseUrl;
+    }
+
+    private static BufferedImage renderNode(Surface surface, Node node, BufferedImage output) {
+        Graphics2D imageContext = output.createGraphics();
+        imageContext.setRenderingHints(surface.context.getRenderingHints());
+
+        Graphics2D savedContext = surface.context;
+        GeneralPath savedPath = surface.path;
+        double savedWidth = surface.contextWidth;
+        double savedHeight = surface.contextHeight;
+
+        surface.context = imageContext;
+        surface.path = new GeneralPath();
+        surface.contextWidth = output.getWidth();
+        surface.contextHeight = output.getHeight();
+
+        surface.draw(node);
+
+        surface.context = savedContext;
+        surface.path = savedPath;
+        surface.contextWidth = savedWidth;
+        surface.contextHeight = savedHeight;
+        imageContext.dispose();
+        return output;
+    }
+
     private static BufferedImage tile(BufferedImage input) {
         int[] bounds = alphaBounds(input);
         if (bounds == null) {
@@ -971,7 +1048,7 @@ public final class Defs {
             return null;
         }
 
-        return new int[] { minX, minY, maxX - minX + 1, maxY - minY + 1 };
+        return new int[]{minX, minY, maxX - minX + 1, maxY - minY + 1};
     }
 
     private static BufferedImage copyRegion(BufferedImage source, int x, int y, int width, int height) {

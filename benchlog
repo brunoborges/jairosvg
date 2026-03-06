@@ -1,0 +1,234 @@
+==================================================================================================
+  SVG → PNG Benchmark: JairoSVG vs EchoSVG vs JSVG vs CairoSVG
+  Warmup: 50 iterations, Measurement: 200 iterations, SVG files: 19
+==================================================================================================
+
+▸ Basic shapes  [1/19]
+  JairoSVG  (Java/Java2D)       avg=   4.24 ms  median=   4.16 ms  p95=   4.83 ms  min=   3.93 ms
+  EchoSVG   (Java/Batik)        avg=  19.44 ms  median=  19.40 ms  p95=  20.11 ms  min=  18.84 ms
+  JSVG      (Java/Java2D)       avg=   4.08 ms  median=   4.04 ms  p95=   4.59 ms  min=   3.86 ms
+  CairoSVG  (Python/Cairo)      avg=   4.96 ms  median=   4.95 ms  p95=   5.11 ms  min=   4.76 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 4.6x faster
+    JairoSVG vs JSVG → JSVG is 1.0x faster
+    JairoSVG vs CairoSVG → JairoSVG is 1.2x faster
+    EchoSVG vs CairoSVG → CairoSVG is 3.9x faster
+    JSVG vs CairoSVG → JSVG is 1.2x faster
+
+▸ Gradients  [2/19]
+  JairoSVG  (Java/Java2D)       avg=   5.06 ms  median=   5.01 ms  p95=   5.44 ms  min=   4.83 ms
+  EchoSVG   (Java/Batik)        avg= 135.05 ms  median= 133.61 ms  p95= 146.82 ms  min= 131.65 ms
+  JSVG      (Java/Java2D)       avg=   4.37 ms  median=   4.31 ms  p95=   4.76 ms  min=   4.11 ms
+  CairoSVG  (Python/Cairo)      avg=  10.81 ms  median=  10.67 ms  p95=  11.25 ms  min=  10.51 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 26.7x faster
+    JairoSVG vs JSVG → JSVG is 1.2x faster
+    JairoSVG vs CairoSVG → JairoSVG is 2.1x faster
+    EchoSVG vs CairoSVG → CairoSVG is 12.5x faster
+    JSVG vs CairoSVG → JSVG is 2.5x faster
+
+▸ Complex paths  [3/19]
+  JairoSVG  (Java/Java2D)       avg=   4.45 ms  median=   4.42 ms  p95=   4.80 ms  min=   4.13 ms
+  EchoSVG   (Java/Batik)        avg=  22.99 ms  median=  22.86 ms  p95=  24.12 ms  min=  22.13 ms
+  JSVG      (Java/Java2D)       avg=   4.31 ms  median=   4.28 ms  p95=   4.66 ms  min=   4.01 ms
+  CairoSVG  (Python/Cairo)      avg=   4.57 ms  median=   4.52 ms  p95=   4.79 ms  min=   4.35 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 5.2x faster
+    JairoSVG vs JSVG → JSVG is 1.0x faster
+    JairoSVG vs CairoSVG → JairoSVG is 1.0x faster
+    EchoSVG vs CairoSVG → CairoSVG is 5.0x faster
+    JSVG vs CairoSVG → JSVG is 1.1x faster
+
+▸ Text rendering  [4/19]
+  JairoSVG  (Java/Java2D)       avg=   4.83 ms  median=   4.81 ms  p95=   5.18 ms  min=   4.47 ms
+  EchoSVG   (Java/Batik)        avg=  23.08 ms  median=  23.03 ms  p95=  24.02 ms  min=  22.16 ms
+  JSVG      (Java/Java2D)       avg=   5.00 ms  median=   4.85 ms  p95=   5.78 ms  min=   4.56 ms
+  CairoSVG  (Python/Cairo)      avg=   5.97 ms  median=   5.89 ms  p95=   6.26 ms  min=   5.84 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 4.8x faster
+    JairoSVG vs JSVG → JairoSVG is 1.0x faster
+    JairoSVG vs CairoSVG → JairoSVG is 1.2x faster
+    EchoSVG vs CairoSVG → CairoSVG is 3.9x faster
+    JSVG vs CairoSVG → JSVG is 1.2x faster
+
+▸ Transforms  [5/19]
+  JairoSVG  (Java/Java2D)       avg=   3.97 ms  median=   3.93 ms  p95=   4.15 ms  min=   3.79 ms
+  EchoSVG   (Java/Batik)        avg=  14.23 ms  median=  14.17 ms  p95=  15.00 ms  min=  13.61 ms
+  JSVG      (Java/Java2D)       avg=   3.81 ms  median=   3.78 ms  p95=   4.06 ms  min=   3.57 ms
+  CairoSVG  (Python/Cairo)      avg=   3.91 ms  median=   3.85 ms  p95=   4.13 ms  min=   3.81 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 3.6x faster
+    JairoSVG vs JSVG → JSVG is 1.0x faster
+    JairoSVG vs CairoSVG → CairoSVG is 1.0x faster
+    EchoSVG vs CairoSVG → CairoSVG is 3.6x faster
+    JSVG vs CairoSVG → JSVG is 1.0x faster
+
+▸ Stroke styles  [6/19]
+  JairoSVG  (Java/Java2D)       avg=   3.75 ms  median=   3.74 ms  p95=   3.97 ms  min=   3.56 ms
+  EchoSVG   (Java/Batik)        avg=  11.79 ms  median=  11.72 ms  p95=  12.40 ms  min=  11.27 ms
+  JSVG      (Java/Java2D)       avg=   3.55 ms  median=   3.48 ms  p95=   3.81 ms  min=   3.35 ms
+  CairoSVG  (Python/Cairo)      avg=   3.50 ms  median=   3.45 ms  p95=   3.69 ms  min=   3.33 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 3.1x faster
+    JairoSVG vs JSVG → JSVG is 1.1x faster
+    JairoSVG vs CairoSVG → CairoSVG is 1.1x faster
+    EchoSVG vs CairoSVG → CairoSVG is 3.4x faster
+    JSVG vs CairoSVG → CairoSVG is 1.0x faster
+
+▸ Opacity blend  [7/19]
+  JairoSVG  (Java/Java2D)       avg=   3.38 ms  median=   3.33 ms  p95=   3.55 ms  min=   3.23 ms
+  EchoSVG   (Java/Batik)        avg=  17.51 ms  median=  17.43 ms  p95=  18.33 ms  min=  16.97 ms
+  JSVG      (Java/Java2D)       avg=   3.35 ms  median=   3.28 ms  p95=   3.63 ms  min=   3.16 ms
+  CairoSVG  (Python/Cairo)      avg=   3.41 ms  median=   3.37 ms  p95=   3.58 ms  min=   3.23 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 5.2x faster
+    JairoSVG vs JSVG → JSVG is 1.0x faster
+    JairoSVG vs CairoSVG → JairoSVG is 1.0x faster
+    EchoSVG vs CairoSVG → CairoSVG is 5.1x faster
+    JSVG vs CairoSVG → JSVG is 1.0x faster
+
+▸ Viewbox aspect  [8/19]
+  JairoSVG  (Java/Java2D)       avg=   4.94 ms  median=   4.88 ms  p95=   5.19 ms  min=   4.73 ms
+  EchoSVG   (Java/Batik)        avg=  19.67 ms  median=  19.62 ms  p95=  20.59 ms  min=  18.83 ms
+  JSVG      (Java/Java2D)       avg=   4.68 ms  median=   4.61 ms  p95=   5.03 ms  min=   4.41 ms
+  CairoSVG  (Python/Cairo)      avg=   5.23 ms  median=   5.16 ms  p95=   5.55 ms  min=   5.02 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 4.0x faster
+    JairoSVG vs JSVG → JSVG is 1.1x faster
+    JairoSVG vs CairoSVG → JairoSVG is 1.1x faster
+    EchoSVG vs CairoSVG → CairoSVG is 3.8x faster
+    JSVG vs CairoSVG → JSVG is 1.1x faster
+
+▸ Css styling  [9/19]
+  JairoSVG  (Java/Java2D)       avg=   3.42 ms  median=   3.42 ms  p95=   3.63 ms  min=   3.18 ms
+  EchoSVG   (Java/Batik)        avg=  15.33 ms  median=  15.32 ms  p95=  15.99 ms  min=  14.53 ms
+  JSVG      (Java/Java2D)       avg=   3.48 ms  median=   3.44 ms  p95=   3.83 ms  min=   3.19 ms
+  CairoSVG  (Python/Cairo)      avg=   4.00 ms  median=   3.96 ms  p95=   4.08 ms  min=   3.92 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 4.5x faster
+    JairoSVG vs JSVG → JairoSVG is 1.0x faster
+    JairoSVG vs CairoSVG → JairoSVG is 1.2x faster
+    EchoSVG vs CairoSVG → CairoSVG is 3.8x faster
+    JSVG vs CairoSVG → JSVG is 1.2x faster
+
+▸ Use and defs  [10/19]
+  JairoSVG  (Java/Java2D)       avg=   3.99 ms  median=   3.95 ms  p95=   4.22 ms  min=   3.81 ms
+  EchoSVG   (Java/Batik)        avg=  14.37 ms  median=  14.32 ms  p95=  15.14 ms  min=  13.73 ms
+  JSVG      (Java/Java2D)       avg=   3.85 ms  median=   3.83 ms  p95=   4.11 ms  min=   3.57 ms
+  CairoSVG  (Python/Cairo)      avg=   4.38 ms  median=   4.30 ms  p95=   4.63 ms  min=   4.14 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 3.6x faster
+    JairoSVG vs JSVG → JSVG is 1.0x faster
+    JairoSVG vs CairoSVG → JairoSVG is 1.1x faster
+    EchoSVG vs CairoSVG → CairoSVG is 3.3x faster
+    JSVG vs CairoSVG → JSVG is 1.1x faster
+
+▸ Star polygon  [11/19]
+  JairoSVG  (Java/Java2D)       avg=   3.27 ms  median=   3.26 ms  p95=   3.45 ms  min=   3.10 ms
+  EchoSVG   (Java/Batik)        avg=  14.53 ms  median=  14.47 ms  p95=  15.25 ms  min=  13.96 ms
+  JSVG      (Java/Java2D)       avg=   3.19 ms  median=   3.13 ms  p95=   3.44 ms  min=   2.98 ms
+  CairoSVG  (Python/Cairo)      avg=   3.07 ms  median=   3.05 ms  p95=   3.25 ms  min=   2.89 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 4.4x faster
+    JairoSVG vs JSVG → JSVG is 1.0x faster
+    JairoSVG vs CairoSVG → CairoSVG is 1.1x faster
+    EchoSVG vs CairoSVG → CairoSVG is 4.7x faster
+    JSVG vs CairoSVG → CairoSVG is 1.0x faster
+
+▸ Nested svg  [12/19]
+  JairoSVG  (Java/Java2D)       avg=   4.61 ms  median=   4.54 ms  p95=   4.88 ms  min=   4.42 ms
+  EchoSVG   (Java/Batik)        avg=  19.52 ms  median=  19.48 ms  p95=  20.41 ms  min=  18.77 ms
+  JSVG      (Java/Java2D)       avg=   4.49 ms  median=   4.42 ms  p95=   4.88 ms  min=   4.31 ms
+  CairoSVG  (Python/Cairo)      avg=   5.03 ms  median=   4.92 ms  p95=   5.30 ms  min=   4.76 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 4.2x faster
+    JairoSVG vs JSVG → JSVG is 1.0x faster
+    JairoSVG vs CairoSVG → JairoSVG is 1.1x faster
+    EchoSVG vs CairoSVG → CairoSVG is 3.9x faster
+    JSVG vs CairoSVG → JSVG is 1.1x faster
+
+▸ Patterns  [13/19]
+  JairoSVG  (Java/Java2D)       avg=   4.65 ms  median=   4.57 ms  p95=   5.04 ms  min=   4.45 ms
+  EchoSVG   (Java/Batik)        avg=  16.38 ms  median=  16.36 ms  p95=  17.16 ms  min=  15.64 ms
+  JSVG      (Java/Java2D)       avg=   4.67 ms  median=   4.63 ms  p95=   5.13 ms  min=   4.38 ms
+  CairoSVG  (Python/Cairo)      avg=   4.63 ms  median=   4.54 ms  p95=   4.84 ms  min=   4.39 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 3.5x faster
+    JairoSVG vs JSVG → JairoSVG is 1.0x faster
+    JairoSVG vs CairoSVG → CairoSVG is 1.0x faster
+    EchoSVG vs CairoSVG → CairoSVG is 3.5x faster
+    JSVG vs CairoSVG → CairoSVG is 1.0x faster
+
+▸ Clip paths  [14/19]
+  JairoSVG  (Java/Java2D)       avg=   4.21 ms  median=   4.15 ms  p95=   4.58 ms  min=   3.97 ms
+  EchoSVG   (Java/Batik)        avg=  26.46 ms  median=  26.32 ms  p95=  27.61 ms  min=  25.65 ms
+  JSVG      (Java/Java2D)       avg=   4.27 ms  median=   4.20 ms  p95=   4.68 ms  min=   4.00 ms
+  CairoSVG  (Python/Cairo)      avg=   5.99 ms  median=   5.89 ms  p95=   6.26 ms  min=   5.73 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 6.3x faster
+    JairoSVG vs JSVG → JairoSVG is 1.0x faster
+    JairoSVG vs CairoSVG → JairoSVG is 1.4x faster
+    EchoSVG vs CairoSVG → CairoSVG is 4.4x faster
+    JSVG vs CairoSVG → JSVG is 1.4x faster
+
+▸ Masks  [15/19]
+  JairoSVG  (Java/Java2D)       avg=   8.49 ms  median=   8.33 ms  p95=   9.18 ms  min=   8.07 ms
+  EchoSVG   (Java/Batik)        avg=  21.77 ms  median=  21.60 ms  p95=  22.94 ms  min=  20.89 ms
+  JSVG      (Java/Java2D)       avg=   4.65 ms  median=   4.55 ms  p95=   5.28 ms  min=   4.21 ms
+  CairoSVG  (Python/Cairo)      avg=   3.66 ms  median=   3.59 ms  p95=   3.87 ms  min=   3.52 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 2.6x faster
+    JairoSVG vs JSVG → JSVG is 1.8x faster
+    JairoSVG vs CairoSVG → CairoSVG is 2.3x faster
+    EchoSVG vs CairoSVG → CairoSVG is 6.0x faster
+    JSVG vs CairoSVG → CairoSVG is 1.3x faster
+
+▸ Markers  [16/19]
+  JairoSVG  (Java/Java2D)       avg=   3.97 ms  median=   3.94 ms  p95=   4.30 ms  min=   3.68 ms
+  EchoSVG   (Java/Batik)        avg=  13.02 ms  median=  12.97 ms  p95=  13.69 ms  min=  12.47 ms
+  JSVG      (Java/Java2D)       avg=   3.77 ms  median=   3.70 ms  p95=   4.16 ms  min=   3.55 ms
+  CairoSVG  (Python/Cairo)      avg=   4.70 ms  median=   4.62 ms  p95=   4.94 ms  min=   4.48 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 3.3x faster
+    JairoSVG vs JSVG → JSVG is 1.1x faster
+    JairoSVG vs CairoSVG → JairoSVG is 1.2x faster
+    EchoSVG vs CairoSVG → CairoSVG is 2.8x faster
+    JSVG vs CairoSVG → JSVG is 1.2x faster
+
+▸ Filters  [17/19]
+  JairoSVG  (Java/Java2D)       avg=  45.34 ms  median=  45.27 ms  p95=  46.44 ms  min=  44.39 ms
+  EchoSVG   (Java/Batik)        avg=  35.03 ms  median=  34.95 ms  p95=  36.09 ms  min=  34.09 ms
+  JSVG      (Java/Java2D)       avg=   8.62 ms  median=   8.52 ms  p95=   9.37 ms  min=   8.03 ms
+  CairoSVG  (Python/Cairo)      avg=   4.55 ms  median=   4.48 ms  p95=   4.78 ms  min=   4.39 ms
+
+    JairoSVG vs EchoSVG → EchoSVG is 1.3x faster
+    JairoSVG vs JSVG → JSVG is 5.3x faster
+    JairoSVG vs CairoSVG → CairoSVG is 10.0x faster
+    EchoSVG vs CairoSVG → CairoSVG is 7.7x faster
+    JSVG vs CairoSVG → CairoSVG is 1.9x faster
+
+▸ Embedded image  [18/19]
+  JairoSVG  (Java/Java2D)       avg=   4.74 ms  median=   4.70 ms  p95=   5.12 ms  min=   4.37 ms
+  EchoSVG   (Java/Batik)        avg=  16.40 ms  median=  16.32 ms  p95=  17.15 ms  min=  15.75 ms
+  JSVG      (Java/Java2D)       avg=  12.51 ms  median=  12.08 ms  p95=  15.79 ms  min=  10.16 ms
+  CairoSVG  (Python/Cairo)      avg=   7.20 ms  median=   7.08 ms  p95=   7.61 ms  min=   6.87 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 3.5x faster
+    JairoSVG vs JSVG → JairoSVG is 2.6x faster
+    JairoSVG vs CairoSVG → JairoSVG is 1.5x faster
+    EchoSVG vs CairoSVG → CairoSVG is 2.3x faster
+    JSVG vs CairoSVG → CairoSVG is 1.7x faster
+
+▸ Text advanced  [19/19]
+  JairoSVG  (Java/Java2D)       avg=   5.36 ms  median=   5.28 ms  p95=   5.73 ms  min=   5.12 ms
+  EchoSVG   (Java/Batik)        avg=  26.06 ms  median=  26.01 ms  p95=  27.17 ms  min=  25.12 ms
+  JSVG      (Java/Java2D)       avg=   5.20 ms  median=   5.14 ms  p95=   5.58 ms  min=   4.92 ms
+  CairoSVG  (Python/Cairo)      avg=   8.92 ms  median=   8.75 ms  p95=   9.36 ms  min=   8.54 ms
+
+    JairoSVG vs EchoSVG → JairoSVG is 4.9x faster
+    JairoSVG vs JSVG → JSVG is 1.0x faster
+    JairoSVG vs CairoSVG → JairoSVG is 1.7x faster
+    EchoSVG vs CairoSVG → CairoSVG is 2.9x faster
+    JSVG vs CairoSVG → JSVG is 1.7x faster
+
+==================================================================================================

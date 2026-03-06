@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="160" viewBox="0 0 240 160">
+  <defs>
+    <image id="sourceImage" x="0" y="0" width="240" height="160"
+           href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAEElEQVR4nGN47mMDRwzEcQBfYhbxYdU3aQAAAABJRU5ErkJggg==" />
+    <filter id="imageFromRef">
+      <feImage href="#sourceImage"/>
+    </filter>
+  </defs>
+
+  <rect width="240" height="160" fill="#ffffff"/>
+  <circle cx="120" cy="80" r="58" fill="#1ea86f" filter="url(#imageFromRef)"/>
+
+  <text x="120" y="152" font-family="sans-serif" font-size="12" text-anchor="middle" fill="#333">
+    feImage href="#sourceImage"
+  </text>
+</svg>
