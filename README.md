@@ -116,6 +116,14 @@ byte[] highQualityJpeg = JairoSVG.builder()
 BufferedImage image = JairoSVG.builder()
     .fromFile(Path.of("icon.svg"))
     .toImage();
+
+// Customize Java2D rendering hints
+import java.awt.RenderingHints;
+
+byte[] quality = JairoSVG.builder()
+    .fromBytes(svgBytes)
+    .renderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY)
+    .toPng();
 ```
 
 ### Command Line
