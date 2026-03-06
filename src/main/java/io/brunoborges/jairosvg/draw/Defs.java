@@ -21,6 +21,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
+import java.awt.image.DataBufferInt;
 import java.awt.image.Kernel;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -46,9 +47,10 @@ import io.brunoborges.jairosvg.util.UrlHelper;
  */
 public final class Defs {
 
-    private static final double LUMINANCE_RED_COEFF = 0.2126;
-    private static final double LUMINANCE_GREEN_COEFF = 0.7152;
-    private static final double LUMINANCE_BLUE_COEFF = 0.0722;
+    private static final int LUMINANCE_RED_COEFF_256 = 54;
+    private static final int LUMINANCE_GREEN_COEFF_256 = 183;
+    private static final int LUMINANCE_BLUE_COEFF_256 = 19;
+    private static final int LUMINANCE_COEFF_SUM_256 = 255 * 256;
     private static final int MIN_IMAGE_BYTES = 5;
 
     private Defs() {
@@ -559,11 +561,10 @@ public final class Defs {
         surface.contextHeight = savedHeight;
         maskG2d.dispose();
 
-        int width = sourceImage.getWidth();
-        int height = sourceImage.getHeight();
-        int[] sourcePixels = sourceImage.getRGB(0, 0, width, height, null, 0, width);
-        int[] maskPixels = maskImage.getRGB(0, 0, width, height, null, 0, width);
-        int[] outputPixels = new int[sourcePixels.length];
+        int[] sourcePixels = ((DataBufferInt) sourceImage.getRaster().getDataBuffer()).getData();
+        int[] maskPixels = ((DataBufferInt) maskImage.getRaster().getDataBuffer()).getData();
+        BufferedImage masked = new BufferedImage(sourceImage.getWidth(), sourceImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        int[] outputPixels = ((DataBufferInt) masked.getRaster().getDataBuffer()).getData();
 
         for (int i = 0; i < sourcePixels.length; i++) {
             int src = sourcePixels[i];
@@ -576,14 +577,11 @@ public final class Defs {
             int mr = (m >>> 16) & 0xFF;
             int mg = (m >>> 8) & 0xFF;
             int mb = m & 0xFF;
-            double luminance = (LUMINANCE_RED_COEFF * mr + LUMINANCE_GREEN_COEFF * mg + LUMINANCE_BLUE_COEFF * mb)
-                    / 255.0;
-            double maskAlpha = (ma / 255.0) * luminance;
-            int outA = (int) Math.round(srcA * maskAlpha);
+            int luminance256 = LUMINANCE_RED_COEFF_256 * mr + LUMINANCE_GREEN_COEFF_256 * mg
+                    + LUMINANCE_BLUE_COEFF_256 * mb;
+            int outA = (int) ((long) srcA * ma * luminance256 / (255L * LUMINANCE_COEFF_SUM_256));
             outputPixels[i] = (outA << 24) | (src & 0x00FFFFFF);
         }
-        BufferedImage masked = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        masked.setRGB(0, 0, width, height, outputPixels, 0, width);
         return masked;
     }
 

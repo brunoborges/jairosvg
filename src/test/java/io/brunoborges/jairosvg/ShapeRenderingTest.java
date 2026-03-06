@@ -587,6 +587,25 @@ class ShapeRenderingTest {
     }
 
     @Test
+    void testMaskLuminanceCombinesMaskColorAndAlpha() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">
+                  <defs>
+                    <mask id="m">
+                      <rect width="20" height="20" fill="rgba(0,255,0,0.5)"/>
+                    </mask>
+                  </defs>
+                  <rect width="20" height="20" fill="red" mask="url(#m)"/>
+                </svg>
+                """;
+
+        BufferedImage image = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
+        int alpha = (image.getRGB(10, 10) >>> 24) & 0xFF;
+        assertTrue(alpha >= 89 && alpha <= 92, "Expected partial alpha from green luminance and 50% mask alpha");
+    }
+
+    @Test
     void testCalcInWidthAndHeight() throws Exception {
         // calc(200px - 100px) = 100, calc(50px + 50px) = 100
         String svg = """
