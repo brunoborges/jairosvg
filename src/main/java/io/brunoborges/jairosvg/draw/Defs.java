@@ -499,6 +499,7 @@ public final class Defs {
             return sourceGraphic;
         }
 
+        FilterContext filterContext = new FilterContext(sourceGraphic.getWidth(), sourceGraphic.getHeight(), 4);
         Map<String, BufferedImage> results = new HashMap<>();
         results.put("SourceGraphic", sourceGraphic);
         BufferedImage last = sourceGraphic;
@@ -506,22 +507,24 @@ public final class Defs {
         for (Node child : filterNode.children) {
             BufferedImage input = resolveInput(results, child.get("in"), last, sourceGraphic);
             BufferedImage output = switch (child.tag) {
-                case "feGaussianBlur" -> gaussianBlur(input, parseDoubleOr(child.get("stdDeviation"), 0));
-                case "feOffset" ->
-                    offset(input, size(surface, child.get("dx", "0")), size(surface, child.get("dy", "0")));
-                case "feFlood" -> flood(sourceGraphic.getWidth(), sourceGraphic.getHeight(),
-                        child.get("flood-color", "black"), parseDoubleOr(child.get("flood-opacity"), 1));
+                case "feGaussianBlur" -> gaussianBlur(input, parseDoubleOr(child.get("stdDeviation"), 0),
+                        filterContext.acquire(input), filterContext.acquire(input));
+                case "feOffset" -> offset(input, size(surface, child.get("dx", "0")),
+                        size(surface, child.get("dy", "0")), filterContext.acquire(input));
+                case "feFlood" ->
+                    flood(sourceGraphic.getWidth(), sourceGraphic.getHeight(), child.get("flood-color", "black"),
+                            parseDoubleOr(child.get("flood-opacity"), 1), filterContext.acquire());
                 case "feBlend" -> blend(input, resolveInput(results, child.get("in2"), last, sourceGraphic),
                         child.get("mode", "normal"));
-                case "feMerge" -> merge(results, child, sourceGraphic.getWidth(), sourceGraphic.getHeight(), last);
-                case "feDropShadow" -> dropShadow(surface, input, child);
+                case "feMerge" -> merge(results, child, last, filterContext.acquire());
+                case "feDropShadow" -> dropShadow(surface, input, child, filterContext);
                 case "feImage" -> feImage(surface, child, sourceGraphic.getWidth(), sourceGraphic.getHeight());
                 case "feTile" -> tile(input);
                 default -> input;
             };
             String resultName = child.get("result");
             if (resultName != null && !resultName.isEmpty()) {
-                results.put(resultName, output);
+                results.put(resultName, copyImage(output));
             }
             last = output;
             results.put("last", last);
@@ -564,7 +567,8 @@ public final class Defs {
 
         int[] sourcePixels = ((DataBufferInt) sourceImage.getRaster().getDataBuffer()).getData();
         int[] maskPixels = ((DataBufferInt) maskImage.getRaster().getDataBuffer()).getData();
-        BufferedImage masked = new BufferedImage(sourceImage.getWidth(), sourceImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage masked = new BufferedImage(sourceImage.getWidth(), sourceImage.getHeight(),
+                BufferedImage.TYPE_INT_ARGB);
         int[] outputPixels = ((DataBufferInt) masked.getRaster().getDataBuffer()).getData();
 
         for (int i = 0; i < sourcePixels.length; i++) {
@@ -806,16 +810,14 @@ public final class Defs {
         };
     }
 
-    private static BufferedImage offset(BufferedImage input, double dx, double dy) {
-        BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    private static BufferedImage offset(BufferedImage input, double dx, double dy, BufferedImage output) {
         Graphics2D g = output.createGraphics();
         g.drawImage(input, (int) Math.round(dx), (int) Math.round(dy), null);
         g.dispose();
         return output;
     }
 
-    private static BufferedImage flood(int width, int height, String color, double opacity) {
-        BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    private static BufferedImage flood(int width, int height, String color, double opacity, BufferedImage output) {
         Graphics2D g = output.createGraphics();
         Colors.RGBA floodColor = Colors.color(color, opacity);
         g.setColor(new Color((float) floodColor.r(), (float) floodColor.g(), (float) floodColor.b(),
@@ -885,9 +887,8 @@ public final class Defs {
         return Math.clamp(value, 0, 255);
     }
 
-    private static BufferedImage merge(Map<String, BufferedImage> results, Node mergeNode, int width, int height,
-            BufferedImage last) {
-        BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    private static BufferedImage merge(Map<String, BufferedImage> results, Node mergeNode, BufferedImage last,
+            BufferedImage output) {
         Graphics2D g = output.createGraphics();
         for (Node mergeChild : mergeNode.children) {
             if (!"feMergeNode".equals(mergeChild.tag)) {
@@ -900,14 +901,15 @@ public final class Defs {
         return output;
     }
 
-    private static BufferedImage dropShadow(Surface surface, BufferedImage input, Node node) {
+    private static BufferedImage dropShadow(Surface surface, BufferedImage input, Node node,
+            FilterContext filterContext) {
         double stdDeviation = parseDouble(node.get("stdDeviation"));
         double dx = size(surface, node.get("dx", "0"));
         double dy = size(surface, node.get("dy", "0"));
         String floodColor = node.get("flood-color", "black");
         double floodOpacity = parseDoubleOr(node.get("flood-opacity"), 1);
 
-        BufferedImage shadow = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage shadow = filterContext.acquire(input);
         Graphics2D g = shadow.createGraphics();
         g.drawImage(input, 0, 0, null);
         g.setComposite(AlphaComposite.SrcIn);
@@ -916,10 +918,11 @@ public final class Defs {
         g.fillRect(0, 0, input.getWidth(), input.getHeight());
         g.dispose();
 
-        BufferedImage blurredShadow = gaussianBlur(shadow, stdDeviation);
-        BufferedImage offsetShadow = offset(blurredShadow, dx, dy);
+        BufferedImage blurredShadow = gaussianBlur(shadow, stdDeviation, filterContext.acquire(input, shadow),
+                filterContext.acquire(input, shadow));
+        BufferedImage offsetShadow = offset(blurredShadow, dx, dy, filterContext.acquire(input, blurredShadow));
 
-        BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage output = filterContext.acquire(input, offsetShadow);
         Graphics2D out = output.createGraphics();
         out.drawImage(offsetShadow, 0, 0, null);
         out.drawImage(input, 0, 0, null);
@@ -1058,7 +1061,16 @@ public final class Defs {
         return copy;
     }
 
-    private static BufferedImage gaussianBlur(BufferedImage input, double stdDeviation) {
+    private static BufferedImage copyImage(BufferedImage source) {
+        BufferedImage copy = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = copy.createGraphics();
+        g.drawImage(source, 0, 0, null);
+        g.dispose();
+        return copy;
+    }
+
+    private static BufferedImage gaussianBlur(BufferedImage input, double stdDeviation, BufferedImage temp,
+            BufferedImage output) {
         if (stdDeviation <= 0) {
             return input;
         }
@@ -1067,11 +1079,53 @@ public final class Defs {
         Kernel verticalKernel = new Kernel(1, kernelValues.length, kernelValues);
         ConvolveOp horizontalOp = new ConvolveOp(horizontalKernel, ConvolveOp.EDGE_NO_OP, null);
         ConvolveOp verticalOp = new ConvolveOp(verticalKernel, ConvolveOp.EDGE_NO_OP, null);
-        BufferedImage temp = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
         horizontalOp.filter(input, temp);
         verticalOp.filter(temp, output);
         return output;
+    }
+
+    private static final class FilterContext {
+        private final BufferedImage[] pool;
+        private int next;
+
+        private FilterContext(int width, int height, int poolSize) {
+            this.pool = new BufferedImage[poolSize];
+            for (int i = 0; i < poolSize; i++) {
+                this.pool[i] = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            }
+        }
+
+        private BufferedImage acquire(BufferedImage... avoid) {
+            for (int i = 0; i < pool.length; i++) {
+                BufferedImage candidate = pool[(next + i) % pool.length];
+                if (isAvoided(candidate, avoid)) {
+                    continue;
+                }
+                next = (next + i + 1) % pool.length;
+                clearImage(candidate);
+                return candidate;
+            }
+            BufferedImage fallback = pool[next];
+            next = (next + 1) % pool.length;
+            clearImage(fallback);
+            return fallback;
+        }
+
+        private static boolean isAvoided(BufferedImage candidate, BufferedImage[] avoid) {
+            for (BufferedImage image : avoid) {
+                if (candidate == image) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static void clearImage(BufferedImage image) {
+            Graphics2D g = image.createGraphics();
+            g.setComposite(AlphaComposite.Clear);
+            g.fillRect(0, 0, image.getWidth(), image.getHeight());
+            g.dispose();
+        }
     }
 
     private static float[] gaussianKernel(double stdDeviation) {

@@ -503,6 +503,37 @@ class ShapeRenderingTest {
     }
 
     @Test
+    void testFilterResultReferencesRemainStableAcrossPrimitives() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="stable-results">
+                      <feFlood flood-color="#ff0000" result="saved"/>
+                      <feFlood flood-color="#0000ff"/>
+                      <feMerge>
+                        <feMergeNode in="saved"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="white" filter="url(#stable-results)"/>
+                </svg>
+                """;
+
+        BufferedImage image = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
+        int pixel = image.getRGB(50, 50);
+        int alpha = (pixel >>> 24) & 0xFF;
+        int red = (pixel >>> 16) & 0xFF;
+        int green = (pixel >>> 8) & 0xFF;
+        int blue = pixel & 0xFF;
+
+        assertEquals(255, alpha);
+        assertEquals(255, red);
+        assertEquals(0, green);
+        assertEquals(0, blue);
+    }
+
+    @Test
     void testMarkersRenderOnLinePolylineAndPath() throws Exception {
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120">
@@ -602,7 +633,8 @@ class ShapeRenderingTest {
         BufferedImage image = ImageIO
                 .read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
         int alpha = (image.getRGB(10, 10) >>> 24) & 0xFF;
-        // rgba(0,255,0,0.5): 255 * 0.5 * 0.7152 ≈ 91 (allowing small integer-rounding variance)
+        // rgba(0,255,0,0.5): 255 * 0.5 * 0.7152 ≈ 91 (allowing small integer-rounding
+        // variance)
         assertTrue(alpha >= 89 && alpha <= 92, "Expected partial alpha from green luminance and 50% mask alpha");
     }
 
