@@ -545,8 +545,17 @@ public final class Defs {
                     yield flood(w, h, child.get("flood-color", "black"), parseDoubleOr(child.get("flood-opacity"), 1),
                             out);
                 }
-                case "feBlend" -> blend(input, resolveInput(results, child.get("in2"), last, sourceGraphic),
-                        child.get("mode", "normal"));
+                case "feBlend" -> {
+                    if (buf1 == null)
+                        buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null)
+                        buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null)
+                        buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    BufferedImage in2 = resolveInput(results, child.get("in2"), last, sourceGraphic);
+                    BufferedImage out = pickBuffer(input, in2, buf1, buf2, buf3);
+                    yield blend(input, in2, child.get("mode", "normal"), out);
+                }
                 case "feMerge" -> {
                     if (buf1 == null)
                         buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
@@ -968,13 +977,13 @@ public final class Defs {
     }
 
     private static BufferedImage flood(int width, int height, String color, double opacity, BufferedImage output) {
-        clearBuffer(output);
-        Graphics2D g = output.createGraphics();
         Colors.RGBA floodColor = Colors.color(color, opacity);
-        g.setColor(new Color((float) floodColor.r(), (float) floodColor.g(), (float) floodColor.b(),
-                (float) floodColor.a()));
-        g.fillRect(0, 0, width, height);
-        g.dispose();
+        int a = Math.clamp((int) (floodColor.a() * 255 + 0.5), 0, 255);
+        int r = Math.clamp((int) (floodColor.r() * 255 + 0.5), 0, 255);
+        int g = Math.clamp((int) (floodColor.g() * 255 + 0.5), 0, 255);
+        int b = Math.clamp((int) (floodColor.b() * 255 + 0.5), 0, 255);
+        int pixel = (a << 24) | (r << 16) | (g << 8) | b;
+        java.util.Arrays.fill(((DataBufferInt) output.getRaster().getDataBuffer()).getData(), pixel);
         return output;
     }
 
@@ -983,6 +992,17 @@ public final class Defs {
     private static final int BLEND_SCREEN = 2;
     private static final int BLEND_DARKEN = 3;
     private static final int BLEND_LIGHTEN = 4;
+
+    // Precomputed reciprocals for alpha un-premultiply: ALPHA_RECIP[a] ≈
+    // (1<<32)/(a*255).
+    // Replaces per-channel integer division with multiply+shift in the blend loop.
+    private static final long[] ALPHA_RECIP = new long[256];
+    static {
+        for (int a = 1; a <= 255; a++) {
+            long divisor = a * 255L;
+            ALPHA_RECIP[a] = ((1L << 32) + divisor - 1) / divisor;
+        }
+    }
 
     private static int blendModeId(String mode) {
         return switch (mode) {
@@ -994,17 +1014,22 @@ public final class Defs {
         };
     }
 
-    private static BufferedImage blend(BufferedImage input, BufferedImage destination, String mode) {
+    private static BufferedImage blend(BufferedImage input, BufferedImage destination, String mode,
+            BufferedImage output) {
         int width = Math.max(input.getWidth(), destination.getWidth());
         int height = Math.max(input.getHeight(), destination.getHeight());
         boolean sameDimensions = input.getWidth() == width && input.getHeight() == height
                 && destination.getWidth() == width && destination.getHeight() == height;
 
         if (sameDimensions) {
-            return blendDirect(input, destination, blendModeId(mode), width, height);
+            return blendDirect(input, destination, blendModeId(mode), width, height, output);
         }
 
-        BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        if (output == null || output.getWidth() != width || output.getHeight() != height) {
+            output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        } else {
+            clearBuffer(output);
+        }
         int modeId = blendModeId(mode);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -1017,17 +1042,174 @@ public final class Defs {
     }
 
     private static BufferedImage blendDirect(BufferedImage input, BufferedImage destination, int modeId, int width,
-            int height) {
+            int height, BufferedImage output) {
         int[] srcPixels = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
         int[] dstPixels = ((DataBufferInt) destination.getRaster().getDataBuffer()).getData();
-        BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        if (output == null || output.getWidth() != width || output.getHeight() != height) {
+            output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        }
         int[] outPixels = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
         int len = srcPixels.length;
 
-        for (int i = 0; i < len; i++) {
-            outPixels[i] = blendPixel(srcPixels[i], dstPixels[i], modeId);
+        switch (modeId) {
+            case BLEND_NORMAL -> blendLoopNormal(srcPixels, dstPixels, outPixels, len);
+            case BLEND_MULTIPLY -> blendLoopMultiply(srcPixels, dstPixels, outPixels, len);
+            case BLEND_SCREEN -> blendLoopScreen(srcPixels, dstPixels, outPixels, len);
+            case BLEND_DARKEN -> blendLoopDarken(srcPixels, dstPixels, outPixels, len);
+            case BLEND_LIGHTEN -> blendLoopLighten(srcPixels, dstPixels, outPixels, len);
+            default -> blendLoopNormal(srcPixels, dstPixels, outPixels, len);
         }
         return output;
+    }
+
+    private static void blendLoopNormal(int[] srcPixels, int[] dstPixels, int[] outPixels, int len) {
+        for (int i = 0; i < len; i++) {
+            int src = srcPixels[i];
+            int dst = dstPixels[i];
+            int srcA = src >>> 24;
+            int dstA = dst >>> 24;
+            if ((srcA | dstA) == 0)
+                continue;
+
+            int outA = srcA + dstA - (srcA * dstA + 127) / 255;
+            if (outA <= 0)
+                continue;
+            if (outA > 255)
+                outA = 255;
+
+            int srcR = (src >> 16) & 0xFF, srcG = (src >> 8) & 0xFF, srcB = src & 0xFF;
+            int dstR = (dst >> 16) & 0xFF, dstG = (dst >> 8) & 0xFF, dstB = dst & 0xFF;
+
+            // NORMAL: blended = src, so premul = f1*dst + 255*srcA*src
+            int f1 = (255 - srcA) * dstA;
+            int srcA255 = srcA * 255;
+            long recip = ALPHA_RECIP[outA];
+            int outR = (int) ((f1 * dstR + srcA255 * srcR) * recip >>> 32);
+            int outG = (int) ((f1 * dstG + srcA255 * srcG) * recip >>> 32);
+            int outB = (int) ((f1 * dstB + srcA255 * srcB) * recip >>> 32);
+
+            outPixels[i] = (outA << 24) | (outR << 16) | (outG << 8) | outB;
+        }
+    }
+
+    private static void blendLoopMultiply(int[] srcPixels, int[] dstPixels, int[] outPixels, int len) {
+        for (int i = 0; i < len; i++) {
+            int src = srcPixels[i];
+            int dst = dstPixels[i];
+            int srcA = src >>> 24;
+            int dstA = dst >>> 24;
+            if ((srcA | dstA) == 0)
+                continue;
+
+            int outA = srcA + dstA - (srcA * dstA + 127) / 255;
+            if (outA <= 0)
+                continue;
+            if (outA > 255)
+                outA = 255;
+
+            int srcR = (src >> 16) & 0xFF, srcG = (src >> 8) & 0xFF, srcB = src & 0xFF;
+            int dstR = (dst >> 16) & 0xFF, dstG = (dst >> 8) & 0xFF, dstB = dst & 0xFF;
+
+            int f1 = (255 - srcA) * dstA;
+            int f2 = (255 - dstA) * srcA;
+            int f3 = srcA * dstA;
+            long recip = ALPHA_RECIP[outA];
+            int outR = (int) ((f1 * dstR + f2 * srcR + f3 * ((dstR * srcR + 127) / 255)) * recip >>> 32);
+            int outG = (int) ((f1 * dstG + f2 * srcG + f3 * ((dstG * srcG + 127) / 255)) * recip >>> 32);
+            int outB = (int) ((f1 * dstB + f2 * srcB + f3 * ((dstB * srcB + 127) / 255)) * recip >>> 32);
+
+            outPixels[i] = (outA << 24) | (outR << 16) | (outG << 8) | outB;
+        }
+    }
+
+    private static void blendLoopScreen(int[] srcPixels, int[] dstPixels, int[] outPixels, int len) {
+        for (int i = 0; i < len; i++) {
+            int src = srcPixels[i];
+            int dst = dstPixels[i];
+            int srcA = src >>> 24;
+            int dstA = dst >>> 24;
+            if ((srcA | dstA) == 0)
+                continue;
+
+            int outA = srcA + dstA - (srcA * dstA + 127) / 255;
+            if (outA <= 0)
+                continue;
+            if (outA > 255)
+                outA = 255;
+
+            int srcR = (src >> 16) & 0xFF, srcG = (src >> 8) & 0xFF, srcB = src & 0xFF;
+            int dstR = (dst >> 16) & 0xFF, dstG = (dst >> 8) & 0xFF, dstB = dst & 0xFF;
+
+            int f1 = (255 - srcA) * dstA;
+            int f2 = (255 - dstA) * srcA;
+            int f3 = srcA * dstA;
+            long recip = ALPHA_RECIP[outA];
+            int outR = (int) ((f1 * dstR + f2 * srcR + f3 * (dstR + srcR - (dstR * srcR + 127) / 255)) * recip >>> 32);
+            int outG = (int) ((f1 * dstG + f2 * srcG + f3 * (dstG + srcG - (dstG * srcG + 127) / 255)) * recip >>> 32);
+            int outB = (int) ((f1 * dstB + f2 * srcB + f3 * (dstB + srcB - (dstB * srcB + 127) / 255)) * recip >>> 32);
+
+            outPixels[i] = (outA << 24) | (outR << 16) | (outG << 8) | outB;
+        }
+    }
+
+    private static void blendLoopDarken(int[] srcPixels, int[] dstPixels, int[] outPixels, int len) {
+        for (int i = 0; i < len; i++) {
+            int src = srcPixels[i];
+            int dst = dstPixels[i];
+            int srcA = src >>> 24;
+            int dstA = dst >>> 24;
+            if ((srcA | dstA) == 0)
+                continue;
+
+            int outA = srcA + dstA - (srcA * dstA + 127) / 255;
+            if (outA <= 0)
+                continue;
+            if (outA > 255)
+                outA = 255;
+
+            int srcR = (src >> 16) & 0xFF, srcG = (src >> 8) & 0xFF, srcB = src & 0xFF;
+            int dstR = (dst >> 16) & 0xFF, dstG = (dst >> 8) & 0xFF, dstB = dst & 0xFF;
+
+            int f1 = (255 - srcA) * dstA;
+            int f2 = (255 - dstA) * srcA;
+            int f3 = srcA * dstA;
+            long recip = ALPHA_RECIP[outA];
+            int outR = (int) ((f1 * dstR + f2 * srcR + f3 * Math.min(dstR, srcR)) * recip >>> 32);
+            int outG = (int) ((f1 * dstG + f2 * srcG + f3 * Math.min(dstG, srcG)) * recip >>> 32);
+            int outB = (int) ((f1 * dstB + f2 * srcB + f3 * Math.min(dstB, srcB)) * recip >>> 32);
+
+            outPixels[i] = (outA << 24) | (outR << 16) | (outG << 8) | outB;
+        }
+    }
+
+    private static void blendLoopLighten(int[] srcPixels, int[] dstPixels, int[] outPixels, int len) {
+        for (int i = 0; i < len; i++) {
+            int src = srcPixels[i];
+            int dst = dstPixels[i];
+            int srcA = src >>> 24;
+            int dstA = dst >>> 24;
+            if ((srcA | dstA) == 0)
+                continue;
+
+            int outA = srcA + dstA - (srcA * dstA + 127) / 255;
+            if (outA <= 0)
+                continue;
+            if (outA > 255)
+                outA = 255;
+
+            int srcR = (src >> 16) & 0xFF, srcG = (src >> 8) & 0xFF, srcB = src & 0xFF;
+            int dstR = (dst >> 16) & 0xFF, dstG = (dst >> 8) & 0xFF, dstB = dst & 0xFF;
+
+            int f1 = (255 - srcA) * dstA;
+            int f2 = (255 - dstA) * srcA;
+            int f3 = srcA * dstA;
+            long recip = ALPHA_RECIP[outA];
+            int outR = (int) ((f1 * dstR + f2 * srcR + f3 * Math.max(dstR, srcR)) * recip >>> 32);
+            int outG = (int) ((f1 * dstG + f2 * srcG + f3 * Math.max(dstG, srcG)) * recip >>> 32);
+            int outB = (int) ((f1 * dstB + f2 * srcB + f3 * Math.max(dstB, srcB)) * recip >>> 32);
+
+            outPixels[i] = (outA << 24) | (outR << 16) | (outG << 8) | outB;
+        }
     }
 
     private static int blendPixel(int src, int dst, int modeId) {
