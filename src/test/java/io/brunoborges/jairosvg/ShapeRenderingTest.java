@@ -404,6 +404,13 @@ class ShapeRenderingTest {
 
     @Test
     void testTileFilterRepeatsSourceGraphic() throws Exception {
+        // feTile on SourceGraphic with the filter region covering the full canvas
+        // should
+        // produce an output identical to the input — the tile equals the filter region,
+        // so
+        // one tile fills everything with no visible repetition. This matches CairoSVG,
+        // JSVG,
+        // and EchoSVG behavior.
         String filteredSvg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="120" height="60">
                   <defs>
@@ -427,22 +434,33 @@ class ShapeRenderingTest {
         BufferedImage plainImage = ImageIO
                 .read(new ByteArrayInputStream(JairoSVG.svg2png(plainSvg.getBytes(StandardCharsets.UTF_8))));
 
-        int minXOutsideSourceRect = 40;
-        int minYOutsideSourceRect = 30;
-        int maxXOutsideSourceRect = 115;
-        int maxYOutsideSourceRect = 55;
-        boolean repeatedTileFound = false;
-        // Search a far area well outside the original source rectangle (10,10)-(20,20).
-        // If feTile works, repeated red tiles must appear in this region.
-        for (int y = minYOutsideSourceRect; y < maxYOutsideSourceRect && !repeatedTileFound; y++) {
-            for (int x = minXOutsideSourceRect; x < maxXOutsideSourceRect; x++) {
+        // The red rect should appear at its original position in both images.
+        // Check that the rect area (10,10)-(20,20) has red pixels in the filtered
+        // image.
+        int redCount = 0;
+        for (int y = 11; y < 19; y++) {
+            for (int x = 11; x < 19; x++) {
+                int rgb = filteredImage.getRGB(x, y);
+                int r = (rgb >> 16) & 0xff;
+                if (r > 200)
+                    redCount++;
+            }
+        }
+        assertTrue(redCount > 0, "Red rect should be present at original position in filtered output");
+
+        // Outside the original rect, filtered and plain images should match (no
+        // tiling).
+        boolean anyDifference = false;
+        for (int y = 30; y < 55 && !anyDifference; y++) {
+            for (int x = 40; x < 115; x++) {
                 if (plainImage.getRGB(x, y) != filteredImage.getRGB(x, y)) {
-                    repeatedTileFound = true;
+                    anyDifference = true;
                     break;
                 }
             }
         }
-        assertTrue(repeatedTileFound);
+        assertFalse(anyDifference,
+                "feTile on SourceGraphic should not produce visible tiling outside the original content");
     }
 
     @Test

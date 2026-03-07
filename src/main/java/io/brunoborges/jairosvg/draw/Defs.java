@@ -503,6 +503,9 @@ public final class Defs {
         BufferedImage buf2 = null;
         BufferedImage buf3 = null;
 
+        // Compute filter region once for primitives that need it (e.g. feTile)
+        java.awt.Rectangle filterRegion = computeFilterRegion(sourceGraphic, filterNode);
+
         Map<String, BufferedImage> results = new HashMap<>();
         results.put("SourceGraphic", sourceGraphic);
         BufferedImage last = sourceGraphic;
@@ -568,7 +571,7 @@ public final class Defs {
                     yield dropShadowBuffered(surface, input, child, buf1, buf2, buf3);
                 }
                 case "feImage" -> feImage(surface, child, w, h);
-                case "feTile" -> tile(input);
+                case "feTile" -> tile(input, filterRegion);
                 default -> input;
             };
             String resultName = child.get("result");
@@ -1214,50 +1217,79 @@ public final class Defs {
         return output;
     }
 
-    private static BufferedImage tile(BufferedImage input) {
+    private static BufferedImage tile(BufferedImage input, java.awt.Rectangle filterRegion) {
         int width = input.getWidth();
         int height = input.getHeight();
         int[] pixels = ((java.awt.image.DataBufferInt) input.getRaster().getDataBuffer()).getData();
 
-        // Find non-transparent bounds directly from pixel array
-        int minX = width, minY = height, maxX = -1, maxY = -1;
-        for (int y = 0; y < height; y++) {
-            int rowOffset = y * width;
-            for (int x = 0; x < width; x++) {
-                if ((pixels[rowOffset + x] >>> 24) != 0) {
-                    if (x < minX)
-                        minX = x;
-                    if (x > maxX)
-                        maxX = x;
-                    if (y < minY)
-                        minY = y;
-                    if (y > maxY)
-                        maxY = y;
+        // Per SVG spec, the tile region is the input's filter primitive subregion.
+        // Without per-primitive subregion tracking, we use the filter region as the
+        // best approximation. When the filter region matches the canvas, this makes
+        // feTile a pass-through (one tile fills everything), which is correct for
+        // the common case of feTile on SourceGraphic with default subregions.
+        int tileX, tileY, tileW, tileH;
+        if (filterRegion != null) {
+            tileX = Math.max(0, filterRegion.x);
+            tileY = Math.max(0, filterRegion.y);
+            tileW = Math.min(filterRegion.width, width - tileX);
+            tileH = Math.min(filterRegion.height, height - tileY);
+        } else {
+            // Fallback: find non-transparent bounds
+            int minX = width, minY = height, maxX = -1, maxY = -1;
+            for (int y = 0; y < height; y++) {
+                int rowOffset = y * width;
+                for (int x = 0; x < width; x++) {
+                    if ((pixels[rowOffset + x] >>> 24) != 0) {
+                        if (x < minX)
+                            minX = x;
+                        if (x > maxX)
+                            maxX = x;
+                        if (y < minY)
+                            minY = y;
+                        if (y > maxY)
+                            maxY = y;
+                    }
                 }
             }
+            if (maxX < minX)
+                return input;
+            tileX = minX;
+            tileY = minY;
+            tileW = maxX - minX + 1;
+            tileH = maxY - minY + 1;
         }
-        if (maxX < minX) {
+
+        if (tileW <= 0 || tileH <= 0) {
             return input;
         }
 
-        int tileW = maxX - minX + 1;
-        int tileH = maxY - minY + 1;
-
-        // Extract tile pixels directly
+        // Extract tile pixels from the tile region
         int[] tilePixels = new int[tileW * tileH];
         for (int y = 0; y < tileH; y++) {
-            System.arraycopy(pixels, (minY + y) * width + minX, tilePixels, y * tileW, tileW);
+            System.arraycopy(pixels, (tileY + y) * width + tileX, tilePixels, y * tileW, tileW);
         }
 
-        // Tile by copying pixel rows into output array
+        // Tile across the full canvas with origin at (tileX, tileY) so that the
+        // original content stays at its original position
         int[] outPixels = new int[width * height];
+        int txStart = ((-tileX % tileW) + tileW) % tileW;
         for (int y = 0; y < height; y++) {
-            int tileY = y % tileH;
-            int tileRowOff = tileY * tileW;
+            int ty = ((y - tileY) % tileH + tileH) % tileH;
+            int tileRowOff = ty * tileW;
             int outRowOff = y * width;
-            for (int x = 0; x < width; x += tileW) {
-                int copyLen = Math.min(tileW, width - x);
-                System.arraycopy(tilePixels, tileRowOff, outPixels, outRowOff + x, copyLen);
+
+            int x = 0;
+            if (txStart != 0) {
+                int firstLen = Math.min(tileW - txStart, width);
+                System.arraycopy(tilePixels, tileRowOff + txStart, outPixels, outRowOff, firstLen);
+                x = firstLen;
+            }
+            while (x + tileW <= width) {
+                System.arraycopy(tilePixels, tileRowOff, outPixels, outRowOff + x, tileW);
+                x += tileW;
+            }
+            if (x < width) {
+                System.arraycopy(tilePixels, tileRowOff, outPixels, outRowOff + x, width - x);
             }
         }
 
