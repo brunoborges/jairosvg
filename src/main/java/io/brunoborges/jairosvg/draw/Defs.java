@@ -499,9 +499,9 @@ public final class Defs {
 
         int w = sourceGraphic.getWidth();
         int h = sourceGraphic.getHeight();
-        BufferedImage buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-        BufferedImage buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-        BufferedImage buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage buf1 = null;
+        BufferedImage buf2 = null;
+        BufferedImage buf3 = null;
 
         Map<String, BufferedImage> results = new HashMap<>();
         results.put("SourceGraphic", sourceGraphic);
@@ -511,15 +511,24 @@ public final class Defs {
             BufferedImage input = resolveInput(results, child.get("in"), last, sourceGraphic);
             BufferedImage output = switch (child.tag) {
                 case "feGaussianBlur" -> {
+                    if (buf1 == null) buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null) buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null) buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                     BufferedImage temp = pickBuffer(input, null, buf1, buf2, buf3);
                     BufferedImage out = pickBuffer(input, temp, buf1, buf2, buf3);
                     yield gaussianBlur(input, parseDoubleOr(child.get("stdDeviation"), 0), temp, out);
                 }
                 case "feOffset" -> {
+                    if (buf1 == null) buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null) buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null) buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                     BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
                     yield offset(input, size(surface, child.get("dx", "0")), size(surface, child.get("dy", "0")), out);
                 }
                 case "feFlood" -> {
+                    if (buf1 == null) buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null) buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null) buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                     BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
                     yield flood(w, h, child.get("flood-color", "black"), parseDoubleOr(child.get("flood-opacity"), 1),
                             out);
@@ -527,10 +536,16 @@ public final class Defs {
                 case "feBlend" -> blend(input, resolveInput(results, child.get("in2"), last, sourceGraphic),
                         child.get("mode", "normal"));
                 case "feMerge" -> {
+                    if (buf1 == null) buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null) buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null) buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                     BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
                     yield merge(results, child, w, h, last, out);
                 }
                 case "feDropShadow" -> {
+                    if (buf1 == null) buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null) buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null) buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                     boolean inputIsManaged = input == buf1 || input == buf2 || input == buf3;
                     if (inputIsManaged) {
                         yield dropShadow(surface, input, child);
@@ -1076,15 +1091,15 @@ public final class Defs {
         String floodColor = node.get("flood-color", "black");
         double floodOpacity = parseDoubleOr(node.get("flood-opacity"), 1);
 
-        // Step 1: shadow colorization → buf1
-        clearBuffer(buf1);
-        Graphics2D g = buf1.createGraphics();
-        g.drawImage(input, 0, 0, null);
-        g.setComposite(AlphaComposite.SrcIn);
+        // Step 1: shadow colorization → buf1 (use pixel operations instead of Graphics2D)
         Colors.RGBA rgba = Colors.color(floodColor, floodOpacity);
-        g.setColor(new Color((float) rgba.r(), (float) rgba.g(), (float) rgba.b(), (float) rgba.a()));
-        g.fillRect(0, 0, input.getWidth(), input.getHeight());
-        g.dispose();
+        int colorRGB = ((int)(rgba.r() * 255) << 16) | ((int)(rgba.g() * 255) << 8) | (int)(rgba.b() * 255);
+        int[] inputPixels = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
+        int[] shadowPixels = ((DataBufferInt) buf1.getRaster().getDataBuffer()).getData();
+        for (int i = 0; i < inputPixels.length; i++) {
+            int alpha = inputPixels[i] >>> 24;
+            shadowPixels[i] = (((int)(alpha * rgba.a()) << 24) | colorRGB);
+        }
 
         // Step 2: blur shadow (buf1) → temp=buf2, output=buf3
         BufferedImage blurredShadow = gaussianBlur(buf1, stdDeviation, buf2, buf3);
@@ -1092,13 +1107,24 @@ public final class Defs {
         // Step 3: offset blurred shadow (buf3) → buf1 (shadow no longer needed)
         BufferedImage offsetShadow = offset(blurredShadow, dx, dy, buf1);
 
-        // Step 4: composite offsetShadow + original input → buf2 (blur temp no longer
-        // needed)
-        clearBuffer(buf2);
-        Graphics2D out = buf2.createGraphics();
-        out.drawImage(offsetShadow, 0, 0, null);
-        out.drawImage(input, 0, 0, null);
-        out.dispose();
+        // Step 4: composite offsetShadow + original input → buf2 (direct pixel copy)
+        int[] shadowPixels2 = ((DataBufferInt) offsetShadow.getRaster().getDataBuffer()).getData();
+        int[] inputPixels2 = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
+        int[] outPixels = ((DataBufferInt) buf2.getRaster().getDataBuffer()).getData();
+        for (int i = 0; i < outPixels.length; i++) {
+            int shadow = shadowPixels2[i];
+            int orig = inputPixels2[i];
+            int origAlpha = orig >>> 24;
+            if (origAlpha == 255) {
+                outPixels[i] = orig;
+            } else if (origAlpha == 0) {
+                outPixels[i] = shadow;
+            } else {
+                int shadowAlpha = shadow >>> 24;
+                int outAlpha = origAlpha + (shadowAlpha * (255 - origAlpha) / 255);
+                outPixels[i] = (outAlpha << 24) | (orig & 0x00FFFFFF);
+            }
+        }
         return buf2;
     }
 
@@ -1272,10 +1298,11 @@ public final class Defs {
             System.arraycopy(src, 0, dst, 0, src.length);
             return;
         }
-        double inv = 1.0 / (r + r + 1);
+        int boxSize = r + r + 1;
+        int scale = (1 << 24) / boxSize;
         for (int y = 0; y < h; y++) {
             int off = y * w;
-            long sa = 0, sr = 0, sg = 0, sb = 0;
+            int sa = 0, sr = 0, sg = 0, sb = 0;
             for (int i = -r; i <= r; i++) {
                 int px = src[off + Math.min(Math.max(i, 0), w - 1)];
                 sa += (px >>> 24);
@@ -1283,19 +1310,21 @@ public final class Defs {
                 sg += (px >> 8) & 0xFF;
                 sb += px & 0xFF;
             }
-            for (int x = 0; x < w; x++) {
-                dst[off + x] = ((int) (sa * inv + 0.5) << 24) | ((int) (sr * inv + 0.5) << 16)
-                        | ((int) (sg * inv + 0.5) << 8) | (int) (sb * inv + 0.5);
-                int addPx = src[off + Math.min(x + r + 1, w - 1)];
-                sa += (addPx >>> 24);
-                sr += (addPx >> 16) & 0xFF;
-                sg += (addPx >> 8) & 0xFF;
-                sb += addPx & 0xFF;
-                int remPx = src[off + Math.max(x - r, 0)];
-                sa -= (remPx >>> 24);
-                sr -= (remPx >> 16) & 0xFF;
-                sg -= (remPx >> 8) & 0xFF;
-                sb -= remPx & 0xFF;
+            int prev = dst[off] = ((sa * scale) & 0xFF000000) | (((sr * scale) & 0xFF000000) >>> 8)
+                    | (((sg * scale) & 0xFF000000) >>> 16) | (((sb * scale) & 0xFF000000) >>> 24);
+            for (int x = 1; x < w; x++) {
+                int addPx = src[off + Math.min(x + r, w - 1)];
+                int remPx = src[off + Math.max(x - r - 1, 0)];
+                if (addPx == remPx) {
+                    dst[off + x] = prev;
+                } else {
+                    sa += (addPx >>> 24) - (remPx >>> 24);
+                    sr += ((addPx >> 16) & 0xFF) - ((remPx >> 16) & 0xFF);
+                    sg += ((addPx >> 8) & 0xFF) - ((remPx >> 8) & 0xFF);
+                    sb += (addPx & 0xFF) - (remPx & 0xFF);
+                    prev = dst[off + x] = ((sa * scale) & 0xFF000000) | (((sr * scale) & 0xFF000000) >>> 8)
+                            | (((sg * scale) & 0xFF000000) >>> 16) | (((sb * scale) & 0xFF000000) >>> 24);
+                }
             }
         }
     }
@@ -1305,9 +1334,10 @@ public final class Defs {
             System.arraycopy(src, 0, dst, 0, src.length);
             return;
         }
-        double inv = 1.0 / (r + r + 1);
+        int boxSize = r + r + 1;
+        int scale = (1 << 24) / boxSize;
         for (int x = 0; x < w; x++) {
-            long sa = 0, sr = 0, sg = 0, sb = 0;
+            int sa = 0, sr = 0, sg = 0, sb = 0;
             for (int i = -r; i <= r; i++) {
                 int px = src[Math.min(Math.max(i, 0), h - 1) * w + x];
                 sa += (px >>> 24);
@@ -1315,19 +1345,21 @@ public final class Defs {
                 sg += (px >> 8) & 0xFF;
                 sb += px & 0xFF;
             }
-            for (int y = 0; y < h; y++) {
-                dst[y * w + x] = ((int) (sa * inv + 0.5) << 24) | ((int) (sr * inv + 0.5) << 16)
-                        | ((int) (sg * inv + 0.5) << 8) | (int) (sb * inv + 0.5);
-                int addPx = src[Math.min(y + r + 1, h - 1) * w + x];
-                sa += (addPx >>> 24);
-                sr += (addPx >> 16) & 0xFF;
-                sg += (addPx >> 8) & 0xFF;
-                sb += addPx & 0xFF;
-                int remPx = src[Math.max(y - r, 0) * w + x];
-                sa -= (remPx >>> 24);
-                sr -= (remPx >> 16) & 0xFF;
-                sg -= (remPx >> 8) & 0xFF;
-                sb -= remPx & 0xFF;
+            int prev = dst[x] = ((sa * scale) & 0xFF000000) | (((sr * scale) & 0xFF000000) >>> 8)
+                    | (((sg * scale) & 0xFF000000) >>> 16) | (((sb * scale) & 0xFF000000) >>> 24);
+            for (int y = 1; y < h; y++) {
+                int addPx = src[Math.min(y + r, h - 1) * w + x];
+                int remPx = src[Math.max(y - r - 1, 0) * w + x];
+                if (addPx == remPx) {
+                    dst[y * w + x] = prev;
+                } else {
+                    sa += (addPx >>> 24) - (remPx >>> 24);
+                    sr += ((addPx >> 16) & 0xFF) - ((remPx >> 16) & 0xFF);
+                    sg += ((addPx >> 8) & 0xFF) - ((remPx >> 8) & 0xFF);
+                    sb += (addPx & 0xFF) - (remPx & 0xFF);
+                    prev = dst[y * w + x] = ((sa * scale) & 0xFF000000) | (((sr * scale) & 0xFF000000) >>> 8)
+                            | (((sg * scale) & 0xFF000000) >>> 16) | (((sb * scale) & 0xFF000000) >>> 24);
+                }
             }
         }
     }
