@@ -128,19 +128,17 @@ public class benchmark {
         return baos.toByteArray();
     }
 
-    static double[] bench(String label, SvgConverter converter, byte[] svgBytes, ProgressBar pb) throws Exception {
-        // Warmup
-        for (int i = 0; i < WARMUP; i++) {
+    static void warmup(SvgConverter converter, byte[] svgBytes, int iterations, ProgressBar pb) throws Exception {
+        for (int i = 0; i < iterations; i++) {
             byte[] r = converter.convert(svgBytes);
             if (r == null) throw new RuntimeException("null");
             if (pb != null) pb.step();
         }
-        System.gc();
-        Thread.sleep(100);
+    }
 
-        // Measure
-        double[] times = new double[ITERATIONS];
-        for (int i = 0; i < ITERATIONS; i++) {
+    static double[] measure(SvgConverter converter, byte[] svgBytes, int iterations, ProgressBar pb) throws Exception {
+        double[] times = new double[iterations];
+        for (int i = 0; i < iterations; i++) {
             long start = System.nanoTime();
             byte[] result = converter.convert(svgBytes);
             long end = System.nanoTime();
@@ -148,7 +146,6 @@ public class benchmark {
             if (result == null || result.length == 0) throw new RuntimeException("Empty result");
             if (pb != null) pb.step();
         }
-
         Arrays.sort(times);
         return times;
     }
@@ -251,50 +248,84 @@ public class benchmark {
             System.exit(1);
         }
 
+        SvgConverter jairosvg = svgBytes -> JairoSVG.svg2png(svgBytes);
+        SvgConverter echosvg = svgBytes -> echoConvert(svgBytes);
+        SvgConverter jsvg = svgBytes -> jsvgConvert(svgBytes);
+
+        int javaEngines = 1 + (runEcho ? 1 : 0) + (runJsvg ? 1 : 0);
+
+        // ── Phase 1: Collective warmup ──────────────────────────────────────
+        // Warm up ALL test cases across ALL Java engines before any measurement.
+        // This ensures the JIT C2 compiler profiles all code paths (e.g., every
+        // branch in Surface::draw's tag switch) and avoids deoptimization during
+        // the measurement phase.
         System.out.println("=".repeat(98));
         System.out.print("  SVG → PNG Benchmark: JairoSVG");
         if (runEcho) System.out.print(" vs EchoSVG");
         if (runJsvg) System.out.print(" vs JSVG");
         if (runCairo) System.out.print(" vs CairoSVG");
         System.out.println();
-        System.out.printf("  Warmup: %d iterations, Measurement: %d iterations, SVG files: %d%n",
-                WARMUP, ITERATIONS, cases.size());
+        System.out.printf("  Warmup: %d iterations × %d cases × %d engines, Measurement: %d iterations%n",
+                WARMUP, cases.size(), javaEngines, ITERATIONS);
         System.out.println("=".repeat(98));
 
-        SvgConverter jairosvg = svgBytes -> JairoSVG.svg2png(svgBytes);
-        SvgConverter echosvg = svgBytes -> echoConvert(svgBytes);
-        SvgConverter jsvg = svgBytes -> jsvgConvert(svgBytes);
+        long warmupTotalSteps = (long) javaEngines * cases.size() * WARMUP;
+        System.out.println("\n  Warming up all Java engines across all test cases...");
+
+        ProgressBar warmupPb = showProgress
+                ? new ProgressBarBuilder()
+                        .setTaskName("  Warmup")
+                        .setInitialMax(warmupTotalSteps)
+                        .setStyle(ProgressBarStyle.ASCII)
+                        .setUpdateIntervalMillis(250)
+                        .build()
+                : null;
+
+        try {
+            for (SvgCase c : cases) {
+                warmup(jairosvg, c.contentBytes(), WARMUP, warmupPb);
+                if (runEcho) warmup(echosvg, c.contentBytes(), WARMUP, warmupPb);
+                if (runJsvg) warmup(jsvg, c.contentBytes(), WARMUP, warmupPb);
+            }
+        } finally {
+            if (warmupPb != null) warmupPb.close();
+        }
+
+        System.gc();
+        Thread.sleep(500);
+
+        // ── Phase 2: Measurement ────────────────────────────────────────────
+        System.out.println("\n  Measuring...");
 
         for (int ci = 0; ci < cases.size(); ci++) {
             SvgCase c = cases.get(ci);
             System.gc();
+            Thread.sleep(100);
             System.out.println("\n▸ " + c.name() + "  [" + (ci + 1) + "/" + cases.size() + "]");
 
-            // Total steps for Java engines: (warmup + iterations) each
-            int javaEngines = 1 + (runEcho ? 1 : 0) + (runJsvg ? 1 : 0);
-            int totalSteps = javaEngines * (WARMUP + ITERATIONS) + (runCairo ? 1 : 0);
+            long measureSteps = (long) javaEngines * ITERATIONS + (runCairo ? 1 : 0);
 
             double[] jTimes, eTimes = null, sTimes = null, cTimes = null;
             ProgressBar pb = showProgress
                     ? new ProgressBarBuilder()
                             .setTaskName("  Progress")
-                            .setInitialMax(totalSteps)
+                            .setInitialMax(measureSteps)
                             .setStyle(ProgressBarStyle.ASCII)
                             .setUpdateIntervalMillis(250)
                             .build()
                     : null;
 
             try {
-                jTimes = bench("JairoSVG", jairosvg, c.contentBytes(), pb);
+                jTimes = measure(jairosvg, c.contentBytes(), ITERATIONS, pb);
 
                 if (runEcho) {
                     System.gc(); Thread.sleep(100);
-                    eTimes = bench("EchoSVG", echosvg, c.contentBytes(), pb);
+                    eTimes = measure(echosvg, c.contentBytes(), ITERATIONS, pb);
                 }
 
                 if (runJsvg) {
                     System.gc(); Thread.sleep(100);
-                    sTimes = bench("JSVG", jsvg, c.contentBytes(), pb);
+                    sTimes = measure(jsvg, c.contentBytes(), ITERATIONS, pb);
                 }
 
                 if (runCairo) {
