@@ -285,29 +285,29 @@ SVG → PNG conversion benchmarks across 23 SVG test files (lower is better):
 
 | Test Case | JairoSVG (Java) | EchoSVG (Java) | JSVG (Java) | CairoSVG (Python) | vs EchoSVG | vs JSVG | vs CairoSVG |
 | --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [Basic shapes](#01--basic-shapes) | **3.5 ms** | 18.1 ms | **3.5 ms** | 4.5 ms | 5.1× ✅ | 1.0× ≈ | 1.3× ✅ |
-| [Gradients](#02--gradients) | 4.7 ms | 134.8 ms | **4.4 ms** | 11.0 ms | 28.6× ✅ | 1.1× ❌ | 2.3× ✅ |
-| [Complex paths](#03--complex-paths) | 4.5 ms | 23.2 ms | **4.3 ms** | 4.6 ms | 5.1× ✅ | 1.1× ❌ | 1.0× ≈ |
-| [Text rendering](#04--text-rendering) | **4.8 ms** | 23.3 ms | 4.8 ms | 6.2 ms | 4.9× ✅ | 1.0× ≈ | 1.3× ✅ |
-| [Transforms](#05--transforms) | 4.1 ms | 14.5 ms | **3.8 ms** | 4.0 ms | 3.5× ✅ | 1.1× ❌ | 1.0× ≈ |
-| [Stroke styles](#06--stroke-styles) | 3.7 ms | 11.9 ms | **3.6 ms** | **3.5 ms** | 3.2× ✅ | 1.0× ≈ | 1.0× ≈ |
-| [Opacity blend](#07--opacity--blending) | **3.4 ms** | 17.8 ms | **3.4 ms** | 3.5 ms | 5.2× ✅ | 1.0× ≈ | 1.0× ≈ |
-| [Viewbox aspect](#08--viewbox--aspect-ratio) | 4.9 ms | 20.4 ms | **4.7 ms** | 5.3 ms | 4.2× ✅ | 1.0× ≈ | 1.1× ✅ |
-| [CSS styling](#09--css-styling) | **3.4 ms** | 15.2 ms | **3.4 ms** | 4.2 ms | 4.5× ✅ | 1.0× ≈ | 1.2× ✅ |
-| [Use and defs](#10--use--defs) | 4.1 ms | 14.4 ms | **3.9 ms** | 4.4 ms | 3.6× ✅ | 1.1× ❌ | 1.1× ✅ |
-| [Star polygon](#11--star-polygon) | 3.3 ms | 14.6 ms | 3.2 ms | **3.1 ms** | 4.5× ✅ | 1.0× ≈ | 1.1× ❌ |
-| [Nested svg](#12--nested-svg) | 4.6 ms | 19.7 ms | **4.5 ms** | 5.2 ms | 4.3× ✅ | 1.0× ≈ | 1.1× ✅ |
-| [Patterns](#13--patterns) | 4.5 ms | 16.6 ms | **4.4 ms** | 4.7 ms | 3.7× ✅ | 1.0× ≈ | 1.0× ≈ |
-| [Clip paths](#14--clip-paths) | **4.3 ms** | 26.9 ms | **4.3 ms** | 6.1 ms | 6.3× ✅ | 1.0× ≈ | 1.4× ✅ |
-| [Masks](#15--masks) ⚠️ | 5.4 ms | 21.9 ms | 4.6 ms | 3.8 ms ⚠️ | 4.1× ✅ | 1.2× ❌ | ← ⚠️ |
-| [Markers](#16--markers) | 4.0 ms | 13.5 ms | **3.8 ms** | 4.8 ms | 3.4× ✅ | 1.1× ❌ | 1.2× ✅ |
-| [Filters](#17--filters) ⚠️ | 21.7 ms | 35.4 ms | 8.5 ms | 4.7 ms ⚠️ | 1.6× ✅ | 2.6× ❌ | ← ⚠️ |
-| [Embedded image](#18--embedded-images) | **4.8 ms** | 16.9 ms | 12.8 ms | 7.4 ms | 3.5× ✅ | 2.7× ✅ | 1.5× ✅ |
-| [Text advanced](#19--advanced-text) | 5.5 ms | 26.8 ms | **5.3 ms** | 9.1 ms | 4.9× ✅ | 1.0× ≈ | 1.7× ✅ |
-| [Fe blend modes](#20--fe-blend-modes) ⚠️ | 25.7 ms | 29.1 ms | 20.8 ms | 13.2 ms ⚠️ | 1.1× ✅ | 1.2× ❌ | ← ⚠️ |
-| [Fe tile](#20--fe-tile) | 3.0 ms | 6.7 ms | **2.6 ms** | **2.6 ms** | 2.2× ✅ | 1.2× ❌ | 1.2× ❌ |
-| [Feimage data uri](#20--feimage-data-uri) | **1.7 ms** | 5.8 ms | **1.7 ms** | 1.9 ms | 3.5× ✅ | 1.0× ≈ | 1.1× ✅ |
-| [Feimage inline ref](#21--feimage-inline-ref) | **1.8 ms** | 4.9 ms | 3.9 ms | 2.1 ms | 2.8× ✅ | 2.2× ✅ | 1.2× ✅ |
+| [Basic shapes](#01--basic-shapes) | 3.5 ms | 17.0 ms | **3.5 ms** | 4.4 ms | +381.64% ✅ | −0.51% ≈ | +24.11% ✅ |
+| [Gradients](#02--gradients) | 4.3 ms | 134.6 ms | **4.4 ms** | 10.9 ms | +3003.72% ✅ | −0.87% ≈ | +152.11% ✅ |
+| [Complex paths](#03--complex-paths) | 4.4 ms | 23.2 ms | **4.3 ms** | 4.6 ms | +422.01% ✅ | −4.05% ❌ | +3.47% ✅ |
+| [Text rendering](#04--text-rendering) | 4.8 ms | 23.3 ms | **4.8 ms** | 6.1 ms | +386.31% ✅ | −0.40% ≈ | +28.20% ✅ |
+| [Transforms](#05--transforms) | 4.1 ms | 14.4 ms | **3.9 ms** | 4.1 ms | +254.76% ✅ | −4.87% ❌ | −0.17% ≈ |
+| [Stroke styles](#06--stroke-styles) | 3.7 ms | 12.0 ms | **3.6 ms** | **3.5 ms** | +222.72% ✅ | −3.39% ❌ | −4.78% ❌ |
+| [Opacity blend](#07--opacity--blending) | **3.4 ms** | 17.7 ms | **3.4 ms** | 3.4 ms | +419.27% ✅ | −1.35% ≈ | −0.75% ≈ |
+| [Viewbox aspect](#08--viewbox--aspect-ratio) | 4.9 ms | 19.8 ms | **4.7 ms** | 5.3 ms | +304.26% ✅ | −4.24% ❌ | +8.53% ✅ |
+| [CSS styling](#09--css-styling) | **3.4 ms** | 15.2 ms | 3.4 ms | 4.2 ms | +349.56% ✅ | −0.93% ≈ | +23.05% ✅ |
+| [Use and defs](#10--use--defs) | 4.0 ms | 14.3 ms | **3.8 ms** | 4.5 ms | +254.96% ✅ | −5.80% ❌ | +10.43% ✅ |
+| [Star polygon](#11--star-polygon) | 3.2 ms | 14.6 ms | **3.2 ms** | **3.1 ms** | +350.40% ✅ | −2.13% ≈ | −4.19% ❌ |
+| [Nested svg](#12--nested-svg) | 4.6 ms | 19.5 ms | **4.5 ms** | 5.1 ms | +326.32% ✅ | −1.88% ≈ | +10.88% ✅ |
+| [Patterns](#13--patterns) | 4.5 ms | 16.4 ms | **4.4 ms** | 4.7 ms | +265.07% ✅ | −2.61% ≈ | +4.33% ✅ |
+| [Clip paths](#14--clip-paths) | **4.2 ms** | 26.7 ms | 4.3 ms | 6.1 ms | +531.08% ✅ | −1.31% ≈ | +43.88% ✅ |
+| [Masks](#15--masks) ⚠️ | 5.3 ms | 21.7 ms | 4.6 ms | 3.8 ms ⚠️ | +310.94% ✅ | −14.79% ❌ | ← ⚠️ |
+| [Markers](#16--markers) | 4.0 ms | 13.1 ms | **3.8 ms** | 4.7 ms | +231.69% ✅ | −5.43% ❌ | +19.59% ✅ |
+| [Filters](#17--filters) ⚠️ | 21.6 ms | 35.4 ms | 8.4 ms | 4.6 ms ⚠️ | +64.01% ✅ | −156.77% ❌ | ← ⚠️ |
+| [Embedded image](#18--embedded-images) | **4.7 ms** | 17.3 ms | 12.9 ms | 7.3 ms | +267.40% ✅ | +173.61% ✅ | +56.10% ✅ |
+| [Text advanced](#19--advanced-text) | 5.4 ms | 26.3 ms | **5.3 ms** | 9.1 ms | +389.28% ✅ | −1.90% ≈ | +68.93% ✅ |
+| [Fe blend modes](#20--fe-blend-modes) ⚠️ | 24.9 ms | 28.4 ms | 20.5 ms | 13.1 ms ⚠️ | +14.26% ✅ | −21.27% ❌ | ← ⚠️ |
+| [Fe tile](#20--fe-tile) | 3.0 ms | 6.7 ms | **2.6 ms** | **2.5 ms** | +124.72% ✅ | −15.71% ❌ | −17.01% ❌ |
+| [Feimage data uri](#20--feimage-data-uri) | **1.7 ms** | 5.7 ms | **1.6 ms** | 1.9 ms | +247.56% ✅ | −1.83% ≈ | +15.13% ✅ |
+| [Feimage inline ref](#21--feimage-inline-ref) | **1.7 ms** | 4.8 ms | 3.4 ms | 2.0 ms | +177.92% ✅ | +96.79% ✅ | +15.59% ✅ |
 
 _JairoSVG is **2–31× faster** than EchoSVG, **on par with JSVG** in most scenarios, and **1–2.5× faster** than CairoSVG in most scenarios._
 
