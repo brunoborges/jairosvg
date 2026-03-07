@@ -511,24 +511,33 @@ public final class Defs {
             BufferedImage input = resolveInput(results, child.get("in"), last, sourceGraphic);
             BufferedImage output = switch (child.tag) {
                 case "feGaussianBlur" -> {
-                    if (buf1 == null) buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-                    if (buf2 == null) buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-                    if (buf3 == null) buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf1 == null)
+                        buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null)
+                        buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null)
+                        buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                     BufferedImage temp = pickBuffer(input, null, buf1, buf2, buf3);
                     BufferedImage out = pickBuffer(input, temp, buf1, buf2, buf3);
                     yield gaussianBlur(input, parseDoubleOr(child.get("stdDeviation"), 0), temp, out);
                 }
                 case "feOffset" -> {
-                    if (buf1 == null) buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-                    if (buf2 == null) buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-                    if (buf3 == null) buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf1 == null)
+                        buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null)
+                        buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null)
+                        buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                     BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
                     yield offset(input, size(surface, child.get("dx", "0")), size(surface, child.get("dy", "0")), out);
                 }
                 case "feFlood" -> {
-                    if (buf1 == null) buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-                    if (buf2 == null) buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-                    if (buf3 == null) buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf1 == null)
+                        buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null)
+                        buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null)
+                        buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                     BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
                     yield flood(w, h, child.get("flood-color", "black"), parseDoubleOr(child.get("flood-opacity"), 1),
                             out);
@@ -536,16 +545,22 @@ public final class Defs {
                 case "feBlend" -> blend(input, resolveInput(results, child.get("in2"), last, sourceGraphic),
                         child.get("mode", "normal"));
                 case "feMerge" -> {
-                    if (buf1 == null) buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-                    if (buf2 == null) buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-                    if (buf3 == null) buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf1 == null)
+                        buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null)
+                        buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null)
+                        buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                     BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
                     yield merge(results, child, w, h, last, out);
                 }
                 case "feDropShadow" -> {
-                    if (buf1 == null) buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-                    if (buf2 == null) buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-                    if (buf3 == null) buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf1 == null)
+                        buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null)
+                        buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null)
+                        buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                     boolean inputIsManaged = input == buf1 || input == buf2 || input == buf3;
                     if (inputIsManaged) {
                         yield dropShadow(surface, input, child);
@@ -1091,14 +1106,15 @@ public final class Defs {
         String floodColor = node.get("flood-color", "black");
         double floodOpacity = parseDoubleOr(node.get("flood-opacity"), 1);
 
-        // Step 1: shadow colorization → buf1 (use pixel operations instead of Graphics2D)
+        // Step 1: shadow colorization → buf1 (use pixel operations instead of
+        // Graphics2D)
         Colors.RGBA rgba = Colors.color(floodColor, floodOpacity);
-        int colorRGB = ((int)(rgba.r() * 255) << 16) | ((int)(rgba.g() * 255) << 8) | (int)(rgba.b() * 255);
+        int colorRGB = ((int) (rgba.r() * 255) << 16) | ((int) (rgba.g() * 255) << 8) | (int) (rgba.b() * 255);
         int[] inputPixels = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
         int[] shadowPixels = ((DataBufferInt) buf1.getRaster().getDataBuffer()).getData();
         for (int i = 0; i < inputPixels.length; i++) {
             int alpha = inputPixels[i] >>> 24;
-            shadowPixels[i] = (((int)(alpha * rgba.a()) << 24) | colorRGB);
+            shadowPixels[i] = (((int) (alpha * rgba.a()) << 24) | colorRGB);
         }
 
         // Step 2: blur shadow (buf1) → temp=buf2, output=buf3
@@ -1199,64 +1215,55 @@ public final class Defs {
     }
 
     private static BufferedImage tile(BufferedImage input) {
-        int[] bounds = alphaBounds(input);
-        if (bounds == null) {
-            return input;
-        }
+        int width = input.getWidth();
+        int height = input.getHeight();
+        int[] pixels = ((java.awt.image.DataBufferInt) input.getRaster().getDataBuffer()).getData();
 
-        int tileX = bounds[0];
-        int tileY = bounds[1];
-        int tileWidth = bounds[2];
-        int tileHeight = bounds[3];
-        BufferedImage tile = copyRegion(input, tileX, tileY, tileWidth, tileHeight);
-
-        BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = output.createGraphics();
-        for (int y = 0; y < output.getHeight(); y += tileHeight) {
-            for (int x = 0; x < output.getWidth(); x += tileWidth) {
-                g.drawImage(tile, x, y, null);
-            }
-        }
-        g.dispose();
-        return output;
-    }
-
-    private static int[] alphaBounds(BufferedImage image) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-        int minX = image.getWidth();
-        int minY = image.getHeight();
-        int maxX = -1;
-        int maxY = -1;
-        int[] pixels = image.getRGB(0, 0, width, height, null, 0, width);
-
+        // Find non-transparent bounds directly from pixel array
+        int minX = width, minY = height, maxX = -1, maxY = -1;
         for (int y = 0; y < height; y++) {
             int rowOffset = y * width;
             for (int x = 0; x < width; x++) {
-                int alpha = (pixels[rowOffset + x] >>> 24) & 0xFF;
-                if (alpha == 0) {
-                    continue;
+                if ((pixels[rowOffset + x] >>> 24) != 0) {
+                    if (x < minX)
+                        minX = x;
+                    if (x > maxX)
+                        maxX = x;
+                    if (y < minY)
+                        minY = y;
+                    if (y > maxY)
+                        maxY = y;
                 }
-                minX = Math.min(minX, x);
-                minY = Math.min(minY, y);
-                maxX = Math.max(maxX, x);
-                maxY = Math.max(maxY, y);
+            }
+        }
+        if (maxX < minX) {
+            return input;
+        }
+
+        int tileW = maxX - minX + 1;
+        int tileH = maxY - minY + 1;
+
+        // Extract tile pixels directly
+        int[] tilePixels = new int[tileW * tileH];
+        for (int y = 0; y < tileH; y++) {
+            System.arraycopy(pixels, (minY + y) * width + minX, tilePixels, y * tileW, tileW);
+        }
+
+        // Tile by copying pixel rows into output array
+        int[] outPixels = new int[width * height];
+        for (int y = 0; y < height; y++) {
+            int tileY = y % tileH;
+            int tileRowOff = tileY * tileW;
+            int outRowOff = y * width;
+            for (int x = 0; x < width; x += tileW) {
+                int copyLen = Math.min(tileW, width - x);
+                System.arraycopy(tilePixels, tileRowOff, outPixels, outRowOff + x, copyLen);
             }
         }
 
-        if (maxX < minX || maxY < minY) {
-            return null;
-        }
-
-        return new int[]{minX, minY, maxX - minX + 1, maxY - minY + 1};
-    }
-
-    private static BufferedImage copyRegion(BufferedImage source, int x, int y, int width, int height) {
-        BufferedImage copy = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = copy.createGraphics();
-        g.drawImage(source, 0, 0, width, height, x, y, x + width, y + height, null);
-        g.dispose();
-        return copy;
+        BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        output.getRaster().setDataElements(0, 0, width, height, outPixels);
+        return output;
     }
 
     private static BufferedImage gaussianBlur(BufferedImage input, double stdDeviation, BufferedImage temp,
