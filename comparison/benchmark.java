@@ -205,8 +205,9 @@ public class benchmark {
     static void printComparison(String nameA, double avgA, String nameB, double avgB) {
         double ratio = avgB / avgA;
         String faster = avgA < avgB ? nameA : nameB;
-        System.out.printf("    %s vs %s → %s is %.1fx faster%n",
-                nameA, nameB, faster, avgA < avgB ? ratio : 1.0 / ratio);
+        double percentFaster = avgA < avgB ? (ratio - 1) * 100 : (1.0 / ratio - 1) * 100;
+        System.out.printf("    %s vs %s → %s is %.2f%% faster%n",
+                nameA, nameB, faster, percentFaster);
     }
 
     public static void main(String[] args) throws Exception {
