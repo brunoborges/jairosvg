@@ -48,7 +48,6 @@ public final class Defs {
     private static final int LUMINANCE_RED_COEFF_256 = 54;
     private static final int LUMINANCE_GREEN_COEFF_256 = 183;
     private static final int LUMINANCE_BLUE_COEFF_256 = 19;
-    private static final int LUMINANCE_NORMALIZATION_FACTOR = 255 * 256;
     private static final int ALPHA_MAX = 255;
     private static final int MIN_IMAGE_BYTES = 5;
 
@@ -698,8 +697,17 @@ public final class Defs {
             return sourceImage;
         }
 
-        BufferedImage maskImage = new BufferedImage(sourceImage.getWidth(), sourceImage.getHeight(),
-                BufferedImage.TYPE_INT_ARGB);
+        int w = sourceImage.getWidth();
+        int h = sourceImage.getHeight();
+
+        // Reuse mask buffer from surface to avoid per-mask allocation
+        BufferedImage maskImage = surface.maskBuffer;
+        if (maskImage == null || maskImage.getWidth() != w || maskImage.getHeight() != h) {
+            maskImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            surface.maskBuffer = maskImage;
+        } else {
+            java.util.Arrays.fill(((DataBufferInt) maskImage.getRaster().getDataBuffer()).getData(), 0);
+        }
         Graphics2D maskG2d = maskImage.createGraphics();
         maskG2d.setRenderingHints(surface.context.getRenderingHints());
 
@@ -723,29 +731,40 @@ public final class Defs {
         surface.contextHeight = savedHeight;
         maskG2d.dispose();
 
+        // Apply mask luminance to source alpha in-place
         int[] sourcePixels = ((DataBufferInt) sourceImage.getRaster().getDataBuffer()).getData();
         int[] maskPixels = ((DataBufferInt) maskImage.getRaster().getDataBuffer()).getData();
-        BufferedImage masked = new BufferedImage(sourceImage.getWidth(), sourceImage.getHeight(),
-                BufferedImage.TYPE_INT_ARGB);
-        int[] outputPixels = ((DataBufferInt) masked.getRaster().getDataBuffer()).getData();
 
         for (int i = 0; i < sourcePixels.length; i++) {
             int src = sourcePixels[i];
-            int srcA = (src >>> 24) & 0xFF;
+            int srcA = src >>> 24;
             if (srcA == 0) {
                 continue;
             }
             int m = maskPixels[i];
-            int ma = (m >>> 24) & 0xFF;
-            int mr = (m >>> 16) & 0xFF;
-            int mg = (m >>> 8) & 0xFF;
+            int ma = m >>> 24;
+            if (ma == 0) {
+                sourcePixels[i] = 0;
+                continue;
+            }
+            int mr = (m >> 16) & 0xFF;
+            int mg = (m >> 8) & 0xFF;
             int mb = m & 0xFF;
             int luminance256 = LUMINANCE_RED_COEFF_256 * mr + LUMINANCE_GREEN_COEFF_256 * mg
                     + LUMINANCE_BLUE_COEFF_256 * mb;
-            int outA = (int) ((long) srcA * ma * luminance256 / ((long) ALPHA_MAX * LUMINANCE_NORMALIZATION_FACTOR));
-            outputPixels[i] = (outA << 24) | (src & 0x00FFFFFF);
+            if (luminance256 == 0) {
+                sourcePixels[i] = 0;
+                continue;
+            }
+            // Fast /255: two byte-scale multiplies instead of long division
+            int luminance = (luminance256 + 128) >> 8;
+            int maskAlpha = ma * luminance;
+            maskAlpha = (maskAlpha + 1 + (maskAlpha >> 8)) >> 8;
+            int combined = srcA * maskAlpha;
+            int outA = (combined + 1 + (combined >> 8)) >> 8;
+            sourcePixels[i] = (outA << 24) | (src & 0x00FFFFFF);
         }
-        return masked;
+        return sourceImage;
     }
 
     /** Handle markers. */

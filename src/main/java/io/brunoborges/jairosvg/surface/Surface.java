@@ -75,6 +75,13 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     public Map<String, Node> images = new LinkedHashMap<>();
     public Map<String, SvgFont> fonts = new LinkedHashMap<>();
 
+    // Reusable mask buffer (lazily allocated, avoids per-mask allocation)
+    public BufferedImage maskBuffer;
+
+    // Reusable off-screen effect buffer for filters/masks/opacity
+    private BufferedImage effectBuffer;
+    private boolean effectBufferInUse;
+
     // Surface dimensions
     protected BufferedImage image;
     protected double width;
@@ -291,9 +298,24 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         Graphics2D effectBaseContext = null;
         Graphics2D effectContext = null;
         BufferedImage effectSourceImage = null;
+        boolean ownEffectBuffer = false;
         if (filterName != null || maskName != null || groupOpacity) {
             effectBaseContext = context;
-            effectSourceImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            int iw = image.getWidth();
+            int ih = image.getHeight();
+            if (!effectBufferInUse && effectBuffer != null && effectBuffer.getWidth() == iw
+                    && effectBuffer.getHeight() == ih) {
+                effectSourceImage = effectBuffer;
+                java.util.Arrays.fill(
+                        ((java.awt.image.DataBufferInt) effectSourceImage.getRaster().getDataBuffer()).getData(), 0);
+            } else {
+                effectSourceImage = new BufferedImage(iw, ih, BufferedImage.TYPE_INT_ARGB);
+                if (!effectBufferInUse) {
+                    effectBuffer = effectSourceImage;
+                }
+            }
+            effectBufferInUse = true;
+            ownEffectBuffer = true;
             effectContext = effectSourceImage.createGraphics();
             effectContext.setRenderingHints(effectBaseContext.getRenderingHints());
             effectContext.setTransform(effectBaseContext.getTransform());
@@ -465,6 +487,9 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                 effectBaseContext.setComposite(savedComposite);
             }
             effectContext.dispose();
+            if (ownEffectBuffer) {
+                effectBufferInUse = false;
+            }
         }
 
         this.parentNode = oldParentNode;
