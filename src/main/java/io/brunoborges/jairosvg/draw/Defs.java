@@ -606,7 +606,7 @@ public final class Defs {
                     }
                     yield dropShadowBuffered(surface, input, child, buf1, buf2, buf3);
                 }
-                case "feImage" -> feImage(surface, child, w, h);
+                case "feImage" -> feImage(surface, child, w, h, offsetX, offsetY);
                 case "feTile" -> tile(input, filterRegion);
                 default -> input;
             };
@@ -1458,7 +1458,8 @@ public final class Defs {
         return buf2;
     }
 
-    private static BufferedImage feImage(Surface surface, Node node, int width, int height) {
+    private static BufferedImage feImage(Surface surface, Node node, int width, int height, int subRegionOffsetX,
+            int subRegionOffsetY) {
         BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         String href = node.getHref();
         if (href == null || href.isEmpty()) {
@@ -1470,7 +1471,7 @@ public final class Defs {
         if (refId != null && !parsedUrl.hasNonFragmentParts()) {
             Node imageNode = surface.images.get(refId);
             if (imageNode != null) {
-                return renderNode(surface, imageNode, output);
+                return renderNode(surface, imageNode, output, subRegionOffsetX, subRegionOffsetY);
             }
             return output;
         }
@@ -1504,9 +1505,13 @@ public final class Defs {
         return baseUrl;
     }
 
-    private static BufferedImage renderNode(Surface surface, Node node, BufferedImage output) {
+    private static BufferedImage renderNode(Surface surface, Node node, BufferedImage output, int offsetX,
+            int offsetY) {
         Graphics2D imageContext = output.createGraphics();
         imageContext.setRenderingHints(surface.context.getRenderingHints());
+        if (offsetX != 0 || offsetY != 0) {
+            imageContext.translate(-offsetX, -offsetY);
+        }
 
         Graphics2D savedContext = surface.context;
         GeneralPath savedPath = surface.path;
