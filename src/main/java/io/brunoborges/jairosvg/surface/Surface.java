@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import io.brunoborges.jairosvg.css.Colors;
+import io.brunoborges.jairosvg.dom.BoundingBox;
 import io.brunoborges.jairosvg.dom.Node;
 import io.brunoborges.jairosvg.dom.SvgFont;
 import io.brunoborges.jairosvg.draw.Defs;
@@ -299,30 +300,86 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         Graphics2D effectContext = null;
         BufferedImage effectSourceImage = null;
         boolean ownEffectBuffer = false;
+        int effectOffsetX = 0;
+        int effectOffsetY = 0;
         if (filterName != null || maskName != null || groupOpacity) {
             effectBaseContext = context;
             int iw = image.getWidth();
             int ih = image.getHeight();
-            if (!effectBufferInUse && effectBuffer != null && effectBuffer.getWidth() == iw
-                    && effectBuffer.getHeight() == ih) {
-                effectSourceImage = effectBuffer;
-                java.util.Arrays.fill(
-                        ((java.awt.image.DataBufferInt) effectSourceImage.getRaster().getDataBuffer()).getData(), 0);
-            } else {
-                effectSourceImage = new BufferedImage(iw, ih, BufferedImage.TYPE_INT_ARGB);
-                if (!effectBufferInUse) {
-                    effectBuffer = effectSourceImage;
+
+            // Attempt sub-region allocation using geometric bounding box.
+            // Falls back to full-canvas for unsupported tags (text, image, use, svg).
+            BoundingBox.Box bbox = BoundingBox.calculate(this, node);
+            if (BoundingBox.isNonEmpty(bbox)) {
+                // Map the four bbox corners to device (pixel) space via the current transform.
+                AffineTransform tx = context.getTransform();
+                double bx = bbox.minX(), by = bbox.minY();
+                double bxw = bx + bbox.width(), byh = by + bbox.height();
+                double[] corners = {bx, by, bxw, by, bx, byh, bxw, byh};
+                tx.transform(corners, 0, corners, 0, 4);
+                double dMinX = Math.min(Math.min(corners[0], corners[2]), Math.min(corners[4], corners[6]));
+                double dMinY = Math.min(Math.min(corners[1], corners[3]), Math.min(corners[5], corners[7]));
+                double dMaxX = Math.max(Math.max(corners[0], corners[2]), Math.max(corners[4], corners[6]));
+                double dMaxY = Math.max(Math.max(corners[1], corners[3]), Math.max(corners[5], corners[7]));
+
+                // Padding for filters: blur/shadow primitives extend well beyond the
+                // geometric shape; use 20% of the largest bbox dimension with a minimum
+                // of 10 px to avoid clipping the effect at the buffer edge.
+                // Padding for mask/opacity: only 2 px to absorb sub-pixel anti-aliasing.
+                int padding = filterName != null
+                        ? Math.max(10, (int) Math.ceil(Math.max(dMaxX - dMinX, dMaxY - dMinY) * 0.2))
+                        : 2;
+                int px = Math.max(0, (int) Math.floor(dMinX) - padding);
+                int py = Math.max(0, (int) Math.floor(dMinY) - padding);
+                int px2 = Math.min(iw, (int) Math.ceil(dMaxX) + padding);
+                int py2 = Math.min(ih, (int) Math.ceil(dMaxY) + padding);
+                int pw = px2 - px;
+                int ph = py2 - py;
+
+                if (pw > 0 && ph > 0 && (long) pw * ph < (long) iw * ih) {
+                    effectOffsetX = px;
+                    effectOffsetY = py;
+                    effectSourceImage = new BufferedImage(pw, ph, BufferedImage.TYPE_INT_ARGB);
+                    effectBufferInUse = true;
+                    ownEffectBuffer = true;
+                    effectContext = effectSourceImage.createGraphics();
+                    effectContext.setRenderingHints(effectBaseContext.getRenderingHints());
+                    // Apply -offset translation so the element renders at (0,0) within the buffer.
+                    AffineTransform bufferTransform = new AffineTransform(effectBaseContext.getTransform());
+                    bufferTransform
+                            .preConcatenate(AffineTransform.getTranslateInstance(-effectOffsetX, -effectOffsetY));
+                    effectContext.setTransform(bufferTransform);
+                    effectContext.setClip(effectBaseContext.getClip());
+                    effectContext.setComposite(effectBaseContext.getComposite());
+                    effectContext.setStroke(effectBaseContext.getStroke());
+                    context = effectContext;
                 }
             }
-            effectBufferInUse = true;
-            ownEffectBuffer = true;
-            effectContext = effectSourceImage.createGraphics();
-            effectContext.setRenderingHints(effectBaseContext.getRenderingHints());
-            effectContext.setTransform(effectBaseContext.getTransform());
-            effectContext.setClip(effectBaseContext.getClip());
-            effectContext.setComposite(effectBaseContext.getComposite());
-            effectContext.setStroke(effectBaseContext.getStroke());
-            context = effectContext;
+
+            // Full-canvas fallback when sub-region could not be computed.
+            if (effectContext == null) {
+                if (!effectBufferInUse && effectBuffer != null && effectBuffer.getWidth() == iw
+                        && effectBuffer.getHeight() == ih) {
+                    effectSourceImage = effectBuffer;
+                    java.util.Arrays.fill(
+                            ((java.awt.image.DataBufferInt) effectSourceImage.getRaster().getDataBuffer()).getData(),
+                            0);
+                } else {
+                    effectSourceImage = new BufferedImage(iw, ih, BufferedImage.TYPE_INT_ARGB);
+                    if (!effectBufferInUse) {
+                        effectBuffer = effectSourceImage;
+                    }
+                }
+                effectBufferInUse = true;
+                ownEffectBuffer = true;
+                effectContext = effectSourceImage.createGraphics();
+                effectContext.setRenderingHints(effectBaseContext.getRenderingHints());
+                effectContext.setTransform(effectBaseContext.getTransform());
+                effectContext.setClip(effectBaseContext.getClip());
+                effectContext.setComposite(effectBaseContext.getComposite());
+                effectContext.setStroke(effectBaseContext.getStroke());
+                context = effectContext;
+            }
         }
 
         // Set stroke properties
@@ -469,7 +526,13 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                 renderedImage = Defs.applyFilter(this, filterName, renderedImage);
             }
             if (maskName != null) {
-                renderedImage = Defs.paintMask(this, node, maskName, renderedImage);
+                // The mask content must be rendered in the parent's coordinate system
+                // (before the masked element's own transform), offset for sub-regions.
+                AffineTransform maskTransform = new AffineTransform(savedTransform);
+                if (effectOffsetX != 0 || effectOffsetY != 0) {
+                    maskTransform.preConcatenate(AffineTransform.getTranslateInstance(-effectOffsetX, -effectOffsetY));
+                }
+                renderedImage = Defs.paintMask(this, node, maskName, renderedImage, maskTransform);
             }
             context = effectBaseContext;
             if (groupOpacity) {
@@ -477,11 +540,12 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
             }
             if (filterClip != null) {
                 Shape prevClip = effectBaseContext.getClip();
-                effectBaseContext.clip(filterClip);
-                effectBaseContext.drawImage(renderedImage, 0, 0, null);
+                effectBaseContext.clip(new java.awt.Rectangle(effectOffsetX + filterClip.x,
+                        effectOffsetY + filterClip.y, filterClip.width, filterClip.height));
+                effectBaseContext.drawImage(renderedImage, effectOffsetX, effectOffsetY, null);
                 effectBaseContext.setClip(prevClip);
             } else {
-                effectBaseContext.drawImage(renderedImage, 0, 0, null);
+                effectBaseContext.drawImage(renderedImage, effectOffsetX, effectOffsetY, null);
             }
             if (groupOpacity) {
                 effectBaseContext.setComposite(savedComposite);
