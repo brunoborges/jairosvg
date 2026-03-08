@@ -496,21 +496,49 @@ public final class Defs {
             return sourceGraphic;
         }
 
-        int w = sourceGraphic.getWidth();
-        int h = sourceGraphic.getHeight();
-        BufferedImage buf1 = null;
-        BufferedImage buf2 = null;
-        BufferedImage buf3 = null;
+        int fullW = sourceGraphic.getWidth();
+        int fullH = sourceGraphic.getHeight();
 
         // Compute filter region once for primitives that need it (e.g. feTile)
         java.awt.Rectangle filterRegion = computeFilterRegion(sourceGraphic, filterNode);
 
+        // Compute expanded processing region (includes blur/offset padding)
+        java.awt.Rectangle subRegion = computeProcessingRegion(filterRegion, filterNode, fullW, fullH);
+
+        // Use sub-region processing if it's significantly smaller than full canvas
+        boolean usingSubRegion = subRegion != null
+                && (long) subRegion.width * subRegion.height < (long) fullW * fullH * 4 / 5;
+        int w, h;
+        int offsetX = 0, offsetY = 0;
+        BufferedImage workSource;
+
+        if (usingSubRegion) {
+            offsetX = subRegion.x;
+            offsetY = subRegion.y;
+            w = subRegion.width;
+            h = subRegion.height;
+            workSource = extractSubRegion(sourceGraphic, subRegion);
+            // Adjust filter region to sub-region coordinates for feTile
+            if (filterRegion != null) {
+                filterRegion = new java.awt.Rectangle(filterRegion.x - offsetX, filterRegion.y - offsetY,
+                        filterRegion.width, filterRegion.height);
+            }
+        } else {
+            w = fullW;
+            h = fullH;
+            workSource = sourceGraphic;
+        }
+
+        BufferedImage buf1 = null;
+        BufferedImage buf2 = null;
+        BufferedImage buf3 = null;
+
         Map<String, BufferedImage> results = new HashMap<>();
-        results.put("SourceGraphic", sourceGraphic);
-        BufferedImage last = sourceGraphic;
+        results.put("SourceGraphic", workSource);
+        BufferedImage last = workSource;
 
         for (Node child : filterNode.children) {
-            BufferedImage input = resolveInput(results, child.get("in"), last, sourceGraphic);
+            BufferedImage input = resolveInput(results, child.get("in"), last, workSource);
             BufferedImage output = switch (child.tag) {
                 case "feGaussianBlur" -> {
                     if (buf1 == null)
@@ -551,7 +579,7 @@ public final class Defs {
                         buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                     if (buf3 == null)
                         buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-                    BufferedImage in2 = resolveInput(results, child.get("in2"), last, sourceGraphic);
+                    BufferedImage in2 = resolveInput(results, child.get("in2"), last, workSource);
                     BufferedImage out = pickBuffer(input, in2, buf1, buf2, buf3);
                     yield blend(input, in2, child.get("mode", "normal"), out);
                 }
@@ -590,6 +618,10 @@ public final class Defs {
             results.put("last", last);
         }
 
+        if (usingSubRegion) {
+            placeSubRegion(sourceGraphic, last, subRegion);
+            return sourceGraphic;
+        }
         return last;
     }
 
@@ -688,6 +720,84 @@ public final class Defs {
         int[] dstData = ((DataBufferInt) copy.getRaster().getDataBuffer()).getData();
         System.arraycopy(srcData, 0, dstData, 0, srcData.length);
         return copy;
+    }
+
+    /**
+     * Extract a sub-region from a full-canvas image into a smaller buffer.
+     */
+    private static BufferedImage extractSubRegion(BufferedImage src, java.awt.Rectangle region) {
+        int fullW = src.getWidth();
+        int w = region.width, h = region.height;
+        BufferedImage sub = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        int[] srcPixels = ((DataBufferInt) src.getRaster().getDataBuffer()).getData();
+        int[] subPixels = ((DataBufferInt) sub.getRaster().getDataBuffer()).getData();
+        for (int y = 0; y < h; y++) {
+            System.arraycopy(srcPixels, (region.y + y) * fullW + region.x, subPixels, y * w, w);
+        }
+        return sub;
+    }
+
+    /**
+     * Place a sub-region result back into a full-canvas image at the given offset.
+     */
+    private static void placeSubRegion(BufferedImage dst, BufferedImage sub, java.awt.Rectangle region) {
+        int dstW = dst.getWidth();
+        int subW = sub.getWidth(), subH = sub.getHeight();
+        int[] dstPixels = ((DataBufferInt) dst.getRaster().getDataBuffer()).getData();
+        int[] subPixels = ((DataBufferInt) sub.getRaster().getDataBuffer()).getData();
+        // Clear the destination region
+        for (int y = 0; y < region.height; y++) {
+            java.util.Arrays.fill(dstPixels, (region.y + y) * dstW + region.x,
+                    (region.y + y) * dstW + region.x + region.width, 0);
+        }
+        // Copy sub-region result back
+        int copyW = Math.min(subW, region.width);
+        int copyH = Math.min(subH, region.height);
+        for (int y = 0; y < copyH; y++) {
+            System.arraycopy(subPixels, y * subW, dstPixels, (region.y + y) * dstW + region.x, copyW);
+        }
+    }
+
+    /**
+     * Expand the filter region to include space for blur kernels and offset/shadow
+     * effects. This ensures the sub-region is large enough to contain all filter
+     * output without clipping.
+     */
+    private static java.awt.Rectangle computeProcessingRegion(java.awt.Rectangle filterRegion, Node filterNode,
+            int fullW, int fullH) {
+        if (filterRegion == null) {
+            return null;
+        }
+        int blurPad = 0, dxPad = 0, dyPad = 0;
+        if (filterNode != null) {
+            for (Node child : filterNode.children) {
+                switch (child.tag) {
+                    case "feGaussianBlur" -> {
+                        double sigma = parseDoubleOr(child.get("stdDeviation"), 0);
+                        blurPad = Math.max(blurPad, (int) Math.ceil(sigma * 3));
+                    }
+                    case "feDropShadow" -> {
+                        double sigma = parseDoubleOr(child.get("stdDeviation"), 0);
+                        blurPad = Math.max(blurPad, (int) Math.ceil(sigma * 3));
+                        dxPad = Math.max(dxPad, (int) Math.ceil(Math.abs(parseDoubleOr(child.get("dx"), 0))));
+                        dyPad = Math.max(dyPad, (int) Math.ceil(Math.abs(parseDoubleOr(child.get("dy"), 0))));
+                    }
+                    case "feOffset" -> {
+                        dxPad = Math.max(dxPad, (int) Math.ceil(Math.abs(parseDoubleOr(child.get("dx"), 0))));
+                        dyPad = Math.max(dyPad, (int) Math.ceil(Math.abs(parseDoubleOr(child.get("dy"), 0))));
+                    }
+                    default -> {
+                    }
+                }
+            }
+        }
+        int totalPadX = blurPad + dxPad;
+        int totalPadY = blurPad + dyPad;
+        int x = Math.max(0, filterRegion.x - totalPadX);
+        int y = Math.max(0, filterRegion.y - totalPadY);
+        int w = Math.min(fullW - x, filterRegion.width + 2 * totalPadX);
+        int h = Math.min(fullH - y, filterRegion.height + 2 * totalPadY);
+        return new java.awt.Rectangle(x, y, w, h);
     }
 
     /** Render and apply luminance mask to an off-screen source image. */
