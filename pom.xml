@@ -44,7 +44,7 @@
         <maven.compiler.release>25</maven.compiler.release>
         <project.build.outputTimestamp>2026-03-04T08:15:34Z</project.build.outputTimestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <pdfbox.version>3.0.6</pdfbox.version>
+        <pdfbox.version>3.0.7</pdfbox.version>
         <junit.version>6.0.3</junit.version>
     </properties>
 
