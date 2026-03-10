@@ -131,7 +131,7 @@ JSVG is a **lightweight Java SVG renderer** designed for AWT/Swing applications.
 | `<animate>`, `<animateTransform>`, `<animateMotion>`, `<set>` |                               ❌ ([#16])                                |      ✅ (SMIL)       |                               ❌                                |                          ⚠️ (partial `animate`/`animateTransform`)                          |
 | SVG Fonts (`<font>`, `<glyph>`)                               |                                   ✅                                    |          ✅          |                               ❌                                |                                        ❌                                        |
 | `<script>`                                                    |                               ❌ ([#18])                                |    ✅ (Rhino JS)     |                               ❌                                |                                        ❌                                        |
-| `<cursor>`                                                    |                               ❌ ([#19])                                |          ✅          |                               ❌                                |                                        ❌                                        |
+| `<cursor>`                                                    |                        ✅ (parsed, not rendered)                        |          ✅          |                               ❌                                |                                        ❌                                        |
 
 ---
 

@@ -108,6 +108,23 @@ class ShapeRenderingTest {
     }
 
     @Test
+    void testCursorDoesNotRenderChildren() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <cursor id="custom-cursor" x="0" y="0">
+                    <rect x="10" y="10" width="80" height="80" fill="red"/>
+                  </cursor>
+                </svg>
+                """;
+
+        BufferedImage image = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
+        int center = image.getRGB(50, 50);
+        int alpha = (center >> 24) & 0xFF;
+        assertEquals(0, alpha, "cursor is non-rendering and should skip child rendering");
+    }
+
+    @Test
     void testPathSvgToPng() throws Exception {
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
