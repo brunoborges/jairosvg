@@ -26,6 +26,8 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.*;
 import javax.imageio.IIOImage;
@@ -35,6 +37,21 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 public class benchmark {
+
+    static class TeeOutputStream extends OutputStream {
+        private final OutputStream primary;
+        private final OutputStream secondary;
+
+        TeeOutputStream(OutputStream primary, OutputStream secondary) {
+            this.primary = primary;
+            this.secondary = secondary;
+        }
+
+        @Override public void write(int b) throws IOException { primary.write(b); secondary.write(b); }
+        @Override public void write(byte[] b, int off, int len) throws IOException { primary.write(b, off, len); secondary.write(b, off, len); }
+        @Override public void flush() throws IOException { primary.flush(); secondary.flush(); }
+        @Override public void close() throws IOException { try { primary.close(); } finally { secondary.close(); } }
+    }
 
     static int WARMUP = 20;
     static int ITERATIONS = 1000;
@@ -208,6 +225,12 @@ public class benchmark {
     }
 
     public static void main(String[] args) throws Exception {
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
+        Path logFile = Path.of("benchmark-" + timestamp + ".log");
+        PrintStream fileOut = new PrintStream(new BufferedOutputStream(Files.newOutputStream(logFile)), true);
+        System.setOut(new PrintStream(new TeeOutputStream(System.out, fileOut), true));
+        System.out.println("Logging to: " + logFile.toAbsolutePath());
+
         List<SvgCase> allCases = loadSvgCases();
 
         // Parse args: filter by name substring, --no-cairosvg, --no-echosvg, --no-jsvg,
@@ -378,5 +401,7 @@ public class benchmark {
         }
 
         System.out.println("\n" + "=".repeat(98));
+        System.out.flush();
+        fileOut.close();
     }
 }
