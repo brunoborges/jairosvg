@@ -28,7 +28,7 @@ A comprehensive comparison of four SVG libraries — **JairoSVG** (Java), **Echo
 
 |                       | JairoSVG                                                       | EchoSVG                                                    | CairoSVG                               | JSVG                                              |
 | --------------------- | -------------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------- | ------------------------------------------------- |
-| **Language**          | Java 25+                                                       | Java 11+                                                   | Python 3.6+                            | Java 11+                                          |
+| **Language**          | Java 25+                                                       | Java 8+                                                    | Python 3.6+                            | Java 11+                                          |
 | **Origin**            | Java port of [CairoSVG]                                        | Fork of [Apache Batik]                                     | Original project                       | Independent project                               |
 | **Maintainer**        | Bruno Borges                                                   | css4j project                                              | CourtBouillon / Kozea                  | Jannis Weis                                       |
 | **Primary goal**      | Fast, lightweight SVG → raster/vector conversion               | Full-featured SVG toolkit: render, manipulate, and convert | SVG → PNG/PDF/PS conversion            | Lightweight SVG renderer for Swing / Java2D       |
@@ -176,7 +176,7 @@ JSVG is a **lightweight Java SVG renderer** designed for AWT/Swing applications.
 | CSS Level 4 selectors                 |                                           ❌ ([#26])                                           | ✅ (via css4j) |            ❌            |        ❌         |
 | CSS custom properties (variables)     |                                               ✅                                               |       ✅       |            ❌            |        ❌         |
 | CSS `calc()`                          |                                           ❌ ([#28])                                           |       ✅       |            ❌            |        ❌         |
-| CSS nesting                           |                                               ❌                                               |       ❌       |            ❌            |        ❌         |
+| CSS nesting                           |                                               ❌                                               |       ✅       |            ❌            |        ❌         |
 | `@import` rules                       |                                           ❌ ([#29])                                           |       ✅       |            ❌            |        ❌         |
 | `@supports` rules                     |                                           ❌ ([#30])                                           |       ✅       |            ❌            |        ❌         |
 
@@ -400,12 +400,12 @@ The benchmark loads all SVG files from `comparison/svg/` (currently 20 files). E
 
 | Metric                   | JairoSVG                                    | EchoSVG                   | CairoSVG                                                | JSVG                            |
 | ------------------------ | ------------------------------------------- | ------------------------- | ------------------------------------------------------- | ------------------------------- |
-| **Runtime dependencies** | 0 (PDFBox optional)                         | Many (css4j, xml-apis, …) | 5 (cairocffi, tinycss2, cssselect2, defusedxml, Pillow) | 0                               |
+| **Runtime dependencies** | 0 (PDFBox optional)                         | Many (css4j, …)           | 5 (cairocffi, tinycss2, cssselect2, defusedxml, Pillow) | 0                               |
 | **Disk footprint**       | **~130 KB** (PNG only), ~2.1 MB with PDFBox | ~5.7 MB (25 JARs)        | ~16.6 MB (Python pkgs + Pillow + Cairo C lib)           | ~350 KB                         |
 | **Artifact size**        | 1 JAR (~130 KB) + CLI shaded JAR             | Many modular JARs         | Single Python package                                   | 1 JAR                           |
 | **Source files**         | 20                                          | 20+ modules               | ~10 modules                                             | ~30K LOC                        |
 | **Lines of code**        | ~4,100                                      | ~200,000+                 | ~4,000                                                  | ~30,000                         |
-| **Platform req.**        | Java 25+ (`--enable-preview`)               | Java 11–24                | Python 3.6+ / Cairo C lib                               | Java 11+                        |
+| **Platform req.**        | Java 25+ (`--enable-preview`)               | Java 8+                   | Python 3.6+ / Cairo C lib                               | Java 11+                        |
 | **Build system**         | Maven                                       | Gradle                    | pip / setuptools                                        | Gradle                          |
 | **Native dependency**    | None                                        | None                      | Cairo C library required                                | None                            |
 
@@ -643,7 +643,7 @@ feBlend modes: normal, multiply, screen, darken, and lighten.
 - Advanced CSS support (Level 4 selectors, `calc()`, modern color functions)
 - A Swing-based SVG viewer component
 - Advanced SVG toolkit capabilities beyond conversion (DOM, scripting, animation)
-- Compatibility with Java 11–24 (JairoSVG requires Java 25+)
+- Compatibility with Java 8+ (JairoSVG requires Java 25+)
 - `foreignObject` support or SVG font rendering
 - Migrating from Apache Batik
 
