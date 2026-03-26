@@ -281,37 +281,38 @@ ImageIO.write(image, "PNG", new File("output.png"));
 
 ## Benchmark
 
-SVG → PNG conversion benchmarks across 23 SVG test files (lower is better):
+SVG → PNG conversion benchmarks across 24 SVG test files (lower is better):
 
 | Test Case | JairoSVG (Java) | EchoSVG (Java) | JSVG (Java) | CairoSVG (Python) | vs EchoSVG | vs JSVG | vs CairoSVG |
 | --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [Basic shapes](#01--basic-shapes) | 3.5 ms | 17.0 ms | **3.5 ms** | 4.4 ms | +381.64% ✅ | −0.51% ≈ | +24.11% ✅ |
-| [Gradients](#02--gradients) | 4.3 ms | 134.6 ms | **4.4 ms** | 10.9 ms | +3003.72% ✅ | −0.87% ≈ | +152.11% ✅ |
-| [Complex paths](#03--complex-paths) | 4.4 ms | 23.2 ms | **4.3 ms** | 4.6 ms | +422.01% ✅ | −4.05% ❌ | +3.47% ✅ |
-| [Text rendering](#04--text-rendering) | 4.8 ms | 23.3 ms | **4.8 ms** | 6.1 ms | +386.31% ✅ | −0.40% ≈ | +28.20% ✅ |
-| [Transforms](#05--transforms) | 4.1 ms | 14.4 ms | **3.9 ms** | 4.1 ms | +254.76% ✅ | −4.87% ❌ | −0.17% ≈ |
-| [Stroke styles](#06--stroke-styles) | 3.7 ms | 12.0 ms | **3.6 ms** | **3.5 ms** | +222.72% ✅ | −3.39% ❌ | −4.78% ❌ |
-| [Opacity blend](#07--opacity--blending) | **3.4 ms** | 17.7 ms | **3.4 ms** | 3.4 ms | +419.27% ✅ | −1.35% ≈ | −0.75% ≈ |
-| [Viewbox aspect](#08--viewbox--aspect-ratio) | 4.9 ms | 19.8 ms | **4.7 ms** | 5.3 ms | +304.26% ✅ | −4.24% ❌ | +8.53% ✅ |
-| [CSS styling](#09--css-styling) | **3.4 ms** | 15.2 ms | 3.4 ms | 4.2 ms | +349.56% ✅ | −0.93% ≈ | +23.05% ✅ |
-| [Use and defs](#10--use--defs) | 4.0 ms | 14.3 ms | **3.8 ms** | 4.5 ms | +254.96% ✅ | −5.80% ❌ | +10.43% ✅ |
-| [Star polygon](#11--star-polygon) | 3.2 ms | 14.6 ms | **3.2 ms** | **3.1 ms** | +350.40% ✅ | −2.13% ≈ | −4.19% ❌ |
-| [Nested svg](#12--nested-svg) | 4.6 ms | 19.5 ms | **4.5 ms** | 5.1 ms | +326.32% ✅ | −1.88% ≈ | +10.88% ✅ |
-| [Patterns](#13--patterns) | 4.5 ms | 16.4 ms | **4.4 ms** | 4.7 ms | +265.07% ✅ | −2.61% ≈ | +4.33% ✅ |
-| [Clip paths](#14--clip-paths) | **4.2 ms** | 26.7 ms | 4.3 ms | 6.1 ms | +531.08% ✅ | −1.31% ≈ | +43.88% ✅ |
-| [Masks](#15--masks) ⚠️ | 5.3 ms | 21.7 ms | 4.6 ms | 3.8 ms ⚠️ | +310.94% ✅ | −14.79% ❌ | ← ⚠️ |
-| [Markers](#16--markers) | 4.0 ms | 13.1 ms | **3.8 ms** | 4.7 ms | +231.69% ✅ | −5.43% ❌ | +19.59% ✅ |
-| [Filters](#17--filters) ⚠️ | 21.6 ms | 35.4 ms | 8.4 ms | 4.6 ms ⚠️ | +64.01% ✅ | −156.77% ❌ | ← ⚠️ |
-| [Embedded image](#18--embedded-images) | **4.7 ms** | 17.3 ms | 12.9 ms | 7.3 ms | +267.40% ✅ | +173.61% ✅ | +56.10% ✅ |
-| [Text advanced](#19--advanced-text) | 5.4 ms | 26.3 ms | **5.3 ms** | 9.1 ms | +389.28% ✅ | −1.90% ≈ | +68.93% ✅ |
-| [Fe blend modes](#20--fe-blend-modes) ⚠️ | 24.9 ms | 28.4 ms | 20.5 ms | 13.1 ms ⚠️ | +14.26% ✅ | −21.27% ❌ | ← ⚠️ |
-| [Fe tile](#20--fe-tile) | 3.0 ms | 6.7 ms | **2.6 ms** | **2.5 ms** | +124.72% ✅ | −15.71% ❌ | −17.01% ❌ |
-| [Feimage data uri](#20--feimage-data-uri) | **1.7 ms** | 5.7 ms | **1.6 ms** | 1.9 ms | +247.56% ✅ | −1.83% ≈ | +15.13% ✅ |
-| [Feimage inline ref](#21--feimage-inline-ref) | **1.7 ms** | 4.8 ms | 3.4 ms | 2.0 ms | +177.92% ✅ | +96.79% ✅ | +15.59% ✅ |
+| [Basic shapes](#01--basic-shapes) | 3.4 ms | 16.2 ms | **3.3 ms** | 4.2 ms | +382.26% ✅ | −1.63% ≈ | +25.32% ✅ |
+| [Gradients](#02--gradients) | **4.3 ms** | 133.0 ms | 4.5 ms | 11.0 ms | +3020.80% ✅ | +6.11% ✅ | +157.76% ✅ |
+| [Complex paths](#03--complex-paths) | 4.5 ms | 23.3 ms | **4.3 ms** | 4.7 ms | +418.97% ✅ | −4.56% ❌ | +4.42% ✅ |
+| [Text rendering](#04--text-rendering) | **4.8 ms** | 23.5 ms | 4.9 ms | 6.4 ms | +387.59% ✅ | +1.61% ≈ | +32.03% ✅ |
+| [Transforms](#05--transforms) | 4.1 ms | 14.5 ms | **3.9 ms** | 4.1 ms | +250.91% ✅ | −6.64% ❌ | −0.50% ≈ |
+| [Stroke styles](#06--stroke-styles) | 3.7 ms | 12.1 ms | 3.7 ms | **3.6 ms** | +224.71% ✅ | −1.39% ≈ | −3.77% ❌ |
+| [Opacity blend](#07--opacity--blending) | 3.5 ms | 17.9 ms | **3.4 ms** | 3.5 ms | +417.56% ✅ | −1.48% ≈ | +1.81% ≈ |
+| [Viewbox aspect](#08--viewbox--aspect-ratio) | 4.9 ms | 20.0 ms | **4.9 ms** | 5.4 ms | +304.51% ✅ | −1.68% ≈ | +8.85% ✅ |
+| [CSS styling](#09--css-styling) | 3.5 ms | 15.4 ms | **3.3 ms** | 4.1 ms | +340.05% ✅ | −6.09% ❌ | +18.66% ✅ |
+| [Use and defs](#10--use--defs) | 4.0 ms | 13.9 ms | **3.7 ms** | 4.3 ms | +247.45% ✅ | −8.46% ❌ | +6.70% ✅ |
+| [Star polygon](#11--star-polygon) | 3.1 ms | 13.9 ms | 3.1 ms | **3.0 ms** | +345.08% ✅ | −1.84% ≈ | −4.55% ❌ |
+| [Nested svg](#12--nested-svg) | 4.4 ms | 18.7 ms | **4.3 ms** | 4.8 ms | +325.45% ✅ | −2.09% ≈ | +9.56% ✅ |
+| [Patterns](#13--patterns) | 4.3 ms | 15.6 ms | **4.2 ms** | 4.4 ms | +266.55% ✅ | −1.71% ≈ | +3.76% ✅ |
+| [Clip paths](#14--clip-paths) | **4.1 ms** | 25.7 ms | 4.1 ms | 5.8 ms | +534.13% ✅ | +2.08% ≈ | +42.65% ✅ |
+| [Masks](#15--masks) ⚠️ | 5.0 ms | 21.9 ms | 4.4 ms | 3.6 ms ⚠️ | +338.34% ✅ | −13.05% ❌ | ← ⚠️ |
+| [Markers](#16--markers) | 3.8 ms | 12.6 ms | **3.6 ms** | 4.6 ms | +233.74% ✅ | −4.08% ❌ | +20.27% ✅ |
+| [Filters](#17--filters) ⚠️ | **7.3 ms** | 34.1 ms | 8.2 ms | 4.4 ms ⚠️ | +367.85% ✅ | +11.85% ✅ | ← ⚠️ |
+| [Embedded image](#18--embedded-images) | **4.5 ms** | 16.0 ms | 10.8 ms | 7.6 ms | +251.45% ✅ | +138.26% ✅ | +66.68% ✅ |
+| [Text advanced](#19--advanced-text) | 5.1 ms | 25.2 ms | **5.0 ms** | 8.6 ms | +392.76% ✅ | −1.42% ≈ | +68.73% ✅ |
+| [Fe blend modes](#20--fe-blend-modes) | **10.3 ms** | 27.3 ms | 20.0 ms | 12.8 ms ⚠️ | +164.32% ✅ | +94.21% ✅ | +24.21% ✅ |
+| [Fe tile](#20--fe-tile) | 2.8 ms | 7.0 ms | **2.7 ms** | **2.6 ms** | +153.51% ✅ | −3.69% ❌ | −4.70% ❌ |
+| [Feimage data uri](#20--feimage-data-uri) | **1.7 ms** | 5.7 ms | **1.7 ms** | 1.9 ms | +245.91% ✅ | +0.17% ≈ | +14.03% ✅ |
+| [Feimage inline ref](#21--feimage-inline-ref) | **1.7 ms** | 4.8 ms | 2.5 ms | 2.0 ms | +182.16% ✅ | +46.14% ✅ | +18.54% ✅ |
+| [Localized masks](#22_localized_masks) | **15.4 ms** | 57.6 ms | 15.7 ms | 16.5 ms | +273.97% ✅ | +1.96% ≈ | +7.21% ✅ |
 
 _JairoSVG is **2–31× faster** than EchoSVG, **on par with JSVG** in most scenarios, and **1–2.5× faster** than CairoSVG in most scenarios._
 
-> **⚠️ Filters/Masks/Blend caveat:** CairoSVG does **not** correctly render masks (missing gradient and circle content), `feGaussianBlur`/`feDropShadow` filters, or `feBlend` modes — it silently skips them. Both CairoSVG and EchoSVG appear faster on those tests because they skip rendering work. JairoSVG and JSVG perform the actual computation, so their speed reflects the true cost of correct rendering.
+> **⚠️ Filters/Masks caveat:** CairoSVG does **not** correctly render masks (missing gradient and circle content) or `feGaussianBlur`/`feDropShadow` filters — it silently skips them. For those tests, CairoSVG appears faster because it skips rendering work. JairoSVG and JSVG perform the actual computation, so their speed reflects the true cost of correct rendering. Note: JairoSVG now **outperforms CairoSVG on feBlend modes** despite rendering them correctly.
 
 > **Note:** Benchmarks were run with 20 warm-up iterations and 1000 measured iterations per SVG file. Results may vary by hardware and SVG complexity.
 
@@ -392,7 +393,7 @@ jbang comparison/benchmark.java --no-progress
 jbang comparison/benchmark.java --warmup=5 --iterations=100
 ```
 
-The benchmark loads all SVG files from `comparison/svg/` (currently 20 files). Each runs 20 warm-up iterations followed by 1000 measured iterations. Stats reported: average, median, p95, and minimum times.
+The benchmark loads all SVG files from `comparison/svg/` (currently 24 files). Each runs 20 warm-up iterations followed by 1000 measured iterations. Stats reported: average, median, p95, and minimum times.
 
 ---
 
@@ -606,6 +607,12 @@ feBlend modes: normal, multiply, screen, darken, and lighten.
 | Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
 | :-------: | :------: | :-----: | :------: | :--: |
 | [SVG](svg/21_feimage_inline_ref.svg) | ![JairoSVG](png/jairosvg/21_feimage_inline_ref.png) | ![EchoSVG](png/echosvg/21_feimage_inline_ref.png) | ![CairoSVG](png/cairosvg/21_feimage_inline_ref.png) | ![JSVG](png/jsvg/21_feimage_inline_ref.png) |
+
+### 22_localized_masks
+
+| Input SVG | JairoSVG |
+| :-------: | :------: |
+| [SVG](svg/22_localized_masks.svg) | ![JairoSVG](png/jairosvg/22_localized_masks.png) |
 
 ---
 

@@ -34,11 +34,11 @@ A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to 
 
 | Test Case                | JairoSVG (Java) | EchoSVG (Java) | CairoSVG (Python) |
 | ------------------------ | :-------------: | :------------: | :---------------: |
-| Simple shapes            |   **3.5 ms**    |    16.6 ms     |      4.3 ms       |
-| Gradients                |   **4.3 ms**    |   134.8 ms     |     11.3 ms       |
-| Complex paths + text     |   **4.7 ms**    |    23.0 ms     |      5.4 ms       |
-| Defs + use + clipPath    |   **4.1 ms**    |    20.4 ms     |      5.2 ms       |
-| Markers + strokes        |   **3.8 ms**    |    12.5 ms     |      4.1 ms       |
+| Simple shapes            |   **3.4 ms**    |    16.2 ms     |      4.2 ms       |
+| Gradients                |   **4.3 ms**    |   133.0 ms     |     11.0 ms       |
+| Complex paths + text     |   **4.7 ms**    |    23.4 ms     |      5.5 ms       |
+| Defs + use + clipPath    |   **4.0 ms**    |    19.8 ms     |      5.0 ms       |
+| Markers + strokes        |   **3.8 ms**    |    12.4 ms     |      4.1 ms       |
 
 _JairoSVG is 2–31× faster than EchoSVG, on par with JSVG, and 1–2.5× faster than CairoSVG's native C backend._
 
