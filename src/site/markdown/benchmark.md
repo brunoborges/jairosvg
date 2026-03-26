@@ -14,14 +14,14 @@ Each test case was run with 20 warmup iterations and 1000 measurement iterations
 
 | Test Case | JairoSVG | EchoSVG | CairoSVG | JairoSVG vs EchoSVG |
 |-----------|:--------:|:-------:|:--------:|:-------------------:|
-| Simple shapes | **1.3 ms** | 9.2 ms | 2.0 ms | **6.9x faster** |
-| Gradients + transforms | **3.6 ms** | 34.6 ms | 5.3 ms | **9.5x faster** |
-| Complex paths + text | **5.4 ms** | 28.9 ms | 6.0 ms | **5.4x faster** |
+| Simple shapes | **3.4 ms** | 16.2 ms | 4.2 ms | **4.8x faster** |
+| Gradients + transforms | **4.3 ms** | 133.0 ms | 11.0 ms | **31x faster** |
+| Complex paths + text | **4.7 ms** | 23.4 ms | 5.5 ms | **5x faster** |
 
 ### Analysis
 
-- **JairoSVG is 5-10x faster than EchoSVG** across all test cases
-- **JairoSVG is 1.1-1.5x faster than CairoSVG** despite CairoSVG using a native C rendering backend
+- **JairoSVG is 2.5–31× faster than EchoSVG** across all test cases
+- **JairoSVG is 1.2–2.6× faster than CairoSVG** despite CairoSVG using a native C rendering backend
 - JairoSVG achieves competitive performance through:
   - Pre-compiled regex patterns
   - Cached XML parser factories
