@@ -300,86 +300,86 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         Graphics2D effectContext = null;
         BufferedImage effectSourceImage = null;
         boolean ownEffectBuffer = false;
-        int effectOffsetX = 0;
-        int effectOffsetY = 0;
+        boolean subRegionEffect = false;
+        int ebX = 0, ebY = 0;
+        AffineTransform subRegionXform = null;
         if (filterName != null || maskName != null || groupOpacity) {
             effectBaseContext = context;
-            int iw = image.getWidth();
-            int ih = image.getHeight();
+            int fullW = image.getWidth();
+            int fullH = image.getHeight();
+            int iw = fullW, ih = fullH;
 
-            // Attempt sub-region allocation using geometric bounding box.
-            // Falls back to full-canvas for unsupported tags (text, image, use, svg).
-            BoundingBox.Box bbox = BoundingBox.calculate(this, node);
-            if (BoundingBox.isNonEmpty(bbox)) {
-                // Map the four bbox corners to device (pixel) space via the current transform.
-                AffineTransform tx = context.getTransform();
-                double bx = bbox.minX(), by = bbox.minY();
-                double bxw = bx + bbox.width(), byh = by + bbox.height();
-                double[] corners = {bx, by, bxw, by, bx, byh, bxw, byh};
-                tx.transform(corners, 0, corners, 0, 4);
-                double dMinX = Math.min(Math.min(corners[0], corners[2]), Math.min(corners[4], corners[6]));
-                double dMinY = Math.min(Math.min(corners[1], corners[3]), Math.min(corners[5], corners[7]));
-                double dMaxX = Math.max(Math.max(corners[0], corners[2]), Math.max(corners[4], corners[6]));
-                double dMaxY = Math.max(Math.max(corners[1], corners[3]), Math.max(corners[5], corners[7]));
+            // Sub-region effect buffers for mask/opacity-only elements (no filter).
+            // Filters are excluded because primitives like feFlood fill the entire
+            // buffer, making the result dependent on buffer dimensions. Filter
+            // sub-region optimization is handled inside applyFilter() instead.
+            if (filterName == null) {
+                BoundingBox.Box bbox = BoundingBox.calculate(this, node);
+                if (bbox != null && BoundingBox.isNonEmpty(bbox)) {
+                    // For masks, extend the region to include mask children content.
+                    // Mask shapes clipped by the buffer boundary produce different
+                    // anti-aliasing than when fully contained.
+                    if (maskName != null) {
+                        Node maskNode = this.masks.get(maskName);
+                        if (maskNode != null) {
+                            BoundingBox.Box maskBbox = BoundingBox.group(this, maskNode);
+                            if (maskBbox != null && BoundingBox.isValid(maskBbox)) {
+                                bbox = BoundingBox.combine(bbox, maskBbox);
+                            }
+                        }
+                    }
 
-                // Padding for filters: blur/shadow primitives extend well beyond the
-                // geometric shape; use 20% of the largest bbox dimension with a minimum
-                // of 10 px to avoid clipping the effect at the buffer edge.
-                // Padding for mask/opacity: only 2 px to absorb sub-pixel anti-aliasing.
-                int padding = filterName != null
-                        ? Math.max(10, (int) Math.ceil(Math.max(dMaxX - dMinX, dMaxY - dMinY) * 0.2))
-                        : 2;
-                int px = Math.max(0, (int) Math.floor(dMinX) - padding);
-                int py = Math.max(0, (int) Math.floor(dMinY) - padding);
-                int px2 = Math.min(iw, (int) Math.ceil(dMaxX) + padding);
-                int py2 = Math.min(ih, (int) Math.ceil(dMaxY) + padding);
-                int pw = px2 - px;
-                int ph = py2 - py;
+                    AffineTransform xf = context.getTransform();
+                    double[] pts = {bbox.minX(), bbox.minY(), bbox.minX() + bbox.width(), bbox.minY(), bbox.minX(),
+                            bbox.minY() + bbox.height(), bbox.minX() + bbox.width(), bbox.minY() + bbox.height()};
+                    double[] dst = new double[8];
+                    xf.transform(pts, 0, dst, 0, 4);
 
-                if (pw > 0 && ph > 0 && (long) pw * ph < (long) iw * ih) {
-                    effectOffsetX = px;
-                    effectOffsetY = py;
-                    effectSourceImage = new BufferedImage(pw, ph, BufferedImage.TYPE_INT_ARGB);
-                    effectBufferInUse = true;
-                    ownEffectBuffer = true;
-                    effectContext = effectSourceImage.createGraphics();
-                    effectContext.setRenderingHints(effectBaseContext.getRenderingHints());
-                    // Apply -offset translation so the element renders at (0,0) within the buffer.
-                    AffineTransform bufferTransform = new AffineTransform(effectBaseContext.getTransform());
-                    bufferTransform
-                            .preConcatenate(AffineTransform.getTranslateInstance(-effectOffsetX, -effectOffsetY));
-                    effectContext.setTransform(bufferTransform);
-                    effectContext.setClip(effectBaseContext.getClip());
-                    effectContext.setComposite(effectBaseContext.getComposite());
-                    effectContext.setStroke(effectBaseContext.getStroke());
-                    context = effectContext;
-                }
-            }
+                    double dMinX = Math.min(Math.min(dst[0], dst[2]), Math.min(dst[4], dst[6]));
+                    double dMinY = Math.min(Math.min(dst[1], dst[3]), Math.min(dst[5], dst[7]));
+                    double dMaxX = Math.max(Math.max(dst[0], dst[2]), Math.max(dst[4], dst[6]));
+                    double dMaxY = Math.max(Math.max(dst[1], dst[3]), Math.max(dst[5], dst[7]));
 
-            // Full-canvas fallback when sub-region could not be computed.
-            if (effectContext == null) {
-                if (!effectBufferInUse && effectBuffer != null && effectBuffer.getWidth() == iw
-                        && effectBuffer.getHeight() == ih) {
-                    effectSourceImage = effectBuffer;
-                    java.util.Arrays.fill(
-                            ((java.awt.image.DataBufferInt) effectSourceImage.getRaster().getDataBuffer()).getData(),
-                            0);
-                } else {
-                    effectSourceImage = new BufferedImage(iw, ih, BufferedImage.TYPE_INT_ARGB);
-                    if (!effectBufferInUse) {
-                        effectBuffer = effectSourceImage;
+                    int pad = computeEffectPadding(node, null);
+                    ebX = Math.max(0, (int) Math.floor(dMinX) - pad);
+                    ebY = Math.max(0, (int) Math.floor(dMinY) - pad);
+                    int ebW = Math.min(fullW, (int) Math.ceil(dMaxX) + pad) - ebX;
+                    int ebH = Math.min(fullH, (int) Math.ceil(dMaxY) + pad) - ebY;
+
+                    if (ebW > 0 && ebH > 0 && (long) ebW * ebH < (long) fullW * fullH * 4 / 5) {
+                        iw = ebW;
+                        ih = ebH;
+                        subRegionEffect = true;
                     }
                 }
-                effectBufferInUse = true;
-                ownEffectBuffer = true;
-                effectContext = effectSourceImage.createGraphics();
-                effectContext.setRenderingHints(effectBaseContext.getRenderingHints());
-                effectContext.setTransform(effectBaseContext.getTransform());
-                effectContext.setClip(effectBaseContext.getClip());
-                effectContext.setComposite(effectBaseContext.getComposite());
-                effectContext.setStroke(effectBaseContext.getStroke());
-                context = effectContext;
             }
+
+            if (!subRegionEffect && !effectBufferInUse && effectBuffer != null && effectBuffer.getWidth() == iw
+                    && effectBuffer.getHeight() == ih) {
+                effectSourceImage = effectBuffer;
+                java.util.Arrays.fill(
+                        ((java.awt.image.DataBufferInt) effectSourceImage.getRaster().getDataBuffer()).getData(), 0);
+            } else {
+                effectSourceImage = new BufferedImage(iw, ih, BufferedImage.TYPE_INT_ARGB);
+                if (!effectBufferInUse && !subRegionEffect) {
+                    effectBuffer = effectSourceImage;
+                }
+            }
+            effectBufferInUse = true;
+            ownEffectBuffer = true;
+            effectContext = effectSourceImage.createGraphics();
+            effectContext.setRenderingHints(effectBaseContext.getRenderingHints());
+            if (subRegionEffect) {
+                subRegionXform = new AffineTransform(effectBaseContext.getTransform());
+                subRegionXform.preConcatenate(AffineTransform.getTranslateInstance(-ebX, -ebY));
+                effectContext.setTransform(subRegionXform);
+            } else {
+                effectContext.setTransform(effectBaseContext.getTransform());
+            }
+            effectContext.setClip(effectBaseContext.getClip());
+            effectContext.setComposite(effectBaseContext.getComposite());
+            effectContext.setStroke(effectBaseContext.getStroke());
+            context = effectContext;
         }
 
         // Set stroke properties
@@ -526,26 +526,28 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                 renderedImage = Defs.applyFilter(this, filterName, renderedImage);
             }
             if (maskName != null) {
-                // The mask content must be rendered in the parent's coordinate system
-                // (before the masked element's own transform), offset for sub-regions.
-                AffineTransform maskTransform = new AffineTransform(savedTransform);
-                if (effectOffsetX != 0 || effectOffsetY != 0) {
-                    maskTransform.preConcatenate(AffineTransform.getTranslateInstance(-effectOffsetX, -effectOffsetY));
-                }
-                renderedImage = Defs.paintMask(this, node, maskName, renderedImage, maskTransform);
+                renderedImage = Defs.paintMask(this, node, maskName, renderedImage,
+                        subRegionEffect ? subRegionXform : null);
             }
             context = effectBaseContext;
             if (groupOpacity) {
                 effectBaseContext.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) opacity));
             }
-            if (filterClip != null) {
-                Shape prevClip = effectBaseContext.getClip();
-                effectBaseContext.clip(new java.awt.Rectangle(effectOffsetX + filterClip.x,
-                        effectOffsetY + filterClip.y, filterClip.width, filterClip.height));
-                effectBaseContext.drawImage(renderedImage, effectOffsetX, effectOffsetY, null);
-                effectBaseContext.setClip(prevClip);
+            if (subRegionEffect) {
+                // Composite sub-region at device coordinates using identity transform
+                AffineTransform baseXform = effectBaseContext.getTransform();
+                effectBaseContext.setTransform(new AffineTransform());
+                effectBaseContext.drawImage(renderedImage, ebX, ebY, null);
+                effectBaseContext.setTransform(baseXform);
             } else {
-                effectBaseContext.drawImage(renderedImage, effectOffsetX, effectOffsetY, null);
+                if (filterClip != null) {
+                    Shape prevClip = effectBaseContext.getClip();
+                    effectBaseContext.clip(filterClip);
+                    effectBaseContext.drawImage(renderedImage, 0, 0, null);
+                    effectBaseContext.setClip(prevClip);
+                } else {
+                    effectBaseContext.drawImage(renderedImage, 0, 0, null);
+                }
             }
             if (groupOpacity) {
                 effectBaseContext.setComposite(savedComposite);
@@ -564,6 +566,55 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
 
     private void configureStroke(Node node) {
         // These are set during draw for each node's stroke
+    }
+
+    /**
+     * Compute device-pixel padding for the sub-region effect buffer. Accounts for
+     * stroke width and filter blur/offset extent.
+     */
+    private int computeEffectPadding(Node node, String filterName) {
+        int pad = 4; // base padding for anti-aliasing and rounding
+
+        // Stroke extent
+        String stroke = node.get("stroke", "none");
+        if (!"none".equals(stroke)) {
+            double sw = size(this, node.get("stroke-width", "1"));
+            AffineTransform xf = context.getTransform();
+            double sx = Math.sqrt(xf.getScaleX() * xf.getScaleX() + xf.getShearX() * xf.getShearX());
+            double sy = Math.sqrt(xf.getScaleY() * xf.getScaleY() + xf.getShearY() * xf.getShearY());
+            pad += (int) Math.ceil(sw * Math.max(sx, sy) / 2) + 1;
+        }
+
+        // Filter blur/offset extent (in device pixels)
+        if (filterName != null) {
+            Node filterNode = this.filters.get(filterName);
+            if (filterNode != null) {
+                int blurPad = 0, offsetPad = 0;
+                for (Node child : filterNode.children) {
+                    switch (child.tag) {
+                        case "feGaussianBlur" -> {
+                            double sigma = parseDoubleOr(child.get("stdDeviation"), 0);
+                            blurPad = Math.max(blurPad, (int) Math.ceil(sigma * 3));
+                        }
+                        case "feDropShadow" -> {
+                            double sigma = parseDoubleOr(child.get("stdDeviation"), 0);
+                            blurPad = Math.max(blurPad, (int) Math.ceil(sigma * 3));
+                            offsetPad = Math.max(offsetPad, (int) Math.ceil(Math.abs(parseDoubleOr(child.get("dx"), 0)))
+                                    + (int) Math.ceil(Math.abs(parseDoubleOr(child.get("dy"), 0))));
+                        }
+                        case "feOffset" -> {
+                            offsetPad = Math.max(offsetPad, (int) Math.ceil(Math.abs(parseDoubleOr(child.get("dx"), 0)))
+                                    + (int) Math.ceil(Math.abs(parseDoubleOr(child.get("dy"), 0))));
+                        }
+                        default -> {
+                        }
+                    }
+                }
+                pad += blurPad + offsetPad;
+            }
+        }
+
+        return pad;
     }
 
     private void applyClip(Node node) {

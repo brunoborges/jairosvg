@@ -802,7 +802,7 @@ public final class Defs {
 
     /** Render and apply luminance mask to an off-screen source image. */
     public static BufferedImage paintMask(Surface surface, Node node, String name, BufferedImage sourceImage,
-            AffineTransform maskTransform) {
+            java.awt.geom.AffineTransform subRegionTransform) {
         Node maskNode = surface.masks.get(name);
         if (maskNode == null) {
             return sourceImage;
@@ -821,9 +821,9 @@ public final class Defs {
         }
         Graphics2D maskG2d = maskImage.createGraphics();
         maskG2d.setRenderingHints(surface.context.getRenderingHints());
-        // Render mask content in the same coordinate system as the masked element's
-        // parent (userSpaceOnUse default), adjusted for any sub-region offset.
-        maskG2d.setTransform(maskTransform);
+        if (subRegionTransform != null) {
+            maskG2d.setTransform(subRegionTransform);
+        }
 
         Graphics2D savedContext = surface.context;
         GeneralPath savedPath = surface.path;
