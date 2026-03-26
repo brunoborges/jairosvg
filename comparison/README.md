@@ -364,7 +364,7 @@ JairoSVG produces the smallest PNGs overall — **14.0% smaller** than CairoSVG,
 | Feimage ref    |       2,705 |       3,431 |       4,868 |       4,265 |
 | **Total**      | **204,170** | **245,688** | **232,765** | **237,555** |
 
-> **⚠️ Filters/Masks:** Where CairoSVG produces much smaller output, it is because CairoSVG **does not render** certain features correctly — filter effects (blur, drop-shadow) are silently skipped, and masks are rendered without gradient/circle content. This results in simpler images that compress better. JairoSVG renders these effects correctly, producing visually accurate but larger PNGs.
+> **⚠️ Filters/Masks:** Where CairoSVG produces much smaller output, it is because CairoSVG **does not render** certain features correctly — filter effects (blur, drop-shadow) are silently skipped, and masks are rendered without gradient/circle content. This results in simpler images that compress better. JairoSVG and JSVG render these effects correctly, producing visually accurate but larger PNGs.
 
 ### Running the Benchmark
 
@@ -717,7 +717,7 @@ Even for the 8 test cases where ImageMagick succeeds, performance is significant
 
 ### Verdict
 
-ImageMagick is an excellent tool for raster image manipulation (resize, crop, compose, format conversion), but its SVG support is too limited for production use. For reliable SVG → PNG conversion, use a dedicated SVG library like JairoSVG, EchoSVG, or CairoSVG.
+ImageMagick is an excellent tool for raster image manipulation (resize, crop, compose, format conversion), but its SVG support is too limited for production use. For reliable SVG → PNG conversion, use a dedicated SVG library like JairoSVG, EchoSVG, CairoSVG, or JSVG.
 
 ---
 
