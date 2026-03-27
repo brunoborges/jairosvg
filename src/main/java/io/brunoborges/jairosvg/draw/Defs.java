@@ -45,11 +45,12 @@ import io.brunoborges.jairosvg.util.UrlHelper;
  */
 public final class Defs {
 
-    private static final int LUMINANCE_RED_COEFF_256 = 54;
-    private static final int LUMINANCE_GREEN_COEFF_256 = 183;
-    private static final int LUMINANCE_BLUE_COEFF_256 = 19;
     private static final int ALPHA_MAX = 255;
     private static final int MIN_IMAGE_BYTES = 5;
+    // SVG mask luminance coefficients (BT.709, scaled to ×256 for integer math)
+    private static final int LUMINANCE_RED_COEFF_256 = 54;   // 0.2126 × 256
+    private static final int LUMINANCE_GREEN_COEFF_256 = 183; // 0.7152 × 256
+    private static final int LUMINANCE_BLUE_COEFF_256 = 19;   // 0.0722 × 256
 
     private Defs() {
     }
@@ -804,7 +805,7 @@ public final class Defs {
         int w = sourceImage.getWidth();
         int h = sourceImage.getHeight();
 
-        // Reuse mask buffer from surface to avoid per-mask allocation
+        // TYPE_INT_ARGB mask buffer — reuse or allocate
         BufferedImage maskImage = surface.maskBuffer;
         if (maskImage == null || maskImage.getWidth() != w || maskImage.getHeight() != h) {
             maskImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
@@ -838,33 +839,37 @@ public final class Defs {
         surface.contextHeight = savedHeight;
         maskG2d.dispose();
 
-        // Convert mask luminance to alpha, then composite onto source using DST_IN.
-        // DST_IN: dst.alpha = dst.alpha * src.alpha — preserves source RGB, only modifies alpha.
+        // Single combined pass: apply BT.709 luminance of mask pixel to source alpha.
+        // Operates on the sub-region buffers — typically far smaller than the full image.
+        int[] sourcePixels = ((DataBufferInt) sourceImage.getRaster().getDataBuffer()).getData();
         int[] maskPixels = ((DataBufferInt) maskImage.getRaster().getDataBuffer()).getData();
-        for (int i = 0; i < maskPixels.length; i++) {
+        for (int i = 0; i < sourcePixels.length; i++) {
+            int src = sourcePixels[i];
+            int srcA = src >>> 24;
+            if (srcA == 0) continue;
             int m = maskPixels[i];
             int ma = m >>> 24;
-            if (ma == 0) continue; // leave alpha=0
+            if (ma == 0) {
+                sourcePixels[i] = 0;
+                continue;
+            }
             int mr = (m >> 16) & 0xFF;
             int mg = (m >> 8) & 0xFF;
             int mb = m & 0xFF;
             int luminance256 = LUMINANCE_RED_COEFF_256 * mr + LUMINANCE_GREEN_COEFF_256 * mg
                     + LUMINANCE_BLUE_COEFF_256 * mb;
             if (luminance256 == 0) {
-                maskPixels[i] = 0;
+                sourcePixels[i] = 0;
                 continue;
             }
             int luminance = (luminance256 + 128) >> 8;
+            if (luminance == 255 && ma == 255) continue; // fast path: fully opaque white mask
             int maskAlpha = ma * luminance;
             maskAlpha = (maskAlpha + 1 + (maskAlpha >> 8)) >> 8;
-            maskPixels[i] = maskAlpha << 24; // only alpha matters for DST_IN
+            int combined = srcA * maskAlpha;
+            int outA = (combined + 1 + (combined >> 8)) >> 8;
+            sourcePixels[i] = (outA << 24) | (src & 0x00FFFFFF);
         }
-
-        // Apply the alpha mask to the source image using the hardware-friendly DST_IN composite.
-        Graphics2D g2 = sourceImage.createGraphics();
-        g2.setComposite(AlphaComposite.DstIn);
-        g2.drawImage(maskImage, 0, 0, null);
-        g2.dispose();
         return sourceImage;
     }
 
