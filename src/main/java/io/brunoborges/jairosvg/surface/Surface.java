@@ -341,19 +341,6 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
             if (filterName == null) {
                 BoundingBox.Box bbox = BoundingBox.calculate(this, node);
                 if (bbox != null && BoundingBox.isNonEmpty(bbox)) {
-                    // For masks, extend the region to include mask children content.
-                    // Mask shapes clipped by the buffer boundary produce different
-                    // anti-aliasing than when fully contained.
-                    if (maskName != null) {
-                        Node maskNode = this.masks.get(maskName);
-                        if (maskNode != null) {
-                            BoundingBox.Box maskBbox = BoundingBox.group(this, maskNode);
-                            if (maskBbox != null && BoundingBox.isValid(maskBbox)) {
-                                bbox = BoundingBox.combine(bbox, maskBbox);
-                            }
-                        }
-                    }
-
                     AffineTransform xf = context.getTransform();
                     double[] pts = {bbox.minX(), bbox.minY(), bbox.minX() + bbox.width(), bbox.minY(), bbox.minX(),
                             bbox.minY() + bbox.height(), bbox.minX() + bbox.width(), bbox.minY() + bbox.height()};

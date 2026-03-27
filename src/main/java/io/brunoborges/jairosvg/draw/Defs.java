@@ -838,39 +838,33 @@ public final class Defs {
         surface.contextHeight = savedHeight;
         maskG2d.dispose();
 
-        // Apply mask luminance to source alpha in-place
-        int[] sourcePixels = ((DataBufferInt) sourceImage.getRaster().getDataBuffer()).getData();
+        // Convert mask luminance to alpha, then composite onto source using DST_IN.
+        // DST_IN: dst.alpha = dst.alpha * src.alpha — preserves source RGB, only modifies alpha.
         int[] maskPixels = ((DataBufferInt) maskImage.getRaster().getDataBuffer()).getData();
-
-        for (int i = 0; i < sourcePixels.length; i++) {
-            int src = sourcePixels[i];
-            int srcA = src >>> 24;
-            if (srcA == 0) {
-                continue;
-            }
+        for (int i = 0; i < maskPixels.length; i++) {
             int m = maskPixels[i];
             int ma = m >>> 24;
-            if (ma == 0) {
-                sourcePixels[i] = 0;
-                continue;
-            }
+            if (ma == 0) continue; // leave alpha=0
             int mr = (m >> 16) & 0xFF;
             int mg = (m >> 8) & 0xFF;
             int mb = m & 0xFF;
             int luminance256 = LUMINANCE_RED_COEFF_256 * mr + LUMINANCE_GREEN_COEFF_256 * mg
                     + LUMINANCE_BLUE_COEFF_256 * mb;
             if (luminance256 == 0) {
-                sourcePixels[i] = 0;
+                maskPixels[i] = 0;
                 continue;
             }
-            // Fast /255: two byte-scale multiplies instead of long division
             int luminance = (luminance256 + 128) >> 8;
             int maskAlpha = ma * luminance;
             maskAlpha = (maskAlpha + 1 + (maskAlpha >> 8)) >> 8;
-            int combined = srcA * maskAlpha;
-            int outA = (combined + 1 + (combined >> 8)) >> 8;
-            sourcePixels[i] = (outA << 24) | (src & 0x00FFFFFF);
+            maskPixels[i] = maskAlpha << 24; // only alpha matters for DST_IN
         }
+
+        // Apply the alpha mask to the source image using the hardware-friendly DST_IN composite.
+        Graphics2D g2 = sourceImage.createGraphics();
+        g2.setComposite(AlphaComposite.DstIn);
+        g2.drawImage(maskImage, 0, 0, null);
+        g2.dispose();
         return sourceImage;
     }
 
