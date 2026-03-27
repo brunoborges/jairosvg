@@ -428,7 +428,7 @@ JairoSVG, CairoSVG, and JSVG share a similar security posture: no scripting supp
 
 ## Visual Rendering Comparison
 
-Side-by-side visual comparison of 23 SVG test cases across all four libraries.
+Side-by-side visual comparison of 24 SVG test cases across all four libraries.
 
 ### 01 — Basic Shapes
 
@@ -610,9 +610,9 @@ feBlend modes: normal, multiply, screen, darken, and lighten.
 
 ### 22_localized_masks
 
-| Input SVG | JairoSVG |
-| :-------: | :------: |
-| [SVG](svg/22_localized_masks.svg) | ![JairoSVG](png/jairosvg/22_localized_masks.png) |
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/22_localized_masks.svg) | ![JairoSVG](png/jairosvg/22_localized_masks.png) | ![EchoSVG](png/echosvg/22_localized_masks.png) | ![CairoSVG](png/cairosvg/22_localized_masks.png) | ![JSVG](png/jsvg/22_localized_masks.png) |
 
 ---
 
