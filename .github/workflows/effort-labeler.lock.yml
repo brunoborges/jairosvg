@@ -23,7 +23,7 @@
 #
 # Automatically estimate implementation effort for new issues and label them accordingly.
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a04727d89fd9c86484bf0099aae367cc8196872496f29be8ae6d8626079aa9a2","compiler_version":"v0.51.6"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cb58b5f19c2a6de1aab7068f38d877a8a4ba6c9bdf01a20e46a6dc100e65a361","compiler_version":"v0.51.6"}
 
 name: "Effort Labeler"
 "on":
@@ -50,7 +50,8 @@ run-name: "Effort Labeler"
 jobs:
   activation:
     needs: pre_activation
-    if: (needs.pre_activation.outputs.activated == 'true') && (github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/effort'))
+    if: >
+      (needs.pre_activation.outputs.activated == 'true') && (github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/effort'))
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -64,7 +65,7 @@ jobs:
       title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@48d8fdfddc8cad854ac0c70ceb573f09fb8f9c9b # v0.62.5
+        uses: github/gh-aw/actions/setup@33cd6c7f1fee588654ef19def2e6a4174be66197 # v0.51.6
         with:
           destination: /opt/gh-aw/actions
       - name: Generate agentic run info
@@ -281,7 +282,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@48d8fdfddc8cad854ac0c70ceb573f09fb8f9c9b # v0.62.5
+        uses: github/gh-aw/actions/setup@33cd6c7f1fee588654ef19def2e6a4174be66197 # v0.51.6
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -648,7 +649,7 @@ jobs:
           }
           GH_AW_MCP_CONFIG_EOF
       - name: Download activation artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8
         with:
           name: activation
           path: /tmp/gh-aw
@@ -951,12 +952,12 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@48d8fdfddc8cad854ac0c70ceb573f09fb8f9c9b # v0.62.5
+        uses: github/gh-aw/actions/setup@33cd6c7f1fee588654ef19def2e6a4174be66197 # v0.51.6
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
         continue-on-error: true
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8
         with:
           name: agent-output
           path: /tmp/gh-aw/safeoutputs/
@@ -1030,14 +1031,15 @@ jobs:
             await main();
 
   pre_activation:
-    if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/effort')
+    if: >
+      github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/effort')
     runs-on: ubuntu-slim
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@48d8fdfddc8cad854ac0c70ceb573f09fb8f9c9b # v0.62.5
+        uses: github/gh-aw/actions/setup@33cd6c7f1fee588654ef19def2e6a4174be66197 # v0.51.6
         with:
           destination: /opt/gh-aw/actions
       - name: Check team membership for workflow
@@ -1079,12 +1081,12 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@48d8fdfddc8cad854ac0c70ceb573f09fb8f9c9b # v0.62.5
+        uses: github/gh-aw/actions/setup@33cd6c7f1fee588654ef19def2e6a4174be66197 # v0.51.6
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
         continue-on-error: true
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8
         with:
           name: agent-output
           path: /tmp/gh-aw/safeoutputs/
@@ -1116,3 +1118,4 @@ jobs:
           name: safe-output-items
           path: /tmp/safe-output-items.jsonl
           if-no-files-found: warn
+
