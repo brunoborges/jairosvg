@@ -137,31 +137,63 @@ public final class Defs {
 
         boolean userSpace = "userSpaceOnUse".equals(gradientNode.get("gradientUnits"));
 
-        // Collect stops
-        java.util.List<float[]> stops = new ArrayList<>();
-        java.util.List<Color> colors = new ArrayList<>();
-        float lastOffset = 0;
+        // Check gradient stop cache
+        Surface.GradientStops cached = surface.gradientStopCache.get(gradientNode);
+        float[] fractions;
+        Color[] colorArr;
+        if (cached != null && cached.opacity() == opacity) {
+            fractions = cached.fractions();
+            colorArr = cached.colors();
+        } else {
+            // Collect stops
+            java.util.List<float[]> stops = new ArrayList<>();
+            java.util.List<Color> stopColors = new ArrayList<>();
+            float lastOffset = 0;
 
-        for (Node child : gradientNode.children) {
-            if (!"stop".equals(child.tag))
-                continue;
-            float offset = parsePercent(child.get("offset", "0"));
-            offset = Math.max(lastOffset, Math.min(1, offset));
-            lastOffset = offset;
+            for (Node child : gradientNode.children) {
+                if (!"stop".equals(child.tag))
+                    continue;
+                float offset = parsePercent(child.get("offset", "0"));
+                offset = Math.max(lastOffset, Math.min(1, offset));
+                lastOffset = offset;
 
-            Colors.RGBA rgba = surface.mapColor(child.get("stop-color", "black"),
-                    parseDouble(child.get("stop-opacity", "1")) * opacity);
-            stops.add(new float[]{offset});
-            colors.add(new Color((float) rgba.r(), (float) rgba.g(), (float) rgba.b(), (float) rgba.a()));
-        }
+                Colors.RGBA rgba = surface.mapColor(child.get("stop-color", "black"),
+                        parseDouble(child.get("stop-opacity", "1")) * opacity);
+                stops.add(new float[]{offset});
+                stopColors.add(new Color((float) rgba.r(), (float) rgba.g(), (float) rgba.b(), (float) rgba.a()));
+            }
 
-        if (stops.isEmpty())
-            return false;
+            if (stops.isEmpty())
+                return false;
 
-        // Ensure we have at least 2 stops
-        if (stops.size() == 1) {
-            stops.add(new float[]{1.0f});
-            colors.add(colors.get(0));
+            // Ensure we have at least 2 stops
+            if (stops.size() == 1) {
+                stops.add(new float[]{1.0f});
+                stopColors.add(stopColors.get(0));
+            }
+
+            // Build fractions array (shared for both gradient types)
+            fractions = new float[stops.size()];
+            colorArr = stopColors.toArray(new Color[0]);
+            for (int i = 0; i < stops.size(); i++)
+                fractions[i] = stops.get(i)[0];
+
+            // Fix duplicate fractions, clamp to [0,1], ensure strictly increasing
+            for (int i = 1; i < fractions.length; i++) {
+                if (fractions[i] <= fractions[i - 1]) {
+                    fractions[i] = fractions[i - 1] + 0.0001f;
+                }
+            }
+            for (int i = 0; i < fractions.length; i++) {
+                fractions[i] = Math.min(1.0f, Math.max(0.0f, fractions[i]));
+            }
+            for (int i = fractions.length - 2; i >= 0; i--) {
+                if (fractions[i] >= fractions[i + 1]) {
+                    fractions[i] = Math.nextDown(fractions[i + 1]);
+                }
+            }
+
+            surface.gradientStopCache.put(gradientNode, new Surface.GradientStops(fractions, colorArr, opacity));
         }
 
         Paint paint;
@@ -192,28 +224,8 @@ public final class Defs {
 
             if (x1 == x2 && y1 == y2) {
                 // Degenerate gradient - use last color
-                surface.context.setColor(colors.get(colors.size() - 1));
+                surface.context.setColor(colorArr[colorArr.length - 1]);
                 return true;
-            }
-
-            float[] fractions = new float[stops.size()];
-            Color[] colorArr = colors.toArray(new Color[0]);
-            for (int i = 0; i < stops.size(); i++)
-                fractions[i] = stops.get(i)[0];
-
-            // Fix duplicate fractions, clamp to [0,1], ensure strictly increasing
-            for (int i = 1; i < fractions.length; i++) {
-                if (fractions[i] <= fractions[i - 1]) {
-                    fractions[i] = fractions[i - 1] + 0.0001f;
-                }
-            }
-            for (int i = 0; i < fractions.length; i++) {
-                fractions[i] = Math.min(1.0f, Math.max(0.0f, fractions[i]));
-            }
-            for (int i = fractions.length - 2; i >= 0; i--) {
-                if (fractions[i] >= fractions[i + 1]) {
-                    fractions[i] = Math.nextDown(fractions[i + 1]);
-                }
             }
 
             paint = new LinearGradientPaint(x1, y1, x2, y2, fractions, colorArr,
@@ -256,25 +268,6 @@ public final class Defs {
                 double scale = (r * 0.99) / dist;
                 fx = (float) (cx + (fx - cx) * scale);
                 fy = (float) (cy + (fy - cy) * scale);
-            }
-
-            float[] fractions = new float[stops.size()];
-            Color[] colorArr = colors.toArray(new Color[0]);
-            for (int i = 0; i < stops.size(); i++)
-                fractions[i] = stops.get(i)[0];
-
-            for (int i = 1; i < fractions.length; i++) {
-                if (fractions[i] <= fractions[i - 1]) {
-                    fractions[i] = fractions[i - 1] + 0.0001f;
-                }
-            }
-            for (int i = 0; i < fractions.length; i++) {
-                fractions[i] = Math.min(1.0f, Math.max(0.0f, fractions[i]));
-            }
-            for (int i = fractions.length - 2; i >= 0; i--) {
-                if (fractions[i] >= fractions[i + 1]) {
-                    fractions[i] = Math.nextDown(fractions[i + 1]);
-                }
             }
 
             paint = new RadialGradientPaint(new Point2D.Float(cx, cy), r, new Point2D.Float(fx, fy), fractions,

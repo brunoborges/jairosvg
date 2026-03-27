@@ -323,6 +323,52 @@ public final class Helpers {
         return matrix;
     }
 
+    /**
+     * Apply SVG transform string to the surface Graphics2D, with Node-level
+     * caching.
+     */
+    public static void transform(Surface surface, Node node, String transformString, AffineTransform gradient,
+            String transformOrigin) {
+        if (transformString == null || transformString.isEmpty())
+            return;
+
+        AffineTransform matrix;
+        if (gradient == null && transformOrigin == null && node.cachedTransformStr != null
+                && node.cachedTransformStr.equals(transformString)) {
+            matrix = node.cachedTransform;
+        } else {
+            matrix = parseTransform(surface, transformString);
+            if (gradient == null && transformOrigin == null) {
+                node.cachedTransform = matrix;
+                node.cachedTransformStr = transformString;
+            }
+        }
+
+        if (transformOrigin != null && !transformOrigin.isEmpty()) {
+            String[] origin = WHITESPACE.split(transformOrigin.strip());
+            double originX = parseOriginComponent(surface, origin[0], true);
+            double originY = origin.length > 1
+                    ? parseOriginComponent(surface, origin[1], false)
+                    : surface.contextHeight / 2;
+            AffineTransform withOrigin = new AffineTransform();
+            withOrigin.translate(originX, originY);
+            withOrigin.concatenate(matrix);
+            withOrigin.translate(-originX, -originY);
+            matrix = withOrigin;
+        }
+
+        if (gradient != null) {
+            try {
+                AffineTransform inv = matrix.createInverse();
+                gradient.concatenate(inv);
+            } catch (NoninvertibleTransformException e) {
+                // Non-invertible, skip
+            }
+        } else {
+            surface.context.transform(matrix);
+        }
+    }
+
     /** Apply SVG transform string to the surface Graphics2D. */
     public static void transform(Surface surface, String transformString, AffineTransform gradient,
             String transformOrigin) {

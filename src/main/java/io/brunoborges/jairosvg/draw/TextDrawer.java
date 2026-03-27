@@ -86,7 +86,7 @@ public final class TextDrawer {
             FONT_CACHE.put(fontKey, font);
         }
 
-        FontRenderContext frc = surface.context.getFontRenderContext();
+        FontRenderContext frc = surface.cachedFRC != null ? surface.cachedFRC : surface.context.getFontRenderContext();
 
         String textContent = node.text;
         // Whitespace-only text between child elements (e.g. tspan) should be ignored
@@ -100,14 +100,26 @@ public final class TextDrawer {
             String parentDx = node.get("dx");
             String parentDy = node.get("dy");
 
-            if (parentX != null)
-                surface.cursorPosition[0] = size(surface, parentX.split("\\s+")[0], "x");
-            if (parentY != null)
-                surface.cursorPosition[1] = size(surface, parentY.split("\\s+")[0], "y");
-            if (parentDx != null)
-                surface.cursorPosition[0] += size(surface, parentDx.split("\\s+")[0], "x");
-            if (parentDy != null)
-                surface.cursorPosition[1] += size(surface, parentDy.split("\\s+")[0], "y");
+            if (parentX != null) {
+                if (node.cachedXCoords == null)
+                    node.cachedXCoords = parentX.split("\\s+");
+                surface.cursorPosition[0] = size(surface, node.cachedXCoords[0], "x");
+            }
+            if (parentY != null) {
+                if (node.cachedYCoords == null)
+                    node.cachedYCoords = parentY.split("\\s+");
+                surface.cursorPosition[1] = size(surface, node.cachedYCoords[0], "y");
+            }
+            if (parentDx != null) {
+                if (node.cachedDxCoords == null)
+                    node.cachedDxCoords = parentDx.split("\\s+");
+                surface.cursorPosition[0] += size(surface, node.cachedDxCoords[0], "x");
+            }
+            if (parentDy != null) {
+                if (node.cachedDyCoords == null)
+                    node.cachedDyCoords = parentDy.split("\\s+");
+                surface.cursorPosition[1] += size(surface, node.cachedDyCoords[0], "y");
+            }
 
             // Adjust cursor for text-anchor using total width of all children
             String textAnchor = node.get("text-anchor");
@@ -130,20 +142,30 @@ public final class TextDrawer {
         String dxStr = node.get("dx");
         String dyStr = node.get("dy");
 
-        if (xStr != null)
-            startX = size(surface, xStr.split("\\s+")[0], "x");
-        else
+        if (xStr != null) {
+            if (node.cachedXCoords == null)
+                node.cachedXCoords = xStr.split("\\s+");
+            startX = size(surface, node.cachedXCoords[0], "x");
+        } else
             startX = surface.cursorPosition[0];
 
-        if (yStr != null)
-            startY = size(surface, yStr.split("\\s+")[0], "y");
-        else
+        if (yStr != null) {
+            if (node.cachedYCoords == null)
+                node.cachedYCoords = yStr.split("\\s+");
+            startY = size(surface, node.cachedYCoords[0], "y");
+        } else
             startY = surface.cursorPosition[1];
 
-        if (dxStr != null)
-            startX += size(surface, dxStr.split("\\s+")[0], "x");
-        if (dyStr != null)
-            startY += size(surface, dyStr.split("\\s+")[0], "y");
+        if (dxStr != null) {
+            if (node.cachedDxCoords == null)
+                node.cachedDxCoords = dxStr.split("\\s+");
+            startX += size(surface, node.cachedDxCoords[0], "x");
+        }
+        if (dyStr != null) {
+            if (node.cachedDyCoords == null)
+                node.cachedDyCoords = dyStr.split("\\s+");
+            startY += size(surface, node.cachedDyCoords[0], "y");
+        }
 
         // Text anchor alignment (only when node has its own x position)
         String textAnchor = node.get("text-anchor");

@@ -20,7 +20,9 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.awt.font.FontRenderContext;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -98,6 +100,26 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
 
     // Raster image cache (keyed by data: URI or resolved URL)
     public Map<String, BufferedImage> rasterImageCache = new HashMap<>();
+
+    // Pre-allocated transform stack to avoid AffineTransform allocations per node
+    private final AffineTransform[] transformStack = buildTransformStack();
+    private int transformDepth = 0;
+    private static final AffineTransform IDENTITY_TRANSFORM = new AffineTransform();
+
+    private static AffineTransform[] buildTransformStack() {
+        AffineTransform[] s = new AffineTransform[64];
+        for (int i = 0; i < s.length; i++)
+            s[i] = new AffineTransform();
+        return s;
+    }
+
+    // Cached FontRenderContext — valid as long as rendering hints don't change
+    public FontRenderContext cachedFRC;
+
+    // Gradient stop cache to avoid re-parsing stops on every gradient application
+    public record GradientStops(float[] fractions, Color[] colors, double opacity) {
+    }
+    public final IdentityHashMap<Node, GradientStops> gradientStopCache = new IdentityHashMap<>();
 
     public Surface() {
     }
@@ -194,6 +216,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         if (overrides != null) {
             overrides.forEach(context::setRenderingHint);
         }
+        this.cachedFRC = context.getFontRenderContext();
     }
 
     /** Set the context size and apply viewport transformations. */
@@ -270,12 +293,14 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         this.fontSize = size(this, node.get("font-size", "12pt"));
 
         AffineTransform savedTransform = context.getTransform();
+        int savedDepth = transformDepth;
+        transformStack[transformDepth++].setTransform(context.getTransform());
         Shape savedClip = context.getClip();
         Composite savedComposite = context.getComposite();
         Stroke savedStroke = context.getStroke();
 
         // Apply transformations
-        Helpers.transform(this, node.get("transform"), null, node.get("transform-origin"));
+        Helpers.transform(this, node, node.get("transform"), null, node.get("transform-origin"));
 
         // Filter and opacity
         String filterName = null;
@@ -510,7 +535,8 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         }
 
         // Restore state
-        context.setTransform(savedTransform);
+        transformDepth = savedDepth;
+        context.setTransform(transformStack[savedDepth]);
         context.setClip(savedClip);
         context.setComposite(savedComposite);
         context.setStroke(savedStroke);
@@ -535,10 +561,10 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
             }
             if (subRegionEffect) {
                 // Composite sub-region at device coordinates using identity transform
-                AffineTransform baseXform = effectBaseContext.getTransform();
-                effectBaseContext.setTransform(new AffineTransform());
+                transformStack[transformDepth].setTransform(effectBaseContext.getTransform());
+                effectBaseContext.setTransform(IDENTITY_TRANSFORM);
                 effectBaseContext.drawImage(renderedImage, ebX, ebY, null);
-                effectBaseContext.setTransform(baseXform);
+                effectBaseContext.setTransform(transformStack[transformDepth]);
             } else {
                 if (filterClip != null) {
                     Shape prevClip = effectBaseContext.getClip();

@@ -23,6 +23,8 @@ import io.brunoborges.jairosvg.css.CssProcessor;
 import io.brunoborges.jairosvg.util.Features;
 import io.brunoborges.jairosvg.util.Helpers;
 import io.brunoborges.jairosvg.util.UrlHelper;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 
 /**
  * SVG Node with dict-like properties and children. Port of CairoSVG parser.py
@@ -86,6 +88,22 @@ public class Node {
     public List<Object> vertices;
     public boolean unsafe = false;
     public UrlHelper.UrlFetcher urlFetcher;
+
+    // Path cache: avoids re-parsing the "d" attribute when the same node is
+    // rendered multiple times
+    public GeneralPath cachedPath;
+    public List<Object> cachedVertices;
+
+    // Transform cache: avoids re-parsing the transform attribute when the same node
+    // is rendered multiple times
+    public AffineTransform cachedTransform;
+    public String cachedTransformStr;
+
+    // Text position coord cache: avoids re-splitting x/y/dx/dy attribute strings
+    public String[] cachedXCoords;
+    public String[] cachedYCoords;
+    public String[] cachedDxCoords;
+    public String[] cachedDyCoords;
 
     private final Map<String, String> attributes;
     private Set<String> elementAttrKeys;

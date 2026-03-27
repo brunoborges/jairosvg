@@ -7,6 +7,8 @@ import io.brunoborges.jairosvg.surface.Surface;
 import io.brunoborges.jairosvg.util.Helpers;
 import io.brunoborges.jairosvg.util.ParsedPoint;
 
+import java.awt.geom.GeneralPath;
+
 import static io.brunoborges.jairosvg.util.Helpers.*;
 
 /**
@@ -24,6 +26,15 @@ public final class PathDrawer {
     /** Draw a path node. */
     public static void path(Surface surface, Node node) {
         String d = node.get("d", "");
+
+        // Use cached path if available (helps when the same node is drawn multiple
+        // times via <use> or markers)
+        if (node.cachedPath != null) {
+            surface.path.append(node.cachedPath.getPathIterator(null), false);
+            node.vertices = node.cachedVertices;
+            return;
+        }
+
         node.vertices = new ArrayList<>();
 
         d = PATH_LETTER_PATTERN.matcher(d).replaceAll(" $1 ");
@@ -351,6 +362,10 @@ public final class PathDrawer {
             d = d.strip();
             lastLetter = letter;
         }
+
+        // Cache the result for subsequent renders of this node
+        node.cachedPath = new GeneralPath(surface.path);
+        node.cachedVertices = node.vertices;
     }
 
     /** Draw an elliptical arc approximation using cubic Bézier curves. */
