@@ -446,66 +446,79 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
 
         // Fill and stroke
         if (strokeAndFill && visible && drawn && !path.getPathIterator(null).isDone()) {
-            // Fill
-            String[] paintValue = Helpers.paint(node.get("fill", "black"));
-            if (!Defs.gradientOrPattern(this, node, paintValue[0], fillOpacity)) {
-                Colors.RGBA fillColor = mapColor(paintValue[1], fillOpacity);
-                context.setColor(toAwtColor(fillColor));
+            // Fill — skip entirely when fill is "none" or fully transparent
+            String fillStr = node.get("fill", "black");
+            boolean doFill = !"none".equals(fillStr);
+            if (doFill) {
+                String[] paintValue = Helpers.paint(fillStr);
+                boolean gradientFill = Defs.gradientOrPattern(this, node, paintValue[0], fillOpacity);
+                if (!gradientFill) {
+                    Colors.RGBA fillColor = mapColor(paintValue[1], fillOpacity);
+                    doFill = fillColor.a() > 0;
+                    if (doFill)
+                        context.setColor(toAwtColor(fillColor));
+                }
+                if (doFill || gradientFill) {
+                    // Set fill rule
+                    if ("evenodd".equals(node.get("fill-rule"))) {
+                        path.setWindingRule(GeneralPath.WIND_EVEN_ODD);
+                    } else {
+                        path.setWindingRule(GeneralPath.WIND_NON_ZERO);
+                    }
+                    context.fill(path);
+                }
             }
-
-            // Set fill rule
-            if ("evenodd".equals(node.get("fill-rule"))) {
-                path.setWindingRule(GeneralPath.WIND_EVEN_ODD);
-            } else {
-                path.setWindingRule(GeneralPath.WIND_NON_ZERO);
-            }
-
-            context.fill(path);
 
             // Stroke
             String[] strokePaint = Helpers.paint(node.get("stroke"));
             if (strokePaint[1] != null && !"none".equals(strokePaint[1])) {
                 if (!Defs.gradientOrPattern(this, node, strokePaint[0], strokeOpacity)) {
                     Colors.RGBA strokeColor = mapColor(strokePaint[1], strokeOpacity);
-                    context.setColor(toAwtColor(strokeColor));
-                }
-
-                float strokeWidth = (float) size(this, node.get("stroke-width", "1"));
-                int cap = getLineCap(node.get("stroke-linecap"));
-                int join = getLineJoin(node.get("stroke-linejoin"));
-                float miterLimit = (float) parseDoubleOr(node.get("stroke-miterlimit"), 4);
-
-                // Dash array
-                String dashStr = node.get("stroke-dasharray", "").strip();
-                float[] dashArray = null;
-                if (!dashStr.isEmpty() && !"none".equals(dashStr)) {
-                    float[] cached = dashArrayCache.computeIfAbsent(dashStr, k -> {
-                        String[] parts = WHITESPACE.split(normalize(k));
-                        float[] arr = new float[parts.length];
-                        float sum = 0;
-                        for (int i = 0; i < parts.length; i++) {
-                            arr[i] = (float) size(Surface.this, parts[i]);
-                            sum += arr[i];
-                        }
-                        return sum == 0 ? NO_DASH : arr;
-                    });
-                    if (cached != NO_DASH) {
-                        dashArray = cached;
+                    if (strokeColor.a() > 0) {
+                        context.setColor(toAwtColor(strokeColor));
+                    } else {
+                        strokePaint[1] = null; // suppress stroke
                     }
                 }
 
-                float dashOffset = (float) size(this, node.get("stroke-dashoffset"));
+                if (strokePaint[1] != null) {
+                    float strokeWidth = (float) size(this, node.get("stroke-width", "1"));
+                    int cap = getLineCap(node.get("stroke-linecap"));
+                    int join = getLineJoin(node.get("stroke-linejoin"));
+                    float miterLimit = (float) parseDoubleOr(node.get("stroke-miterlimit"), 4);
 
-                String strokeKey = strokeWidth + "|" + cap + "|" + join + "|" + miterLimit + "|" + dashStr + "|"
-                        + dashOffset;
-                final float[] dashForStroke = dashArray;
-                BasicStroke stroke = strokeCache.computeIfAbsent(strokeKey,
-                        k -> dashForStroke != null
-                                ? new BasicStroke(strokeWidth, cap, join, miterLimit, dashForStroke, dashOffset)
-                                : new BasicStroke(strokeWidth, cap, join, miterLimit));
+                    // Dash array
+                    String dashStr = node.get("stroke-dasharray", "").strip();
+                    float[] dashArray = null;
+                    if (!dashStr.isEmpty() && !"none".equals(dashStr)) {
+                        float[] cached = dashArrayCache.computeIfAbsent(dashStr, k -> {
+                            String[] parts = WHITESPACE.split(normalize(k));
+                            float[] arr = new float[parts.length];
+                            float sum = 0;
+                            for (int i = 0; i < parts.length; i++) {
+                                arr[i] = (float) size(Surface.this, parts[i]);
+                                sum += arr[i];
+                            }
+                            return sum == 0 ? NO_DASH : arr;
+                        });
+                        if (cached != NO_DASH) {
+                            dashArray = cached;
+                        }
+                    }
 
-                context.setStroke(stroke);
-                context.draw(path);
+                    float dashOffset = (float) size(this, node.get("stroke-dashoffset"));
+
+                    String strokeKey = strokeWidth + "|" + cap + "|" + join + "|" + miterLimit + "|" + dashStr + "|"
+                            + dashOffset;
+                    final float[] dashForStroke = dashArray;
+                    BasicStroke stroke = strokeCache.computeIfAbsent(strokeKey,
+                            k -> dashForStroke != null
+                                    ? new BasicStroke(strokeWidth, cap, join, miterLimit, dashForStroke, dashOffset)
+                                    : new BasicStroke(strokeWidth, cap, join, miterLimit));
+
+                    context.setStroke(stroke);
+                    context.draw(path);
+                }
             }
 
             Defs.drawMarkers(this, node);

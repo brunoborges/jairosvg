@@ -48,9 +48,9 @@ public final class Defs {
     private static final int ALPHA_MAX = 255;
     private static final int MIN_IMAGE_BYTES = 5;
     // SVG mask luminance coefficients (BT.709, scaled to ×256 for integer math)
-    private static final int LUMINANCE_RED_COEFF_256 = 54;   // 0.2126 × 256
+    private static final int LUMINANCE_RED_COEFF_256 = 54; // 0.2126 × 256
     private static final int LUMINANCE_GREEN_COEFF_256 = 183; // 0.7152 × 256
-    private static final int LUMINANCE_BLUE_COEFF_256 = 19;   // 0.0722 × 256
+    private static final int LUMINANCE_BLUE_COEFF_256 = 19; // 0.0722 × 256
 
     private Defs() {
     }
@@ -840,13 +840,15 @@ public final class Defs {
         maskG2d.dispose();
 
         // Single combined pass: apply BT.709 luminance of mask pixel to source alpha.
-        // Operates on the sub-region buffers — typically far smaller than the full image.
+        // Operates on the sub-region buffers — typically far smaller than the full
+        // image.
         int[] sourcePixels = ((DataBufferInt) sourceImage.getRaster().getDataBuffer()).getData();
         int[] maskPixels = ((DataBufferInt) maskImage.getRaster().getDataBuffer()).getData();
         for (int i = 0; i < sourcePixels.length; i++) {
             int src = sourcePixels[i];
             int srcA = src >>> 24;
-            if (srcA == 0) continue;
+            if (srcA == 0)
+                continue;
             int m = maskPixels[i];
             int ma = m >>> 24;
             if (ma == 0) {
@@ -863,7 +865,8 @@ public final class Defs {
                 continue;
             }
             int luminance = (luminance256 + 128) >> 8;
-            if (luminance == 255 && ma == 255) continue; // fast path: fully opaque white mask
+            if (luminance == 255 && ma == 255)
+                continue; // fast path: fully opaque white mask
             int maskAlpha = ma * luminance;
             maskAlpha = (maskAlpha + 1 + (maskAlpha >> 8)) >> 8;
             int combined = srcA * maskAlpha;

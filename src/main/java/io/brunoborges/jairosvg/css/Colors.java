@@ -66,6 +66,25 @@ public final class Colors {
 
         string = string.strip().toLowerCase();
 
+        // Fast-path: hex color — most common in SVG, no regex needed
+        if (string.charAt(0) == '#') {
+            int len = string.length();
+            if (len == 7) {
+                double r = Integer.parseInt(string, 1, 3, 16) / 255.0;
+                double g = Integer.parseInt(string, 3, 5, 16) / 255.0;
+                double b = Integer.parseInt(string, 5, 7, 16) / 255.0;
+                return new RGBA(r, g, b, opacity);
+            }
+            if (len == 4) {
+                double r = Character.digit(string.charAt(1), 16) / 15.0;
+                double g = Character.digit(string.charAt(2), 16) / 15.0;
+                double b = Character.digit(string.charAt(3), 16) / 15.0;
+                return new RGBA(r, g, b, opacity);
+            }
+            return RGBA.BLACK;
+        }
+
+        // Named color lookup
         RGBA named = NAMED_COLORS.get(string);
         if (named != null) {
             return (opacity >= 1.0 && named.a() >= 1.0)
@@ -73,62 +92,50 @@ public final class Colors {
                     : new RGBA(named.r(), named.g(), named.b(), named.a() * opacity);
         }
 
-        Matcher m = RGBA_PATTERN.matcher(string);
-        if (m.find()) {
-            String[] parts = m.group(1).strip().split(",");
-            if (parts.length == 4) {
-                double r = parseColorComponent(parts[0]);
-                double g = parseColorComponent(parts[1]);
-                double b = parseColorComponent(parts[2]);
-                double a = Double.parseDouble(parts[3].strip());
-                return new RGBA(r, g, b, a * opacity);
+        // Functional notation — dispatch by prefix to avoid creating Matchers for wrong
+        // types
+        if (string.startsWith("rgba(")) {
+            Matcher m = RGBA_PATTERN.matcher(string);
+            if (m.find()) {
+                String[] parts = m.group(1).strip().split(",");
+                if (parts.length == 4) {
+                    double r = parseColorComponent(parts[0]);
+                    double g = parseColorComponent(parts[1]);
+                    double b = parseColorComponent(parts[2]);
+                    double a = Double.parseDouble(parts[3].strip());
+                    return new RGBA(r, g, b, a * opacity);
+                }
             }
-        }
-
-        m = RGB_PATTERN.matcher(string);
-        if (m.find()) {
-            String[] parts = m.group(1).strip().split(",");
-            if (parts.length == 3) {
-                double r = parseColorComponent(parts[0]);
-                double g = parseColorComponent(parts[1]);
-                double b = parseColorComponent(parts[2]);
-                return new RGBA(r, g, b, opacity);
+        } else if (string.startsWith("rgb(")) {
+            Matcher m = RGB_PATTERN.matcher(string);
+            if (m.find()) {
+                String[] parts = m.group(1).strip().split(",");
+                if (parts.length == 3) {
+                    double r = parseColorComponent(parts[0]);
+                    double g = parseColorComponent(parts[1]);
+                    double b = parseColorComponent(parts[2]);
+                    return new RGBA(r, g, b, opacity);
+                }
             }
-        }
-
-        m = HSLA_PATTERN.matcher(string);
-        if (m.find()) {
-            String[] parts = m.group(1).strip().split(",");
-            if (parts.length == 4) {
-                double[] rgb = hslToRgb(parts[0], parts[1], parts[2]);
-                double a = Double.parseDouble(parts[3].strip());
-                return new RGBA(rgb[0], rgb[1], rgb[2], a * opacity);
+        } else if (string.startsWith("hsla(")) {
+            Matcher m = HSLA_PATTERN.matcher(string);
+            if (m.find()) {
+                String[] parts = m.group(1).strip().split(",");
+                if (parts.length == 4) {
+                    double[] rgb = hslToRgb(parts[0], parts[1], parts[2]);
+                    double a = Double.parseDouble(parts[3].strip());
+                    return new RGBA(rgb[0], rgb[1], rgb[2], a * opacity);
+                }
             }
-        }
-
-        m = HSL_PATTERN.matcher(string);
-        if (m.find()) {
-            String[] parts = m.group(1).strip().split(",");
-            if (parts.length == 3) {
-                double[] rgb = hslToRgb(parts[0], parts[1], parts[2]);
-                return new RGBA(rgb[0], rgb[1], rgb[2], opacity);
+        } else if (string.startsWith("hsl(")) {
+            Matcher m = HSL_PATTERN.matcher(string);
+            if (m.find()) {
+                String[] parts = m.group(1).strip().split(",");
+                if (parts.length == 3) {
+                    double[] rgb = hslToRgb(parts[0], parts[1], parts[2]);
+                    return new RGBA(rgb[0], rgb[1], rgb[2], opacity);
+                }
             }
-        }
-
-        m = HEX_RRGGBB.matcher(string);
-        if (m.find()) {
-            double r = Integer.parseInt(string, 1, 3, 16) / 255.0;
-            double g = Integer.parseInt(string, 3, 5, 16) / 255.0;
-            double b = Integer.parseInt(string, 5, 7, 16) / 255.0;
-            return new RGBA(r, g, b, opacity);
-        }
-
-        m = HEX_RGB.matcher(string);
-        if (m.find()) {
-            double r = Character.digit(string.charAt(1), 16) / 15.0;
-            double g = Character.digit(string.charAt(2), 16) / 15.0;
-            double b = Character.digit(string.charAt(3), 16) / 15.0;
-            return new RGBA(r, g, b, opacity);
         }
 
         return RGBA.BLACK;

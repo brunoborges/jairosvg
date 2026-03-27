@@ -54,11 +54,13 @@ public final class Helpers {
             return EMPTY_PAINT;
         }
         value = value.strip();
-        Matcher m = PAINT_URL.matcher(value);
-        if (m.find()) {
-            String source = UrlHelper.parseUrl(m.group(1)).fragment();
-            String color = m.group(2).isEmpty() ? null : m.group(2);
-            return new String[]{source, color};
+        if (value.startsWith("url")) {
+            Matcher m = PAINT_URL.matcher(value);
+            if (m.find()) {
+                String source = UrlHelper.parseUrl(m.group(1)).fragment();
+                String color = m.group(2).isEmpty() ? null : m.group(2);
+                return new String[]{source, color};
+            }
         }
         return new String[]{null, value.isEmpty() ? null : value};
     }

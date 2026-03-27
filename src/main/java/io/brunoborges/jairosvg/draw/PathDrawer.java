@@ -4,8 +4,6 @@ import java.util.ArrayList;
 
 import io.brunoborges.jairosvg.dom.Node;
 import io.brunoborges.jairosvg.surface.Surface;
-import io.brunoborges.jairosvg.util.Helpers;
-import io.brunoborges.jairosvg.util.ParsedPoint;
 
 import java.awt.geom.GeneralPath;
 
@@ -15,10 +13,6 @@ import static io.brunoborges.jairosvg.util.Helpers.*;
  * SVG path command parser and drawer. Port of CairoSVG path.py
  */
 public final class PathDrawer {
-
-    private static final java.util.regex.Pattern WHITESPACE = java.util.regex.Pattern.compile("\\s+");
-    private static final java.util.regex.Pattern PATH_LETTER_PATTERN = java.util.regex.Pattern
-            .compile("([achlmqstvzACHLMQSTVZ])");
 
     private PathDrawer() {
     }
@@ -37,173 +31,135 @@ public final class PathDrawer {
 
         node.vertices = new ArrayList<>();
 
-        d = PATH_LETTER_PATTERN.matcher(d).replaceAll(" $1 ");
+        var sc = new PathScanner(d);
 
-        String lastLetter = null;
-        d = normalize(d);
-
-        double cx = 0, cy = 0; // current point
+        char letter = 0, lastLetter = 0;
+        double cx = 0, cy = 0;
         double x1 = 0, y1 = 0, x2 = 0, y2 = 0, x3 = 0, y3 = 0;
         double[] firstPathPoint = null;
-        String letter = null;
 
-        while (!d.isBlank()) {
-            d = d.strip();
-            int spaceIdx = d.indexOf(' ');
-            String first = spaceIdx > 0 ? d.substring(0, spaceIdx) : d;
-
-            if (first.length() == 1 && PATH_LETTERS.indexOf(first.charAt(0)) >= 0) {
-                letter = first;
-                d = d.length() > 1 ? d.substring(2).strip() : "";
-                if ((lastLetter == null || lastLetter.charAt(0) == 'z' || lastLetter.charAt(0) == 'Z')
-                        && (letter == null || (letter.charAt(0) != 'm' && letter.charAt(0) != 'M'))) {
+        while (sc.hasMore()) {
+            char cmd = sc.peekCmd();
+            if (cmd != 0) {
+                letter = cmd;
+                if ((lastLetter == 0 || lastLetter == 'z' || lastLetter == 'Z') && letter != 'm' && letter != 'M') {
                     node.vertices.add(new double[]{cx, cy});
                     firstPathPoint = new double[]{cx, cy};
                 }
-            } else if (letter != null && letter.charAt(0) == 'M') {
-                letter = "L";
-            } else if (letter != null && letter.charAt(0) == 'm') {
-                letter = "l";
+            } else if (letter == 'M') {
+                letter = 'L';
+            } else if (letter == 'm') {
+                letter = 'l';
             }
 
-            if (lastLetter == null || lastLetter.charAt(0) == 'm' || lastLetter.charAt(0) == 'M'
-                    || lastLetter.charAt(0) == 'z' || lastLetter.charAt(0) == 'Z') {
+            if (lastLetter == 0 || lastLetter == 'm' || lastLetter == 'M' || lastLetter == 'z' || lastLetter == 'Z') {
                 firstPathPoint = null;
             }
-            if (letter != null && letter.charAt(0) != 'm' && letter.charAt(0) != 'M' && letter.charAt(0) != 'z'
-                    && letter.charAt(0) != 'Z' && firstPathPoint == null) {
+            if (letter != 'm' && letter != 'M' && letter != 'z' && letter != 'Z' && firstPathPoint == null) {
                 firstPathPoint = new double[]{cx, cy};
             }
 
             try {
                 switch (letter) {
-                    case "M" -> {
-                        ParsedPoint pt = pointWithRemainder(surface, d);
-                        double x = pt.x(), y = pt.y();
-                        d = pt.remainder();
-                        if (lastLetter != null && lastLetter.charAt(0) != 'z' && lastLetter.charAt(0) != 'Z') {
+                    case 'M' -> {
+                        double x = sc.nextDouble(), y = sc.nextDouble();
+                        if (lastLetter != 0 && lastLetter != 'z' && lastLetter != 'Z') {
                             node.vertices.add(null);
                         }
                         surface.path.moveTo(x, y);
                         cx = x;
                         cy = y;
                     }
-                    case "m" -> {
-                        ParsedPoint pt = pointWithRemainder(surface, d);
-                        double dx = pt.x(), dy = pt.y();
-                        d = pt.remainder();
-                        if (lastLetter != null && lastLetter.charAt(0) != 'z' && lastLetter.charAt(0) != 'Z') {
+                    case 'm' -> {
+                        double dx = sc.nextDouble(), dy = sc.nextDouble();
+                        if (lastLetter != 0 && lastLetter != 'z' && lastLetter != 'Z') {
                             node.vertices.add(null);
                         }
                         cx += dx;
                         cy += dy;
                         surface.path.moveTo(cx, cy);
                     }
-                    case "L" -> {
-                        ParsedPoint pt = pointWithRemainder(surface, d);
-                        double x = pt.x(), y = pt.y();
-                        d = pt.remainder();
+                    case 'L' -> {
+                        double x = sc.nextDouble(), y = sc.nextDouble();
                         double angle = pointAngle(cx, cy, x, y);
                         node.vertices.add(new double[]{Math.PI - angle, angle});
                         surface.path.lineTo(x, y);
                         cx = x;
                         cy = y;
                     }
-                    case "l" -> {
-                        ParsedPoint pt = pointWithRemainder(surface, d);
-                        double dx = pt.x(), dy = pt.y();
-                        d = pt.remainder();
+                    case 'l' -> {
+                        double dx = sc.nextDouble(), dy = sc.nextDouble();
                         double angle = pointAngle(0, 0, dx, dy);
                         node.vertices.add(new double[]{Math.PI - angle, angle});
                         cx += dx;
                         cy += dy;
                         surface.path.lineTo(cx, cy);
                     }
-                    case "H" -> {
-                        String[] sp = WHITESPACE.split(d + " ", 2);
-                        double x = size(surface, sp[0], "x");
-                        d = sp[1];
+                    case 'H' -> {
+                        double x = sc.nextDouble();
                         double angle = x > cx ? 0 : Math.PI;
                         node.vertices.add(new double[]{Math.PI - angle, angle});
                         surface.path.lineTo(x, cy);
                         cx = x;
                     }
-                    case "h" -> {
-                        String[] sp = WHITESPACE.split(d + " ", 2);
-                        double dx = size(surface, sp[0], "x");
-                        d = sp[1];
+                    case 'h' -> {
+                        double dx = sc.nextDouble();
                         double angle = dx > 0 ? 0 : Math.PI;
                         node.vertices.add(new double[]{Math.PI - angle, angle});
                         cx += dx;
                         surface.path.lineTo(cx, cy);
                     }
-                    case "V" -> {
-                        String[] sp = WHITESPACE.split(d + " ", 2);
-                        double y = size(surface, sp[0], "y");
-                        d = sp[1];
+                    case 'V' -> {
+                        double y = sc.nextDouble();
                         double angle = Math.copySign(Math.PI / 2, y - cy);
                         node.vertices.add(new double[]{-angle, angle});
                         surface.path.lineTo(cx, y);
                         cy = y;
                     }
-                    case "v" -> {
-                        String[] sp = WHITESPACE.split(d + " ", 2);
-                        double dy = size(surface, sp[0], "y");
-                        d = sp[1];
+                    case 'v' -> {
+                        double dy = sc.nextDouble();
                         double angle = Math.copySign(Math.PI / 2, dy);
                         node.vertices.add(new double[]{-angle, angle});
                         cy += dy;
                         surface.path.lineTo(cx, cy);
                     }
-                    case "C" -> {
-                        ParsedPoint p1 = pointWithRemainder(surface, d);
-                        ParsedPoint p2 = pointWithRemainder(surface, p1.remainder());
-                        ParsedPoint p3 = pointWithRemainder(surface, p2.remainder());
-                        x1 = p1.x();
-                        y1 = p1.y();
-                        x2 = p2.x();
-                        y2 = p2.y();
-                        x3 = p3.x();
-                        y3 = p3.y();
-                        d = p3.remainder();
+                    case 'C' -> {
+                        x1 = sc.nextDouble();
+                        y1 = sc.nextDouble();
+                        x2 = sc.nextDouble();
+                        y2 = sc.nextDouble();
+                        x3 = sc.nextDouble();
+                        y3 = sc.nextDouble();
                         node.vertices.add(new double[]{pointAngle(x2, y2, x1, y1), pointAngle(x2, y2, x3, y3)});
                         surface.path.curveTo(x1, y1, x2, y2, x3, y3);
                         cx = x3;
                         cy = y3;
                     }
-                    case "c" -> {
-                        double ox = cx, oy = cy;
-                        ParsedPoint p1 = pointWithRemainder(surface, d);
-                        ParsedPoint p2 = pointWithRemainder(surface, p1.remainder());
-                        ParsedPoint p3 = pointWithRemainder(surface, p2.remainder());
-                        double dx1 = p1.x(), dy1 = p1.y();
-                        double dx2 = p2.x(), dy2 = p2.y();
-                        double dx3 = p3.x(), dy3 = p3.y();
-                        d = p3.remainder();
-                        x1 = ox + dx1;
-                        y1 = oy + dy1;
-                        x2 = ox + dx2;
-                        y2 = oy + dy2;
-                        x3 = ox + dx3;
-                        y3 = oy + dy3;
+                    case 'c' -> {
+                        double dx1 = sc.nextDouble(), dy1 = sc.nextDouble();
+                        double dx2 = sc.nextDouble(), dy2 = sc.nextDouble();
+                        double dx3 = sc.nextDouble(), dy3 = sc.nextDouble();
+                        x1 = cx + dx1;
+                        y1 = cy + dy1;
+                        x2 = cx + dx2;
+                        y2 = cy + dy2;
+                        x3 = cx + dx3;
+                        y3 = cy + dy3;
                         node.vertices.add(new double[]{pointAngle(x2, y2, x1, y1), pointAngle(x2, y2, x3, y3)});
                         surface.path.curveTo(x1, y1, x2, y2, x3, y3);
                         cx = x3;
                         cy = y3;
                     }
-                    case "S" -> {
+                    case 'S' -> {
                         double sx1 = cx, sy1 = cy;
-                        if (lastLetter != null && "csCS".indexOf(lastLetter.charAt(0)) >= 0) {
+                        if ("csCS".indexOf(lastLetter) >= 0) {
                             sx1 = x3 + (x3 - x2);
                             sy1 = y3 + (y3 - y2);
                         }
-                        ParsedPoint p2 = pointWithRemainder(surface, d);
-                        ParsedPoint p3 = pointWithRemainder(surface, p2.remainder());
-                        x2 = p2.x();
-                        y2 = p2.y();
-                        x3 = p3.x();
-                        y3 = p3.y();
-                        d = p3.remainder();
+                        x2 = sc.nextDouble();
+                        y2 = sc.nextDouble();
+                        x3 = sc.nextDouble();
+                        y3 = sc.nextDouble();
                         x1 = sx1;
                         y1 = sy1;
                         node.vertices.add(new double[]{pointAngle(x2, y2, x1, y1), pointAngle(x2, y2, x3, y3)});
@@ -211,49 +167,39 @@ public final class PathDrawer {
                         cx = x3;
                         cy = y3;
                     }
-                    case "s" -> {
-                        double ox = cx, oy = cy;
+                    case 's' -> {
                         double sx1 = 0, sy1 = 0;
-                        if (lastLetter != null && "csCS".indexOf(lastLetter.charAt(0)) >= 0) {
+                        if ("csCS".indexOf(lastLetter) >= 0) {
                             sx1 = x3 - x2;
                             sy1 = y3 - y2;
                         }
-                        ParsedPoint p2 = pointWithRemainder(surface, d);
-                        ParsedPoint p3 = pointWithRemainder(surface, p2.remainder());
-                        double dx2 = p2.x(), dy2 = p2.y();
-                        double dx3 = p3.x(), dy3 = p3.y();
-                        d = p3.remainder();
-                        x1 = ox + sx1;
-                        y1 = oy + sy1;
-                        x2 = ox + dx2;
-                        y2 = oy + dy2;
-                        x3 = ox + dx3;
-                        y3 = oy + dy3;
+                        double dx2 = sc.nextDouble(), dy2 = sc.nextDouble();
+                        double dx3 = sc.nextDouble(), dy3 = sc.nextDouble();
+                        x1 = cx + sx1;
+                        y1 = cy + sy1;
+                        x2 = cx + dx2;
+                        y2 = cy + dy2;
+                        x3 = cx + dx3;
+                        y3 = cy + dy3;
                         node.vertices.add(new double[]{pointAngle(x2, y2, x1, y1), pointAngle(x2, y2, x3, y3)});
                         surface.path.curveTo(x1, y1, x2, y2, x3, y3);
                         cx = x3;
                         cy = y3;
                     }
-                    case "Q" -> {
-                        ParsedPoint p2 = pointWithRemainder(surface, d);
-                        ParsedPoint p3 = pointWithRemainder(surface, p2.remainder());
-                        x2 = p2.x();
-                        y2 = p2.y();
-                        x3 = p3.x();
-                        y3 = p3.y();
-                        d = p3.remainder();
+                    case 'Q' -> {
+                        x2 = sc.nextDouble();
+                        y2 = sc.nextDouble();
+                        x3 = sc.nextDouble();
+                        y3 = sc.nextDouble();
                         double[] qp = quadraticPoints(cx, cy, x2, y2, x3, y3);
                         surface.path.curveTo(qp[0], qp[1], qp[2], qp[3], qp[4], qp[5]);
                         node.vertices.add(new double[]{0, 0});
                         cx = x3;
                         cy = y3;
                     }
-                    case "q" -> {
-                        ParsedPoint p2 = pointWithRemainder(surface, d);
-                        ParsedPoint p3 = pointWithRemainder(surface, p2.remainder());
-                        double dx2 = p2.x(), dy2 = p2.y();
-                        double dx3 = p3.x(), dy3 = p3.y();
-                        d = p3.remainder();
+                    case 'q' -> {
+                        double dx2 = sc.nextDouble(), dy2 = sc.nextDouble();
+                        double dx3 = sc.nextDouble(), dy3 = sc.nextDouble();
                         x2 = cx + dx2;
                         y2 = cy + dy2;
                         x3 = cx + dx3;
@@ -264,35 +210,31 @@ public final class PathDrawer {
                         cx = x3;
                         cy = y3;
                     }
-                    case "T" -> {
-                        if (lastLetter != null && "qtQT".indexOf(lastLetter.charAt(0)) >= 0) {
+                    case 'T' -> {
+                        if ("qtQT".indexOf(lastLetter) >= 0) {
                             x2 = 2 * cx - x2;
                             y2 = 2 * cy - y2;
                         } else {
                             x2 = cx;
                             y2 = cy;
                         }
-                        ParsedPoint p3 = pointWithRemainder(surface, d);
-                        x3 = p3.x();
-                        y3 = p3.y();
-                        d = p3.remainder();
+                        x3 = sc.nextDouble();
+                        y3 = sc.nextDouble();
                         double[] qp = quadraticPoints(cx, cy, x2, y2, x3, y3);
                         surface.path.curveTo(qp[0], qp[1], qp[2], qp[3], qp[4], qp[5]);
                         node.vertices.add(new double[]{0, 0});
                         cx = x3;
                         cy = y3;
                     }
-                    case "t" -> {
-                        if (lastLetter != null && "qtQT".indexOf(lastLetter.charAt(0)) >= 0) {
+                    case 't' -> {
+                        if ("qtQT".indexOf(lastLetter) >= 0) {
                             x2 = 2 * cx - x2;
                             y2 = 2 * cy - y2;
                         } else {
                             x2 = cx;
                             y2 = cy;
                         }
-                        ParsedPoint p3 = pointWithRemainder(surface, d);
-                        double dx3 = p3.x(), dy3 = p3.y();
-                        d = p3.remainder();
+                        double dx3 = sc.nextDouble(), dy3 = sc.nextDouble();
                         x3 = cx + dx3;
                         y3 = cy + dy3;
                         double[] qp = quadraticPoints(cx, cy, x2, y2, x3, y3);
@@ -301,41 +243,24 @@ public final class PathDrawer {
                         cx = x3;
                         cy = y3;
                     }
-                    case "A", "a" -> {
-                        ParsedPoint rxy = pointWithRemainder(surface, d);
-                        double rx = rxy.x(), ry = rxy.y();
-                        d = rxy.remainder().strip();
-
-                        String[] sp = WHITESPACE.split(d + " ", 2);
-                        double rotation = Math.toRadians(Double.parseDouble(sp[0]));
-                        d = sp[1].strip();
-
-                        char large = d.charAt(0);
-                        d = d.substring(1).strip();
-                        char sweep = d.charAt(0);
-                        d = d.substring(1).strip();
-
-                        int largeArc = large - '0';
-                        int sweepFlag = sweep - '0';
+                    case 'A', 'a' -> {
+                        double rx = sc.nextDouble(), ry = sc.nextDouble();
+                        double rotation = Math.toRadians(sc.nextDouble());
+                        int largeArc = sc.nextFlag();
+                        int sweepFlag = sc.nextFlag();
                         if ((largeArc != 0 && largeArc != 1) || (sweepFlag != 0 && sweepFlag != 1)) {
                             continue;
                         }
-
-                        ParsedPoint ep = pointWithRemainder(surface, d);
-                        double ex = ep.x(), ey = ep.y();
-                        d = ep.remainder();
-
-                        if (letter.charAt(0) == 'a') {
+                        double ex = sc.nextDouble(), ey = sc.nextDouble();
+                        if (letter == 'a') {
                             ex += cx;
                             ey += cy;
                         }
-
-                        // Draw arc using approximation
                         drawArc(surface, cx, cy, rx, ry, rotation, largeArc != 0, sweepFlag != 0, ex, ey);
                         cx = ex;
                         cy = ey;
                     }
-                    case "Z", "z" -> {
+                    case 'Z', 'z' -> {
                         node.vertices.add(null);
                         surface.path.closePath();
                         if (firstPathPoint != null) {
@@ -344,28 +269,116 @@ public final class PathDrawer {
                         }
                     }
                 }
-            } catch (Helpers.PointError e) {
-                break;
             } catch (Exception e) {
-                // Skip malformed data
-                if (!d.isEmpty()) {
-                    String[] sp = WHITESPACE.split(d, 2);
-                    d = sp.length > 1 ? sp[1] : "";
-                }
+                sc.skipToken();
                 continue;
             }
 
-            if (letter != null && letter.charAt(0) != 'Z' && letter.charAt(0) != 'z') {
+            if (letter != 'Z' && letter != 'z') {
                 node.vertices.add(new double[]{cx, cy});
             }
-
-            d = d.strip();
             lastLetter = letter;
         }
 
         // Cache the result for subsequent renders of this node
         node.cachedPath = new GeneralPath(surface.path);
         node.cachedVertices = node.vertices;
+    }
+
+    /**
+     * Zero-allocation, single-pass tokenizer for SVG path data. Handles implicit
+     * sign separators (50-30 → 50, -30), consecutive decimals (0.5.3 → 0.5, 0.3),
+     * comma/whitespace separators, and scientific notation. Replaces 4 regex passes
+     * + N split() calls.
+     */
+    private static final class PathScanner {
+        private final String d;
+        private final int len;
+        private int pos;
+
+        PathScanner(String d) {
+            this.d = d;
+            this.len = d.length();
+        }
+
+        boolean hasMore() {
+            int p = pos;
+            while (p < len && isWsOrComma(d.charAt(p)))
+                p++;
+            return p < len;
+        }
+
+        /**
+         * If the next non-ws char is a path command letter, consume and return it; else
+         * return 0.
+         */
+        char peekCmd() {
+            skipWs();
+            if (pos < len) {
+                char c = d.charAt(pos);
+                if (PATH_LETTERS.indexOf(c) >= 0) {
+                    pos++;
+                    return c;
+                }
+            }
+            return 0;
+        }
+
+        /** Parse the next floating-point number (handles implicit separators). */
+        double nextDouble() {
+            skipWs();
+            int start = pos;
+            if (pos < len && (d.charAt(pos) == '+' || d.charAt(pos) == '-'))
+                pos++;
+            boolean hasDot = false;
+            while (pos < len) {
+                char c = d.charAt(pos);
+                if (c >= '0' && c <= '9') {
+                    pos++;
+                } else if (c == '.' && !hasDot) {
+                    hasDot = true;
+                    pos++;
+                } else if ((c == 'e' || c == 'E') && pos > start) {
+                    pos++;
+                    if (pos < len && (d.charAt(pos) == '+' || d.charAt(pos) == '-'))
+                        pos++;
+                } else {
+                    break;
+                }
+            }
+            return Double.parseDouble(d.substring(start, pos));
+        }
+
+        /** Parse a single arc flag (0 or 1), skipping leading whitespace. */
+        int nextFlag() {
+            skipWs();
+            int f = d.charAt(pos++) - '0';
+            skipOptionalComma();
+            return f;
+        }
+
+        /** Skip one token (for error recovery). */
+        void skipToken() {
+            skipWs();
+            while (pos < len && !isWsOrComma(d.charAt(pos)))
+                pos++;
+        }
+
+        private void skipWs() {
+            while (pos < len && isWsOrComma(d.charAt(pos)))
+                pos++;
+        }
+
+        private void skipOptionalComma() {
+            while (pos < len && d.charAt(pos) == ' ')
+                pos++;
+            if (pos < len && d.charAt(pos) == ',')
+                pos++;
+        }
+
+        private static boolean isWsOrComma(char c) {
+            return c == ' ' || c == ',' || c == '\t' || c == '\n' || c == '\r';
+        }
     }
 
     /** Draw an elliptical arc approximation using cubic Bézier curves. */
