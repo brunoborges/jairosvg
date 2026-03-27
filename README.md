@@ -17,7 +17,7 @@ A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to 
 - ✍️ **Text rendering** with font control, letter-spacing, text-anchor
 - 🔄 **Transforms**: translate, rotate, scale, skew, matrix
 - 🎭 **Advanced features**: clip-path, viewBox, preserveAspectRatio, `<use>`, CSS stylesheets
-- ⚡ **Fast**: 2-31x faster than EchoSVG (Batik fork), on par with JSVG, 1.1-2.5x faster than CairoSVG's native C backend
+- ⚡ **Fast**: 2-26x faster than EchoSVG (Batik fork), on par with JSVG, 1-2.4x faster than CairoSVG's native C backend
 - 🛡️ **Secure**: XML external entity (XXE) protection by default
 - 🧰 **Flexible API**: Static methods, fluent builder, CLI
 
@@ -34,13 +34,13 @@ A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to 
 
 | Test Case                | JairoSVG (Java) | EchoSVG (Java) | JSVG (Java) | CairoSVG (Python) |
 | ------------------------ | :-------------: | :------------: | :---------: | :---------------: |
-| Simple shapes            |     3.4 ms      |    16.2 ms     | **3.3 ms**  |      4.2 ms       |
-| Gradients                |   **4.3 ms**    |   133.0 ms     |   4.5 ms    |     11.0 ms       |
-| Complex paths + text     |     4.7 ms      |    23.4 ms     | **4.6 ms**  |      5.5 ms       |
-| Defs + use + clipPath    |     4.0 ms      |    19.8 ms     | **3.9 ms**  |      5.0 ms       |
-| Markers + strokes        |     3.8 ms      |    12.4 ms     | **3.7 ms**  |      4.1 ms       |
+| Simple shapes            |     4.7 ms      |    20.2 ms     | **4.7 ms**  |      6.0 ms       |
+| Gradients                |   **5.8 ms**    |   151.2 ms     |   5.9 ms    |     12.2 ms       |
+| Complex paths + text     |     5.9 ms      |    27.4 ms     | **5.9 ms**  |      6.5 ms       |
+| Defs + use + clipPath    |     5.3 ms      |    17.2 ms     | **5.0 ms**  |      7.0 ms       |
+| Markers + strokes        |     5.3 ms      |    16.2 ms     | **5.2 ms**  |      7.8 ms       |
 
-_JairoSVG is 2–31× faster than EchoSVG, on par with JSVG, and 1–2.5× faster than CairoSVG's native C backend._
+_JairoSVG is 2–26× faster than EchoSVG, on par with JSVG, and 1–2.4× faster than CairoSVG's native C backend._
 
 Run the benchmark yourself: `jbang comparison/benchmark.java`.
 
