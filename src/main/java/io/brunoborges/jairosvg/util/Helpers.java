@@ -269,6 +269,10 @@ public final class Helpers {
     }
 
     /** Parse an SVG transform string into an AffineTransform. */
+    // Reusable AffineTransform for matrix() transform function — avoids per-call
+    // allocation
+    private static final ThreadLocal<AffineTransform> TEMP_AT = ThreadLocal.withInitial(AffineTransform::new);
+
     public static AffineTransform parseTransform(Surface surface, String transformString) {
         if (transformString == null || transformString.isEmpty())
             return new AffineTransform();
@@ -289,8 +293,8 @@ public final class Helpers {
             switch (type) {
                 case "matrix" -> {
                     if (values.length >= 6) {
-                        AffineTransform m = new AffineTransform(values[0], values[1], values[2], values[3], values[4],
-                                values[5]);
+                        AffineTransform m = TEMP_AT.get();
+                        m.setTransform(values[0], values[1], values[2], values[3], values[4], values[5]);
                         matrix.concatenate(m);
                     }
                 }
@@ -302,14 +306,8 @@ public final class Helpers {
                     matrix.rotate(angle);
                     matrix.translate(-cx, -cy);
                 }
-                case "skewX" -> {
-                    double tangent = Math.tan(Math.toRadians(values[0]));
-                    matrix.concatenate(new AffineTransform(1, 0, tangent, 1, 0, 0));
-                }
-                case "skewY" -> {
-                    double tangent = Math.tan(Math.toRadians(values[0]));
-                    matrix.concatenate(new AffineTransform(1, tangent, 0, 1, 0, 0));
-                }
+                case "skewX" -> matrix.shear(Math.tan(Math.toRadians(values[0])), 0);
+                case "skewY" -> matrix.shear(0, Math.tan(Math.toRadians(values[0])));
                 case "translate" -> {
                     double tx = values[0];
                     double ty = values.length > 1 ? values[1] : 0;

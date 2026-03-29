@@ -79,6 +79,9 @@ public final class Defs {
         if (id == null)
             return;
 
+        // Build global ID index for O(1) <use> and cross-reference lookups
+        surface.nodeById.put(id, node);
+
         if (tag.contains("marker"))
             surface.markers.put(id, node);
         if (tag.contains("gradient"))
@@ -435,8 +438,8 @@ public final class Defs {
         if (fragment == null)
             return;
 
-        // Find referenced element by ID in the tree
-        Node refNode = findNodeById(surface.rootNode, fragment);
+        // Find referenced element by ID in the index (O(1) instead of O(n) tree walk)
+        Node refNode = surface.nodeById.get(fragment);
         if (refNode == null)
             return;
 

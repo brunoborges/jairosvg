@@ -121,6 +121,9 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     }
     public final IdentityHashMap<Node, GradientStops> gradientStopCache = new IdentityHashMap<>();
 
+    // ID index for O(1) element lookup (used by <use> and others)
+    public final Map<String, Node> nodeById = new HashMap<>();
+
     public Surface() {
     }
 
@@ -292,7 +295,6 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
 
         this.fontSize = size(this, node.get("font-size", "12pt"));
 
-        AffineTransform savedTransform = context.getTransform();
         int savedDepth = transformDepth;
         transformStack[transformDepth++].setTransform(context.getTransform());
         Shape savedClip = context.getClip();
