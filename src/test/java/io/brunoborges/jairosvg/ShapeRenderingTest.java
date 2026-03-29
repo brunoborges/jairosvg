@@ -605,6 +605,43 @@ class ShapeRenderingTest {
     }
 
     @Test
+    void testSubRegionMaskCorrectness() throws Exception {
+        // Small masked element (50x30) on a large canvas (500x400).
+        // Sub-region optimization should allocate a ~50x30 effect buffer instead of
+        // 500x400. Validates that: pixels inside the element have correct luminance-derived
+        // alpha, pixels outside the element are fully transparent, and the surrounding
+        // canvas area is not corrupted.
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="500" height="400">
+                  <defs>
+                    <mask id="halfMask">
+                      <rect width="500" height="400" fill="white"/>
+                    </mask>
+                  </defs>
+                  <rect x="200" y="150" width="50" height="30" fill="blue" mask="url(#halfMask)"/>
+                </svg>
+                """;
+
+        BufferedImage image = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
+
+        // Pixel inside masked element: white mask → full luminance → alpha should be 255
+        int insideRGB = image.getRGB(220, 162);
+        int insideAlpha = (insideRGB >>> 24) & 0xFF;
+        int insideBlue = insideRGB & 0xFF;
+        assertEquals(255, insideAlpha, "Pixel inside masked element should be fully opaque (white mask)");
+        assertTrue(insideBlue > 200, "Pixel inside masked element should show the blue fill");
+
+        // Pixel outside masked element: no element rendered → should be transparent
+        int outsideAlpha = (image.getRGB(10, 10) >>> 24) & 0xFF;
+        assertEquals(0, outsideAlpha, "Pixel outside masked element region should be transparent");
+
+        // Pixel adjacent to but outside the element bbox: also transparent
+        int adjacentAlpha = (image.getRGB(260, 162) >>> 24) & 0xFF;
+        assertEquals(0, adjacentAlpha, "Pixel just outside element bbox should be transparent");
+    }
+
+    @Test
     void testMaskLuminanceCombinesMaskColorAndAlpha() throws Exception {
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">
