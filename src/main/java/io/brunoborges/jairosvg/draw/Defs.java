@@ -805,13 +805,17 @@ public final class Defs {
         int w = sourceImage.getWidth();
         int h = sourceImage.getHeight();
 
-        // TYPE_INT_ARGB mask buffer — reuse or allocate
+        // TYPE_INT_ARGB mask buffer — reuse full-canvas buffer; sub-region buffers are
+        // temporary and not cached to avoid evicting the reusable full-canvas instance.
+        boolean isSubRegion = subRegionTransform != null;
         BufferedImage maskImage = surface.maskBuffer;
-        if (maskImage == null || maskImage.getWidth() != w || maskImage.getHeight() != h) {
-            maskImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-            surface.maskBuffer = maskImage;
-        } else {
+        if (!isSubRegion && maskImage != null && maskImage.getWidth() == w && maskImage.getHeight() == h) {
             java.util.Arrays.fill(((DataBufferInt) maskImage.getRaster().getDataBuffer()).getData(), 0);
+        } else {
+            maskImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            if (!isSubRegion) {
+                surface.maskBuffer = maskImage;
+            }
         }
         Graphics2D maskG2d = maskImage.createGraphics();
         maskG2d.setRenderingHints(surface.context.getRenderingHints());
