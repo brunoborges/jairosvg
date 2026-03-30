@@ -34,7 +34,7 @@ A comprehensive comparison of four SVG libraries — **JairoSVG** (Java), **Echo
 | **Primary goal**      | Fast, lightweight SVG → raster/vector conversion               | Full-featured SVG toolkit: render, manipulate, and convert | SVG → PNG/PDF/PS conversion            | Lightweight SVG renderer for Swing / Java2D       |
 | **License**           | LGPL-3.0                                                       | Apache-2.0                                                 | LGPL-3.0                               | MIT                                               |
 | **Repository**        | [brunoborges/jairosvg]                                         | [css4j/echosvg]                                            | [Kozea/CairoSVG]                       | [weisJ/jsvg]                                      |
-| **Current version**   | 1.0.3                                                          | 2.4                                                        | 2.7+                                   | 2.0.0                                             |
+| **Current version**   | 1.0.4                                                          | 2.4                                                        | 2.7+                                   | 2.0.0                                             |
 | **SVG spec target**   | SVG 1.1                                                        | SVG 1.1 + partial SVG 2                                    | SVG 1.1                                | SVG 1.1 + partial SVG 2                           |
 | **Rendering backend** | Java2D                                                         | GVT (Batik) → Java2D                                       | Cairo (C library)                      | Java2D                                            |
 | **Key strength**      | Speed (2–26× faster than EchoSVG, on par with JSVG, 1–2.4× faster than CairoSVG) | Feature completeness and standard compliance               | Native C performance, mature ecosystem | Designed for Swing GUI embedding (IntelliJ, etc.) |
@@ -351,7 +351,7 @@ JairoSVG produces the smallest PNGs overall — **14.0% smaller** than CairoSVG,
 | Use and defs   |       5,646 |       6,122 |       9,712 |       6,144 |
 | Star polygon   |       6,228 |       8,862 |       8,911 |       6,455 |
 | Nested svg     |      10,926 |      12,522 |      11,880 |      12,101 |
-| Patterns       |       9,532 |      11,832 |      11,095 |      11,043 |
+| Patterns       |       9,532 |      11,832 |      11,095 |      11.0.4 |
 | Clip paths     |       9,342 |      10,558 |      13,552 |      10,253 |
 | Masks ⚠️       |       5,570 |       5,566 |       1,161 |       6,209 |
 | Markers        |       6,334 |       8,117 |       8,378 |       6,727 |
