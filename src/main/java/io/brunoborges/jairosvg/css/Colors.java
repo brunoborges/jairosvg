@@ -64,9 +64,8 @@ public final class Colors {
             return RGBA.TRANSPARENT;
         }
 
-        string = string.strip().toLowerCase();
-
-        // Fast-path: hex color — most common in SVG, no regex needed
+        // Fast-path: hex color — skip strip()/toLowerCase() since parseInt handles
+        // case
         if (string.charAt(0) == '#') {
             int len = string.length();
             if (len == 7) {
@@ -83,6 +82,8 @@ public final class Colors {
             }
             return RGBA.BLACK;
         }
+
+        string = string.strip().toLowerCase();
 
         // Named color lookup
         RGBA named = NAMED_COLORS.get(string);

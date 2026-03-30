@@ -97,6 +97,10 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     // Dash array cache (keyed by raw stroke-dasharray string)
     private final Map<String, float[]> dashArrayCache = new HashMap<>();
 
+    // Solid color cache: maps color string → AWT Color for opacity=1.0 (avoids
+    // re-parsing hex/named colors and re-creating Color objects on every render)
+    private final Map<String, Color> solidColorCache = new HashMap<>();
+
     // Raster image cache (keyed by data: URI or resolved URL)
     public Map<String, BufferedImage> rasterImageCache = new HashMap<>();
 
@@ -461,10 +465,25 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                         }
                     }
                     if (!gradientFill) {
-                        Colors.RGBA fillColor = mapColor(fillColorStr, fillOpacity);
-                        doFill = fillColor.a() > 0;
-                        if (doFill)
-                            context.setColor(toAwtColor(fillColor));
+                        if (fillOpacity >= 1.0 && mapRgba == null) {
+                            Color cached = solidColorCache.get(fillColorStr);
+                            if (cached != null) {
+                                context.setColor(cached);
+                            } else {
+                                Colors.RGBA fillColor = Colors.color(fillColorStr, 1.0);
+                                doFill = fillColor.a() > 0;
+                                if (doFill) {
+                                    cached = toAwtColor(fillColor);
+                                    solidColorCache.put(fillColorStr, cached);
+                                    context.setColor(cached);
+                                }
+                            }
+                        } else {
+                            Colors.RGBA fillColor = mapColor(fillColorStr, fillOpacity);
+                            doFill = fillColor.a() > 0;
+                            if (doFill)
+                                context.setColor(toAwtColor(fillColor));
+                        }
                     }
                     if (doFill || gradientFill) {
                         // Set fill rule
