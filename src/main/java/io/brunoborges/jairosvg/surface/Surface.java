@@ -94,9 +94,8 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     // Color mapping
     private UnaryOperator<Colors.RGBA> mapRgba;
 
-    // Stroke caches
+    // Dash array cache (keyed by raw stroke-dasharray string)
     private final Map<String, float[]> dashArrayCache = new HashMap<>();
-    private final Map<String, BasicStroke> strokeCache = new HashMap<>();
 
     // Raster image cache (keyed by data: URI or resolved URL)
     public Map<String, BufferedImage> rasterImageCache = new HashMap<>();
@@ -510,13 +509,9 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
 
                     float dashOffset = (float) size(this, node.get("stroke-dashoffset"));
 
-                    String strokeKey = strokeWidth + "|" + cap + "|" + join + "|" + miterLimit + "|" + dashStr + "|"
-                            + dashOffset;
-                    final float[] dashForStroke = dashArray;
-                    BasicStroke stroke = strokeCache.computeIfAbsent(strokeKey,
-                            k -> dashForStroke != null
-                                    ? new BasicStroke(strokeWidth, cap, join, miterLimit, dashForStroke, dashOffset)
-                                    : new BasicStroke(strokeWidth, cap, join, miterLimit));
+                    BasicStroke stroke = dashArray != null
+                            ? new BasicStroke(strokeWidth, cap, join, miterLimit, dashArray, dashOffset)
+                            : new BasicStroke(strokeWidth, cap, join, miterLimit);
 
                     context.setStroke(stroke);
                     context.draw(path);

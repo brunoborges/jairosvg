@@ -51,11 +51,13 @@ public final class ShapeDrawer {
         surface.path.moveTo(x1, y1);
         surface.path.lineTo(x2, y2);
 
-        double angle = pointAngle(x1, y1, x2, y2);
-        node.vertices = new java.util.ArrayList<>();
-        node.vertices.add(new double[]{x1, y1});
-        node.vertices.add(new double[]{Math.PI - angle, angle});
-        node.vertices.add(new double[]{x2, y2});
+        if (!surface.markers.isEmpty()) {
+            double angle = pointAngle(x1, y1, x2, y2);
+            node.vertices = new java.util.ArrayList<>();
+            node.vertices.add(new double[]{x1, y1});
+            node.vertices.add(new double[]{Math.PI - angle, angle});
+            node.vertices.add(new double[]{x2, y2});
+        }
     }
 
     /** Draw a polygon node. */
@@ -70,7 +72,10 @@ public final class ShapeDrawer {
         if (points.isEmpty())
             return;
 
-        node.vertices = new java.util.ArrayList<>();
+        boolean computeVertices = !surface.markers.isEmpty();
+        if (computeVertices) {
+            node.vertices = new java.util.ArrayList<>();
+        }
         boolean first = true;
         while (!points.isBlank()) {
             ParsedPoint pt = pointWithRemainder(surface, points);
@@ -79,14 +84,18 @@ public final class ShapeDrawer {
 
             if (first) {
                 surface.path.moveTo(x, y);
-                node.vertices.add(new double[]{x, y});
+                if (computeVertices) {
+                    node.vertices.add(new double[]{x, y});
+                }
                 first = false;
             } else {
-                double[] prev = getPrevPoint(node);
-                double angle = pointAngle(prev[0], prev[1], x, y);
-                node.vertices.add(new double[]{Math.PI - angle, angle});
+                if (computeVertices) {
+                    double[] prev = getPrevPoint(node);
+                    double angle = pointAngle(prev[0], prev[1], x, y);
+                    node.vertices.add(new double[]{Math.PI - angle, angle});
+                    node.vertices.add(new double[]{x, y});
+                }
                 surface.path.lineTo(x, y);
-                node.vertices.add(new double[]{x, y});
             }
         }
     }
