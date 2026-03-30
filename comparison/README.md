@@ -285,30 +285,30 @@ SVG → PNG conversion benchmarks across 24 SVG test files (lower is better):
 
 | Test Case | JairoSVG (Java) | EchoSVG (Java) | JSVG (Java) | CairoSVG (Python) | vs EchoSVG | vs JSVG | vs CairoSVG |
 | --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [Basic shapes](#01--basic-shapes) | 4.7 ms | 20.2 ms | **4.7 ms** | 6.0 ms | +326.04% ✅ | −1.58% ≈ | +25.94% ✅ |
-| [Gradients](#02--gradients) | **5.8 ms** | 151.2 ms | 5.9 ms | 12.2 ms | +2490.49% ✅ | +1.59% ≈ | +108.86% ✅ |
-| [Complex paths](#03--complex-paths) | 5.9 ms | 27.4 ms | **5.9 ms** | 6.5 ms | +364.91% ✅ | −0.51% ≈ | +10.39% ✅ |
-| [Text rendering](#04--text-rendering) | **6.3 ms** | 28.9 ms | 6.5 ms | 10.6 ms | +361.93% ✅ | +3.18% ≈ | +70.09% ✅ |
-| [Transforms](#05--transforms) | 5.5 ms | 17.4 ms | **5.2 ms** | 6.1 ms | +216.76% ✅ | −4.67% ≈ | +10.35% ✅ |
-| [Stroke styles](#06--stroke-styles) | 5.0 ms | 14.6 ms | **5.0 ms** | 5.5 ms | +189.88% ✅ | −1.55% ≈ | +8.38% ✅ |
-| [Opacity blend](#07--opacity--blending) | 4.6 ms | 21.5 ms | **4.6 ms** | 5.3 ms | +364.51% ✅ | −0.47% ≈ | +15.21% ✅ |
-| [Viewbox aspect](#08--viewbox--aspect-ratio) | **6.5 ms** | 25.1 ms | 6.5 ms | 8.4 ms | +286.43% ✅ | +0.08% ≈ | +29.66% ✅ |
-| [CSS styling](#09--css-styling) | **4.5 ms** | 18.6 ms | 4.6 ms | 7.1 ms | +309.58% ✅ | +0.10% ≈ | +56.73% ✅ |
-| [Use and defs](#10--use--defs) | 5.3 ms | 17.2 ms | **5.0 ms** | 7.0 ms | +225.78% ✅ | −4.84% ≈ | +31.81% ✅ |
-| [Star polygon](#11--star-polygon) | 4.4 ms | 17.3 ms | **4.3 ms** | 4.5 ms | +295.75% ✅ | −1.34% ≈ | +3.15% ≈ |
-| [Nested svg](#12--nested-svg) | 6.2 ms | 23.5 ms | **6.1 ms** | 8.1 ms | +280.80% ✅ | −0.26% ≈ | +30.70% ✅ |
-| [Patterns](#13--patterns) | 6.1 ms | 20.2 ms | **6.1 ms** | 7.3 ms | +230.25% ✅ | −1.06% ≈ | +18.77% ✅ |
-| [Clip paths](#14--clip-paths) | **5.7 ms** | 33.3 ms | 5.8 ms | 7.9 ms | +486.36% ✅ | +2.04% ≈ | +39.09% ✅ |
-| [Masks](#15--masks) ⚠️ | **6.1 ms** | 24.9 ms | 6.3 ms | 6.7 ms ⚠️ | +306.96% ✅ | +3.14% ≈ | +9.96% ✅ |
-| [Markers](#16--markers) | 5.3 ms | 16.2 ms | **5.2 ms** | 7.8 ms | +204.25% ✅ | −1.68% ≈ | +47.20% ✅ |
-| [Filters](#17--filters) ⚠️ | **10.4 ms** | 41.3 ms | 10.9 ms | 7.0 ms ⚠️ | +298.57% ✅ | +5.24% ≈ | ← ⚠️ |
-| [Embedded image](#18--embedded-images) | **6.3 ms** | 21.1 ms | 8.1 ms | 11.2 ms | +233.53% ✅ | +28.92% ✅ | +77.75% ✅ |
-| [Text advanced](#19--advanced-text) | **6.9 ms** | 33.3 ms | 7.1 ms | 16.3 ms | +382.72% ✅ | +3.28% ≈ | +135.89% ✅ |
-| [Fe blend modes](#20--fe-blend-modes) | **14.9 ms** | 35.4 ms | 27.9 ms | 24.6 ms | +137.72% ✅ | +87.10% ✅ | +65.03% ✅ |
-| [Fe tile](#21--fe-tile) | 3.7 ms | 8.5 ms | **3.6 ms** | 4.3 ms | +128.26% ✅ | −3.03% ≈ | +16.43% ✅ |
-| [Feimage data uri](#22--feimage-data-uri) | **2.1 ms** | 6.5 ms | 2.2 ms | 3.4 ms | +203.27% ✅ | +1.88% ≈ | +56.95% ✅ |
-| [Feimage inline ref](#23--feimage-inline-ref) | **2.3 ms** | 6.2 ms | 2.3 ms | 3.2 ms | +172.94% ✅ | +0.98% ≈ | +42.12% ✅ |
-| [Localized masks](#24--localized-masks) | **21.4 ms** | 65.1 ms | 21.6 ms | 28.1 ms | +203.99% ✅ | +0.91% ≈ | +31.10% ✅ |
+| [Basic shapes](#01--basic-shapes) | 3.2 ms | 15.7 ms | **3.2 ms** | 4.1 ms | +389.10% ✅ | −1.56% ≈ | +28.66% ✅ |
+| [Gradients](#02--gradients) | **4.1 ms** | 128.8 ms | 4.1 ms | 10.4 ms | +3071.92% ✅ | +0.99% ≈ | +157.39% ✅ |
+| [Complex paths](#03--complex-paths) | **4.0 ms** | 21.9 ms | 4.1 ms | 4.3 ms | +445.52% ✅ | +1.49% ≈ | +7.71% ✅ |
+| [Text rendering](#04--text-rendering) | **4.5 ms** | 22.1 ms | 4.5 ms | 5.8 ms | +392.19% ✅ | +0.67% ≈ | +28.79% ✅ |
+| [Transforms](#05--transforms) | 3.8 ms | 13.5 ms | **3.6 ms** | 3.7 ms | +255.12% ✅ | −5.25% ≈ | −1.84% ≈ |
+| [Stroke styles](#06--stroke-styles) | 3.4 ms | 11.2 ms | **3.3 ms** | 3.4 ms | +228.45% ✅ | −2.05% ≈ | −1.76% ≈ |
+| [Opacity blend](#07--opacity--blending) | **3.2 ms** | 16.7 ms | 3.2 ms | 3.3 ms | +425.79% ✅ | +1.57% ≈ | +2.83% ≈ |
+| [Viewbox aspect](#08--viewbox--aspect-ratio) | 4.5 ms | 18.6 ms | **4.4 ms** | 5.0 ms | +310.84% ✅ | −2.21% ≈ | +11.28% ✅ |
+| [CSS styling](#09--css-styling) | 3.1 ms | 14.3 ms | **3.1 ms** | 3.9 ms | +353.33% ✅ | −0.63% ≈ | +23.17% ✅ |
+| [Use and defs](#10--use--defs) | 3.8 ms | 13.6 ms | **3.6 ms** | 4.2 ms | +259.26% ✅ | −5.29% ≈ | +10.58% ✅ |
+| [Star polygon](#11--star-polygon) | 3.0 ms | 13.8 ms | 3.0 ms | **3.0 ms** | +351.80% ✅ | −1.64% ≈ | −2.95% ≈ |
+| [Nested svg](#12--nested-svg) | 4.3 ms | 18.6 ms | **4.2 ms** | 4.8 ms | +329.86% ✅ | −2.08% ≈ | +10.42% ✅ |
+| [Patterns](#13--patterns) | 4.2 ms | 15.5 ms | **4.1 ms** | 4.4 ms | +271.46% ✅ | −1.92% ≈ | +4.80% ≈ |
+| [Clip paths](#14--clip-paths) | **4.0 ms** | 25.4 ms | 4.0 ms | 5.7 ms | +541.92% ✅ | +1.26% ≈ | +44.70% ✅ |
+| [Masks](#15--masks) ⚠️ | 4.2 ms | 21.5 ms | 4.3 ms | **3.5 ms** ⚠️ | +412.89% ✅ | +1.91% ≈ | −16.47% ≈ |
+| [Markers](#16--markers) | 3.6 ms | 12.5 ms | **3.5 ms** | 4.5 ms | +246.67% ✅ | −1.94% ≈ | +25.00% ✅ |
+| [Filters](#17--filters) ⚠️ | 7.1 ms | 33.7 ms | 7.9 ms | **4.3 ms** ⚠️ | +373.03% ✅ | +11.10% ✅ | ← ⚠️ |
+| [Embedded image](#18--embedded-images) | **4.3 ms** | 15.7 ms | 10.8 ms | 6.9 ms | +265.12% ✅ | +150.93% ✅ | +60.00% ✅ |
+| [Text advanced](#19--advanced-text) | 5.1 ms | 25.1 ms | **5.0 ms** | 8.6 ms | +393.11% ✅ | −1.57% ≈ | +68.90% ✅ |
+| [Fe blend modes](#20--fe-blend-modes) | **10.1 ms** | 27.2 ms | 20.0 ms | 12.4 ms | +168.77% ✅ | +97.83% ✅ | +23.02% ✅ |
+| [Fe tile](#21--fe-tile) | 2.5 ms | 6.2 ms | **2.4 ms** | 2.4 ms | +150.00% ✅ | −3.20% ≈ | −2.80% ≈ |
+| [Feimage data uri](#22--feimage-data-uri) | 1.6 ms | 5.3 ms | **1.5 ms** | 1.8 ms | +243.87% ✅ | −1.29% ≈ | +14.84% ✅ |
+| [Feimage inline ref](#23--feimage-inline-ref) | **1.6 ms** | 4.4 ms | 2.4 ms | 1.9 ms | +176.25% ✅ | +49.37% ✅ | +16.87% ✅ |
+| [Localized masks](#24--localized-masks) | **14.3 ms** | 55.0 ms | 14.3 ms | 15.3 ms | +283.68% ✅ | +0.07% ≈ | +6.69% ✅ |
 
 _JairoSVG is **2–26× faster** than EchoSVG, **on par with JSVG** in most scenarios, and **1–2.4× faster** than CairoSVG in most scenarios._
 
@@ -335,7 +335,7 @@ JSVG automatically sets `KEY_ANTIALIASING` and `KEY_STROKE_CONTROL` to the value
 
 ### PNG Output File Sizes
 
-JairoSVG produces the smallest PNGs overall — **14.0% smaller** than CairoSVG, **16.4% smaller** than JSVG, and **20.3% smaller** than EchoSVG (all using zlib compression level 6 — see [default rendering settings](#default-rendering-settings-jairosvg-vs-jsvg)):
+JairoSVG produces the smallest PNGs overall — **8.0% smaller** than CairoSVG, **11.5% smaller** than JSVG, and **17.3% smaller** than EchoSVG (all using zlib compression level 6 — see [default rendering settings](#default-rendering-settings-jairosvg-vs-jsvg)):
 
 | Test Case      |    JairoSVG |     EchoSVG |    CairoSVG |        JSVG |
 | -------------- | ----------: | ----------: | ----------: | ----------: |
@@ -351,18 +351,19 @@ JairoSVG produces the smallest PNGs overall — **14.0% smaller** than CairoSVG,
 | Use and defs   |       5,646 |       6,122 |       9,712 |       6,144 |
 | Star polygon   |       6,228 |       8,862 |       8,911 |       6,455 |
 | Nested svg     |      10,926 |      12,522 |      11,880 |      12,101 |
-| Patterns       |       9,532 |      11,832 |      11,095 |      11.0.4 |
+| Patterns       |       9,532 |      11,832 |      11,095 |      11,043 |
 | Clip paths     |       9,342 |      10,558 |      13,552 |      10,253 |
-| Masks ⚠️       |       5,570 |       5,566 |       1,161 |       6,209 |
+| Masks ⚠️       |       5,692 |       5,566 |       1,161 |       6,209 |
 | Markers        |       6,334 |       8,117 |       8,378 |       6,727 |
-| Filters ⚠️     |      29,352 |      24,063 |       8,520 |      32,346 |
+| Filters ⚠️     |      28,934 |      24,063 |       8,520 |      32,346 |
 | Embedded image |       9,432 |      11,994 |      21,228 |      11,642 |
 | Text advanced  |      18,801 |      26,256 |      23,864 |      19,756 |
-| Blend modes    |      12,006 |      16,216 |      12,505 |      15,773 |
-| Fe tile        |       1,604 |       2,009 |       1,768 |       1,489 |
+| Blend modes    |      12,005 |      16,216 |      12,505 |      15,773 |
+| Fe tile        |       1,456 |       2,009 |       1,768 |       1,489 |
 | Feimage URI    |       2,539 |       4,385 |       3,225 |       3,666 |
 | Feimage ref    |       2,705 |       3,431 |       4,868 |       4,265 |
-| **Total**      | **204,170** | **245,688** | **232,765** | **237,555** |
+| Localized masks |      18,389 |      17,868 |      13,218 |      20,239 |
+| **Total**      | **241,646** | **283,452** | **260,984** | **269,394** |
 
 > **⚠️ Filters/Masks:** Where CairoSVG produces much smaller output, it is because CairoSVG **does not render** certain features correctly — filter effects (blur, drop-shadow) are silently skipped, and masks are rendered without gradient/circle content. This results in simpler images that compress better. JairoSVG and JSVG render these effects correctly, producing visually accurate but larger PNGs.
 

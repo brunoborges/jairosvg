@@ -49,7 +49,7 @@
   <text x="700" y="275" text-anchor="end" font-size="10" fill="#f87171">16,936</text>
   <rect x="160" y="278" width="113" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="288" text-anchor="end" font-size="10" fill="#60a5fa">12,730</text>
-  <rect x="160" y="291" width="138" height="12" rx="4" fill="#fb923c"/>
+  <rect x="160" y="291" width="139" height="12" rx="4" fill="#fb923c"/>
   <text x="700" y="301" text-anchor="end" font-size="10" fill="#fb923c">15,633</text>
 
   <text x="152" y="344" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Text rendering</text>
@@ -86,7 +86,7 @@
   <text x="700" y="511" text-anchor="end" font-size="10" fill="#fb923c">4,478</text>
 
   <text x="152" y="554" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Opacity blend</text>
-  <rect x="160" y="532" width="74" height="12" rx="4" fill="#4ade80"/>
+  <rect x="160" y="532" width="75" height="12" rx="4" fill="#4ade80"/>
   <text x="700" y="542" text-anchor="end" font-size="10" fill="#4ade80">8,409</text>
   <text x="720" y="542" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
   <rect x="160" y="545" width="90" height="12" rx="4" fill="#f87171"/>
@@ -133,7 +133,7 @@
   <rect x="160" y="812" width="55" height="12" rx="4" fill="#4ade80"/>
   <text x="700" y="822" text-anchor="end" font-size="10" fill="#4ade80">6,228</text>
   <text x="720" y="822" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
-  <rect x="160" y="825" width="78" height="12" rx="4" fill="#f87171"/>
+  <rect x="160" y="825" width="79" height="12" rx="4" fill="#f87171"/>
   <text x="700" y="835" text-anchor="end" font-size="10" fill="#f87171">8,862</text>
   <rect x="160" y="838" width="57" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="848" text-anchor="end" font-size="10" fill="#60a5fa">6,455</text>
@@ -174,8 +174,8 @@
   <text x="700" y="1071" text-anchor="end" font-size="10" fill="#fb923c">13,552</text>
 
   <text x="152" y="1114" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Masks ⚠️</text>
-  <rect x="160" y="1092" width="49" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="1102" text-anchor="end" font-size="10" fill="#4ade80">5,570</text>
+  <rect x="160" y="1092" width="50" height="12" rx="4" fill="#4ade80"/>
+  <text x="700" y="1102" text-anchor="end" font-size="10" fill="#4ade80">5,692</text>
   <rect x="160" y="1105" width="49" height="12" rx="4" fill="#f87171"/>
   <text x="700" y="1115" text-anchor="end" font-size="10" fill="#f87171">5,566</text>
   <rect x="160" y="1118" width="55" height="12" rx="4" fill="#60a5fa"/>
@@ -200,7 +200,7 @@
   <text x="700" y="1242" text-anchor="end" font-size="10" fill="#4ade80">28,934</text>
   <rect x="160" y="1245" width="213" height="12" rx="4" fill="#f87171"/>
   <text x="700" y="1255" text-anchor="end" font-size="10" fill="#f87171">24,063</text>
-  <rect x="160" y="1258" width="286" height="12" rx="4" fill="#60a5fa"/>
+  <rect x="160" y="1258" width="287" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="1268" text-anchor="end" font-size="10" fill="#60a5fa">32,346</text>
   <rect x="160" y="1271" width="75" height="12" rx="4" fill="#fb923c"/>
   <text x="700" y="1281" text-anchor="end" font-size="10" fill="#fb923c">8,520</text>
@@ -228,7 +228,7 @@
   <rect x="160" y="1411" width="211" height="12" rx="4" fill="#fb923c"/>
   <text x="700" y="1421" text-anchor="end" font-size="10" fill="#fb923c">23,864</text>
 
-  <text x="152" y="1464" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Fe blend modes</text>
+  <text x="152" y="1464" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Blend modes</text>
   <rect x="160" y="1442" width="106" height="12" rx="4" fill="#4ade80"/>
   <text x="700" y="1452" text-anchor="end" font-size="10" fill="#4ade80">12,005</text>
   <text x="720" y="1452" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
@@ -250,7 +250,7 @@
   <rect x="160" y="1551" width="16" height="12" rx="4" fill="#fb923c"/>
   <text x="700" y="1561" text-anchor="end" font-size="10" fill="#fb923c">1,768</text>
 
-  <text x="152" y="1604" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Feimage data uri</text>
+  <text x="152" y="1604" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Feimage URI</text>
   <rect x="160" y="1582" width="22" height="12" rx="4" fill="#4ade80"/>
   <text x="700" y="1592" text-anchor="end" font-size="10" fill="#4ade80">2,539</text>
   <text x="720" y="1592" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
@@ -261,7 +261,7 @@
   <rect x="160" y="1621" width="29" height="12" rx="4" fill="#fb923c"/>
   <text x="700" y="1631" text-anchor="end" font-size="10" fill="#fb923c">3,225</text>
 
-  <text x="152" y="1674" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Feimage inline ref</text>
+  <text x="152" y="1674" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Feimage ref</text>
   <rect x="160" y="1652" width="24" height="12" rx="4" fill="#4ade80"/>
   <text x="700" y="1662" text-anchor="end" font-size="10" fill="#4ade80">2,705</text>
   <text x="720" y="1662" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
@@ -274,7 +274,7 @@
 
   <text x="152" y="1744" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Localized masks</text>
   <rect x="160" y="1722" width="163" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="1732" text-anchor="end" font-size="10" fill="#4ade80">18,435</text>
+  <text x="700" y="1732" text-anchor="end" font-size="10" fill="#4ade80">18,389</text>
   <rect x="160" y="1735" width="158" height="12" rx="4" fill="#f87171"/>
   <text x="700" y="1745" text-anchor="end" font-size="10" fill="#f87171">17,868</text>
   <rect x="160" y="1748" width="179" height="12" rx="4" fill="#60a5fa"/>

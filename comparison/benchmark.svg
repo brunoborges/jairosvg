@@ -21,266 +21,266 @@
 
   <text x="152" y="134" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Basic shapes</text>
   <rect x="160" y="112" width="7" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="122" text-anchor="end" font-size="10" fill="#4ade80">3.36 ms</text>
-  <rect x="160" y="125" width="36" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="135" text-anchor="end" font-size="10" fill="#f87171">16.22 ms</text>
+  <text x="700" y="122" text-anchor="end" font-size="10" fill="#4ade80">3.27 ms</text>
+  <rect x="160" y="125" width="35" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="135" text-anchor="end" font-size="10" fill="#f87171">15.76 ms</text>
   <rect x="160" y="138" width="7" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="148" text-anchor="end" font-size="10" fill="#60a5fa">3.31 ms</text>
+  <text x="700" y="148" text-anchor="end" font-size="10" fill="#60a5fa">3.21 ms</text>
   <text x="720" y="148" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
   <rect x="160" y="151" width="9" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="161" text-anchor="end" font-size="10" fill="#fb923c">4.22 ms</text>
+  <text x="700" y="161" text-anchor="end" font-size="10" fill="#fb923c">4.18 ms</text>
 
   <text x="152" y="204" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Gradients</text>
   <rect x="160" y="182" width="9" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="192" text-anchor="end" font-size="10" fill="#4ade80">4.26 ms</text>
+  <text x="700" y="192" text-anchor="end" font-size="10" fill="#4ade80">4.14 ms</text>
   <text x="720" y="192" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
-  <rect x="160" y="195" width="294" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="205" text-anchor="end" font-size="10" fill="#f87171">132.98 ms</text>
-  <rect x="160" y="208" width="10" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="218" text-anchor="end" font-size="10" fill="#60a5fa">4.52 ms</text>
-  <rect x="160" y="221" width="24" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="231" text-anchor="end" font-size="10" fill="#fb923c">10.98 ms</text>
+  <rect x="160" y="195" width="285" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="205" text-anchor="end" font-size="10" fill="#f87171">129.04 ms</text>
+  <rect x="160" y="208" width="9" height="12" rx="4" fill="#60a5fa"/>
+  <text x="700" y="218" text-anchor="end" font-size="10" fill="#60a5fa">4.17 ms</text>
+  <rect x="160" y="221" width="23" height="12" rx="4" fill="#fb923c"/>
+  <text x="700" y="231" text-anchor="end" font-size="10" fill="#fb923c">10.53 ms</text>
 
   <text x="152" y="274" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Complex paths</text>
-  <rect x="160" y="252" width="10" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="262" text-anchor="end" font-size="10" fill="#4ade80">4.50 ms</text>
-  <rect x="160" y="265" width="52" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="275" text-anchor="end" font-size="10" fill="#f87171">23.34 ms</text>
-  <rect x="160" y="278" width="10" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="288" text-anchor="end" font-size="10" fill="#60a5fa">4.30 ms</text>
-  <text x="720" y="288" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
+  <rect x="160" y="252" width="9" height="12" rx="4" fill="#4ade80"/>
+  <text x="700" y="262" text-anchor="end" font-size="10" fill="#4ade80">4.09 ms</text>
+  <text x="720" y="262" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
+  <rect x="160" y="265" width="49" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="275" text-anchor="end" font-size="10" fill="#f87171">22.00 ms</text>
+  <rect x="160" y="278" width="9" height="12" rx="4" fill="#60a5fa"/>
+  <text x="700" y="288" text-anchor="end" font-size="10" fill="#60a5fa">4.14 ms</text>
   <rect x="160" y="291" width="10" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="301" text-anchor="end" font-size="10" fill="#fb923c">4.70 ms</text>
+  <text x="700" y="301" text-anchor="end" font-size="10" fill="#fb923c">4.41 ms</text>
 
   <text x="152" y="344" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Text rendering</text>
-  <rect x="160" y="322" width="11" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="332" text-anchor="end" font-size="10" fill="#4ade80">4.81 ms</text>
+  <rect x="160" y="322" width="10" height="12" rx="4" fill="#4ade80"/>
+  <text x="700" y="332" text-anchor="end" font-size="10" fill="#4ade80">4.54 ms</text>
   <text x="720" y="332" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
-  <rect x="160" y="335" width="52" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="345" text-anchor="end" font-size="10" fill="#f87171">23.45 ms</text>
-  <rect x="160" y="348" width="11" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="358" text-anchor="end" font-size="10" fill="#60a5fa">4.89 ms</text>
-  <rect x="160" y="361" width="14" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="371" text-anchor="end" font-size="10" fill="#fb923c">6.35 ms</text>
+  <rect x="160" y="335" width="49" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="345" text-anchor="end" font-size="10" fill="#f87171">22.19 ms</text>
+  <rect x="160" y="348" width="10" height="12" rx="4" fill="#60a5fa"/>
+  <text x="700" y="358" text-anchor="end" font-size="10" fill="#60a5fa">4.58 ms</text>
+  <rect x="160" y="361" width="13" height="12" rx="4" fill="#fb923c"/>
+  <text x="700" y="371" text-anchor="end" font-size="10" fill="#fb923c">5.82 ms</text>
 
   <text x="152" y="414" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Transforms</text>
   <rect x="160" y="392" width="9" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="402" text-anchor="end" font-size="10" fill="#4ade80">4.14 ms</text>
-  <rect x="160" y="405" width="32" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="415" text-anchor="end" font-size="10" fill="#f87171">14.52 ms</text>
-  <rect x="160" y="418" width="9" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="428" text-anchor="end" font-size="10" fill="#60a5fa">3.88 ms</text>
+  <text x="700" y="402" text-anchor="end" font-size="10" fill="#4ade80">3.87 ms</text>
+  <rect x="160" y="405" width="30" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="415" text-anchor="end" font-size="10" fill="#f87171">13.60 ms</text>
+  <rect x="160" y="418" width="8" height="12" rx="4" fill="#60a5fa"/>
+  <text x="700" y="428" text-anchor="end" font-size="10" fill="#60a5fa">3.67 ms</text>
   <text x="720" y="428" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
-  <rect x="160" y="431" width="9" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="441" text-anchor="end" font-size="10" fill="#fb923c">4.12 ms</text>
+  <rect x="160" y="431" width="8" height="12" rx="4" fill="#fb923c"/>
+  <text x="700" y="441" text-anchor="end" font-size="10" fill="#fb923c">3.79 ms</text>
 
   <text x="152" y="484" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Stroke styles</text>
   <rect x="160" y="462" width="8" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="472" text-anchor="end" font-size="10" fill="#4ade80">3.72 ms</text>
-  <rect x="160" y="475" width="27" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="485" text-anchor="end" font-size="10" fill="#f87171">12.09 ms</text>
-  <rect x="160" y="488" width="8" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="498" text-anchor="end" font-size="10" fill="#60a5fa">3.67 ms</text>
-  <rect x="160" y="501" width="8" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="511" text-anchor="end" font-size="10" fill="#fb923c">3.59 ms</text>
-  <text x="720" y="511" text-anchor="middle" font-size="10" fill="#fb923c">◄</text>
+  <text x="700" y="472" text-anchor="end" font-size="10" fill="#4ade80">3.45 ms</text>
+  <rect x="160" y="475" width="25" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="485" text-anchor="end" font-size="10" fill="#f87171">11.28 ms</text>
+  <rect x="160" y="488" width="7" height="12" rx="4" fill="#60a5fa"/>
+  <text x="700" y="498" text-anchor="end" font-size="10" fill="#60a5fa">3.38 ms</text>
+  <text x="720" y="498" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
+  <rect x="160" y="501" width="7" height="12" rx="4" fill="#fb923c"/>
+  <text x="700" y="511" text-anchor="end" font-size="10" fill="#fb923c">3.38 ms</text>
 
   <text x="152" y="554" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Opacity blend</text>
-  <rect x="160" y="532" width="8" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="542" text-anchor="end" font-size="10" fill="#4ade80">3.45 ms</text>
-  <rect x="160" y="545" width="40" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="555" text-anchor="end" font-size="10" fill="#f87171">17.88 ms</text>
-  <rect x="160" y="558" width="8" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="568" text-anchor="end" font-size="10" fill="#60a5fa">3.40 ms</text>
-  <text x="720" y="568" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
-  <rect x="160" y="571" width="8" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="581" text-anchor="end" font-size="10" fill="#fb923c">3.52 ms</text>
+  <rect x="160" y="532" width="7" height="12" rx="4" fill="#4ade80"/>
+  <text x="700" y="542" text-anchor="end" font-size="10" fill="#4ade80">3.22 ms</text>
+  <text x="720" y="542" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
+  <rect x="160" y="545" width="37" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="555" text-anchor="end" font-size="10" fill="#f87171">16.79 ms</text>
+  <rect x="160" y="558" width="7" height="12" rx="4" fill="#60a5fa"/>
+  <text x="700" y="568" text-anchor="end" font-size="10" fill="#60a5fa">3.28 ms</text>
+  <rect x="160" y="571" width="7" height="12" rx="4" fill="#fb923c"/>
+  <text x="700" y="581" text-anchor="end" font-size="10" fill="#fb923c">3.30 ms</text>
 
   <text x="152" y="624" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Viewbox aspect</text>
-  <rect x="160" y="602" width="11" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="612" text-anchor="end" font-size="10" fill="#4ade80">4.93 ms</text>
-  <rect x="160" y="615" width="44" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="625" text-anchor="end" font-size="10" fill="#f87171">19.95 ms</text>
-  <rect x="160" y="628" width="11" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="638" text-anchor="end" font-size="10" fill="#60a5fa">4.85 ms</text>
+  <rect x="160" y="602" width="10" height="12" rx="4" fill="#4ade80"/>
+  <text x="700" y="612" text-anchor="end" font-size="10" fill="#4ade80">4.58 ms</text>
+  <rect x="160" y="615" width="41" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="625" text-anchor="end" font-size="10" fill="#f87171">18.69 ms</text>
+  <rect x="160" y="628" width="10" height="12" rx="4" fill="#60a5fa"/>
+  <text x="700" y="638" text-anchor="end" font-size="10" fill="#60a5fa">4.47 ms</text>
   <text x="720" y="638" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
-  <rect x="160" y="641" width="12" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="651" text-anchor="end" font-size="10" fill="#fb923c">5.37 ms</text>
+  <rect x="160" y="641" width="11" height="12" rx="4" fill="#fb923c"/>
+  <text x="700" y="651" text-anchor="end" font-size="10" fill="#fb923c">5.09 ms</text>
 
   <text x="152" y="694" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">CSS styling</text>
-  <rect x="160" y="672" width="8" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="682" text-anchor="end" font-size="10" fill="#4ade80">3.49 ms</text>
-  <rect x="160" y="685" width="34" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="695" text-anchor="end" font-size="10" fill="#f87171">15.37 ms</text>
+  <rect x="160" y="672" width="7" height="12" rx="4" fill="#4ade80"/>
+  <text x="700" y="682" text-anchor="end" font-size="10" fill="#4ade80">3.20 ms</text>
+  <rect x="160" y="685" width="32" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="695" text-anchor="end" font-size="10" fill="#f87171">14.35 ms</text>
   <rect x="160" y="698" width="7" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="708" text-anchor="end" font-size="10" fill="#60a5fa">3.29 ms</text>
+  <text x="700" y="708" text-anchor="end" font-size="10" fill="#60a5fa">3.19 ms</text>
   <text x="720" y="708" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
   <rect x="160" y="711" width="9" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="721" text-anchor="end" font-size="10" fill="#fb923c">4.14 ms</text>
+  <text x="700" y="721" text-anchor="end" font-size="10" fill="#fb923c">3.93 ms</text>
 
   <text x="152" y="764" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Use and defs</text>
-  <rect x="160" y="742" width="9" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="752" text-anchor="end" font-size="10" fill="#4ade80">3.99 ms</text>
-  <rect x="160" y="755" width="31" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="765" text-anchor="end" font-size="10" fill="#f87171">13.85 ms</text>
+  <rect x="160" y="742" width="8" height="12" rx="4" fill="#4ade80"/>
+  <text x="700" y="752" text-anchor="end" font-size="10" fill="#4ade80">3.83 ms</text>
+  <rect x="160" y="755" width="30" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="765" text-anchor="end" font-size="10" fill="#f87171">13.67 ms</text>
   <rect x="160" y="768" width="8" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="778" text-anchor="end" font-size="10" fill="#60a5fa">3.68 ms</text>
+  <text x="700" y="778" text-anchor="end" font-size="10" fill="#60a5fa">3.62 ms</text>
   <text x="720" y="778" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
   <rect x="160" y="781" width="9" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="791" text-anchor="end" font-size="10" fill="#fb923c">4.25 ms</text>
+  <text x="700" y="791" text-anchor="end" font-size="10" fill="#fb923c">4.23 ms</text>
 
   <text x="152" y="834" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Star polygon</text>
   <rect x="160" y="812" width="7" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="822" text-anchor="end" font-size="10" fill="#4ade80">3.13 ms</text>
+  <text x="700" y="822" text-anchor="end" font-size="10" fill="#4ade80">3.09 ms</text>
   <rect x="160" y="825" width="31" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="835" text-anchor="end" font-size="10" fill="#f87171">13.94 ms</text>
+  <text x="700" y="835" text-anchor="end" font-size="10" fill="#f87171">13.85 ms</text>
   <rect x="160" y="838" width="7" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="848" text-anchor="end" font-size="10" fill="#60a5fa">3.07 ms</text>
+  <text x="700" y="848" text-anchor="end" font-size="10" fill="#60a5fa">3.04 ms</text>
   <rect x="160" y="851" width="7" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="861" text-anchor="end" font-size="10" fill="#fb923c">3.00 ms</text>
+  <text x="700" y="861" text-anchor="end" font-size="10" fill="#fb923c">2.99 ms</text>
   <text x="720" y="861" text-anchor="middle" font-size="10" fill="#fb923c">◄</text>
 
   <text x="152" y="904" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Nested svg</text>
   <rect x="160" y="882" width="10" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="892" text-anchor="end" font-size="10" fill="#4ade80">4.39 ms</text>
+  <text x="700" y="892" text-anchor="end" font-size="10" fill="#4ade80">4.37 ms</text>
   <rect x="160" y="895" width="41" height="12" rx="4" fill="#f87171"/>
   <text x="700" y="905" text-anchor="end" font-size="10" fill="#f87171">18.66 ms</text>
-  <rect x="160" y="908" width="10" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="918" text-anchor="end" font-size="10" fill="#60a5fa">4.30 ms</text>
+  <rect x="160" y="908" width="9" height="12" rx="4" fill="#60a5fa"/>
+  <text x="700" y="918" text-anchor="end" font-size="10" fill="#60a5fa">4.29 ms</text>
   <text x="720" y="918" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
   <rect x="160" y="921" width="11" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="931" text-anchor="end" font-size="10" fill="#fb923c">4.80 ms</text>
+  <text x="700" y="931" text-anchor="end" font-size="10" fill="#fb923c">4.83 ms</text>
 
   <text x="152" y="974" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Patterns</text>
   <rect x="160" y="952" width="9" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="962" text-anchor="end" font-size="10" fill="#4ade80">4.26 ms</text>
-  <rect x="160" y="965" width="35" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="975" text-anchor="end" font-size="10" fill="#f87171">15.63 ms</text>
+  <text x="700" y="962" text-anchor="end" font-size="10" fill="#4ade80">4.23 ms</text>
+  <rect x="160" y="965" width="34" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="975" text-anchor="end" font-size="10" fill="#f87171">15.56 ms</text>
   <rect x="160" y="978" width="9" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="988" text-anchor="end" font-size="10" fill="#60a5fa">4.19 ms</text>
+  <text x="700" y="988" text-anchor="end" font-size="10" fill="#60a5fa">4.14 ms</text>
   <text x="720" y="988" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
   <rect x="160" y="991" width="10" height="12" rx="4" fill="#fb923c"/>
   <text x="700" y="1001" text-anchor="end" font-size="10" fill="#fb923c">4.42 ms</text>
 
   <text x="152" y="1044" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Clip paths</text>
   <rect x="160" y="1022" width="9" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="1032" text-anchor="end" font-size="10" fill="#4ade80">4.05 ms</text>
+  <text x="700" y="1032" text-anchor="end" font-size="10" fill="#4ade80">4.02 ms</text>
   <text x="720" y="1032" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
-  <rect x="160" y="1035" width="57" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="1045" text-anchor="end" font-size="10" fill="#f87171">25.70 ms</text>
+  <rect x="160" y="1035" width="56" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="1045" text-anchor="end" font-size="10" fill="#f87171">25.53 ms</text>
   <rect x="160" y="1048" width="9" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="1058" text-anchor="end" font-size="10" fill="#60a5fa">4.14 ms</text>
+  <text x="700" y="1058" text-anchor="end" font-size="10" fill="#60a5fa">4.08 ms</text>
   <rect x="160" y="1061" width="13" height="12" rx="4" fill="#fb923c"/>
   <text x="700" y="1071" text-anchor="end" font-size="10" fill="#fb923c">5.78 ms</text>
 
   <text x="152" y="1114" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Masks ⚠️</text>
-  <rect x="160" y="1092" width="11" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="1102" text-anchor="end" font-size="10" fill="#4ade80">4.99 ms</text>
+  <rect x="160" y="1092" width="9" height="12" rx="4" fill="#4ade80"/>
+  <text x="700" y="1102" text-anchor="end" font-size="10" fill="#4ade80">4.25 ms</text>
   <rect x="160" y="1105" width="48" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="1115" text-anchor="end" font-size="10" fill="#f87171">21.85 ms</text>
+  <text x="700" y="1115" text-anchor="end" font-size="10" fill="#f87171">21.61 ms</text>
   <rect x="160" y="1118" width="10" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="1128" text-anchor="end" font-size="10" fill="#60a5fa">4.41 ms</text>
+  <text x="700" y="1128" text-anchor="end" font-size="10" fill="#60a5fa">4.36 ms</text>
   <rect x="160" y="1131" width="8" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1141" text-anchor="end" font-size="10" fill="#fb923c">3.60 ms</text>
+  <text x="700" y="1141" text-anchor="end" font-size="10" fill="#fb923c">3.58 ms</text>
   <text x="720" y="1141" text-anchor="middle" font-size="10" fill="#fb923c">◄</text>
 
   <text x="152" y="1184" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Markers</text>
   <rect x="160" y="1162" width="8" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="1172" text-anchor="end" font-size="10" fill="#4ade80">3.78 ms</text>
+  <text x="700" y="1172" text-anchor="end" font-size="10" fill="#4ade80">3.65 ms</text>
   <rect x="160" y="1175" width="28" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="1185" text-anchor="end" font-size="10" fill="#f87171">12.61 ms</text>
+  <text x="700" y="1185" text-anchor="end" font-size="10" fill="#f87171">12.56 ms</text>
   <rect x="160" y="1188" width="8" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="1198" text-anchor="end" font-size="10" fill="#60a5fa">3.63 ms</text>
+  <text x="700" y="1198" text-anchor="end" font-size="10" fill="#60a5fa">3.59 ms</text>
   <text x="720" y="1198" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
   <rect x="160" y="1201" width="10" height="12" rx="4" fill="#fb923c"/>
   <text x="700" y="1211" text-anchor="end" font-size="10" fill="#fb923c">4.55 ms</text>
 
   <text x="152" y="1254" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Filters ⚠️</text>
   <rect x="160" y="1232" width="16" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="1242" text-anchor="end" font-size="10" fill="#4ade80">7.29 ms</text>
-  <rect x="160" y="1245" width="76" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="1255" text-anchor="end" font-size="10" fill="#f87171">34.13 ms</text>
+  <text x="700" y="1242" text-anchor="end" font-size="10" fill="#4ade80">7.22 ms</text>
+  <rect x="160" y="1245" width="75" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="1255" text-anchor="end" font-size="10" fill="#f87171">33.81 ms</text>
   <rect x="160" y="1258" width="18" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="1268" text-anchor="end" font-size="10" fill="#60a5fa">8.16 ms</text>
+  <text x="700" y="1268" text-anchor="end" font-size="10" fill="#60a5fa">8.02 ms</text>
   <rect x="160" y="1271" width="10" height="12" rx="4" fill="#fb923c"/>
   <text x="700" y="1281" text-anchor="end" font-size="10" fill="#fb923c">4.39 ms</text>
   <text x="720" y="1281" text-anchor="middle" font-size="10" fill="#fb923c">◄</text>
 
   <text x="152" y="1324" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Embedded image</text>
   <rect x="160" y="1302" width="10" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="1312" text-anchor="end" font-size="10" fill="#4ade80">4.54 ms</text>
+  <text x="700" y="1312" text-anchor="end" font-size="10" fill="#4ade80">4.38 ms</text>
   <text x="720" y="1312" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
   <rect x="160" y="1315" width="35" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="1325" text-anchor="end" font-size="10" fill="#f87171">15.96 ms</text>
-  <rect x="160" y="1328" width="24" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="1338" text-anchor="end" font-size="10" fill="#60a5fa">10.82 ms</text>
-  <rect x="160" y="1341" width="17" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1351" text-anchor="end" font-size="10" fill="#fb923c">7.57 ms</text>
+  <text x="700" y="1325" text-anchor="end" font-size="10" fill="#f87171">15.79 ms</text>
+  <rect x="160" y="1328" width="25" height="12" rx="4" fill="#60a5fa"/>
+  <text x="700" y="1338" text-anchor="end" font-size="10" fill="#60a5fa">11.27 ms</text>
+  <rect x="160" y="1341" width="15" height="12" rx="4" fill="#fb923c"/>
+  <text x="700" y="1351" text-anchor="end" font-size="10" fill="#fb923c">6.94 ms</text>
 
   <text x="152" y="1394" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Text advanced</text>
   <rect x="160" y="1372" width="11" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="1382" text-anchor="end" font-size="10" fill="#4ade80">5.12 ms</text>
+  <text x="700" y="1382" text-anchor="end" font-size="10" fill="#4ade80">5.17 ms</text>
   <rect x="160" y="1385" width="56" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="1395" text-anchor="end" font-size="10" fill="#f87171">25.21 ms</text>
+  <text x="700" y="1395" text-anchor="end" font-size="10" fill="#f87171">25.15 ms</text>
   <rect x="160" y="1398" width="11" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="1408" text-anchor="end" font-size="10" fill="#60a5fa">5.04 ms</text>
+  <text x="700" y="1408" text-anchor="end" font-size="10" fill="#60a5fa">5.06 ms</text>
   <text x="720" y="1408" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
   <rect x="160" y="1411" width="19" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1421" text-anchor="end" font-size="10" fill="#fb923c">8.63 ms</text>
+  <text x="700" y="1421" text-anchor="end" font-size="10" fill="#fb923c">8.73 ms</text>
 
   <text x="152" y="1464" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Fe blend modes</text>
   <rect x="160" y="1442" width="23" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="1452" text-anchor="end" font-size="10" fill="#4ade80">10.32 ms</text>
+  <text x="700" y="1452" text-anchor="end" font-size="10" fill="#4ade80">10.28 ms</text>
   <text x="720" y="1452" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
   <rect x="160" y="1455" width="60" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="1465" text-anchor="end" font-size="10" fill="#f87171">27.28 ms</text>
-  <rect x="160" y="1468" width="44" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="1478" text-anchor="end" font-size="10" fill="#60a5fa">20.04 ms</text>
+  <text x="700" y="1465" text-anchor="end" font-size="10" fill="#f87171">27.25 ms</text>
+  <rect x="160" y="1468" width="45" height="12" rx="4" fill="#60a5fa"/>
+  <text x="700" y="1478" text-anchor="end" font-size="10" fill="#60a5fa">20.17 ms</text>
   <rect x="160" y="1481" width="28" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1491" text-anchor="end" font-size="10" fill="#fb923c">12.82 ms</text>
+  <text x="700" y="1491" text-anchor="end" font-size="10" fill="#fb923c">12.54 ms</text>
 
   <text x="152" y="1534" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Fe tile</text>
   <rect x="160" y="1512" width="6" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="1522" text-anchor="end" font-size="10" fill="#4ade80">2.76 ms</text>
-  <rect x="160" y="1525" width="16" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="1535" text-anchor="end" font-size="10" fill="#f87171">7.01 ms</text>
-  <rect x="160" y="1538" width="6" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="1548" text-anchor="end" font-size="10" fill="#60a5fa">2.66 ms</text>
-  <rect x="160" y="1551" width="6" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1561" text-anchor="end" font-size="10" fill="#fb923c">2.64 ms</text>
-  <text x="720" y="1561" text-anchor="middle" font-size="10" fill="#fb923c">◄</text>
+  <text x="700" y="1522" text-anchor="end" font-size="10" fill="#4ade80">2.54 ms</text>
+  <rect x="160" y="1525" width="14" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="1535" text-anchor="end" font-size="10" fill="#f87171">6.34 ms</text>
+  <rect x="160" y="1538" width="5" height="12" rx="4" fill="#60a5fa"/>
+  <text x="700" y="1548" text-anchor="end" font-size="10" fill="#60a5fa">2.46 ms</text>
+  <text x="720" y="1548" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
+  <rect x="160" y="1551" width="5" height="12" rx="4" fill="#fb923c"/>
+  <text x="700" y="1561" text-anchor="end" font-size="10" fill="#fb923c">2.46 ms</text>
 
   <text x="152" y="1604" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Feimage data uri</text>
   <rect x="160" y="1582" width="4" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="1592" text-anchor="end" font-size="10" fill="#4ade80">1.66 ms</text>
-  <text x="720" y="1592" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
-  <rect x="160" y="1595" width="13" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="1605" text-anchor="end" font-size="10" fill="#f87171">5.73 ms</text>
+  <text x="700" y="1592" text-anchor="end" font-size="10" fill="#4ade80">1.57 ms</text>
+  <rect x="160" y="1595" width="12" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="1605" text-anchor="end" font-size="10" fill="#f87171">5.38 ms</text>
   <rect x="160" y="1608" width="4" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="1618" text-anchor="end" font-size="10" fill="#60a5fa">1.66 ms</text>
+  <text x="700" y="1618" text-anchor="end" font-size="10" fill="#60a5fa">1.56 ms</text>
+  <text x="720" y="1618" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
   <rect x="160" y="1621" width="4" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1631" text-anchor="end" font-size="10" fill="#fb923c">1.89 ms</text>
+  <text x="700" y="1631" text-anchor="end" font-size="10" fill="#fb923c">1.80 ms</text>
 
   <text x="152" y="1674" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Feimage inline ref</text>
   <rect x="160" y="1652" width="4" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="1662" text-anchor="end" font-size="10" fill="#4ade80">1.70 ms</text>
+  <text x="700" y="1662" text-anchor="end" font-size="10" fill="#4ade80">1.63 ms</text>
   <text x="720" y="1662" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
-  <rect x="160" y="1665" width="11" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="1675" text-anchor="end" font-size="10" fill="#f87171">4.78 ms</text>
-  <rect x="160" y="1678" width="5" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="1688" text-anchor="end" font-size="10" fill="#60a5fa">2.48 ms</text>
+  <rect x="160" y="1665" width="10" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="1675" text-anchor="end" font-size="10" fill="#f87171">4.48 ms</text>
+  <rect x="160" y="1678" width="6" height="12" rx="4" fill="#60a5fa"/>
+  <text x="700" y="1688" text-anchor="end" font-size="10" fill="#60a5fa">2.76 ms</text>
   <rect x="160" y="1691" width="4" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1701" text-anchor="end" font-size="10" fill="#fb923c">2.01 ms</text>
+  <text x="700" y="1701" text-anchor="end" font-size="10" fill="#fb923c">1.90 ms</text>
 
   <text x="152" y="1744" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Localized masks</text>
-  <rect x="160" y="1722" width="34" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="1732" text-anchor="end" font-size="10" fill="#4ade80">15.40 ms</text>
+  <rect x="160" y="1722" width="32" height="12" rx="4" fill="#4ade80"/>
+  <text x="700" y="1732" text-anchor="end" font-size="10" fill="#4ade80">14.46 ms</text>
   <text x="720" y="1732" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
-  <rect x="160" y="1735" width="128" height="12" rx="4" fill="#f87171"/>
-  <text x="700" y="1745" text-anchor="end" font-size="10" fill="#f87171">57.61 ms</text>
-  <rect x="160" y="1748" width="35" height="12" rx="4" fill="#60a5fa"/>
-  <text x="700" y="1758" text-anchor="end" font-size="10" fill="#60a5fa">15.71 ms</text>
-  <rect x="160" y="1761" width="37" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1771" text-anchor="end" font-size="10" fill="#fb923c">16.52 ms</text>
+  <rect x="160" y="1735" width="122" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="1745" text-anchor="end" font-size="10" fill="#f87171">55.07 ms</text>
+  <rect x="160" y="1748" width="32" height="12" rx="4" fill="#60a5fa"/>
+  <text x="700" y="1758" text-anchor="end" font-size="10" fill="#60a5fa">14.48 ms</text>
+  <rect x="160" y="1761" width="34" height="12" rx="4" fill="#fb923c"/>
+  <text x="700" y="1771" text-anchor="end" font-size="10" fill="#fb923c">15.46 ms</text>
 
 </svg>
