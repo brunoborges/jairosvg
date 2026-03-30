@@ -113,3 +113,8 @@ jobs:
           else
             echo "Milestone ${NEXT_VERSION} already exists, skipping"
           fi
+
+      - name: Trigger site deployment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run site.yml
