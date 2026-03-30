@@ -433,95 +433,102 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
             // Ignore point parsing errors
         }
 
-        // Get stroke and fill opacity
-        double strokeOpacity = parseDoubleOr(node.get("stroke-opacity"), 1);
-        double fillOpacity = parseDoubleOr(node.get("fill-opacity"), 1);
-        if (opacity < 1 && node.children.isEmpty()) {
-            strokeOpacity *= opacity;
-            fillOpacity *= opacity;
-        }
-
-        // Manage display and visibility
+        // Manage display
         boolean display = !"none".equals(node.get("display", "inline"));
-        boolean visible = display && !"hidden".equals(node.get("visibility", "visible"));
 
-        // Fill and stroke
-        if (strokeAndFill && visible && drawn && !path.getPathIterator(null).isDone()) {
-            // Fill — skip entirely when fill is "none" or fully transparent
-            String fillStr = node.get("fill", "black");
-            boolean doFill = !"none".equals(fillStr);
-            if (doFill) {
-                String[] paintValue = Helpers.paint(fillStr);
-                boolean gradientFill = Defs.gradientOrPattern(this, node, paintValue[0], fillOpacity);
-                if (!gradientFill) {
-                    Colors.RGBA fillColor = mapColor(paintValue[1], fillOpacity);
-                    doFill = fillColor.a() > 0;
-                    if (doFill)
-                        context.setColor(toAwtColor(fillColor));
+        // Fill and stroke — defer opacity/visibility computation until needed
+        if (strokeAndFill && drawn && !path.getPathIterator(null).isDone()) {
+            boolean visible = display && !"hidden".equals(node.get("visibility", "visible"));
+            if (visible) {
+                double strokeOpacity = parseDoubleOr(node.get("stroke-opacity"), 1);
+                double fillOpacity = parseDoubleOr(node.get("fill-opacity"), 1);
+                if (opacity < 1 && node.children.isEmpty()) {
+                    strokeOpacity *= opacity;
+                    fillOpacity *= opacity;
                 }
-                if (doFill || gradientFill) {
-                    // Set fill rule
-                    if ("evenodd".equals(node.get("fill-rule"))) {
-                        path.setWindingRule(GeneralPath.WIND_EVEN_ODD);
-                    } else {
-                        path.setWindingRule(GeneralPath.WIND_NON_ZERO);
+
+                // Fill — skip entirely when fill is "none" or fully transparent
+                String fillStr = node.get("fill", "black");
+                boolean doFill = !"none".equals(fillStr);
+                if (doFill) {
+                    boolean gradientFill = false;
+                    String fillColorStr = fillStr;
+                    if (fillStr.charAt(0) == 'u' && fillStr.startsWith("url")) {
+                        String[] paintValue = Helpers.paint(fillStr);
+                        gradientFill = Defs.gradientOrPattern(this, node, paintValue[0], fillOpacity);
+                        if (!gradientFill) {
+                            fillColorStr = paintValue[1];
+                        }
                     }
-                    context.fill(path);
-                }
-            }
-
-            // Stroke
-            String[] strokePaint = Helpers.paint(node.get("stroke"));
-            if (strokePaint[1] != null && !"none".equals(strokePaint[1])) {
-                if (!Defs.gradientOrPattern(this, node, strokePaint[0], strokeOpacity)) {
-                    Colors.RGBA strokeColor = mapColor(strokePaint[1], strokeOpacity);
-                    if (strokeColor.a() > 0) {
-                        context.setColor(toAwtColor(strokeColor));
-                    } else {
-                        strokePaint[1] = null; // suppress stroke
+                    if (!gradientFill) {
+                        Colors.RGBA fillColor = mapColor(fillColorStr, fillOpacity);
+                        doFill = fillColor.a() > 0;
+                        if (doFill)
+                            context.setColor(toAwtColor(fillColor));
+                    }
+                    if (doFill || gradientFill) {
+                        // Set fill rule
+                        if ("evenodd".equals(node.get("fill-rule"))) {
+                            path.setWindingRule(GeneralPath.WIND_EVEN_ODD);
+                        } else {
+                            path.setWindingRule(GeneralPath.WIND_NON_ZERO);
+                        }
+                        context.fill(path);
                     }
                 }
 
-                if (strokePaint[1] != null) {
-                    float strokeWidth = (float) size(this, node.get("stroke-width", "1"));
-                    int cap = getLineCap(node.get("stroke-linecap"));
-                    int join = getLineJoin(node.get("stroke-linejoin"));
-                    float miterLimit = (float) parseDoubleOr(node.get("stroke-miterlimit"), 4);
-
-                    // Dash array
-                    String dashStr = node.get("stroke-dasharray", "").strip();
-                    float[] dashArray = null;
-                    if (!dashStr.isEmpty() && !"none".equals(dashStr)) {
-                        float[] cached = dashArrayCache.computeIfAbsent(dashStr, k -> {
-                            String[] parts = WHITESPACE.split(normalize(k));
-                            float[] arr = new float[parts.length];
-                            float sum = 0;
-                            for (int i = 0; i < parts.length; i++) {
-                                arr[i] = (float) size(Surface.this, parts[i]);
-                                sum += arr[i];
-                            }
-                            return sum == 0 ? NO_DASH : arr;
-                        });
-                        if (cached != NO_DASH) {
-                            dashArray = cached;
+                // Stroke
+                String[] strokePaint = Helpers.paint(node.get("stroke"));
+                if (strokePaint[1] != null && !"none".equals(strokePaint[1])) {
+                    if (!Defs.gradientOrPattern(this, node, strokePaint[0], strokeOpacity)) {
+                        Colors.RGBA strokeColor = mapColor(strokePaint[1], strokeOpacity);
+                        if (strokeColor.a() > 0) {
+                            context.setColor(toAwtColor(strokeColor));
+                        } else {
+                            strokePaint[1] = null; // suppress stroke
                         }
                     }
 
-                    float dashOffset = (float) size(this, node.get("stroke-dashoffset"));
+                    if (strokePaint[1] != null) {
+                        float strokeWidth = (float) size(this, node.get("stroke-width", "1"));
+                        int cap = getLineCap(node.get("stroke-linecap"));
+                        int join = getLineJoin(node.get("stroke-linejoin"));
+                        float miterLimit = (float) parseDoubleOr(node.get("stroke-miterlimit"), 4);
 
-                    BasicStroke stroke = dashArray != null
-                            ? new BasicStroke(strokeWidth, cap, join, miterLimit, dashArray, dashOffset)
-                            : new BasicStroke(strokeWidth, cap, join, miterLimit);
+                        // Dash array
+                        String dashStr = node.get("stroke-dasharray", "").strip();
+                        float[] dashArray = null;
+                        if (!dashStr.isEmpty() && !"none".equals(dashStr)) {
+                            float[] cached = dashArrayCache.computeIfAbsent(dashStr, k -> {
+                                String[] parts = WHITESPACE.split(normalize(k));
+                                float[] arr = new float[parts.length];
+                                float sum = 0;
+                                for (int i = 0; i < parts.length; i++) {
+                                    arr[i] = (float) size(Surface.this, parts[i]);
+                                    sum += arr[i];
+                                }
+                                return sum == 0 ? NO_DASH : arr;
+                            });
+                            if (cached != NO_DASH) {
+                                dashArray = cached;
+                            }
+                        }
 
-                    context.setStroke(stroke);
-                    context.draw(path);
+                        float dashOffset = (float) size(this, node.get("stroke-dashoffset"));
+
+                        BasicStroke stroke = dashArray != null
+                                ? new BasicStroke(strokeWidth, cap, join, miterLimit, dashArray, dashOffset)
+                                : new BasicStroke(strokeWidth, cap, join, miterLimit);
+
+                        context.setStroke(stroke);
+                        context.draw(path);
+                    }
                 }
-            }
 
-            Defs.drawMarkers(this, node);
-        } else if (!visible) {
-            // Reset path
-            path.reset();
+                Defs.drawMarkers(this, node);
+            } else {
+                path.reset();
+            }
         }
 
         // Draw children

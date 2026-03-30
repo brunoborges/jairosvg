@@ -608,7 +608,8 @@ class ShapeRenderingTest {
     void testSubRegionMaskCorrectness() throws Exception {
         // Small masked element (50x30) on a large canvas (500x400).
         // Sub-region optimization should allocate a ~50x30 effect buffer instead of
-        // 500x400. Validates that: pixels inside the element have correct luminance-derived
+        // 500x400. Validates that: pixels inside the element have correct
+        // luminance-derived
         // alpha, pixels outside the element are fully transparent, and the surrounding
         // canvas area is not corrupted.
         String svg = """
@@ -625,7 +626,8 @@ class ShapeRenderingTest {
         BufferedImage image = ImageIO
                 .read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
 
-        // Pixel inside masked element: white mask → full luminance → alpha should be 255
+        // Pixel inside masked element: white mask → full luminance → alpha should be
+        // 255
         int insideRGB = image.getRGB(220, 162);
         int insideAlpha = (insideRGB >>> 24) & 0xFF;
         int insideBlue = insideRGB & 0xFF;

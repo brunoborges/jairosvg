@@ -500,6 +500,9 @@ public final class Helpers {
         } else if (string.endsWith("ch")) {
             numPart = string.substring(0, string.length() - 2);
             unit = "ch";
+        } else if (string.endsWith("pt")) {
+            numPart = string.substring(0, string.length() - 2);
+            unit = "pt";
         } else {
             for (var entry : UNITS.entrySet()) {
                 if (string.endsWith(entry.getKey())) {
@@ -532,6 +535,9 @@ public final class Helpers {
         } else if (string.endsWith("ch")) {
             numPart = string.substring(0, string.length() - 2);
             unit = "ch";
+        } else if (string.endsWith("pt")) {
+            numPart = string.substring(0, string.length() - 2);
+            unit = "pt";
         } else if (string.endsWith("px")) {
             numPart = string.substring(0, string.length() - 2);
             unit = "px";
