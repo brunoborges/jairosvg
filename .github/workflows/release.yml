@@ -100,8 +100,14 @@ jobs:
             echo "Closed milestone ${VERSION}"
           fi
 
-          # Create the next milestone
-          gh api "repos/${{ github.repository }}/milestones" \
-            -f title="${NEXT_VERSION}" -f state=open \
-            -f description="Next development release" --silent
-          echo "Created milestone ${NEXT_VERSION}"
+          # Create the next milestone (skip if it already exists)
+          EXISTING=$(gh api "repos/${{ github.repository }}/milestones?state=open&per_page=100" \
+            --jq ".[] | select(.title == \"${NEXT_VERSION}\") | .number")
+          if [ -z "$EXISTING" ]; then
+            gh api "repos/${{ github.repository }}/milestones" \
+              -f title="${NEXT_VERSION}" -f state=open \
+              -f description="Next development release" --silent
+            echo "Created milestone ${NEXT_VERSION}"
+          else
+            echo "Milestone ${NEXT_VERSION} already exists, skipping"
+          fi
