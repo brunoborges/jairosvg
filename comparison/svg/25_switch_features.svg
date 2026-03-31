@@ -2,65 +2,65 @@
   <rect width="420" height="220" fill="#f7f9fb"/>
 
   <text x="210" y="25" text-anchor="middle" font-size="16" fill="#555"
-        font-family="sans-serif">Switch + requiredFeatures</text>
+        font-family="Arial, Helvetica, sans-serif">Switch + requiredFeatures</text>
 
   <!-- Test 1: Supported feature → first child should render (green) -->
-  <text x="20" y="60" font-size="12" fill="#555" font-family="sans-serif">Supported feature:</text>
+  <text x="20" y="60" font-size="12" fill="#555" font-family="Arial, Helvetica, sans-serif">Supported feature:</text>
   <switch>
     <g requiredFeatures="http://www.w3.org/TR/SVG11/feature#BasicStructure">
       <rect x="20" y="70" width="160" height="50" rx="8" fill="#27ae60"/>
       <text x="100" y="100" text-anchor="middle" font-size="14" fill="white"
-            font-family="sans-serif">✓ BasicStructure</text>
+            font-family="Arial, Helvetica, sans-serif">✓ BasicStructure</text>
     </g>
     <g>
       <rect x="20" y="70" width="160" height="50" rx="8" fill="#e74c3c"/>
       <text x="100" y="100" text-anchor="middle" font-size="14" fill="white"
-            font-family="sans-serif">✗ Fallback</text>
+            font-family="Arial, Helvetica, sans-serif">✗ Fallback</text>
     </g>
   </switch>
 
   <!-- Test 2: Unsupported feature → fallback child should render (blue) -->
-  <text x="230" y="60" font-size="12" fill="#555" font-family="sans-serif">Unsupported feature:</text>
+  <text x="230" y="60" font-size="12" fill="#555" font-family="Arial, Helvetica, sans-serif">Unsupported feature:</text>
   <switch>
     <g requiredFeatures="http://www.w3.org/TR/SVG11/feature#Animation">
       <rect x="230" y="70" width="160" height="50" rx="8" fill="#e74c3c"/>
       <text x="310" y="100" text-anchor="middle" font-size="14" fill="white"
-            font-family="sans-serif">✗ Animation</text>
+            font-family="Arial, Helvetica, sans-serif">✗ Animation</text>
     </g>
     <g>
       <rect x="230" y="70" width="160" height="50" rx="8" fill="#3498db"/>
       <text x="310" y="100" text-anchor="middle" font-size="14" fill="white"
-            font-family="sans-serif">✓ Fallback</text>
+            font-family="Arial, Helvetica, sans-serif">✓ Fallback</text>
     </g>
   </switch>
 
   <!-- Test 3: Multiple features (Shape) -->
-  <text x="20" y="155" font-size="12" fill="#555" font-family="sans-serif">Shape feature:</text>
+  <text x="20" y="155" font-size="12" fill="#555" font-family="Arial, Helvetica, sans-serif">Shape feature:</text>
   <switch>
     <g requiredFeatures="http://www.w3.org/TR/SVG11/feature#Shape">
       <rect x="20" y="165" width="160" height="40" rx="8" fill="#27ae60"/>
       <text x="100" y="190" text-anchor="middle" font-size="13" fill="white"
-            font-family="sans-serif">✓ Shape</text>
+            font-family="Arial, Helvetica, sans-serif">✓ Shape</text>
     </g>
     <g>
       <rect x="20" y="165" width="160" height="40" rx="8" fill="#e74c3c"/>
       <text x="100" y="190" text-anchor="middle" font-size="13" fill="white"
-            font-family="sans-serif">✗ Fallback</text>
+            font-family="Arial, Helvetica, sans-serif">✗ Fallback</text>
     </g>
   </switch>
 
   <!-- Test 4: systemLanguage (en) -->
-  <text x="230" y="155" font-size="12" fill="#555" font-family="sans-serif">systemLanguage:</text>
+  <text x="230" y="155" font-size="12" fill="#555" font-family="Arial, Helvetica, sans-serif">systemLanguage:</text>
   <switch>
     <g systemLanguage="en">
       <rect x="230" y="165" width="160" height="40" rx="8" fill="#9b59b6"/>
       <text x="310" y="190" text-anchor="middle" font-size="13" fill="white"
-            font-family="sans-serif">English</text>
+            font-family="Arial, Helvetica, sans-serif">English</text>
     </g>
     <g>
       <rect x="230" y="165" width="160" height="40" rx="8" fill="#95a5a6"/>
       <text x="310" y="190" text-anchor="middle" font-size="13" fill="white"
-            font-family="sans-serif">Default</text>
+            font-family="Arial, Helvetica, sans-serif">Default</text>
     </g>
   </switch>
 </svg>

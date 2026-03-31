@@ -2,41 +2,41 @@
   <rect width="420" height="220" fill="#f7f9fb"/>
 
   <text x="210" y="25" text-anchor="middle" font-size="16" fill="#555"
-        font-family="sans-serif">Advanced Stroke Properties</text>
+        font-family="Arial, Helvetica, sans-serif">Advanced Stroke Properties</text>
 
   <!-- stroke-dashoffset examples -->
-  <text x="20" y="50" font-size="12" fill="#555" font-family="sans-serif">stroke-dashoffset:</text>
+  <text x="20" y="50" font-size="12" fill="#555" font-family="Arial, Helvetica, sans-serif">stroke-dashoffset:</text>
 
   <line x1="20" y1="65" x2="400" y2="65" stroke="#2c7be5" stroke-width="4"
         stroke-dasharray="20,10" stroke-dashoffset="0"/>
-  <text x="405" y="69" font-size="9" fill="#888" font-family="sans-serif">offset=0</text>
+  <text x="405" y="69" font-size="9" fill="#888" font-family="Arial, Helvetica, sans-serif">offset=0</text>
 
   <line x1="20" y1="85" x2="400" y2="85" stroke="#e74c3c" stroke-width="4"
         stroke-dasharray="20,10" stroke-dashoffset="10"/>
-  <text x="405" y="89" font-size="9" fill="#888" font-family="sans-serif">offset=10</text>
+  <text x="405" y="89" font-size="9" fill="#888" font-family="Arial, Helvetica, sans-serif">offset=10</text>
 
   <line x1="20" y1="105" x2="400" y2="105" stroke="#27ae60" stroke-width="4"
         stroke-dasharray="20,10" stroke-dashoffset="25"/>
-  <text x="405" y="109" font-size="9" fill="#888" font-family="sans-serif">offset=25</text>
+  <text x="405" y="109" font-size="9" fill="#888" font-family="Arial, Helvetica, sans-serif">offset=25</text>
 
   <!-- stroke-miterlimit examples -->
-  <text x="20" y="140" font-size="12" fill="#555" font-family="sans-serif">stroke-miterlimit:</text>
+  <text x="20" y="140" font-size="12" fill="#555" font-family="Arial, Helvetica, sans-serif">stroke-miterlimit:</text>
 
   <!-- Low miterlimit = bevel fallback -->
   <polyline points="30,205 70,155 110,205" stroke="#e74c3c" stroke-width="12"
             fill="none" stroke-linejoin="miter" stroke-miterlimit="1"/>
   <text x="70" y="218" text-anchor="middle" font-size="9" fill="#888"
-        font-family="sans-serif">limit=1 (bevel)</text>
+        font-family="Arial, Helvetica, sans-serif">limit=1 (bevel)</text>
 
   <!-- Default miterlimit -->
   <polyline points="145,205 185,155 225,205" stroke="#3498db" stroke-width="12"
             fill="none" stroke-linejoin="miter" stroke-miterlimit="4"/>
   <text x="185" y="218" text-anchor="middle" font-size="9" fill="#888"
-        font-family="sans-serif">limit=4 (default)</text>
+        font-family="Arial, Helvetica, sans-serif">limit=4 (default)</text>
 
   <!-- High miterlimit = sharp miter -->
   <polyline points="260,205 300,155 340,205" stroke="#27ae60" stroke-width="12"
             fill="none" stroke-linejoin="miter" stroke-miterlimit="10"/>
   <text x="300" y="218" text-anchor="middle" font-size="9" fill="#888"
-        font-family="sans-serif">limit=10 (sharp)</text>
+        font-family="Arial, Helvetica, sans-serif">limit=10 (sharp)</text>
 </svg>

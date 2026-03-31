@@ -2,33 +2,33 @@
   <rect width="420" height="220" fill="#f7f9fb"/>
 
   <text x="210" y="25" text-anchor="middle" font-size="16" fill="#555"
-        font-family="sans-serif">Nested SVG Overflow Clipping</text>
+        font-family="Arial, Helvetica, sans-serif">Nested SVG Overflow Clipping</text>
 
   <!-- overflow="hidden" -->
   <text x="70" y="50" text-anchor="middle" font-size="12" fill="#555"
-        font-family="sans-serif">overflow="hidden"</text>
+        font-family="Arial, Helvetica, sans-serif">overflow="hidden"</text>
   <rect x="19" y="59" width="102" height="102" fill="none" stroke="#bdc3c7" stroke-dasharray="3,3"/>
   <svg x="20" y="60" width="100" height="100" overflow="hidden">
     <rect x="-20" y="-20" width="200" height="200" fill="#e74c3c" opacity="0.8"/>
     <circle cx="50" cy="50" r="60" fill="#f1c40f" opacity="0.7"/>
     <text x="50" y="55" text-anchor="middle" font-size="14" fill="white"
-          font-family="sans-serif">clipped</text>
+          font-family="Arial, Helvetica, sans-serif">clipped</text>
   </svg>
 
   <!-- overflow="scroll" (treated same as hidden) -->
   <text x="220" y="50" text-anchor="middle" font-size="12" fill="#555"
-        font-family="sans-serif">overflow="scroll"</text>
+        font-family="Arial, Helvetica, sans-serif">overflow="scroll"</text>
   <rect x="169" y="59" width="102" height="102" fill="none" stroke="#bdc3c7" stroke-dasharray="3,3"/>
   <svg x="170" y="60" width="100" height="100" overflow="scroll">
     <rect x="-20" y="-20" width="200" height="200" fill="#3498db" opacity="0.8"/>
     <circle cx="50" cy="50" r="60" fill="#2ecc71" opacity="0.7"/>
     <text x="50" y="55" text-anchor="middle" font-size="14" fill="white"
-          font-family="sans-serif">clipped</text>
+          font-family="Arial, Helvetica, sans-serif">clipped</text>
   </svg>
 
   <!-- overflow="visible" (default — content overflows) -->
   <text x="370" y="50" text-anchor="middle" font-size="12" fill="#555"
-        font-family="sans-serif">overflow="visible"</text>
+        font-family="Arial, Helvetica, sans-serif">overflow="visible"</text>
   <rect x="319" y="59" width="102" height="102" fill="none" stroke="#bdc3c7" stroke-dasharray="3,3"/>
   <svg x="320" y="60" width="100" height="100" overflow="visible">
     <rect x="0" y="0" width="100" height="100" fill="#9b59b6" opacity="0.6"/>
@@ -37,7 +37,7 @@
 
   <!-- overflow="auto" -->
   <text x="70" y="190" text-anchor="middle" font-size="12" fill="#555"
-        font-family="sans-serif">overflow="auto"</text>
+        font-family="Arial, Helvetica, sans-serif">overflow="auto"</text>
   <rect x="19" y="194" width="102" height="22" fill="none" stroke="#bdc3c7" stroke-dasharray="3,3"/>
   <svg x="20" y="195" width="100" height="20" overflow="auto">
     <rect x="0" y="0" width="200" height="40" fill="#1abc9c" opacity="0.8"/>

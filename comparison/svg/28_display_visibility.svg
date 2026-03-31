@@ -2,48 +2,48 @@
   <rect width="420" height="220" fill="#f7f9fb"/>
 
   <text x="210" y="25" text-anchor="middle" font-size="16" fill="#555"
-        font-family="sans-serif">Display &amp; Visibility</text>
+        font-family="Arial, Helvetica, sans-serif">Display &amp; Visibility</text>
 
   <!-- Test 1: display="none" — element should not render -->
-  <text x="20" y="55" font-size="12" fill="#555" font-family="sans-serif">display="none":</text>
+  <text x="20" y="55" font-size="12" fill="#555" font-family="Arial, Helvetica, sans-serif">display="none":</text>
   <rect x="20" y="65" width="80" height="50" rx="6" fill="#27ae60"/>
   <rect x="20" y="65" width="80" height="50" rx="6" fill="#e74c3c" display="none"/>
   <text x="60" y="130" text-anchor="middle" font-size="10" fill="#888"
-        font-family="sans-serif">green visible</text>
+        font-family="Arial, Helvetica, sans-serif">green visible</text>
 
   <!-- Test 2: visibility="hidden" — element hidden but occupies space -->
-  <text x="150" y="55" font-size="12" fill="#555" font-family="sans-serif">visibility="hidden":</text>
+  <text x="150" y="55" font-size="12" fill="#555" font-family="Arial, Helvetica, sans-serif">visibility="hidden":</text>
   <rect x="150" y="65" width="80" height="50" rx="6" fill="#27ae60"/>
   <rect x="150" y="65" width="80" height="50" rx="6" fill="#e74c3c" visibility="hidden"/>
   <text x="190" y="130" text-anchor="middle" font-size="10" fill="#888"
-        font-family="sans-serif">green visible</text>
+        font-family="Arial, Helvetica, sans-serif">green visible</text>
 
   <!-- Test 3: Group display="none" suppresses all children -->
-  <text x="290" y="55" font-size="12" fill="#555" font-family="sans-serif">group display="none":</text>
+  <text x="290" y="55" font-size="12" fill="#555" font-family="Arial, Helvetica, sans-serif">group display="none":</text>
   <rect x="290" y="65" width="110" height="50" rx="6" fill="#3498db"/>
   <g display="none">
     <rect x="290" y="65" width="110" height="50" rx="6" fill="#e74c3c"/>
     <circle cx="345" cy="90" r="15" fill="#f1c40f"/>
   </g>
   <text x="345" y="130" text-anchor="middle" font-size="10" fill="#888"
-        font-family="sans-serif">blue visible</text>
+        font-family="Arial, Helvetica, sans-serif">blue visible</text>
 
   <!-- Test 4: visibility="hidden" on group but child overrides to "visible" -->
-  <text x="20" y="160" font-size="12" fill="#555" font-family="sans-serif">hidden group, visible child:</text>
+  <text x="20" y="160" font-size="12" fill="#555" font-family="Arial, Helvetica, sans-serif">hidden group, visible child:</text>
   <rect x="20" y="170" width="170" height="35" rx="6" fill="#ecf0f1" stroke="#bdc3c7"/>
   <g visibility="hidden">
     <rect x="25" y="175" width="60" height="25" rx="4" fill="#e74c3c"/>
     <rect x="95" y="175" width="90" height="25" rx="4" fill="#27ae60" visibility="visible"/>
   </g>
-  <text x="40" y="215" font-size="9" fill="#888" font-family="sans-serif">hidden</text>
-  <text x="120" y="215" font-size="9" fill="#888" font-family="sans-serif">visible override</text>
+  <text x="40" y="215" font-size="9" fill="#888" font-family="Arial, Helvetica, sans-serif">hidden</text>
+  <text x="120" y="215" font-size="9" fill="#888" font-family="Arial, Helvetica, sans-serif">visible override</text>
 
   <!-- Test 5: Opacity comparison -->
-  <text x="230" y="160" font-size="12" fill="#555" font-family="sans-serif">opacity=0 vs hidden:</text>
+  <text x="230" y="160" font-size="12" fill="#555" font-family="Arial, Helvetica, sans-serif">opacity=0 vs hidden:</text>
   <rect x="230" y="170" width="60" height="35" rx="6" fill="#9b59b6" opacity="0"/>
   <rect x="300" y="170" width="60" height="35" rx="6" fill="#9b59b6" visibility="hidden"/>
   <rect x="370" y="170" width="30" height="35" rx="6" fill="#9b59b6"/>
-  <text x="260" y="215" font-size="9" fill="#888" font-family="sans-serif">opacity=0</text>
-  <text x="330" y="215" font-size="9" fill="#888" font-family="sans-serif">hidden</text>
-  <text x="385" y="215" font-size="9" fill="#888" font-family="sans-serif">ref</text>
+  <text x="260" y="215" font-size="9" fill="#888" font-family="Arial, Helvetica, sans-serif">opacity=0</text>
+  <text x="330" y="215" font-size="9" fill="#888" font-family="Arial, Helvetica, sans-serif">hidden</text>
+  <text x="385" y="215" font-size="9" fill="#888" font-family="Arial, Helvetica, sans-serif">ref</text>
 </svg>

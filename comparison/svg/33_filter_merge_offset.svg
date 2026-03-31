@@ -2,7 +2,7 @@
   <rect width="420" height="220" fill="#f7f9fb"/>
 
   <text x="210" y="25" text-anchor="middle" font-size="16" fill="#555"
-        font-family="sans-serif">Filter Primitives — feMerge &amp; feOffset</text>
+        font-family="Arial, Helvetica, sans-serif">Filter Primitives — feMerge &amp; feOffset</text>
 
   <defs>
     <!-- Simple feOffset shadow -->
@@ -47,30 +47,30 @@
 
   <!-- feOffset shadow -->
   <text x="75" y="55" text-anchor="middle" font-size="11" fill="#555"
-        font-family="sans-serif">offset shadow</text>
+        font-family="Arial, Helvetica, sans-serif">offset shadow</text>
   <rect x="20" y="60" width="110" height="60" rx="10" fill="#2c7be5"
         filter="url(#fOffset)"/>
 
   <!-- feOffset only (shifted element) -->
   <text x="240" y="55" text-anchor="middle" font-size="11" fill="#555"
-        font-family="sans-serif">feOffset only (dx=15, dy=15)</text>
+        font-family="Arial, Helvetica, sans-serif">feOffset only (dx=15, dy=15)</text>
   <rect x="195" y="60" width="60" height="40" rx="6" fill="#27ae60"
         filter="url(#fOffsetOnly)"/>
 
   <!-- feMerge with flood overlay -->
   <text x="370" y="55" text-anchor="middle" font-size="11" fill="#555"
-        font-family="sans-serif">feMerge + feFlood</text>
+        font-family="Arial, Helvetica, sans-serif">feMerge + feFlood</text>
   <rect x="320" y="60" width="100" height="60" rx="10" fill="#3498db"
         filter="url(#fMergeFlood)"/>
 
   <!-- Multi-layer offset merge -->
   <text x="100" y="155" text-anchor="middle" font-size="11" fill="#555"
-        font-family="sans-serif">multi-layer feMerge</text>
+        font-family="Arial, Helvetica, sans-serif">multi-layer feMerge</text>
   <rect x="30" y="160" width="80" height="45" rx="8" fill="#9b59b6"
         filter="url(#fMultiMerge)"/>
 
   <!-- Text with offset shadow -->
-  <text x="250" y="165" font-size="11" fill="#555" font-family="sans-serif">text with shadow filter:</text>
-  <text x="250" y="195" font-size="28" fill="#e67e22" font-family="sans-serif"
+  <text x="250" y="165" font-size="11" fill="#555" font-family="Arial, Helvetica, sans-serif">text with shadow filter:</text>
+  <text x="250" y="195" font-size="28" fill="#e67e22" font-family="Arial, Helvetica, sans-serif"
         font-weight="bold" filter="url(#fOffset)">Shadow</text>
 </svg>

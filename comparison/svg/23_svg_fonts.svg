@@ -26,7 +26,7 @@
 
   <!-- Title -->
   <text x="210" y="30" text-anchor="middle" font-size="16" fill="#555"
-        font-family="sans-serif">SVG Fonts — Custom Glyphs</text>
+        font-family="Arial, Helvetica, sans-serif">SVG Fonts — Custom Glyphs</text>
 
   <!-- Row 1: Custom font rendering -->
   <text x="20" y="110" font-family="BlockFont" font-size="72" fill="#2c7be5">SVG</text>
@@ -35,8 +35,8 @@
   <text x="20" y="190" font-family="BlockFont" font-size="48" fill="#e74c3c">SVG?Z</text>
 
   <!-- Label -->
-  <text x="380" y="110" font-size="11" fill="#888" font-family="sans-serif"
+  <text x="380" y="110" font-size="11" fill="#888" font-family="Arial, Helvetica, sans-serif"
         text-anchor="end">custom glyphs</text>
-  <text x="380" y="190" font-size="11" fill="#888" font-family="sans-serif"
+  <text x="380" y="190" font-size="11" fill="#888" font-family="Arial, Helvetica, sans-serif"
         text-anchor="end">missing-glyph ▸</text>
 </svg>

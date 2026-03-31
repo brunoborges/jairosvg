@@ -2,7 +2,7 @@
   <rect width="420" height="320" fill="#f7f9fb"/>
 
   <text x="210" y="25" text-anchor="middle" font-size="16" fill="#555"
-        font-family="sans-serif">Advanced Gradients</text>
+        font-family="Arial, Helvetica, sans-serif">Advanced Gradients</text>
 
   <defs>
     <!-- spreadMethod="reflect" -->
@@ -58,44 +58,44 @@
   </defs>
 
   <!-- Row 1: spreadMethod -->
-  <text x="20" y="50" font-size="12" fill="#555" font-family="sans-serif">spreadMethod:</text>
+  <text x="20" y="50" font-size="12" fill="#555" font-family="Arial, Helvetica, sans-serif">spreadMethod:</text>
   <rect x="20" y="55" width="200" height="35" rx="4" fill="url(#gReflect)"/>
   <text x="120" y="105" text-anchor="middle" font-size="9" fill="#888"
-        font-family="sans-serif">reflect</text>
+        font-family="Arial, Helvetica, sans-serif">reflect</text>
 
   <rect x="20" y="110" width="200" height="35" rx="4" fill="url(#gRepeat)"/>
   <text x="120" y="160" text-anchor="middle" font-size="9" fill="#888"
-        font-family="sans-serif">repeat</text>
+        font-family="Arial, Helvetica, sans-serif">repeat</text>
 
   <rect x="20" y="165" width="200" height="35" rx="4" fill="url(#gPad)"/>
   <text x="120" y="215" text-anchor="middle" font-size="9" fill="#888"
-        font-family="sans-serif">pad (default)</text>
+        font-family="Arial, Helvetica, sans-serif">pad (default)</text>
 
   <!-- Row 1 right: fx/fy focus -->
-  <text x="330" y="50" font-size="12" fill="#555" font-family="sans-serif">fx/fy focus:</text>
+  <text x="330" y="50" font-size="12" fill="#555" font-family="Arial, Helvetica, sans-serif">fx/fy focus:</text>
   <circle cx="290" cy="100" r="45" fill="url(#gFocus)"/>
   <text x="290" y="155" text-anchor="middle" font-size="9" fill="#888"
-        font-family="sans-serif">fx=25% fy=25%</text>
+        font-family="Arial, Helvetica, sans-serif">fx=25% fy=25%</text>
 
   <circle cx="390" cy="100" r="45" fill="url(#gFocusOffset)"/>
   <text x="390" y="155" text-anchor="middle" font-size="9" fill="#888"
-        font-family="sans-serif">fx=80% fy=20%</text>
+        font-family="Arial, Helvetica, sans-serif">fx=80% fy=20%</text>
 
   <!-- Row 3: href inheritance -->
-  <text x="260" y="175" font-size="12" fill="#555" font-family="sans-serif">href inheritance:</text>
+  <text x="260" y="175" font-size="12" fill="#555" font-family="Arial, Helvetica, sans-serif">href inheritance:</text>
   <rect x="260" y="180" width="140" height="30" rx="4" fill="url(#gDerived)"/>
   <text x="330" y="225" text-anchor="middle" font-size="9" fill="#888"
-        font-family="sans-serif">horizontal (inherited stops)</text>
+        font-family="Arial, Helvetica, sans-serif">horizontal (inherited stops)</text>
 
   <rect x="260" y="235" width="140" height="30" rx="4" fill="url(#gDerivedV)"/>
   <text x="330" y="280" text-anchor="middle" font-size="9" fill="#888"
-        font-family="sans-serif">vertical (inherited stops)</text>
+        font-family="Arial, Helvetica, sans-serif">vertical (inherited stops)</text>
 
   <!-- Row 4: gradientUnits="userSpaceOnUse" -->
-  <text x="20" y="230" font-size="12" fill="#555" font-family="sans-serif">gradientUnits="userSpaceOnUse":</text>
+  <text x="20" y="230" font-size="12" fill="#555" font-family="Arial, Helvetica, sans-serif">gradientUnits="userSpaceOnUse":</text>
   <rect x="20" y="240" width="180" height="35" rx="4" fill="url(#gUserSpace)"/>
   <circle cx="80" cy="300" r="15" fill="url(#gUserSpace)"/>
   <circle cx="140" cy="300" r="15" fill="url(#gUserSpace)"/>
   <text x="110" y="315" text-anchor="middle" font-size="9" fill="#888"
-        font-family="sans-serif">shared coordinate space</text>
+        font-family="Arial, Helvetica, sans-serif">shared coordinate space</text>
 </svg>
