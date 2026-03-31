@@ -5,10 +5,11 @@
 ## Why JairoSVG?
 
 - 🎨 **Pure Java** — No native dependencies, runs anywhere Java runs
-- ⚡ **Fast** — 2-5x faster than EchoSVG, competitive with CairoSVG's C backend
+- ⚡ **Fast** — 2–26x faster than EchoSVG, on par with JSVG, 1–2.4x faster than CairoSVG's native C backend
 - 📄 **Multiple formats** — PNG, JPEG, TIFF, PDF, PostScript/EPS output
 - 🛡️ **Secure** — XXE protection enabled by default
 - 🧰 **Flexible** — Static methods, fluent builder API, and CLI
+- 🎭 **Rich SVG support** — Gradients, filters, masks, patterns, clip paths, markers, text, and more
 
 ## Quick Install
 

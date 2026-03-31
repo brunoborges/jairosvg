@@ -22,8 +22,7 @@ Where `INPUT` is a path to an SVG file or a URL.
 | `--output-width PX` | | Desired output width | — |
 | `--output-height PX` | | Desired output height | — |
 | `--negate-colors` | `-n` | Negate (invert) vector colors | off |
-| `--invert-images` | `-i` | Invert raster image colors | off |
-| `--unsafe` | `-u` | Allow external file access | off |
+| `--unsafe` | `-u` | Allow external file access and XML entities | off |
 | `--version` | | Print version and exit | |
 | `--help` | `-h` | Print help and exit | |
 
@@ -37,6 +36,9 @@ java --enable-preview -jar jairosvg-cli.jar logo.svg -o logo.png
 
 # SVG to PDF
 java --enable-preview -jar jairosvg-cli.jar diagram.svg -f pdf -o diagram.pdf
+
+# SVG to JPEG
+java --enable-preview -jar jairosvg-cli.jar photo.svg -f jpeg -o photo.jpg
 ```
 
 ### Scaling and DPI
@@ -69,4 +71,14 @@ java --enable-preview -jar jairosvg-cli.jar https://example.com/image.svg -o out
 
 ```bash
 java --enable-preview -jar jairosvg-cli.jar input.svg | display
+```
+
+### Using JBang
+
+```bash
+# Install JairoSVG to local Maven repo first
+./mvnw install -DskipTests
+
+# Run via JBang catalog
+jbang jairosvg@brunoborges input.svg -o output.png
 ```
