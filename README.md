@@ -3,7 +3,7 @@
 [![CI](https://github.com/brunoborges/jairosvg/actions/workflows/ci.yml/badge.svg)](https://github.com/brunoborges/jairosvg/actions/workflows/ci.yml)
 [![Benchmark](https://github.com/brunoborges/jairosvg/actions/workflows/benchmark.yml/badge.svg)](https://github.com/brunoborges/jairosvg/actions/workflows/benchmark.yml)
 [![Native Image](https://github.com/brunoborges/jairosvg/actions/workflows/native-image.yml/badge.svg)](https://github.com/brunoborges/jairosvg/actions/workflows/native-image.yml)
-[![Coverage](https://img.shields.io/badge/coverage-96%25-brightgreen)](https://github.com/brunoborges/jairosvg/actions/workflows/ci.yml)
+[![Coverage](https://codecov.io/gh/brunoborges/jairosvg/graph/badge.svg)](https://codecov.io/gh/brunoborges/jairosvg)
 [![Maven Central](https://img.shields.io/maven-central/v/io.brunoborges/jairosvg)](https://central.sonatype.com/artifact/io.brunoborges/jairosvg)
 [![Javadoc](https://javadoc.io/badge2/io.brunoborges/jairosvg/javadoc.svg)](https://javadoc.io/doc/io.brunoborges/jairosvg)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
