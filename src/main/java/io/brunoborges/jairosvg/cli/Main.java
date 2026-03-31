@@ -54,7 +54,7 @@ public final class Main {
                 case "--output-width" -> outputWidth = Double.parseDouble(args[++i]);
                 case "--output-height" -> outputHeight = Double.parseDouble(args[++i]);
                 default -> {
-                    if (!args[i].startsWith("-")) {
+                    if (!args[i].startsWith("-") || "-".equals(args[i])) {
                         input = args[i];
                     }
                 }
@@ -64,7 +64,7 @@ public final class Main {
         if (input == null) {
             System.err.println("Error: No input file specified.");
             printUsage();
-            System.exit(1);
+            throw new IllegalArgumentException("No input file specified.");
         }
 
         // Determine output format

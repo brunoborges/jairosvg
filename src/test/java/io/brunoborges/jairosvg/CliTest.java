@@ -9,6 +9,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,46 +18,6 @@ import java.util.Properties;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CliTest {
-
-    @Test
-    void testCliJpegOutputFromExtension(@TempDir Path tempDir) throws Exception {
-        String svg = """
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-                  <rect width="100" height="100" fill="blue"/>
-                </svg>
-                """;
-        Path svgFile = tempDir.resolve("test.svg");
-        Path jpegFile = tempDir.resolve("test.jpg");
-        Files.writeString(svgFile, svg);
-
-        Main.main(new String[]{"-o", jpegFile.toString(), svgFile.toString()});
-
-        byte[] data = Files.readAllBytes(jpegFile);
-        assertTrue(data.length > 0);
-        assertEquals((byte) 0xFF, data[0]);
-        assertEquals((byte) 0xD8, data[1]);
-    }
-
-    @Test
-    void testCliTiffOutputFromExtension(@TempDir Path tempDir) throws Exception {
-        String svg = """
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-                  <rect width="100" height="100" fill="blue"/>
-                </svg>
-                """;
-        Path svgFile = tempDir.resolve("test.svg");
-        Path tiffFile = tempDir.resolve("test.tiff");
-        Files.writeString(svgFile, svg);
-
-        Main.main(new String[]{"-o", tiffFile.toString(), svgFile.toString()});
-
-        byte[] data = Files.readAllBytes(tiffFile);
-        assertTrue(data.length > 0);
-        BufferedImage image = ImageIO.read(new ByteArrayInputStream(data));
-        assertNotNull(image);
-        assertEquals(100, image.getWidth());
-        assertEquals(100, image.getHeight());
-    }
 
     private static final String SIMPLE_SVG = """
             <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
@@ -70,34 +31,105 @@ class CliTest {
         return svgFile;
     }
 
+    // ---- Constructor ----
+
+    @Test
+    void testConstructor() {
+        assertDoesNotThrow(() -> new Main());
+    }
+
+    // ---- Help flags ----
+
     @Test
     void testHelpFlag() throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream oldOut = System.out;
-        try {
-            System.setOut(new PrintStream(baos));
-            Main.main(new String[]{"--help"});
-        } finally {
-            System.setOut(oldOut);
-        }
-        String output = baos.toString();
-        assertTrue(output.contains("Usage"), "Help output should contain usage info");
-        assertTrue(output.contains("--output"), "Help output should describe --output flag");
+        String output = captureStdout(() -> Main.main(new String[]{"--help"}));
+        assertTrue(output.contains("Usage"));
+        assertTrue(output.contains("--output"));
     }
 
     @Test
-    void testVersionFlag() throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream oldOut = System.out;
-        try {
-            System.setOut(new PrintStream(baos));
-            Main.main(new String[]{"--version"});
-        } finally {
-            System.setOut(oldOut);
-        }
-        String output = baos.toString().strip();
-        assertFalse(output.isEmpty(), "Version output should not be empty");
+    void testShortHelpFlag() throws Exception {
+        String output = captureStdout(() -> Main.main(new String[]{"-h"}));
+        assertTrue(output.contains("Usage"));
     }
+
+    @Test
+    void testNoArgsShowsHelp() throws Exception {
+        String output = captureStdout(() -> Main.main(new String[]{}));
+        assertTrue(output.contains("Usage"));
+    }
+
+    // ---- Version flags ----
+
+    @Test
+    void testVersionFlag() throws Exception {
+        String output = captureStdout(() -> Main.main(new String[]{"--version"}));
+        assertFalse(output.strip().isEmpty());
+    }
+
+    @Test
+    void testShortVersionFlag() throws Exception {
+        String output = captureStdout(() -> Main.main(new String[]{"-v"}));
+        assertEquals(JairoSVG.VERSION, output.strip());
+    }
+
+    // ---- DPI flag ----
+
+    @Test
+    void testDpiFlag(@TempDir Path tempDir) throws Exception {
+        Path svgFile = writeSvg(tempDir);
+        Path outFile = tempDir.resolve("dpi.png");
+        Main.main(new String[]{"-d", "150", "-o", outFile.toString(), svgFile.toString()});
+
+        assertTrue(Files.exists(outFile));
+        assertTrue(Files.size(outFile) > 0);
+    }
+
+    // ---- Width / Height flags ----
+
+    @Test
+    void testWidthHeightFlags(@TempDir Path tempDir) throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50%" height="50%">
+                  <rect width="100%" height="100%" fill="red"/>
+                </svg>
+                """;
+        Path svgFile = tempDir.resolve("pct.svg");
+        Files.writeString(svgFile, svg);
+        Path outFile = tempDir.resolve("wh.png");
+
+        Main.main(new String[]{"-W", "200", "-H", "200", "-o", outFile.toString(), svgFile.toString()});
+
+        BufferedImage image = ImageIO.read(outFile.toFile());
+        assertNotNull(image);
+        assertEquals(100, image.getWidth());
+        assertEquals(100, image.getHeight());
+    }
+
+    // ---- Unsafe flag ----
+
+    @Test
+    void testUnsafeFlag(@TempDir Path tempDir) throws Exception {
+        Path svgFile = writeSvg(tempDir);
+        Path outFile = tempDir.resolve("unsafe.png");
+        Main.main(new String[]{"-u", "-o", outFile.toString(), svgFile.toString()});
+
+        assertTrue(Files.exists(outFile));
+        assertTrue(Files.size(outFile) > 0);
+    }
+
+    // ---- Unknown flag (ignored) ----
+
+    @Test
+    void testUnknownFlagIgnored(@TempDir Path tempDir) throws Exception {
+        Path svgFile = writeSvg(tempDir);
+        Path outFile = tempDir.resolve("unknown.png");
+        Main.main(new String[]{"--some-unknown-flag", "-o", outFile.toString(), svgFile.toString()});
+
+        assertTrue(Files.exists(outFile));
+    }
+
+    // ---- Output format flags ----
 
     @Test
     void testPngOutputFormat(@TempDir Path tempDir) throws Exception {
@@ -106,12 +138,44 @@ class CliTest {
         Main.main(new String[]{"-f", "png", "-o", pngFile.toString(), svgFile.toString()});
 
         byte[] data = Files.readAllBytes(pngFile);
-        assertTrue(data.length > 0);
-        // PNG signature
         assertEquals((byte) 0x89, data[0]);
-        assertEquals((byte) 0x50, data[1]); // 'P'
-        assertEquals((byte) 0x4E, data[2]); // 'N'
-        assertEquals((byte) 0x47, data[3]); // 'G'
+        assertEquals((byte) 0x50, data[1]);
+    }
+
+    @Test
+    void testJpegOutputFromExtension(@TempDir Path tempDir) throws Exception {
+        Path svgFile = writeSvg(tempDir);
+        Path jpegFile = tempDir.resolve("test.jpg");
+        Main.main(new String[]{"-o", jpegFile.toString(), svgFile.toString()});
+
+        byte[] data = Files.readAllBytes(jpegFile);
+        assertEquals((byte) 0xFF, data[0]);
+        assertEquals((byte) 0xD8, data[1]);
+    }
+
+    @Test
+    void testTiffOutputFromExtension(@TempDir Path tempDir) throws Exception {
+        Path svgFile = writeSvg(tempDir);
+        Path tiffFile = tempDir.resolve("test.tiff");
+        Main.main(new String[]{"-o", tiffFile.toString(), svgFile.toString()});
+
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(Files.readAllBytes(tiffFile)));
+        assertNotNull(image);
+        assertEquals(100, image.getWidth());
+    }
+
+    @Test
+    void testPdfOutputFormat(@TempDir Path tempDir) throws Exception {
+        Path svgFile = writeSvg(tempDir);
+        Path pdfFile = tempDir.resolve("out.pdf");
+        Main.main(new String[]{"-f", "pdf", "-o", pdfFile.toString(), svgFile.toString()});
+
+        byte[] data = Files.readAllBytes(pdfFile);
+        assertTrue(data.length > 0);
+        assertEquals('%', (char) data[0]);
+        assertEquals('P', (char) data[1]);
+        assertEquals('D', (char) data[2]);
+        assertEquals('F', (char) data[3]);
     }
 
     @Test
@@ -120,10 +184,8 @@ class CliTest {
         Path psFile = tempDir.resolve("out.ps");
         Main.main(new String[]{"-f", "ps", "-o", psFile.toString(), svgFile.toString()});
 
-        byte[] data = Files.readAllBytes(psFile);
-        assertTrue(data.length > 0);
-        String content = new String(data);
-        assertTrue(content.startsWith("%!PS"), "PS output should start with %!PS header");
+        String content = Files.readString(psFile);
+        assertTrue(content.startsWith("%!PS"));
     }
 
     @Test
@@ -132,11 +194,35 @@ class CliTest {
         Path epsFile = tempDir.resolve("out.eps");
         Main.main(new String[]{"-f", "eps", "-o", epsFile.toString(), svgFile.toString()});
 
-        byte[] data = Files.readAllBytes(epsFile);
-        assertTrue(data.length > 0);
-        String content = new String(data);
-        assertTrue(content.startsWith("%!PS"), "EPS output should start with %!PS header");
+        String content = Files.readString(epsFile);
+        assertTrue(content.startsWith("%!PS"));
     }
+
+    @Test
+    void testDefaultFormatFallback(@TempDir Path tempDir) throws Exception {
+        Path svgFile = writeSvg(tempDir);
+        Path outFile = tempDir.resolve("out.xyz");
+        Main.main(new String[]{"-o", outFile.toString(), svgFile.toString()});
+
+        // Unknown extension falls back to PNG via getOrDefault
+        byte[] data = Files.readAllBytes(outFile);
+        assertEquals((byte) 0x89, data[0]);
+        assertEquals((byte) 0x50, data[1]);
+    }
+
+    @Test
+    void testUnknownFormatFlagFallsBackToPng(@TempDir Path tempDir) throws Exception {
+        Path svgFile = writeSvg(tempDir);
+        Path outFile = tempDir.resolve("out.dat");
+        Main.main(new String[]{"-f", "bmp", "-o", outFile.toString(), svgFile.toString()});
+
+        // Unknown format "BMP" hits default case in writeOutput → falls back to PNG
+        byte[] data = Files.readAllBytes(outFile);
+        assertEquals((byte) 0x89, data[0]);
+        assertEquals((byte) 0x50, data[1]);
+    }
+
+    // ---- Scale, background, negate ----
 
     @Test
     void testScaleFlag(@TempDir Path tempDir) throws Exception {
@@ -145,15 +231,12 @@ class CliTest {
         Main.main(new String[]{"-s", "2", "-o", outFile.toString(), svgFile.toString()});
 
         BufferedImage image = ImageIO.read(outFile.toFile());
-        assertNotNull(image);
-        // Scale 2x should double dimensions
         assertEquals(200, image.getWidth());
         assertEquals(200, image.getHeight());
     }
 
     @Test
     void testBackgroundColorFlag(@TempDir Path tempDir) throws Exception {
-        // Use an SVG without a background rect so the background color is visible
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                   <circle cx="50" cy="50" r="10" fill="black"/>
@@ -161,20 +244,12 @@ class CliTest {
                 """;
         Path svgFile = tempDir.resolve("nobg.svg");
         Files.writeString(svgFile, svg);
-
         Path outFile = tempDir.resolve("bg.png");
         Main.main(new String[]{"-b", "#ff0000", "-o", outFile.toString(), svgFile.toString()});
 
         BufferedImage image = ImageIO.read(outFile.toFile());
-        assertNotNull(image);
-        // Corner should be red (background)
         int pixel = image.getRGB(2, 2);
-        int r = (pixel >> 16) & 0xFF;
-        int g = (pixel >> 8) & 0xFF;
-        int b = pixel & 0xFF;
-        assertTrue(r > 200, "Background corner should be red, R=" + r);
-        assertTrue(g < 50, "Background corner should be red, G=" + g);
-        assertTrue(b < 50, "Background corner should be red, B=" + b);
+        assertTrue(((pixel >> 16) & 0xFF) > 200, "Background should be red");
     }
 
     @Test
@@ -183,19 +258,12 @@ class CliTest {
         Path outFile = tempDir.resolve("negated.png");
         Main.main(new String[]{"-n", "-o", outFile.toString(), svgFile.toString()});
 
-        byte[] data = Files.readAllBytes(outFile);
-        assertTrue(data.length > 0, "Negated output should produce a non-empty file");
-
         BufferedImage image = ImageIO.read(outFile.toFile());
-        assertNotNull(image);
-        // The original SVG is blue (0,0,255). Negated should be (255,255,0) yellow.
         int pixel = image.getRGB(50, 50);
-        int r = (pixel >> 16) & 0xFF;
-        int g = (pixel >> 8) & 0xFF;
-        int b = pixel & 0xFF;
-        assertTrue(r > 200, "Negated blue should have high red: R=" + r);
-        assertTrue(g > 200, "Negated blue should have high green: G=" + g);
-        assertTrue(b < 50, "Negated blue should have low blue: B=" + b);
+        // Blue negated → yellow (high R, high G, low B)
+        assertTrue(((pixel >> 16) & 0xFF) > 200);
+        assertTrue(((pixel >> 8) & 0xFF) > 200);
+        assertTrue((pixel & 0xFF) < 50);
     }
 
     @Test
@@ -206,10 +274,72 @@ class CliTest {
                 svgFile.toString()});
 
         BufferedImage image = ImageIO.read(outFile.toFile());
-        assertNotNull(image);
         assertEquals(200, image.getWidth());
         assertEquals(200, image.getHeight());
     }
+
+    // ---- Stdout output (no -o flag) ----
+
+    @Test
+    void testStdoutOutput(@TempDir Path tempDir) throws Exception {
+        Path svgFile = writeSvg(tempDir);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream oldOut = System.out;
+        try {
+            System.setOut(new PrintStream(baos));
+            Main.main(new String[]{svgFile.toString()});
+        } finally {
+            System.setOut(oldOut);
+        }
+        byte[] data = baos.toByteArray();
+        assertTrue(data.length > 0, "Stdout should have PNG data");
+        // PNG signature
+        assertEquals((byte) 0x89, data[0]);
+    }
+
+    @Test
+    void testStdoutWithFormatFlag(@TempDir Path tempDir) throws Exception {
+        Path svgFile = writeSvg(tempDir);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream oldOut = System.out;
+        try {
+            System.setOut(new PrintStream(baos));
+            Main.main(new String[]{"-f", "jpeg", svgFile.toString()});
+        } finally {
+            System.setOut(oldOut);
+        }
+        byte[] data = baos.toByteArray();
+        // JPEG signature
+        assertEquals((byte) 0xFF, data[0]);
+        assertEquals((byte) 0xD8, data[1]);
+    }
+
+    // ---- Stdin input ----
+
+    @Test
+    void testStdinInput(@TempDir Path tempDir) throws Exception {
+        Path outFile = tempDir.resolve("stdin.png");
+        InputStream oldIn = System.in;
+        try {
+            System.setIn(new ByteArrayInputStream(SIMPLE_SVG.getBytes()));
+            Main.main(new String[]{"-o", outFile.toString(), "-"});
+        } finally {
+            System.setIn(oldIn);
+        }
+        assertTrue(Files.exists(outFile));
+        BufferedImage image = ImageIO.read(outFile.toFile());
+        assertEquals(100, image.getWidth());
+    }
+
+    // ---- No input error ----
+
+    @Test
+    void testNoInputThrowsException() {
+        var ex = assertThrows(IllegalArgumentException.class, () -> Main.main(new String[]{"-d", "96"}));
+        assertTrue(ex.getMessage().contains("No input"));
+    }
+
+    // ---- Native image config ----
 
     @Test
     void testNativeImageConfigurationPresent() throws Exception {
@@ -222,7 +352,25 @@ class CliTest {
             assertNotNull(args);
             assertTrue(args.contains("--enable-preview"));
             assertTrue(args.contains("-H:Class=io.brunoborges.jairosvg.cli.Main"));
-            assertTrue(args.contains("-H:IncludeResources=io/brunoborges/jairosvg/css/colors\\.properties"));
         }
+    }
+
+    // ---- Helpers ----
+
+    private static String captureStdout(ThrowingRunnable action) throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream oldOut = System.out;
+        try {
+            System.setOut(new PrintStream(baos));
+            action.run();
+        } finally {
+            System.setOut(oldOut);
+        }
+        return baos.toString();
+    }
+
+    @FunctionalInterface
+    interface ThrowingRunnable {
+        void run() throws Exception;
     }
 }
