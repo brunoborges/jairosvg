@@ -230,7 +230,8 @@ class NodeTest {
 
     @Test
     void testConditionalProcessingSkipsUnsupported() throws Exception {
-        // L392, L401: requiredFeatures that aren't supported
+        // SVG 2: requiredFeatures is deprecated and ignored, so both rects render.
+        // Blue rect (last) paints over red rect.
         BufferedImage img = RenderTestHelper.render("""
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                   <rect fill="red" x="0" y="0" width="100" height="100"/>
@@ -238,13 +239,15 @@ class NodeTest {
                         fill="blue" x="0" y="0" width="100" height="100"/>
                 </svg>
                 """);
-        // Unsupported feature -> blue rect should be skipped, red remains
-        RenderTestHelper.assertPixelColor(img, 50, 50, 255, 0, 0);
+        // requiredFeatures is ignored → blue rect renders on top of red
+        RenderTestHelper.assertPixelColor(img, 50, 50, 0, 0, 255);
     }
 
     @Test
     void testConditionalProcessingNestedSkip() throws Exception {
-        // L392: nested elements inside a skipped subtree
+        // SVG 2: requiredFeatures is deprecated and ignored.
+        // The <g> with Animation feature is NOT skipped → green rect (last) renders on
+        // top.
         BufferedImage img = RenderTestHelper.render("""
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                   <rect fill="red" x="0" y="0" width="100" height="100"/>
@@ -256,7 +259,8 @@ class NodeTest {
                   </g>
                 </svg>
                 """);
-        RenderTestHelper.assertPixelColor(img, 50, 50, 255, 0, 0);
+        // requiredFeatures ignored → green rect (last painted) is visible
+        RenderTestHelper.assertPixelColor(img, 50, 50, 0, 128, 0);
     }
 
     @Test

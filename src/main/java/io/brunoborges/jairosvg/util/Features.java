@@ -4,7 +4,15 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * SVG conditional processing helpers. Port of CairoSVG features.py
+ * SVG conditional processing helpers. Port of CairoSVG features.py.
+ *
+ * <p>
+ * JairoSVG targets SVG 1.1 but selectively aligns with SVG 2 where modern
+ * browsers have diverged. Specifically, {@code requiredFeatures} is deprecated
+ * in SVG 2 and ignored by all modern browsers, so
+ * {@link #matchFeatures(String, String, String)} does not evaluate it.
+ * {@code systemLanguage} and {@code requiredExtensions} are still evaluated per
+ * SVG 1.1/SVG 2.
  */
 public final class Features {
 
@@ -44,12 +52,17 @@ public final class Features {
         return false;
     }
 
-    /** Check the node matches the conditional processing attributes. */
+    /**
+     * Check the node matches the conditional processing attributes.
+     *
+     * <p>
+     * {@code requiredFeatures} is accepted for API compatibility but ignored per
+     * SVG 2 — modern browsers do not evaluate it.
+     */
     public static boolean matchFeatures(String requiredFeatures, String requiredExtensions, String systemLanguage) {
         if (requiredExtensions != null && !requiredExtensions.isEmpty())
             return false;
-        if (requiredFeatures != null && !requiredFeatures.isEmpty() && !hasFeatures(requiredFeatures))
-            return false;
+        // requiredFeatures is deprecated in SVG 2 and ignored by modern browsers
         if (systemLanguage != null && !systemLanguage.isEmpty() && !supportLanguages(systemLanguage))
             return false;
         return true;

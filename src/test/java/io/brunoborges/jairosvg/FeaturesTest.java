@@ -97,8 +97,9 @@ class FeaturesTest {
     }
 
     @Test
-    void matchFeatures_unsupportedFeature_returnsFalse() {
-        assertFalse(Features.matchFeatures("http://www.w3.org/TR/SVG11/feature#Animation", null, null));
+    void matchFeatures_unsupportedFeature_returnsTrue_svg2() {
+        // SVG 2: requiredFeatures is deprecated and ignored by modern browsers
+        assertTrue(Features.matchFeatures("http://www.w3.org/TR/SVG11/feature#Animation", null, null));
     }
 
     @Test
@@ -141,6 +142,7 @@ class FeaturesTest {
 
     @Test
     void conditionalRendering_switchWithUnsupportedFeature() throws Exception {
+        // SVG 2: requiredFeatures is deprecated, so the first child always matches
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                   <switch>
@@ -151,7 +153,7 @@ class FeaturesTest {
                 </svg>
                 """;
         var img = RenderTestHelper.render(svg);
-        // Should render blue (fallback)
-        RenderTestHelper.assertPixelColor(img, 50, 50, 0, 0, 255);
+        // requiredFeatures is ignored in SVG 2, so first child (red) renders
+        RenderTestHelper.assertPixelColor(img, 50, 50, 255, 0, 0);
     }
 }
