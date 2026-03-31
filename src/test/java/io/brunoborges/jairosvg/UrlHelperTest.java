@@ -363,7 +363,7 @@ class UrlHelperTest {
     void testFetchFileScheme(@org.junit.jupiter.api.io.TempDir java.nio.file.Path tempDir) throws Exception {
         java.nio.file.Path f = tempDir.resolve("test.txt");
         java.nio.file.Files.writeString(f, "hello");
-        byte[] result = UrlHelper.fetch("file://" + f.toAbsolutePath(), "text");
+        byte[] result = UrlHelper.fetch(f.toUri().toString(), "text");
         assertEquals("hello", new String(result));
     }
 
@@ -379,8 +379,9 @@ class UrlHelperTest {
 
     @Test
     void testParseUrlRelativeWithMalformedBase() {
-        // Malformed base should still resolve (path-based fallback)
-        ParsedUrl url = UrlHelper.parseUrl("image.svg", "file:///dir with spaces/");
+        // Malformed base should still resolve (path-based fallback on Unix,
+        // returns url as-is on Windows where the base is not a valid path)
+        ParsedUrl url = UrlHelper.parseUrl("image.svg", "not a {valid} uri or path");
         assertNotNull(url);
     }
 
@@ -496,13 +497,15 @@ class UrlHelperTest {
 
     @Test
     void resolveUrlPathWithInvalidBase(@TempDir java.nio.file.Path tempDir) throws Exception {
-        // Non-fragment relative URL with invalid base URI triggers path resolution
+        // Non-fragment relative URL with invalid base URI triggers path resolution.
+        // On Windows the base with braces is also an invalid path, so falls through
+        // to return url as-is.
         java.nio.file.Path baseFile = tempDir.resolve("base.svg");
         java.nio.file.Files.writeString(baseFile, "<svg/>");
         ParsedUrl result = UrlHelper.parseUrl("other.svg", "invalid {uri}" + baseFile.toString());
-        // Falls back to path resolution; since base is not a real file,
-        // Path.of(base).getParent() is used
         assertNotNull(result);
+        // The result should contain "other.svg" somewhere (either resolved or as-is)
+        assertTrue(result.getUrl().contains("other.svg"));
     }
 
     @Test
@@ -553,7 +556,8 @@ class UrlHelperTest {
 
     @Test
     void fetchHttpBadUri() {
-        // Invalid URI should throw IOException wrapping URISyntaxException
+        // Invalid URI should throw IOException (wrapping InvalidPathException on
+        // Windows or FileNotFoundException on Unix)
         assertThrows(IOException.class, () -> UrlHelper.fetch("http://invalid host with spaces", "image"));
     }
 
@@ -572,7 +576,7 @@ class UrlHelperTest {
         java.nio.file.Path svgFile = tempDir.resolve("test.svg");
         java.nio.file.Files.writeString(svgFile, "<svg/>");
         // file URI with query param — exercises the rawQuery != null branch
-        byte[] result = UrlHelper.fetch("file://" + svgFile.toAbsolutePath() + "?version=1", "image");
+        byte[] result = UrlHelper.fetch(svgFile.toUri().toString() + "?version=1", "image");
         assertNotNull(result);
         assertTrue(result.length > 0);
     }
@@ -617,7 +621,7 @@ class UrlHelperTest {
     void readUrlWithSchemedUrl(@TempDir java.nio.file.Path tempDir) throws Exception {
         java.nio.file.Path svgFile = tempDir.resolve("test.svg");
         java.nio.file.Files.writeString(svgFile, "<svg/>");
-        ParsedUrl url = new ParsedUrl("file", null, svgFile.toAbsolutePath().toString(), null, null);
+        ParsedUrl url = new ParsedUrl("file", null, svgFile.toUri().getPath(), null, null);
         byte[] result = UrlHelper.readUrl(url, UrlHelper::fetch, "image");
         assertNotNull(result);
     }

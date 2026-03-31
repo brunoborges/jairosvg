@@ -93,7 +93,11 @@ public final class UrlHelper {
             }
         } catch (URISyntaxException e) {
             // Try as file path
-            return Files.readAllBytes(Path.of(url));
+            try {
+                return Files.readAllBytes(Path.of(url));
+            } catch (java.nio.file.InvalidPathException ipe) {
+                throw new IOException("Invalid URL: " + url, ipe);
+            }
         }
     }
 
@@ -141,7 +145,7 @@ public final class UrlHelper {
             String path = url.getUrl();
             if (path.isEmpty())
                 return new byte[0];
-            fullUrl = "file://" + Path.of(path).toAbsolutePath();
+            fullUrl = Path.of(path).toAbsolutePath().toUri().toString();
         }
         return fetcher.fetch(fullUrl, resourceType);
     }
@@ -207,12 +211,16 @@ public final class UrlHelper {
             if (url.startsWith("#")) {
                 return base + url;
             }
-            Path basePath = Path.of(base);
-            if (Files.isRegularFile(basePath)) {
-                basePath = basePath.getParent();
-            }
-            if (basePath != null && !url.isEmpty()) {
-                return basePath.resolve(url).toString();
+            try {
+                Path basePath = Path.of(base);
+                if (Files.isRegularFile(basePath)) {
+                    basePath = basePath.getParent();
+                }
+                if (basePath != null && !url.isEmpty()) {
+                    return basePath.resolve(url).toString();
+                }
+            } catch (java.nio.file.InvalidPathException ignored) {
+                // Base is not a valid file path either; return url as-is
             }
             return url;
         }
