@@ -381,4 +381,41 @@ class DefsTest {
         }
         return false;
     }
+
+    // ── findNodeById with null root → returns null ───────────────────────
+
+    @Test
+    void findNodeByIdNullRoot() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <text font-size="12" fill="black">
+                    <textPath href="#nonexistent">Text</textPath>
+                  </text>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── findNodeById deep nesting ────────────────────────────────────────
+
+    @Test
+    void findNodeByIdDeep() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <g>
+                      <g>
+                        <linearGradient id="deep">
+                          <stop offset="0" stop-color="red"/>
+                          <stop offset="1" stop-color="blue"/>
+                        </linearGradient>
+                      </g>
+                    </g>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#deep)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
 }

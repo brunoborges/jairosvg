@@ -140,4 +140,91 @@ class MaskPainterTest {
         assertTrue(left[0] > 200, "Left rect should be red");
         assertTrue(right[2] > 200, "Right rect should be blue");
     }
+
+    // ── mask with missing ref → returns source unchanged ─────────────────
+
+    @Test
+    void maskMissingRef() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <rect width="50" height="50" fill="red" mask="url(#nonexistent)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 25, 25);
+        assertTrue(px[0] > 200, "Missing mask should pass through source");
+    }
+
+    // ── mask with sub-region transform ───────────────────────────────────
+
+    @Test
+    void maskSmallSubRegion() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <defs>
+                    <mask id="m">
+                      <rect x="50" y="50" width="100" height="100" fill="white"/>
+                    </mask>
+                  </defs>
+                  <rect width="200" height="200" fill="green" mask="url(#m)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] center = rgba(img, 100, 100);
+        assertTrue(center[1] > 100, "Center inside mask should be green");
+        int[] corner = rgba(img, 5, 5);
+        assertTrue(corner[3] < 50, "Corner outside mask should be transparent/hidden");
+    }
+
+    // ── two masked elements → mask buffer reuse ──
+
+    @Test
+    void maskBufferReuseAcrossElements() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <mask id="m">
+                      <rect width="100" height="100" fill="white"/>
+                    </mask>
+                  </defs>
+                  <rect width="100" height="50" fill="red" mask="url(#m)"/>
+                  <rect y="50" width="100" height="50" fill="blue" mask="url(#m)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // Both halves should be visible through the mask
+        int[] top = rgba(img, 50, 25);
+        int[] bot = rgba(img, 50, 75);
+        assertTrue(top[0] > 200, "Top should be red");
+        assertTrue(bot[2] > 200, "Bottom should be blue");
+    }
+
+    // ── mask with gradient fill → exercises luminance calculation ──
+
+    @Test
+    void maskWithGradientLuminance() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <linearGradient id="lg" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stop-color="black"/>
+                      <stop offset="100%" stop-color="white"/>
+                    </linearGradient>
+                    <mask id="gm">
+                      <rect width="100" height="100" fill="url(#lg)"/>
+                    </mask>
+                  </defs>
+                  <rect width="100" height="100" fill="red" mask="url(#gm)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // Left should be more transparent (black mask = 0 luminance)
+        int[] left = rgba(img, 5, 50);
+        int[] right = rgba(img, 95, 50);
+        assertTrue(right[3] > left[3], "Right should have more alpha than left");
+    }
 }

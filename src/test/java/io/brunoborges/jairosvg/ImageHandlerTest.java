@@ -248,4 +248,156 @@ class ImageHandlerTest {
         BufferedImage img = render(svg);
         assertNotNull(img, "preserveAspectRatio should be handled");
     }
+
+    @Test
+    void testImageEmptyHref() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <image href="" x="0" y="0" width="50" height="50"/>
+                </svg>""";
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    @Test
+    void testImageNoHref() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <image x="0" y="0" width="50" height="50"/>
+                </svg>""";
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    @Test
+    void testImageWithNonExistentFileRef() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <image href="/nonexistent/image.png" x="0" y="0" width="50" height="50"/>
+                </svg>""";
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    @Test
+    void testIsSvgContentGzipped() throws Exception {
+        // Gzipped SVG as data URI — exercises gzip detection in isSvgContent
+        byte[] svgBytes = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">
+                  <rect width="10" height="10" fill="green"/>
+                </svg>""".getBytes(StandardCharsets.UTF_8);
+        byte[] gzipped = RenderTestHelper.gzip(svgBytes);
+        String b64 = Base64.getEncoder().encodeToString(gzipped);
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <image href="data:image/svg+xml;base64,%s"
+                         x="0" y="0" width="50" height="50"/>
+                </svg>""".formatted(b64);
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    @Test
+    void testIsSvgContentXmlDecl() throws Exception {
+        String xmlSvg = """
+                <?xml version="1.0"?>
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">
+                  <rect width="10" height="10" fill="blue"/>
+                </svg>""";
+        String b64 = Base64.getEncoder().encodeToString(xmlSvg.getBytes(StandardCharsets.UTF_8));
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <image href="data:image/svg+xml;base64,%s"
+                         x="0" y="0" width="50" height="50"/>
+                </svg>""".formatted(b64);
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── image with SVG content containing viewBox ──
+
+    @Test
+    void svgImageWithViewBox() throws Exception {
+        // data: URI containing SVG with a viewBox
+        String innerSvg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' width='20' height='20'><circle cx='10' cy='10' r='8' fill='green'/></svg>";
+        String b64 = java.util.Base64.getEncoder().encodeToString(innerSvg.getBytes());
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <image href="data:image/svg+xml;base64,%s" width="50" height="50"/>
+                </svg>
+                """.formatted(b64);
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── image with opacity < 1 ──
+
+    @Test
+    void imageWithOpacity() throws Exception {
+        String b64 = "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFklEQVQYV2P4z8BQz0BHwMDAwMDAAAA//wNFAgLiNfJ9AAAAAElFTkSuQmCC";
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <image href="data:image/png;base64,%s" width="50" height="50" opacity="0.5"/>
+                </svg>
+                """.formatted(b64);
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── image element with preserveAspectRatio ──
+
+    @Test
+    void imagePreserveAspectRatio() throws Exception {
+        String b64 = "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFklEQVQYV2P4z8BQz0BHwMDAwMDAAAA//wNFAgLiNfJ9AAAAAElFTkSuQmCC";
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50">
+                  <image href="data:image/png;base64,%s" width="100" height="50"
+                         preserveAspectRatio="xMidYMid meet"/>
+                </svg>
+                """.formatted(b64);
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── image with image-rendering auto ──
+
+    @Test
+    void imageRenderingAuto() throws Exception {
+        String b64 = "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFklEQVQYV2P4z8BQz0BHwMDAwMDAAAA//wNFAgLiNfJ9AAAAAElFTkSuQmCC";
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <image href="data:image/png;base64,%s" width="50" height="50"
+                         image-rendering="auto"/>
+                </svg>
+                """.formatted(b64);
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── image with null return from ImageIO.read ──
+
+    @Test
+    void imageBadDataReturnsNull() throws Exception {
+        // Invalid image data that isn't SVG and ImageIO.read returns null
+        String b64 = java.util.Base64.getEncoder().encodeToString("not an image format at all here".getBytes());
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <image href="data:image/png;base64,%s" width="50" height="50"/>
+                </svg>
+                """.formatted(b64);
+        // Should not throw, just silently skip
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── image cached for reuse ──
+
+    @Test
+    void imageCacheReuse() throws Exception {
+        String b64 = "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFklEQVQYV2P4z8BQz0BHwMDAwMDAAAA//wNFAgLiNfJ9AAAAAElFTkSuQmCC";
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50">
+                  <image href="data:image/png;base64,%s" x="0" width="50" height="50"/>
+                  <image href="data:image/png;base64,%s" x="50" width="50" height="50"/>
+                </svg>
+                """.formatted(b64, b64);
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
 }

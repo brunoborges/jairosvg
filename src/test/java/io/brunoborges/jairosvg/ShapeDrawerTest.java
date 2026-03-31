@@ -238,4 +238,100 @@ class ShapeDrawerTest {
         BufferedImage img = render(svg);
         assertNotNull(img, "Ellipse with zero ry should render without error");
     }
+
+    // ── getPrevPoint with no double[] vertices → fallback to (0,0) ──
+
+    @Test
+    void testPolylineMarkerWithSinglePoint() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="m" viewBox="0 0 10 10" refX="5" refY="5"
+                            markerWidth="6" markerHeight="6" orient="auto">
+                      <circle cx="5" cy="5" r="4" fill="red"/>
+                    </marker>
+                  </defs>
+                  <polyline points="50,50" fill="none" stroke="black"
+                            marker-start="url(#m)"/>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── rect with rounded corners ──
+
+    @Test
+    void testRectRoundedCorners() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect x="10" y="10" width="80" height="80" rx="15" ry="15" fill="blue"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // Corner pixel should NOT be blue (it's rounded)
+        int[] corner = rgba(img, 12, 12);
+        assertTrue(corner[2] < 200 || corner[3] < 200, "Rounded corner should not be fully blue");
+    }
+
+    // ── getPrevPoint with vertices list containing nulls (path break markers) ──
+
+    @Test
+    void getPrevPointSkipsNulls() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="gp" viewBox="0 0 10 10" refX="5" refY="5"
+                            markerWidth="4" markerHeight="4">
+                      <rect width="10" height="10" fill="red"/>
+                    </marker>
+                  </defs>
+                  <polygon points="20,20 80,20 80,80 20,80" fill="none" stroke="black"
+                           marker-start="url(#gp)" marker-end="url(#gp)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── rect with only rx (ry auto-derived) ──
+
+    @Test
+    void rectWithOnlyRx() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect x="10" y="10" width="80" height="80" rx="15" fill="blue"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── ellipse with zero rx or ry → no rendering ──
+
+    @Test
+    void ellipseZeroRadius() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <ellipse cx="50" cy="50" rx="0" ry="30" fill="red"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── line element ──
+
+    @Test
+    void lineElement() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <line x1="10" y1="10" x2="90" y2="90" stroke="black" stroke-width="2"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // Should have some dark pixels along the diagonal
+        assertTrue(countDarkPixels(img, 0, 0, 99, 99, 128) > 0);
+    }
 }

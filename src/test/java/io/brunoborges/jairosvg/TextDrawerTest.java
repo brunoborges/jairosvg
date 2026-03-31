@@ -725,4 +725,505 @@ class TextDrawerTest {
         }
         return rightmost;
     }
+
+    // ── textPath with startOffset exceeding path length ──
+
+    @Test
+    void textPathOffsetBeyondLength() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                     width="200" height="100">
+                  <defs>
+                    <path id="p" d="M10,50 L50,50"/>
+                  </defs>
+                  <text font-size="12" fill="black">
+                    <textPath href="#p" startOffset="200">Hello World Long Text</textPath>
+                  </text>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── textPath with percentage startOffset ──
+
+    @Test
+    void textPathPercentageOffset() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <path id="p" d="M10,50 L190,50"/>
+                  </defs>
+                  <text font-size="14" fill="black">
+                    <textPath href="#p" startOffset="50%">Mid</textPath>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── textPath with invalid percentage startOffset ──
+
+    @Test
+    void textPathInvalidPercentOffset() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <path id="p" d="M10,50 L190,50"/>
+                  </defs>
+                  <text font-size="14" fill="black">
+                    <textPath href="#p" startOffset="abc%">Text</textPath>
+                  </text>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── textPath with blank startOffset ──
+
+    @Test
+    void textPathBlankStartOffset() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <path id="p" d="M10,50 L190,50"/>
+                  </defs>
+                  <text font-size="14" fill="black">
+                    <textPath href="#p" startOffset="  ">Text</textPath>
+                  </text>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── text with unknown text-decoration → default NaN path ──
+
+    @Test
+    void textUnknownDecoration() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <text x="10" y="30" font-size="16" fill="black"
+                        text-decoration="blink">Blinky</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text with multiple decorations including unknown ──
+
+    @Test
+    void textMixedDecorations() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <text x="10" y="30" font-size="16" fill="black"
+                        text-decoration="underline overline unknown">Decorated</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text-anchor "middle" with child tspan (measureChildrenWidth) ──
+
+    @Test
+    void textAnchorMiddleWithTspan() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <text x="100" y="30" font-size="14" fill="black" text-anchor="middle">
+                    <tspan>Hello</tspan>
+                    <tspan> World</tspan>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text-anchor "end" with nested tspan children (recursive
+    // measureChildrenWidth) ──
+
+    @Test
+    void textAnchorEndNestedTspan() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <text x="190" y="30" font-size="14" fill="black" text-anchor="end">
+                    <tspan><tspan>Nested</tspan> Text</tspan>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text with whitespace-only content between children → skipped ──
+
+    @Test
+    void textWhitespaceOnlyBetweenChildren() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <text x="10" y="30" font-size="14" fill="black">
+                    <tspan>A</tspan>   <tspan>B</tspan>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text with empty content ──
+
+    @Test
+    void textEmptyContent() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50">
+                  <text x="10" y="30" font-size="14" fill="black"></text>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── textPath with non-path target element ──
+
+    @Test
+    void textPathNonPathTarget() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <rect id="r" width="100" height="50"/>
+                  </defs>
+                  <text font-size="14" fill="black">
+                    <textPath href="#r">Text</textPath>
+                  </text>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── text with custom font-family (not generic) → default switch branch ──
+
+    @Test
+    void textCustomFontFamily() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <text x="10" y="30" font-size="14" fill="black"
+                        font-family="CustomFont, Arial">Custom Font</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text with SVG font and text-anchor middle (measureSvgFontWidth +
+    // measureChildrenWidth) ──
+
+    @Test
+    void textAnchorMiddleWithSvgFont() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <font id="f1">
+                      <font-face font-family="TestFont" units-per-em="1000" ascent="800" descent="-200"/>
+                      <missing-glyph horiz-adv-x="500"/>
+                      <glyph unicode="A" horiz-adv-x="600" d="M0,0 L300,800 L600,0 Z"/>
+                      <glyph unicode="B" horiz-adv-x="600" d="M0,0 L0,800 L400,400 Z"/>
+                    </font>
+                  </defs>
+                  <text x="100" y="50" font-size="20" fill="black"
+                        font-family="TestFont" text-anchor="middle">AB</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text with dx/dy positioning ──
+
+    @Test
+    void textWithDxDy() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <text font-size="14" fill="black">
+                    <tspan x="10" y="30" dx="5" dy="2">Shifted</tspan>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── parent text with x/y/dx/dy and children → exercises cursor init branches
+    // ──
+
+    @Test
+    void parentTextWithCoordAttrs() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <text x="20" y="40" dx="5" dy="3" font-size="14" fill="black">
+                    <tspan>Hello</tspan>
+                    <tspan dx="5">World</tspan>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text-anchor "end" with x attribute → exercises single-text anchor ──
+
+    @Test
+    void textAnchorEndWithX() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <text x="180" y="30" font-size="14" fill="black"
+                        text-anchor="end">Right Aligned</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text-anchor "middle" with x attribute ──
+
+    @Test
+    void textAnchorMiddleWithX() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <text x="100" y="30" font-size="14" fill="black"
+                        text-anchor="middle">Centered</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text with letter-spacing ──
+
+    @Test
+    void textWithLetterSpacing() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="300" height="50">
+                  <text x="10" y="30" font-size="14" fill="black"
+                        letter-spacing="5">Spaced</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── SVG font with text-anchor end and measureChildrenWidth with SVG font ──
+
+    @Test
+    void textAnchorEndWithSvgFont() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <font id="f">
+                      <font-face font-family="AnchorFont" units-per-em="1000" ascent="800" descent="-200"/>
+                      <glyph unicode="X" horiz-adv-x="600" d="M0,0 L600,800 M600,0 L0,800"/>
+                    </font>
+                  </defs>
+                  <text x="190" y="50" font-size="20" fill="black"
+                        font-family="AnchorFont" text-anchor="end">
+                    <tspan>XX</tspan>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── SVG font where glyph is undefined → AWT fallback in measurement ──
+
+    @Test
+    void svgFontMeasurementFallback() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <font id="f">
+                      <font-face font-family="PartFont" units-per-em="1000" ascent="800" descent="-200"/>
+                      <glyph unicode="A" horiz-adv-x="600" d="M0,0 L300,800 L600,0 Z"/>
+                    </font>
+                  </defs>
+                  <text x="100" y="50" font-size="20" fill="black"
+                        font-family="PartFont" text-anchor="middle">AZB</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text with font-weight as numeric value ──
+
+    @Test
+    void textNumericFontWeight() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <text x="10" y="30" font-size="14" fill="black"
+                        font-weight="700">Bold by number</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text with font-weight under threshold (not bold) ──
+
+    @Test
+    void textLightFontWeight() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <text x="10" y="30" font-size="14" fill="black"
+                        font-weight="300">Light weight</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text with italic style ──
+
+    @Test
+    void textItalicStyle() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <text x="10" y="30" font-size="14" fill="black"
+                        font-style="italic">Italic</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text with oblique style ──
+
+    @Test
+    void textObliqueStyle() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <text x="10" y="30" font-size="14" fill="black"
+                        font-style="oblique">Oblique</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text with font-weight "bolder" ──
+
+    @Test
+    void textBolderFontWeight() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <text x="10" y="30" font-size="14" fill="black"
+                        font-weight="bolder">Bolder</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── resolveFont serif ── (needs text-anchor on parent with children)
+
+    @Test
+    void textAnchorMiddleWithSerifChild() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <text x="100" y="30" font-size="14" fill="black" text-anchor="middle">
+                    <tspan font-family="serif">Serif child</tspan>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── resolveFont monospace ──
+
+    @Test
+    void textAnchorEndWithMonospaceChild() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <text x="180" y="30" font-size="14" fill="black" text-anchor="end">
+                    <tspan font-family="monospace">Mono child</tspan>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── resolveFont oblique style via measureChildrenWidth ──
+
+    @Test
+    void textAnchorMiddleWithObliqueChild() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="300" height="50">
+                  <text x="150" y="30" font-size="14" fill="black" text-anchor="middle">
+                    <tspan font-style="oblique">Oblique child</tspan>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── resolveFont bolder weight via measureChildrenWidth ──
+
+    @Test
+    void textAnchorMiddleWithBolderChild() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="300" height="50">
+                  <text x="150" y="30" font-size="14" fill="black" text-anchor="middle">
+                    <tspan font-weight="bolder">Bolder child</tspan>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── resolveFont numeric weight < 550 (not bold) via measureChildrenWidth ──
+
+    @Test
+    void textAnchorMiddleWithLightWeightChild() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="300" height="50">
+                  <text x="150" y="30" font-size="14" fill="black" text-anchor="middle">
+                    <tspan font-weight="400">Normal weight</tspan>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── nested tspan children → recursive measureChildrenWidth ──
+
+    @Test
+    void textAnchorMiddleNestedTspan() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="300" height="50">
+                  <text x="150" y="30" font-size="14" fill="black" text-anchor="middle">
+                    <tspan><tspan>Nested</tspan></tspan>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text with rotate attribute ──
+
+    @Test
+    void textWithRotateAttribute() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <text x="10" y="50" font-size="20" fill="black"
+                        rotate="0 10 20 30 40">Hello</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
 }

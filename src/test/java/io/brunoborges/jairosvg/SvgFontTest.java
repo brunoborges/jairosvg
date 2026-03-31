@@ -293,4 +293,61 @@ class SvgFontTest {
         assertNotNull(png);
         assertTrue(png.length > 0, "Glyph should use default advance when horiz-adv-x missing");
     }
+
+    // ── SVG font glyph with malformed path data ─────────────────────────
+
+    @Test
+    void svgFontGlyphMalformedPath() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <font id="f">
+                      <font-face font-family="BadPath" units-per-em="1000" ascent="800" descent="-200"/>
+                      <glyph unicode="X" horiz-adv-x="600" d="M0,0 Linvalid Q"/>
+                    </font>
+                  </defs>
+                  <text x="10" y="60" font-family="BadPath" font-size="48" fill="red">XY</text>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    // ── SVG font with blank glyph path ──────────────────────────────────
+
+    @Test
+    void svgFontGlyphBlankPath() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <font id="f">
+                      <font-face font-family="BlankP" units-per-em="1000" ascent="800" descent="-200"/>
+                      <glyph unicode="A" horiz-adv-x="600" d=""/>
+                    </font>
+                  </defs>
+                  <text x="10" y="60" font-family="BlankP" font-size="48" fill="red">AX</text>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    // ── SVG font getAdvance with null glyph → uses default horizAdvX ────
+
+    @Test
+    void svgFontGetAdvanceNullGlyph() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <font id="f">
+                      <font-face font-family="NullG" units-per-em="1000" ascent="800" descent="-200"
+                                 horiz-adv-x="400"/>
+                      <glyph unicode="A" horiz-adv-x="600" d="M0,0 L300,800 L600,0 Z"/>
+                    </font>
+                  </defs>
+                  <text x="10" y="60" font-family="NullG" font-size="48" fill="red">AZ</text>
+                </svg>
+                """;
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        assertTrue(png.length > 0);
+    }
 }

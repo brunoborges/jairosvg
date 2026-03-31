@@ -1,6 +1,7 @@
 package io.brunoborges.jairosvg;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -662,5 +663,115 @@ class BoundingBoxTest {
         assertTrue(BoundingBox.isValid(box));
         assertTrue(box.minY() <= 10, "minY from start");
         assertTrue(box.minY() + box.height() >= 90, "maxY from endpoint");
+    }
+
+    // ── ellipse bounding box ─────────────────────────────────────────────
+
+    @Test
+    void testEllipseBoundingBox() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <ellipse cx="100" cy="80" rx="50" ry="30"/>
+                </svg>
+                """;
+        Node ellipseNode = parseSvgChild(svg, "ellipse");
+        BoundingBox.Box box = BoundingBox.calculate(null, ellipseNode);
+        assertNotNull(box);
+        assertTrue(BoundingBox.isValid(box));
+        assertEquals(50, box.minX(), 1.0);
+        assertEquals(50, box.minY(), 1.0);
+        assertEquals(100, box.width(), 1.0);
+        assertEquals(60, box.height(), 1.0);
+    }
+
+    // ── polyline bounding box ────────────────────────────────────────────
+
+    @Test
+    void testPolylineBoundingBox() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <polyline points="10,20 50,60 30,80 90,10"/>
+                </svg>
+                """;
+        Node polylineNode = parseSvgChild(svg, "polyline");
+        BoundingBox.Box box = BoundingBox.calculate(null, polylineNode);
+        assertNotNull(box);
+        assertTrue(BoundingBox.isValid(box));
+        assertEquals(10, box.minX(), 1.0);
+        assertEquals(10, box.minY(), 1.0);
+        assertEquals(80, box.width(), 1.0);
+        assertEquals(70, box.height(), 1.0);
+    }
+
+    // ── isNonEmpty with zero dimensions ──────────────────────────────────
+
+    @Test
+    void testIsNonEmptyZeroWidth() {
+        BoundingBox.Box box = new BoundingBox.Box(10, 10, 0, 50);
+        assertFalse(BoundingBox.isNonEmpty(box));
+    }
+
+    @Test
+    void testIsNonEmptyZeroHeight() {
+        BoundingBox.Box box = new BoundingBox.Box(10, 10, 50, 0);
+        assertFalse(BoundingBox.isNonEmpty(box));
+    }
+
+    @Test
+    void testIsNonEmptyValid() {
+        BoundingBox.Box box = new BoundingBox.Box(10, 10, 50, 50);
+        assertTrue(BoundingBox.isNonEmpty(box));
+    }
+
+    // ── path with malformed data ─────────────────────────────────────────
+
+    @Test
+    void testPathBoundingBoxMalformedData() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,10 L50,50 Lxyz"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        // Malformed data may throw or return partial result
+        try {
+            BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+            assertNotNull(box);
+        } catch (Exception e) {
+            // Expected for truly malformed data
+        }
+    }
+
+    // ── path with empty d attribute ──────────────────────────────────────
+
+    @Test
+    void testPathBoundingBoxEmptyD() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d=""/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box);
+    }
+
+    // ── circle bounding box ──────────────────────────────────────────────
+
+    @Test
+    void testCircleBoundingBox() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <circle cx="100" cy="100" r="40"/>
+                </svg>
+                """;
+        Node circleNode = parseSvgChild(svg, "circle");
+        BoundingBox.Box box = BoundingBox.calculate(null, circleNode);
+        assertNotNull(box);
+        assertTrue(BoundingBox.isValid(box));
+        assertEquals(60, box.minX(), 1.0);
+        assertEquals(60, box.minY(), 1.0);
+        assertEquals(80, box.width(), 1.0);
+        assertEquals(80, box.height(), 1.0);
     }
 }

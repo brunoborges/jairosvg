@@ -227,4 +227,140 @@ class MarkerDrawerTest {
         }
         return false;
     }
+
+    // ── markerAngle NaN fallback cases ────────────────────────────────────
+
+    @Test
+    void markerOnDegeneratePath() throws Exception {
+        // Path with zero-length segment → NaN angles → fallback to 0
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="m" viewBox="0 0 10 10" refX="5" refY="5"
+                            markerWidth="6" markerHeight="6" orient="auto">
+                      <circle cx="5" cy="5" r="4" fill="red"/>
+                    </marker>
+                  </defs>
+                  <path d="M50,50 L50,50 L80,80" fill="none" stroke="black"
+                        marker-start="url(#m)" marker-mid="url(#m)" marker-end="url(#m)"/>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    @Test
+    void markerEmptyVertices() throws Exception {
+        // Empty path → empty vertices → drawMarkers early return
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <marker id="m" viewBox="0 0 10 10" refX="5" refY="5"
+                            markerWidth="6" markerHeight="6" orient="auto">
+                      <rect width="10" height="10" fill="red"/>
+                    </marker>
+                  </defs>
+                  <path d="" fill="none" stroke="black" marker-start="url(#m)"/>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    @Test
+    void markerAutoStartReverseOnPath() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <marker id="m" viewBox="0 0 10 10" refX="5" refY="5"
+                            markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                      <path d="M0,0 L10,5 L0,10 Z" fill="green"/>
+                    </marker>
+                  </defs>
+                  <path d="M20,50 L100,50 L180,50" fill="none" stroke="black" stroke-width="2"
+                        marker-start="url(#m)" marker-mid="url(#m)" marker-end="url(#m)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── markers with zero-length segments → NaN angles ──
+
+    @Test
+    void markersWithZeroLengthSegments() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="m" viewBox="0 0 10 10" refX="5" refY="5"
+                            markerWidth="6" markerHeight="6">
+                      <circle cx="5" cy="5" r="4" fill="green"/>
+                    </marker>
+                  </defs>
+                  <path d="M10,10 L10,10 L50,50 L50,50 L90,10"
+                        fill="none" stroke="black"
+                        marker-start="url(#m)" marker-mid="url(#m)" marker-end="url(#m)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── marker with zero-size viewBox → markerW/markerH <= 0 ──
+
+    @Test
+    void markerWithZeroSizeViewBox() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="z" viewBox="0 0 0 0" refX="0" refY="0"
+                            markerWidth="6" markerHeight="6">
+                      <circle cx="5" cy="5" r="4" fill="red"/>
+                    </marker>
+                  </defs>
+                  <line x1="10" y1="50" x2="90" y2="50" stroke="black"
+                        marker-start="url(#z)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── marker-mid only (no start or end) ──
+
+    @Test
+    void markerMidOnly() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="mm" viewBox="0 0 10 10" refX="5" refY="5"
+                            markerWidth="4" markerHeight="4">
+                      <rect width="10" height="10" fill="blue"/>
+                    </marker>
+                  </defs>
+                  <polyline points="10,10 50,90 90,10" fill="none" stroke="black"
+                            marker-mid="url(#mm)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── marker on closed path (Z command) ──
+
+    @Test
+    void markerOnClosedPath() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="mc" viewBox="0 0 10 10" refX="5" refY="5"
+                            markerWidth="5" markerHeight="5">
+                      <circle cx="5" cy="5" r="3" fill="purple"/>
+                    </marker>
+                  </defs>
+                  <path d="M20,20 L80,20 L80,80 Z" fill="none" stroke="black"
+                        marker-start="url(#mc)" marker-mid="url(#mc)" marker-end="url(#mc)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
 }

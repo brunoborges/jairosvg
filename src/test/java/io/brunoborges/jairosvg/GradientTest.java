@@ -456,4 +456,185 @@ class GradientTest {
         BufferedImage img = render(svg);
         assertNotNull(img, "Gradient on zero-size element should not crash");
     }
+
+    // ── Missing gradient reference → drawGradient returns false ──────────
+
+    @Test
+    void missingGradientRef() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <rect width="50" height="50" fill="url(#nonexistent) red"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = RenderTestHelper.rgba(img, 25, 25);
+        assertTrue(px[0] > 200, "Fallback color should be used for missing gradient");
+    }
+
+    // ── Non-gradient node in gradients map ───────────────────────────────
+
+    @Test
+    void gradientWithHrefChain() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <linearGradient id="base">
+                      <stop offset="0%" stop-color="red"/>
+                      <stop offset="100%" stop-color="blue"/>
+                    </linearGradient>
+                    <linearGradient id="child" href="#base" x1="0" y1="0" x2="1" y2="0"/>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#child)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] left = RenderTestHelper.rgba(img, 5, 50);
+        assertTrue(left[0] > 200, "Left edge should be red from inherited stops");
+    }
+
+    // ── degenerate linear gradient (x1==x2, y1==y2) → uses last color ──
+
+    @Test
+    void degenerateLinearGradientUsesLastColor() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50">
+                  <defs>
+                    <linearGradient id="degen" x1="0.5" y1="0.5" x2="0.5" y2="0.5">
+                      <stop offset="0%" stop-color="red"/>
+                      <stop offset="100%" stop-color="blue"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="100" height="50" fill="url(#degen)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // Degenerate gradient uses last stop color (blue)
+        int[] pixel = rgba(img, 50, 25);
+        assertTrue(pixel[2] > 200, "Should use last stop color (blue)");
+    }
+
+    // ── gradient stops cache hit — same gradient applied to two elements ──
+
+    @Test
+    void gradientStopsCacheReuse() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <linearGradient id="cached" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stop-color="green"/>
+                      <stop offset="100%" stop-color="yellow"/>
+                    </linearGradient>
+                  </defs>
+                  <rect y="0" width="100" height="50" fill="url(#cached)"/>
+                  <rect y="50" width="100" height="50" fill="url(#cached)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // Both rects should be rendered (second uses cached stops)
+        int[] top = rgba(img, 5, 25);
+        int[] bot = rgba(img, 5, 75);
+        assertEquals(top[0], bot[0], 5, "Both rects should have same gradient");
+    }
+
+    // ── radial gradient with zero radius → returns false (no paint) ──
+
+    @Test
+    void radialGradientZeroRadius() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <radialGradient id="zr" r="0">
+                      <stop offset="0%" stop-color="red"/>
+                      <stop offset="100%" stop-color="blue"/>
+                    </radialGradient>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#zr)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── radial gradient with focus outside radius → focus is clamped ──
+
+    @Test
+    void radialGradientFocusOutsideRadius() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <radialGradient id="foc" cx="50%" cy="50%" r="25%" fx="100%" fy="100%">
+                      <stop offset="0%" stop-color="white"/>
+                      <stop offset="100%" stop-color="black"/>
+                    </radialGradient>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#foc)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── radial gradient with userSpaceOnUse ──
+
+    @Test
+    void radialGradientUserSpaceOnUse() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <radialGradient id="rgu" cx="50" cy="50" r="40" fx="30" fy="30"
+                                    gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stop-color="red"/>
+                      <stop offset="100%" stop-color="green"/>
+                    </radialGradient>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#rgu)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── linear gradient with spreadMethod reflect ──
+
+    @Test
+    void linearGradientReflect() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <defs>
+                    <linearGradient id="refl" x1="0" y1="0" x2="0.25" y2="0"
+                                    spreadMethod="reflect">
+                      <stop offset="0%" stop-color="red"/>
+                      <stop offset="100%" stop-color="blue"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="200" height="50" fill="url(#refl)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── linear gradient with spreadMethod repeat ──
+
+    @Test
+    void linearGradientRepeat() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <defs>
+                    <linearGradient id="rep" x1="0" y1="0" x2="0.25" y2="0"
+                                    spreadMethod="repeat">
+                      <stop offset="0%" stop-color="red"/>
+                      <stop offset="100%" stop-color="blue"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="200" height="50" fill="url(#rep)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
 }

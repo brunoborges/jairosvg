@@ -411,4 +411,200 @@ class BlendCompositorTest {
         var img = io.brunoborges.jairosvg.RenderTestHelper.render(svg);
         assertNotNull(img);
     }
+
+    // ── blendDirect with fully transparent src and dst pixels ─────────────
+
+    @Test
+    void blendTransparentPixels() {
+        // Both src and dst fully transparent
+        BufferedImage src = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage dst = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage out = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
+        // All pixels are 0 (transparent)
+        BufferedImage result = BlendCompositor.blend(src, dst, "normal", out);
+        assertNotNull(result);
+        assertEquals(0, result.getRGB(5, 5), "Transparent blend should produce transparent");
+    }
+
+    // ── blendDirect with different-size output → should reallocate ───────
+
+    @Test
+    void blendDifferentSizeOutput() {
+        BufferedImage src = new BufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage dst = new BufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage out = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB); // wrong size
+        java.awt.Graphics2D g = src.createGraphics();
+        g.setColor(new java.awt.Color(255, 0, 0, 128));
+        g.fillRect(0, 0, 20, 20);
+        g.dispose();
+        BufferedImage result = BlendCompositor.blend(src, dst, "multiply", out);
+        assertEquals(20, result.getWidth());
+    }
+
+    // ── blendPixel with outA clamping (>255) ─────────────────────────────
+
+    @Test
+    void blendDifferentSizeImages() throws Exception {
+        // Smaller src image blended onto larger dst → exercises blendPixel fallback
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feFlood flood-color="red" flood-opacity="0.5" result="bg"/>
+                      <feOffset in="SourceGraphic" dx="20" dy="20" result="shifted"/>
+                      <feBlend in="shifted" in2="bg" mode="darken"/>
+                    </filter>
+                  </defs>
+                  <rect x="10" y="10" width="30" height="30" fill="blue" filter="url(#f)"/>
+                </svg>
+                """;
+        var img = io.brunoborges.jairosvg.RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── blend modes with semi-transparent src and opaque dst (covers srcA/dstA
+    // branching) ──
+
+    @Test
+    void blendMultiplySemiTransparentSrcOpaqueDst() {
+        // src has semi-transparent pixels to exercise srcA != 0 && dstA != 0 paths
+        var src = solidImage(10, 10, 0x80FF0000); // semi-transparent red
+        var dst = solidImage(10, 10, 0xFF00FF00); // opaque green
+        var out = BlendCompositor.blend(src, dst, "multiply", null);
+        assertNotNull(out);
+        int pixel = out.getRGB(5, 5);
+        assertTrue(alpha(pixel) > 0, "Result should have alpha");
+    }
+
+    @Test
+    void blendScreenSemiTransparentSrcOpaqueDst() {
+        var src = solidImage(10, 10, 0x80FF0000);
+        var dst = solidImage(10, 10, 0xFF0000FF);
+        var out = BlendCompositor.blend(src, dst, "screen", null);
+        assertNotNull(out);
+        assertTrue(alpha(out.getRGB(5, 5)) > 0);
+    }
+
+    @Test
+    void blendDarkenSemiTransparentSrcOpaqueDst() {
+        var src = solidImage(10, 10, 0x80808080);
+        var dst = solidImage(10, 10, 0xFFFFFFFF);
+        var out = BlendCompositor.blend(src, dst, "darken", null);
+        assertNotNull(out);
+        assertTrue(alpha(out.getRGB(5, 5)) > 0);
+    }
+
+    @Test
+    void blendLightenSemiTransparentSrcOpaqueDst() {
+        var src = solidImage(10, 10, 0x80808080);
+        var dst = solidImage(10, 10, 0xFF000000);
+        var out = BlendCompositor.blend(src, dst, "lighten", null);
+        assertNotNull(out);
+        assertTrue(alpha(out.getRGB(5, 5)) > 0);
+    }
+
+    // ── blend with all-transparent src → exercises srcA==0 path ──
+
+    @Test
+    void blendNormalTransparentSrc() {
+        var src = solidImage(10, 10, 0x00000000);
+        var dst = solidImage(10, 10, 0xFFFF0000);
+        var out = BlendCompositor.blend(src, dst, "normal", null);
+        assertNotNull(out);
+    }
+
+    @Test
+    void blendMultiplyTransparentSrc() {
+        var src = solidImage(10, 10, 0x00000000);
+        var dst = solidImage(10, 10, 0xFFFF0000);
+        var out = BlendCompositor.blend(src, dst, "multiply", null);
+        assertNotNull(out);
+    }
+
+    @Test
+    void blendScreenTransparentSrc() {
+        var src = solidImage(10, 10, 0x00000000);
+        var dst = solidImage(10, 10, 0xFFFF0000);
+        var out = BlendCompositor.blend(src, dst, "screen", null);
+        assertNotNull(out);
+    }
+
+    @Test
+    void blendDarkenTransparentSrc() {
+        var src = solidImage(10, 10, 0x00000000);
+        var dst = solidImage(10, 10, 0xFFFF0000);
+        var out = BlendCompositor.blend(src, dst, "darken", null);
+        assertNotNull(out);
+    }
+
+    @Test
+    void blendLightenTransparentSrc() {
+        var src = solidImage(10, 10, 0x00000000);
+        var dst = solidImage(10, 10, 0xFFFF0000);
+        var out = BlendCompositor.blend(src, dst, "lighten", null);
+        assertNotNull(out);
+    }
+
+    // ── blend with all-transparent dst → exercises dstA==0 path ──
+
+    @Test
+    void blendNormalTransparentDst() {
+        var src = solidImage(10, 10, 0xFFFF0000);
+        var dst = solidImage(10, 10, 0x00000000);
+        var out = BlendCompositor.blend(src, dst, "normal", null);
+        assertNotNull(out);
+    }
+
+    @Test
+    void blendMultiplyTransparentDst() {
+        var src = solidImage(10, 10, 0xFFFF0000);
+        var dst = solidImage(10, 10, 0x00000000);
+        var out = BlendCompositor.blend(src, dst, "multiply", null);
+        assertNotNull(out);
+    }
+
+    @Test
+    void blendScreenTransparentDst() {
+        var src = solidImage(10, 10, 0xFFFF0000);
+        var dst = solidImage(10, 10, 0x00000000);
+        var out = BlendCompositor.blend(src, dst, "screen", null);
+        assertNotNull(out);
+    }
+
+    @Test
+    void blendDarkenTransparentDst() {
+        var src = solidImage(10, 10, 0xFFFF0000);
+        var dst = solidImage(10, 10, 0x00000000);
+        var out = BlendCompositor.blend(src, dst, "darken", null);
+        assertNotNull(out);
+    }
+
+    @Test
+    void blendLightenTransparentDst() {
+        var src = solidImage(10, 10, 0xFFFF0000);
+        var dst = solidImage(10, 10, 0x00000000);
+        var out = BlendCompositor.blend(src, dst, "lighten", null);
+        assertNotNull(out);
+    }
+
+    // ── blend with both transparent → both srcA==0 and dstA==0 ──
+
+    @Test
+    void blendNormalBothTransparent() {
+        var src = solidImage(10, 10, 0x00000000);
+        var dst = solidImage(10, 10, 0x00000000);
+        var out = BlendCompositor.blend(src, dst, "normal", null);
+        assertNotNull(out);
+        assertEquals(0, alpha(out.getRGB(5, 5)), "Both transparent → transparent result");
+    }
+
+    // ── unknown mode defaults to normal ──
+
+    @Test
+    void blendUnknownModeDefaultsToNormal() {
+        var src = solidImage(10, 10, 0xFFFF0000);
+        var dst = solidImage(10, 10, 0xFF00FF00);
+        var out = BlendCompositor.blend(src, dst, "overlay", null);
+        assertNotNull(out);
+    }
 }

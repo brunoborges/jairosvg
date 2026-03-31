@@ -221,4 +221,67 @@ class PatternPainterTest {
         BufferedImage img = render(svg);
         assertNotNull(img, "Pattern with href inheriting attrs should render");
     }
+
+    // ── Missing pattern ref → drawPattern returns false ──────────────────
+
+    @Test
+    void missingPatternRef() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <rect width="50" height="50" fill="url(#nopattern) green"/>
+                </svg>""";
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = RenderTestHelper.rgba(img, 25, 25);
+        assertTrue(px[1] > 100, "Fallback green should be used");
+    }
+
+    // ── Pattern with no children → renders but no content ────────────────
+
+    @Test
+    void patternNoChildren() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <pattern id="p" width="10" height="10" patternUnits="userSpaceOnUse"/>
+                  </defs>
+                  <rect width="50" height="50" fill="url(#p)"/>
+                </svg>""";
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── Pattern with zero-size tile ──────────────────────────────────────
+
+    @Test
+    void patternZeroSizeTile() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <pattern id="p" width="0" height="0" patternUnits="userSpaceOnUse">
+                      <rect width="10" height="10" fill="red"/>
+                    </pattern>
+                  </defs>
+                  <rect width="50" height="50" fill="url(#p)"/>
+                </svg>""";
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── Pattern with patternTransform ────────────────────────────────────
+
+    @Test
+    void patternWithTransform() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <pattern id="p" width="20" height="20" patternUnits="userSpaceOnUse"
+                             patternTransform="rotate(45)">
+                      <rect width="20" height="20" fill="yellow"/>
+                      <rect x="5" y="5" width="10" height="10" fill="red"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#p)"/>
+                </svg>""";
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
 }

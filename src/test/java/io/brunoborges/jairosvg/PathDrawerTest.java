@@ -714,4 +714,137 @@ class PathDrawerTest {
         int[] c = rgba(img, 50, 30);
         assertTrue(c[0] > 200, "Path with extra whitespace should render correctly");
     }
+
+    // ── Path with malformed token → skipToken recovery ───────────────────
+
+    @Test
+    void pathMalformedTokenRecovery() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,10 Lxyz L90,90" fill="red"/>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── Path with cached path (re-rendered) ──────────────────────────────
+
+    @Test
+    void pathCachedReuse() throws Exception {
+        // use element reuses the same path node → cached path should be used
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <path id="p" d="M10,10 L90,10 L90,90 Z"/>
+                  </defs>
+                  <use href="#p" fill="red"/>
+                  <use href="#p" fill="blue" x="5" y="5"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── Path with invalid arc flags ──────────────────────────────────────
+
+    @Test
+    void pathInvalidArcFlags() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,50 A20,20 0 2 2 90,50" fill="red"/>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── path with T command after non-Q/q/T/t → uses current point ──
+
+    @Test
+    void pathTCommandAfterNonQuadratic() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,50 L30,50 t20,20" fill="none" stroke="black"/>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── path with S command after non-cubic → uses current point ──
+
+    @Test
+    void pathSCommandAfterNonCubic() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,50 L30,50 S60,20 80,50" fill="none" stroke="black"/>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── path with s command (relative smooth cubic) after non-cubic ──
+
+    @Test
+    void pathSmallSCommandAfterNonCubic() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,50 L30,50 s30,-30 50,0" fill="none" stroke="black"/>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── path with H and V commands ──
+
+    @Test
+    void pathHVCommands() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,10 H90 V90 h-80 v-80" fill="none" stroke="black"/>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── path with arc (large-arc=1, sweep=1) ──
+
+    @Test
+    void pathArcLargeArcAndSweep() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,50 A30,30 0 1,1 90,50" fill="none" stroke="black"/>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── path with arc where rx==0 or ry==0 → degenerates to line ──
+
+    @Test
+    void pathArcZeroRadius() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,50 A0,30 0 0,1 90,50" fill="none" stroke="black"/>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
+
+    // ── path with multiple M commands (subpaths with vertices) ──
+
+    @Test
+    void pathMultipleSubpaths() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="msub" viewBox="0 0 10 10" refX="5" refY="5"
+                            markerWidth="4" markerHeight="4">
+                      <circle cx="5" cy="5" r="3" fill="red"/>
+                    </marker>
+                  </defs>
+                  <path d="M10,10 L50,10 M50,50 L90,50" fill="none" stroke="black"
+                        marker-start="url(#msub)" marker-end="url(#msub)"/>
+                </svg>
+                """;
+        assertDoesNotThrow(() -> render(svg));
+    }
 }

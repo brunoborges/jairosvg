@@ -783,4 +783,216 @@ class CssProcessorTest {
     private static Node parseToNodeTree(String xml) throws Exception {
         return Node.parseTree(xml.getBytes(StandardCharsets.UTF_8));
     }
+
+    // ── :first-child on root element (parent == null) → false ────────────
+
+    @Test
+    void firstChildOnRootElement() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <style>
+                    svg:first-child { fill: green; }
+                  </style>
+                  <rect width="50" height="50"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── nth-child with complex formula ───────────────────────────────────
+
+    @Test
+    void nthChildFormula() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50">
+                  <style>
+                    rect:nth-child(2n+1) { fill: red; }
+                    rect:nth-child(2n) { fill: blue; }
+                  </style>
+                  <rect x="0" y="0" width="25" height="50"/>
+                  <rect x="25" y="0" width="25" height="50"/>
+                  <rect x="50" y="0" width="25" height="50"/>
+                  <rect x="75" y="0" width="25" height="50"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── nth-child odd ──
+
+    @Test
+    void nthChildOdd() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <style>
+                    rect:nth-child(odd) { fill: red; }
+                    rect:nth-child(even) { fill: blue; }
+                  </style>
+                  <g>
+                    <rect width="30" height="100"/>
+                    <rect x="35" width="30" height="100"/>
+                    <rect x="70" width="30" height="100"/>
+                  </g>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+        // First rect (child 1=odd) should be red, second (child 2=even) blue
+        int[] first = RenderTestHelper.rgba(img, 15, 50);
+        int[] second = RenderTestHelper.rgba(img, 50, 50);
+        assertTrue(first[0] > 200, "Odd child should be red, got r=" + first[0]);
+        assertTrue(second[2] > 200, "Even child should be blue, got b=" + second[2]);
+    }
+
+    // ── last-child selector ──
+
+    @Test
+    void lastChildSelector() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <style>
+                    rect:last-child { fill: green; }
+                  </style>
+                  <g>
+                    <rect width="50" height="100" fill="red"/>
+                    <rect x="50" width="50" height="100"/>
+                  </g>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+        int[] last = RenderTestHelper.rgba(img, 75, 50);
+        assertTrue(last[1] > 100, "Last child should be green, got g=" + last[1]);
+    }
+
+    // ── :not() pseudo-class ──
+
+    @Test
+    void notPseudoClass() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <style>
+                    rect:not(.special) { fill: gray; }
+                    .special { fill: red; }
+                  </style>
+                  <rect width="50" height="100"/>
+                  <rect x="50" width="50" height="100" class="special"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── CSS with !important declaration ──
+
+    @Test
+    void cssImportant() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <style>
+                    rect { fill: blue !important; }
+                  </style>
+                  <rect width="100" height="100" fill="red"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+        // Important CSS should override attribute → blue
+        int[] pixel = RenderTestHelper.rgba(img, 50, 50);
+        assertTrue(pixel[2] > 200, "!important should override fill attribute");
+    }
+
+    // ── CSS var() with fallback ──
+
+    @Test
+    void cssVarWithFallback() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <style>
+                    :root { --mycolor: green; }
+                    rect { fill: var(--mycolor, red); }
+                  </style>
+                  <rect width="100" height="100"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── CSS var() with undefined var (uses fallback) ──
+
+    @Test
+    void cssVarUndefinedUsesFallback() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <style>
+                    rect { fill: var(--undefined, orange); }
+                  </style>
+                  <rect width="100" height="100"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── CSS with descendant combinator ──
+
+    @Test
+    void cssDescendantCombinator() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <style>
+                    g rect { fill: purple; }
+                  </style>
+                  <g>
+                    <rect width="100" height="100"/>
+                  </g>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── nth-child with an+b where a < 0 ──
+
+    @Test
+    void nthChildNegativeA() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="150" height="100">
+                  <style>
+                    rect:nth-child(-n+2) { fill: red; }
+                  </style>
+                  <rect width="50" height="100"/>
+                  <rect x="50" width="50" height="100"/>
+                  <rect x="100" width="50" height="100"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── nth-child with a==0 (matches exactly b) ──
+
+    @Test
+    void nthChildZeroA() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="150" height="100">
+                  <style>
+                    rect:nth-child(0n+2) { fill: green; }
+                  </style>
+                  <g>
+                    <rect width="50" height="100"/>
+                    <rect x="50" width="50" height="100"/>
+                    <rect x="100" width="50" height="100"/>
+                  </g>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+        // Only second rect should be green
+        int[] second = RenderTestHelper.rgba(img, 75, 50);
+        assertTrue(second[1] > 100, "Second child should be green, got g=" + second[1]);
+    }
 }

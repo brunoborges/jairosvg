@@ -2,6 +2,8 @@ package io.brunoborges.jairosvg;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.awt.image.BufferedImage;
+
 import org.junit.jupiter.api.Test;
 
 import io.brunoborges.jairosvg.util.UrlHelper;
@@ -346,5 +348,107 @@ class UrlHelperTest {
     void testParsedUrlGetUrlEmpty() {
         ParsedUrl url = new ParsedUrl(null, null, null, null, null);
         assertEquals("", url.getUrl());
+    }
+
+    // ── fetch file path (no scheme) ──────────────────────────────────────
+
+    @Test
+    void testFetchNonExistentFile() {
+        assertThrows(java.io.IOException.class, () -> UrlHelper.fetch("/nonexistent/path/to/file.svg", "image"));
+    }
+
+    @Test
+    void testFetchFileScheme(@org.junit.jupiter.api.io.TempDir java.nio.file.Path tempDir) throws Exception {
+        java.nio.file.Path f = tempDir.resolve("test.txt");
+        java.nio.file.Files.writeString(f, "hello");
+        byte[] result = UrlHelper.fetch("file://" + f.toAbsolutePath(), "text");
+        assertEquals("hello", new String(result));
+    }
+
+    @Test
+    void testFetchPlainFilePath(@org.junit.jupiter.api.io.TempDir java.nio.file.Path tempDir) throws Exception {
+        java.nio.file.Path f = tempDir.resolve("test.txt");
+        java.nio.file.Files.writeString(f, "world");
+        byte[] result = UrlHelper.fetch(f.toAbsolutePath().toString(), "text");
+        assertEquals("world", new String(result));
+    }
+
+    // ── resolveUrl edge cases ────────────────────────────────────────────
+
+    @Test
+    void testParseUrlRelativeWithMalformedBase() {
+        // Malformed base should still resolve (path-based fallback)
+        ParsedUrl url = UrlHelper.parseUrl("image.svg", "file:///dir with spaces/");
+        assertNotNull(url);
+    }
+
+    @Test
+    void testParseUrlFragmentOnlyWithBase() {
+        ParsedUrl url = UrlHelper.parseUrl("#frag", "http://example.com/page.html");
+        assertEquals("frag", url.fragment());
+    }
+
+    // ── readUrl with scheme ──────────────────────────────────────────────
+
+    @Test
+    void testReadUrlWithScheme() throws Exception {
+        ParsedUrl url = new ParsedUrl("data", null, "text/plain;base64,SGVsbG8=", null, null);
+        byte[] result = UrlHelper.readUrl(url, (u, r) -> {
+            if (u.startsWith("data:")) {
+                return UrlHelper.decodeDataUrl(u);
+            }
+            return new byte[0];
+        }, "text");
+        assertEquals("Hello", new String(result));
+    }
+
+    // ── readUrl with no scheme (file path) ──────────────────────────────
+
+    @Test
+    void testReadUrlNoScheme(@org.junit.jupiter.api.io.TempDir java.nio.file.Path tempDir) throws Exception {
+        java.nio.file.Path f = tempDir.resolve("test.svg");
+        java.nio.file.Files.writeString(f, "<svg/>");
+        ParsedUrl url = new ParsedUrl(null, null, f.toAbsolutePath().toString(), null, null);
+        byte[] result = UrlHelper.readUrl(url, UrlHelper::fetch, "image/svg+xml");
+        assertTrue(new String(result).contains("<svg"));
+    }
+
+    // ── parseUrlComponents authority-only URL ────────────────────────────
+
+    @Test
+    void testParseUrlAuthorityOnly() {
+        ParsedUrl url = UrlHelper.parseUrl("http://example.com");
+        assertEquals("example.com", url.authority());
+        // Path may be null or empty when authority exhausts the string
+    }
+
+    // ── data URL without base64 → URL-decoded ──
+
+    @Test
+    void decodeDataUrlPlainText() {
+        byte[] result = UrlHelper.decodeDataUrl("data:text/plain,Hello%20World");
+        assertEquals("Hello World", new String(result));
+    }
+
+    // ── data URL without comma → empty ──
+
+    @Test
+    void decodeDataUrlNoComma() {
+        byte[] result = UrlHelper.decodeDataUrl("data:invalid");
+        assertEquals(0, result.length);
+    }
+
+    // ── SVG image with relative href (exercises resolveUrl) ──
+
+    @Test
+    void svgImageRelativeHref() throws Exception {
+        // Uses a non-existent relative ref — should gracefully skip
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <image href="nonexistent.png" width="50" height="50"/>
+                </svg>
+                """;
+        BufferedImage img = io.brunoborges.jairosvg.RenderTestHelper.render(svg);
+        assertNotNull(img);
     }
 }

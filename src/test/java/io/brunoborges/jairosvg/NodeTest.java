@@ -479,4 +479,151 @@ class NodeTest {
         assertTrue(set.contains("opacity"));
         assertFalse(set.contains("fill"));
     }
+
+    // ── parseTree from URL (bytestring == null, url != null) ─────────────
+
+    @Test
+    void testParseTreeFromFile(@org.junit.jupiter.api.io.TempDir java.nio.file.Path tempDir) throws Exception {
+        var svgFile = tempDir.resolve("test.svg");
+        java.nio.file.Files.writeString(svgFile,
+                "<svg xmlns='http://www.w3.org/2000/svg' width='50' height='50'><rect width='50' height='50' fill='red'/></svg>");
+        Node tree = Node.parseTree(null, svgFile.toAbsolutePath().toString(), null, false);
+        assertNotNull(tree);
+        assertEquals("svg", tree.tag);
+    }
+
+    // ── parseTree null input ─────────────────────────────────────────────
+
+    @Test
+    void testParseTreeNullInputThrows() {
+        assertThrows(IllegalArgumentException.class, () -> Node.parseTree(null, null, null, false));
+    }
+
+    // ── switch element skips after first matched child (skipDepth) ────────
+
+    @Test
+    void testSwitchSkipDepth() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <switch>
+                    <rect width="50" height="50" fill="red"/>
+                    <rect width="50" height="50" fill="blue"/>
+                  </switch>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        int[] px = RenderTestHelper.rgba(img, 25, 25);
+        assertTrue(px[0] > 200, "First child of switch should render, not second");
+    }
+
+    // ── features-based skip (requiredFeatures fail → skipDepth) ──────────
+
+    @Test
+    void testFeaturesSkipDepth() throws Exception {
+        // systemLanguage with non-matching lang causes feature skip
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <switch>
+                    <rect systemLanguage="xx-NOMATCH" width="50" height="50" fill="red"/>
+                    <rect width="50" height="50" fill="blue"/>
+                  </switch>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        int[] px = RenderTestHelper.rgba(img, 25, 25);
+        assertTrue(px[2] > 200, "Fallback child should render when first fails systemLanguage");
+    }
+
+    // ── Node with non-SVG namespace element → tag gets prefixed with URI ──
+
+    @Test
+    void nonSvgNamespaceElement() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     xmlns:custom="http://example.org/custom"
+                     width="50" height="50">
+                  <rect width="50" height="50" fill="green"/>
+                  <custom:widget x="10" y="10"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── SVG with xml-stylesheet processing instruction ──
+
+    @Test
+    void xmlStylesheetPI() throws Exception {
+        var svg = """
+                <?xml-stylesheet type="text/css" href="data:text/css,rect{fill:blue}"?>
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <rect width="50" height="50"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── Node attribute inheritance: currentColor resolution ──
+
+    @Test
+    void currentColorInherited() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"
+                     color="red">
+                  <rect width="50" height="50" fill="currentColor"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+        int[] px = RenderTestHelper.rgba(img, 25, 25);
+        assertTrue(px[0] > 200, "currentColor should resolve to red");
+    }
+
+    // ── Node attribute inheritance: inherit keyword ──
+
+    @Test
+    void inheritKeyword() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"
+                     fill="green">
+                  <g>
+                    <rect width="50" height="50" fill="inherit"/>
+                  </g>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+        int[] px = RenderTestHelper.rgba(img, 25, 25);
+        assertTrue(px[1] > 100, "inherit should use parent fill (green)");
+    }
+
+    // ── Node with display:none ──
+
+    @Test
+    void displayNoneSkipsRendering() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <rect width="50" height="50" fill="red" display="none"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+        int[] px = RenderTestHelper.rgba(img, 25, 25);
+        // Should be transparent or default background (not red)
+        assertTrue(px[0] < 50 || px[3] < 50, "display:none should not render");
+    }
+
+    // ── visibility:hidden ──
+
+    @Test
+    void visibilityHidden() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <rect width="50" height="50" fill="blue" visibility="hidden"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
 }

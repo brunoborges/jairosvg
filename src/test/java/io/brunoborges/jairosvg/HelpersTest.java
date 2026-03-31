@@ -1781,4 +1781,153 @@ class HelpersTest {
         // 2.54 * 96 * (1/2.54) = 96
         assertEquals(96.0, result, EPSILON);
     }
+
+    // ── paint() edge cases ───────────────────────────────────────────────
+
+    @Test
+    void paintNull() {
+        String[] result = Helpers.paint(null);
+        assertNotNull(result);
+        assertEquals(2, result.length);
+        assertNull(result[0]);
+        assertNull(result[1]);
+    }
+
+    @Test
+    void paintBlank() {
+        String[] result = Helpers.paint("  ");
+        assertNotNull(result);
+        assertNull(result[0]);
+        assertNull(result[1]);
+    }
+
+    @Test
+    void paintPlainColor() {
+        String[] result = Helpers.paint("red");
+        assertNull(result[0]);
+        assertEquals("red", result[1]);
+    }
+
+    @Test
+    void paintUrlWithFallback() {
+        String[] result = Helpers.paint("url(#grad1) blue");
+        assertEquals("grad1", result[0]);
+        assertEquals("blue", result[1]);
+    }
+
+    @Test
+    void paintUrlOnly() {
+        String[] result = Helpers.paint("url(#pattern)");
+        assertEquals("pattern", result[0]);
+        assertNull(result[1]);
+    }
+
+    // ── PointError constructors ──────────────────────────────────────────
+
+    @Test
+    void pointErrorDefault() {
+        var err = new Helpers.PointError();
+        assertNull(err.getMessage());
+    }
+
+    @Test
+    void pointErrorWithMessage() {
+        var err = new Helpers.PointError("test");
+        assertEquals("test", err.getMessage());
+    }
+
+    // ── calc() with multiplication and division ──────────────────────────
+
+    @Test
+    void sizeCalcMultiply() {
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(10px * 3)", "x");
+        assertEquals(30.0, result, EPSILON);
+    }
+
+    @Test
+    void sizeCalcDivide() {
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(90px / 3)", "x");
+        assertEquals(30.0, result, EPSILON);
+    }
+
+    @Test
+    void sizeCalcNested() {
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(10px + 5px * 2)", "x");
+        assertEquals(20.0, result, EPSILON);
+    }
+
+    @Test
+    void sizeCalcSubtraction() {
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(100px - 40px)", "x");
+        assertEquals(60.0, result, EPSILON);
+    }
+
+    // ── sizeWithUnit diagonal reference ──────────────────────────────────
+
+    @Test
+    void sizePercentDiagonal() {
+        Surface s = testSurface();
+        // percentage with null reference uses diagonal
+        double result = Helpers.size(s, "100%", null);
+        double diag = Math.hypot(s.contextWidth, s.contextHeight) / Math.sqrt(2);
+        assertEquals(diag, result, 1.0);
+    }
+
+    // ── calc with addition ──
+
+    @Test
+    void calcAdditionViaSvg() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect x="calc(10px + 20px)" y="10" width="50" height="50" fill="red"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── calc with nested parentheses ──
+
+    @Test
+    void calcNestedParens() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="calc((50px + 10px) * 1)" height="100" fill="green"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── calc with percentage ──
+
+    @Test
+    void calcWithPercentage() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="calc(50% + 10px)" height="100" fill="red"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── size with unit 'em' ──
+
+    @Test
+    void sizeWithEmUnit() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <text x="10" y="50" font-size="12">
+                    <tspan dx="1em">Em</tspan>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
 }
