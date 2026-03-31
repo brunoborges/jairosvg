@@ -48,11 +48,6 @@ public final class TextDrawer {
 
     /** Draw a text node. */
     public static void text(Surface surface, Node node) {
-        text(surface, node, false);
-    }
-
-    /** Draw a text node, optionally as filled text. */
-    public static void text(Surface surface, Node node, boolean drawAsText) {
         String fontFamily = parseFontFamily(node);
 
         // Check for SVG font match before mapping to AWT fonts
@@ -207,13 +202,8 @@ public final class TextDrawer {
                 } else {
                     // Fall back to AWT system font for characters without a defined SVG glyph
                     String ch = textContent.substring(i, i + match.charsConsumed());
-                    if (drawAsText) {
-                        surface.context.setFont(font);
-                        surface.context.drawString(ch, (float) curX, (float) startY);
-                    } else {
-                        GlyphVector gv = font.createGlyphVector(frc, ch);
-                        surface.path.append(gv.getOutline((float) curX, (float) startY), false);
-                    }
+                    GlyphVector gv = font.createGlyphVector(frc, ch);
+                    surface.path.append(gv.getOutline((float) curX, (float) startY), false);
                     curX += font.getStringBounds(ch, frc).getWidth() + letterSpacing;
                 }
                 i += match.charsConsumed();
@@ -225,13 +215,8 @@ public final class TextDrawer {
             for (int i = 0; i < textContent.length(); i++) {
                 String ch = String.valueOf(textContent.charAt(i));
                 if (!ch.isBlank()) {
-                    if (drawAsText) {
-                        surface.context.setFont(font);
-                        surface.context.drawString(ch, (float) curX, (float) startY);
-                    } else {
-                        GlyphVector gv = font.createGlyphVector(frc, ch);
-                        surface.path.append(gv.getOutline((float) curX, (float) startY), false);
-                    }
+                    GlyphVector gv = font.createGlyphVector(frc, ch);
+                    surface.path.append(gv.getOutline((float) curX, (float) startY), false);
                 }
                 Rectangle2D charBounds = font.getStringBounds(ch, frc);
                 curX += charBounds.getWidth() + letterSpacing;
@@ -239,13 +224,8 @@ public final class TextDrawer {
             surface.cursorPosition[0] = curX;
             textWidth = curX - startX - letterSpacing;
         } else {
-            if (drawAsText) {
-                surface.context.setFont(font);
-                surface.context.drawString(textContent, (float) startX, (float) startY);
-            } else {
-                GlyphVector gv = font.createGlyphVector(frc, textContent);
-                surface.path.append(gv.getOutline((float) startX, (float) startY), false);
-            }
+            GlyphVector gv = font.createGlyphVector(frc, textContent);
+            surface.path.append(gv.getOutline((float) startX, (float) startY), false);
             Rectangle2D bounds = font.getStringBounds(textContent, frc);
             surface.cursorPosition[0] = startX + bounds.getWidth();
             textWidth = bounds.getWidth();

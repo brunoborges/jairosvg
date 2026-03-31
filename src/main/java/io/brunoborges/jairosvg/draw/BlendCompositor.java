@@ -98,8 +98,6 @@ final class BlendCompositor {
             int outA = srcA + dstA - (srcA * dstA + 127) / 255;
             if (outA <= 0)
                 continue;
-            if (outA > 255)
-                outA = 255;
 
             int srcR = (src >> 16) & 0xFF, srcG = (src >> 8) & 0xFF, srcB = src & 0xFF;
             int dstR = (dst >> 16) & 0xFF, dstG = (dst >> 8) & 0xFF, dstB = dst & 0xFF;
@@ -127,8 +125,6 @@ final class BlendCompositor {
             int outA = srcA + dstA - (srcA * dstA + 127) / 255;
             if (outA <= 0)
                 continue;
-            if (outA > 255)
-                outA = 255;
 
             int srcR = (src >> 16) & 0xFF, srcG = (src >> 8) & 0xFF, srcB = src & 0xFF;
             int dstR = (dst >> 16) & 0xFF, dstG = (dst >> 8) & 0xFF, dstB = dst & 0xFF;
@@ -157,8 +153,6 @@ final class BlendCompositor {
             int outA = srcA + dstA - (srcA * dstA + 127) / 255;
             if (outA <= 0)
                 continue;
-            if (outA > 255)
-                outA = 255;
 
             int srcR = (src >> 16) & 0xFF, srcG = (src >> 8) & 0xFF, srcB = src & 0xFF;
             int dstR = (dst >> 16) & 0xFF, dstG = (dst >> 8) & 0xFF, dstB = dst & 0xFF;
@@ -187,8 +181,6 @@ final class BlendCompositor {
             int outA = srcA + dstA - (srcA * dstA + 127) / 255;
             if (outA <= 0)
                 continue;
-            if (outA > 255)
-                outA = 255;
 
             int srcR = (src >> 16) & 0xFF, srcG = (src >> 8) & 0xFF, srcB = src & 0xFF;
             int dstR = (dst >> 16) & 0xFF, dstG = (dst >> 8) & 0xFF, dstB = dst & 0xFF;
@@ -217,8 +209,6 @@ final class BlendCompositor {
             int outA = srcA + dstA - (srcA * dstA + 127) / 255;
             if (outA <= 0)
                 continue;
-            if (outA > 255)
-                outA = 255;
 
             int srcR = (src >> 16) & 0xFF, srcG = (src >> 8) & 0xFF, srcB = src & 0xFF;
             int dstR = (dst >> 16) & 0xFF, dstG = (dst >> 8) & 0xFF, dstB = dst & 0xFF;
@@ -252,9 +242,6 @@ final class BlendCompositor {
         int outA = srcA + dstA - (srcA * dstA + 127) / 255;
         if (outA <= 0) {
             return 0;
-        }
-        if (outA > 255) {
-            outA = 255;
         }
 
         int outR = blendComposite(srcR, dstR, srcA, dstA, outA, modeId);

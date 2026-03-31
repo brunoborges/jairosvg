@@ -1225,4 +1225,52 @@ class FilterRendererTest {
         BufferedImage img = render(svg);
         assertNotNull(img);
     }
+
+    // ── feTile with fully transparent source (null filterRegion fallback) ──
+
+    @Test
+    void feTileOnFullyTransparentSource() throws Exception {
+        // feFlood with opacity=0 produces fully transparent source.
+        // computeFilterRegion returns null for fully transparent images.
+        // tile() then falls back to scanning for non-transparent bounds.
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60">
+                  <defs>
+                    <filter id="ft">
+                      <feFlood flood-color="red" flood-opacity="0" result="transparent"/>
+                      <feTile in="transparent"/>
+                    </filter>
+                  </defs>
+                  <rect width="60" height="60" fill="blue" filter="url(#ft)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feTile with tile width that doesn't evenly divide output ──
+
+    @Test
+    void feTileTailCopyBranch() throws Exception {
+        // Use a small filter region so tile width doesn't evenly divide the canvas.
+        // Canvas is 70px wide, filter region via userSpaceOnUse is 30px wide.
+        // 70 / 30 = 2 remainder 10, so the tail copy (x < width) executes.
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="70" height="30">
+                  <defs>
+                    <filter id="ft2" filterUnits="userSpaceOnUse"
+                            x="0" y="0" width="30" height="30">
+                      <feFlood flood-color="green" flood-opacity="1"/>
+                      <feTile/>
+                    </filter>
+                  </defs>
+                  <rect width="70" height="30" fill="white" filter="url(#ft2)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // The green tile should repeat across the 70px canvas
+        int[] greenPx = rgba(img, 5, 15);
+        assertTrue(greenPx[1] > 100, "Should have green channel from flood");
+    }
 }

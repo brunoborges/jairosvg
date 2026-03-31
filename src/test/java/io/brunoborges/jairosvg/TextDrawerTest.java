@@ -542,7 +542,7 @@ class TextDrawerTest {
         assertTrue(dark > 10, "Translated text should render");
     }
 
-    // ── per-character rendering path with drawAsText=false (default) ──
+    // ── per-character rendering path (glyph outlines) ──
 
     @Test
     void testLetterSpacingWithBlankChars() throws Exception {
@@ -1225,5 +1225,25 @@ class TextDrawerTest {
                 """;
         BufferedImage img = render(svg);
         assertNotNull(img);
+    }
+
+    // ── FONT_CACHE eviction (capacity 64) ──
+
+    @Test
+    void fontCacheEvictionOver64Entries() throws Exception {
+        // Generate >64 unique font-size values to force FONT_CACHE eviction.
+        // Each unique font-size creates a different cache key.
+        var sb = new StringBuilder();
+        sb.append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400\" height=\"3500\">");
+        sb.append("<rect width=\"400\" height=\"3500\" fill=\"white\"/>");
+        for (int i = 1; i <= 70; i++) {
+            int y = i * 50;
+            sb.append(String.format("<text x=\"10\" y=\"%d\" font-size=\"%d\" fill=\"black\">T%d</text>", y, i, i));
+        }
+        sb.append("</svg>");
+        BufferedImage img = render(sb.toString());
+        assertNotNull(img);
+        // All 70 texts should render — some cache entries evicted but no errors
+        assertTrue(img.getWidth() == 400);
     }
 }

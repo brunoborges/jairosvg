@@ -3,8 +3,10 @@ package io.brunoborges.jairosvg;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import io.brunoborges.jairosvg.util.UrlHelper;
 import io.brunoborges.jairosvg.util.UrlHelper.ParsedUrl;
@@ -450,5 +452,116 @@ class UrlHelperTest {
                 """;
         BufferedImage img = io.brunoborges.jairosvg.RenderTestHelper.render(svg);
         assertNotNull(img);
+    }
+
+    // ── resolveUrl fallback paths via parseUrl(url, base) ──
+
+    @Test
+    void resolveUrlWithDataScheme() {
+        // data: URLs should pass through unchanged
+        ParsedUrl result = UrlHelper.parseUrl("data:image/png;base64,abc", "http://example.com");
+        assertEquals("data", result.scheme());
+    }
+
+    @Test
+    void resolveUrlWithHttpScheme() {
+        // http URLs should pass through unchanged
+        ParsedUrl result = UrlHelper.parseUrl("http://other.com/img.svg", "http://example.com");
+        assertEquals("http", result.scheme());
+        assertEquals("other.com", result.authority());
+    }
+
+    @Test
+    void resolveUrlWithHttpsScheme() {
+        // https URLs should pass through unchanged
+        ParsedUrl result = UrlHelper.parseUrl("https://secure.com/img.svg", "http://example.com");
+        assertEquals("https", result.scheme());
+    }
+
+    @Test
+    void resolveUrlRelativeToValidBase() {
+        // Relative URL resolved against a valid base URI
+        ParsedUrl result = UrlHelper.parseUrl("image.png", "http://example.com/dir/page.html");
+        assertEquals("http", result.scheme());
+        assertTrue(result.path().endsWith("image.png"));
+    }
+
+    @Test
+    void resolveUrlFragmentWithInvalidBase() {
+        // Fragment URL with invalid base URI triggers catch block → base + url
+        ParsedUrl result = UrlHelper.parseUrl("#myId", "not a valid {uri}");
+        // Falls back to: "not a valid {uri}#myId"
+        assertEquals("myId", result.fragment());
+    }
+
+    @Test
+    void resolveUrlPathWithInvalidBase(@TempDir java.nio.file.Path tempDir) throws Exception {
+        // Non-fragment relative URL with invalid base URI triggers path resolution
+        java.nio.file.Path baseFile = tempDir.resolve("base.svg");
+        java.nio.file.Files.writeString(baseFile, "<svg/>");
+        ParsedUrl result = UrlHelper.parseUrl("other.svg", "invalid {uri}" + baseFile.toString());
+        // Falls back to path resolution; since base is not a real file,
+        // Path.of(base).getParent() is used
+        assertNotNull(result);
+    }
+
+    @Test
+    void resolveUrlEmptyUrlWithInvalidBase() {
+        // Empty URL with invalid base → falls through to return url (empty)
+        ParsedUrl result = UrlHelper.parseUrl("", "invalid {uri}");
+        // Empty url → early return before resolveUrl is called
+        assertNotNull(result);
+    }
+
+    // ── fetchHttp via local socket-based HTTP server ──
+
+    @Test
+    void fetchHttpViaSvgImage() throws Exception {
+        byte[] pngData = createTinyPng();
+        // Start a minimal HTTP server using raw sockets (no jdk.httpserver module
+        // needed)
+        var serverSocket = new java.net.ServerSocket(0);
+        int port = serverSocket.getLocalPort();
+        var serverThread = new Thread(() -> {
+            try (var clientSocket = serverSocket.accept()) {
+                var in = clientSocket.getInputStream();
+                // Read HTTP request (at least headers)
+                byte[] buf = new byte[4096];
+                in.read(buf);
+                // Send HTTP response
+                var out = clientSocket.getOutputStream();
+                String headers = "HTTP/1.1 200 OK\r\n" + "Content-Type: image/png\r\n" + "Content-Length: "
+                        + pngData.length + "\r\n" + "\r\n";
+                out.write(headers.getBytes());
+                out.write(pngData);
+                out.flush();
+            } catch (Exception e) {
+                // ignore
+            }
+        });
+        serverThread.setDaemon(true);
+        serverThread.start();
+        try {
+            byte[] fetched = UrlHelper.fetch("http://localhost:" + port + "/test.png", "image");
+            assertNotNull(fetched);
+            assertTrue(fetched.length > 0, "Should have fetched PNG data");
+        } finally {
+            serverSocket.close();
+            serverThread.join(5000);
+        }
+    }
+
+    @Test
+    void fetchHttpBadUri() {
+        // Invalid URI should throw IOException wrapping URISyntaxException
+        assertThrows(IOException.class, () -> UrlHelper.fetch("http://invalid host with spaces", "image"));
+    }
+
+    private static byte[] createTinyPng() throws Exception {
+        var img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        img.setRGB(0, 0, 0xFFFF0000);
+        var baos = new java.io.ByteArrayOutputStream();
+        javax.imageio.ImageIO.write(img, "png", baos);
+        return baos.toByteArray();
     }
 }
