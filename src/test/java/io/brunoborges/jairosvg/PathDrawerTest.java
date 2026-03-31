@@ -847,4 +847,135 @@ class PathDrawerTest {
                 """;
         assertDoesNotThrow(() -> render(svg));
     }
+
+    // ── S after C (smooth cubic reflection) ──
+
+    @Test
+    void smoothCubicAfterCubic() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,50 C20,10 40,10 50,50 S80,90 90,50" fill="none" stroke="black"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── s after c (relative smooth cubic) ──
+
+    @Test
+    void relSmoothCubicAfterRelCubic() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,50 c10,-40 30,-40 40,0 s30,40 40,0" fill="none" stroke="black"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── Q command (quadratic) ──
+
+    @Test
+    void quadraticBezier() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,80 Q50,10 90,80" fill="none" stroke="blue"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── q command (relative quadratic) ──
+
+    @Test
+    void relQuadraticBezier() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,80 q40,-70 80,0" fill="none" stroke="blue"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── T after Q (smooth quadratic reflection) ──
+
+    @Test
+    void smoothQuadraticAfterQ() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <path d="M10,50 Q40,10 70,50 T130,50" fill="none" stroke="green"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── t after q (relative smooth quadratic) ──
+
+    @Test
+    void relSmoothQuadraticAfterQ() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <path d="M10,50 q30,-40 60,0 t60,0" fill="none" stroke="green"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── T not after Q (no reflection, control = current) ──
+
+    @Test
+    void smoothQuadraticNotAfterQ() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,50 L50,50 T90,50" fill="none" stroke="red"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── S not after C (no reflection) ──
+
+    @Test
+    void smoothCubicNotAfterC() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,50 L30,50 S70,10 90,50" fill="none" stroke="red"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── Arc with invalid flag values ──
+
+    @Test
+    void arcInvalidFlags() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,50 A20,20 0 2 0 90,50" fill="none" stroke="black"/>
+                </svg>
+                """;
+        // largeArc=2 is invalid → should skip gracefully
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── Malformed path data (NumberFormatException recovery) ──
+
+    @Test
+    void malformedPathDataRecovery() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,10 L50,abc 50,90" fill="none" stroke="black"/>
+                </svg>
+                """;
+        // "abc" is not a number → exception caught, skips token, continues
+        assertDoesNotThrow(() -> render(svg));
+    }
 }

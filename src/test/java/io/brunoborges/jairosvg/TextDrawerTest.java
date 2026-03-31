@@ -1246,4 +1246,79 @@ class TextDrawerTest {
         // All 70 texts should render — some cache entries evicted but no errors
         assertTrue(img.getWidth() == 400);
     }
+
+    // ── textPath along a path ──
+
+    @Test
+    void textPathBasic() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <path id="tp1" d="M10,80 C40,10 65,10 95,80 S150,150 180,80"/>
+                  </defs>
+                  <text font-size="14" fill="black">
+                    <textPath href="#tp1">Hello World along a path</textPath>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── textPath with startOffset ──
+
+    @Test
+    void textPathWithStartOffset() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <path id="tp2" d="M10,50 L190,50"/>
+                  </defs>
+                  <text font-size="16" fill="black">
+                    <textPath href="#tp2" startOffset="50%">Offset</textPath>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── resolveFont with font-style oblique ──
+
+    @Test
+    void resolveFontObliqueStyle() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="40">
+                  <text x="5" y="25" font-size="16" font-style="oblique" fill="black">Oblique</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── resolveFont with font-weight bolder ──
+
+    @Test
+    void resolveFontBolderWeight() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="40">
+                  <text x="5" y="25" font-size="16" font-weight="bolder" fill="black">Bolder</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── resolveFont with font-weight lighter ──
+
+    @Test
+    void resolveFontLighterWeight() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="40">
+                  <text x="5" y="25" font-size="16" font-weight="lighter" fill="black">Lighter</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
 }

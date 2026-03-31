@@ -400,4 +400,93 @@ class ImageHandlerTest {
         BufferedImage img = render(svg);
         assertNotNull(img);
     }
+
+    // ── SVG image with zero treeWidth/treeHeight (fallback to element
+    // width/height) ──
+
+    @Test
+    void svgImageZeroDimensions() throws Exception {
+        // Inline SVG data with no width/height/viewBox
+        String innerSvg = "<svg xmlns='http://www.w3.org/2000/svg'><rect fill='red' width='10' height='10'/></svg>";
+        String b64 = java.util.Base64.getEncoder().encodeToString(innerSvg.getBytes());
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <image href="data:image/svg+xml;base64,%s" width="50" height="50"/>
+                </svg>
+                """.formatted(b64);
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── Image with very short data (< 5 bytes → skip) ──
+
+    @Test
+    void imageShortData() throws Exception {
+        String b64 = java.util.Base64.getEncoder().encodeToString(new byte[]{1, 2, 3});
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <image href="data:image/png;base64,%s" width="50" height="50"/>
+                </svg>
+                """.formatted(b64);
+        // Only 3 bytes → skipped
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── Image with empty href (no-op) ──
+
+    @Test
+    void imageEmptyHref() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <image href="" width="50" height="50"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── Image with invalid raster data (ImageIO.read returns null) ──
+
+    @Test
+    void imageInvalidRasterData() throws Exception {
+        // Valid-length but not a real image format
+        byte[] garbage = new byte[]{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
+        String b64 = java.util.Base64.getEncoder().encodeToString(garbage);
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <image href="data:image/png;base64,%s" width="50" height="50"/>
+                </svg>
+                """.formatted(b64);
+        // ImageIO.read returns null → gracefully skipped
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── Image with width/height=0 falling back to image intrinsic dimensions ──
+
+    @Test
+    void imageZeroDimensionsFallback() throws Exception {
+        var tinyPng = createTinyPng();
+        String b64 = java.util.Base64.getEncoder().encodeToString(tinyPng);
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <image href="data:image/png;base64,%s"/>
+                </svg>
+                """.formatted(b64);
+        // No width/height on <image> → falls back to image intrinsic size
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    private static byte[] createTinyPng() throws Exception {
+        var img = new java.awt.image.BufferedImage(10, 10, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        var g = img.createGraphics();
+        g.setColor(java.awt.Color.RED);
+        g.fillRect(0, 0, 10, 10);
+        g.dispose();
+        var baos = new java.io.ByteArrayOutputStream();
+        javax.imageio.ImageIO.write(img, "png", baos);
+        return baos.toByteArray();
+    }
 }

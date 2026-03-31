@@ -842,4 +842,127 @@ class BoundingBoxTest {
         BufferedImage img = RenderTestHelper.render(svg);
         assertNotNull(img);
     }
+
+    // ── BoundingBox.path: cubic bezier (C/c) ──
+
+    @Test
+    void pathBoundingBoxCubicBezier() throws Exception {
+        // C command creates cubic bezier — bounding box extends to control points
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <clipPath id="cbc">
+                      <path d="M10,50 C20,10 80,10 90,50"/>
+                    </clipPath>
+                  </defs>
+                  <rect width="100" height="100" fill="blue" clip-path="url(#cbc)"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void pathBoundingBoxRelCubicBezier() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <clipPath id="crc">
+                      <path d="M10,50 c10,-40 70,-40 80,0"/>
+                    </clipPath>
+                  </defs>
+                  <rect width="100" height="100" fill="blue" clip-path="url(#crc)"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── BoundingBox.path: S/s (smooth cubic), Q/q (quadratic) ──
+
+    @Test
+    void pathBoundingBoxSmoothCubicAndQuadratic() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <clipPath id="sqp">
+                      <path d="M10,50 S50,10 90,50 Q130,10 170,50 q20,-20 20,0 s10,-10 10,0"/>
+                    </clipPath>
+                  </defs>
+                  <rect width="200" height="100" fill="red" clip-path="url(#sqp)"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── BoundingBox.path: A/a (arc) ──
+
+    @Test
+    void pathBoundingBoxArc() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <clipPath id="abbc">
+                      <path d="M10,50 A30,30 0 0 1 90,50"/>
+                    </clipPath>
+                  </defs>
+                  <rect width="100" height="100" fill="green" clip-path="url(#abbc)"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void pathBoundingBoxRelArc() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <clipPath id="rarc">
+                      <path d="M10,50 a30,30 0 0 1 80,0"/>
+                    </clipPath>
+                  </defs>
+                  <rect width="100" height="100" fill="green" clip-path="url(#rarc)"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── BoundingBox.path: malformed path data (exception recovery) ──
+
+    @Test
+    void pathBoundingBoxMalformedData() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <clipPath id="malbb">
+                      <path d="M10,10 L50,badvalue 90,90"/>
+                    </clipPath>
+                  </defs>
+                  <rect width="100" height="100" fill="yellow" clip-path="url(#malbb)"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── BoundingBox.path: unknown command letter ──
+
+    @Test
+    void pathBoundingBoxUnknownCommand() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <clipPath id="ukbb">
+                      <path d="M10,10 L90,10 X50 L90,90"/>
+                    </clipPath>
+                  </defs>
+                  <rect width="100" height="100" fill="cyan" clip-path="url(#ukbb)"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
 }

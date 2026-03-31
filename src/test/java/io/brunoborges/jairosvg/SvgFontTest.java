@@ -350,4 +350,46 @@ class SvgFontTest {
         assertNotNull(png);
         assertTrue(png.length > 0);
     }
+
+    // ── Glyph with blank path data → parsePathData returns null ──
+
+    @Test
+    void glyphBlankPathData() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <font id="BPF">
+                      <font-face font-family="BlankPath" units-per-em="1000" ascent="800" descent="-200"/>
+                      <glyph unicode="A" horiz-adv-x="600" d="   "/>
+                      <glyph unicode="B" horiz-adv-x="600" d="M100,0 L500,0 L500,800 L100,800 Z"/>
+                    </font>
+                  </defs>
+                  <text x="10" y="60" font-family="BlankPath" font-size="48" fill="blue">AB</text>
+                </svg>
+                """;
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        assertTrue(png.length > 0);
+    }
+
+    // ── Glyph with malformed path data → parsePathData catches exception ──
+
+    @Test
+    void glyphMalformedPathData() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <font id="MPF">
+                      <font-face font-family="MalPath" units-per-em="1000" ascent="800" descent="-200"/>
+                      <glyph unicode="X" horiz-adv-x="600" d="M100,abc Z"/>
+                      <glyph unicode="Y" horiz-adv-x="600" d="M100,0 L500,0 L500,800 Z"/>
+                    </font>
+                  </defs>
+                  <text x="10" y="60" font-family="MalPath" font-size="48" fill="green">XY</text>
+                </svg>
+                """;
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        assertTrue(png.length > 0);
+    }
 }

@@ -1273,4 +1273,28 @@ class FilterRendererTest {
         int[] greenPx = rgba(img, 5, 15);
         assertTrue(greenPx[1] > 100, "Should have green channel from flood");
     }
+
+    // ── feTile with partially transparent source (null filterRegion,
+    // non-transparent bounds found) ──
+
+    @Test
+    void feTileNullRegionWithPartialContent() throws Exception {
+        // A small semi-transparent rect on a transparent canvas.
+        // No userSpaceOnUse filter region → computeFilterRegion scans pixels.
+        // The filter chain uses feOffset to shift content, then feTile tiles it.
+        // The offset source will have non-transparent bounds that tile() discovers.
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">
+                  <defs>
+                    <filter id="tnr">
+                      <feOffset dx="10" dy="10" in="SourceGraphic"/>
+                      <feTile/>
+                    </filter>
+                  </defs>
+                  <rect x="5" y="5" width="15" height="15" fill="red" filter="url(#tnr)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
 }

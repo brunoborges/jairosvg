@@ -363,4 +363,105 @@ class MarkerDrawerTest {
         BufferedImage img = render(svg);
         assertNotNull(img);
     }
+
+    // ── orient="auto-start-reverse" ──
+
+    @Test
+    void markerAutoStartReverse() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="asr" markerWidth="6" markerHeight="6" refX="3" refY="3"
+                            orient="auto-start-reverse">
+                      <circle cx="3" cy="3" r="3" fill="blue"/>
+                    </marker>
+                  </defs>
+                  <path d="M10,50 L90,50" fill="none" stroke="black"
+                        marker-start="url(#asr)" marker-end="url(#asr)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── numeric orient value ──
+
+    @Test
+    void markerNumericOrient() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="num" markerWidth="6" markerHeight="6" refX="3" refY="3"
+                            orient="45">
+                      <rect width="6" height="6" fill="red"/>
+                    </marker>
+                  </defs>
+                  <path d="M10,50 L50,10 L90,50" fill="none" stroke="black"
+                        marker-start="url(#num)" marker-mid="url(#num)" marker-end="url(#num)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── invalid orient value (NumberFormatException → 0) ──
+
+    @Test
+    void markerInvalidOrient() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="inv" markerWidth="6" markerHeight="6" refX="3" refY="3"
+                            orient="badvalue">
+                      <rect width="6" height="6" fill="green"/>
+                    </marker>
+                  </defs>
+                  <path d="M10,50 L90,50" fill="none" stroke="black"
+                        marker-start="url(#inv)" marker-end="url(#inv)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── auto orient with single-point paths (NaN angle fallbacks) ──
+
+    @Test
+    void markerAutoOrientSinglePoint() throws Exception {
+        // M10,10 L10,10 — zero-length segment, angles become 0 via NaN fallback
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="sp" markerWidth="4" markerHeight="4" refX="2" refY="2"
+                            orient="auto">
+                      <circle cx="2" cy="2" r="2" fill="purple"/>
+                    </marker>
+                  </defs>
+                  <path d="M10,10 L10,10 L50,50" fill="none" stroke="black"
+                        marker-start="url(#sp)" marker-mid="url(#sp)" marker-end="url(#sp)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── auto-start-reverse with multi-segment path (mid marker bisector) ──
+
+    @Test
+    void markerAutoStartReverseWithMidMarkers() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="asrm" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5"
+                            orient="auto-start-reverse">
+                      <rect width="5" height="5" fill="orange"/>
+                    </marker>
+                  </defs>
+                  <path d="M10,10 L50,50 L90,10" fill="none" stroke="black"
+                        marker-start="url(#asrm)" marker-mid="url(#asrm)" marker-end="url(#asrm)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
 }
