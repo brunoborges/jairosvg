@@ -123,16 +123,45 @@ public final class Defs {
         // If it's an svg or symbol, treat as svg
         if ("svg".equals(refNode.tag) || "symbol".equals(refNode.tag)) {
             String origTag = refNode.tag;
+            String origWidth = refNode.get("width");
+            String origHeight = refNode.get("height");
             refNode.tag = "svg";
             if (node.has("width") && node.has("height")) {
                 refNode.set("width", node.get("width"));
                 refNode.set("height", node.get("height"));
+            } else if ("symbol".equals(origTag)) {
+                // SVG 2: without explicit width/height on <use>, default to the
+                // symbol's viewBox dimensions (browser "auto" behaviour) instead
+                // of falling back to 100% of the parent viewport.
+                String viewBox = refNode.get("viewBox");
+                if (viewBox != null) {
+                    String[] vbParts = viewBox.strip().split("[\\s,]+");
+                    if (vbParts.length == 4) {
+                        refNode.set("width", vbParts[2]);
+                        refNode.set("height", vbParts[3]);
+                    }
+                }
             }
             surface.draw(refNode);
             refNode.tag = origTag;
+            // Restore original width/height to prevent pollution across
+            // multiple <use> elements referencing the same symbol/svg
+            if (origWidth != null)
+                refNode.set("width", origWidth);
+            else
+                refNode.remove("width");
+            if (origHeight != null)
+                refNode.set("height", origHeight);
+            else
+                refNode.remove("height");
         } else {
             surface.draw(refNode);
         }
+
+        // Clear any path data left by the referenced element's draw() so
+        // the caller's draw() does not re-fill/stroke it with <use>'s own
+        // default paint (black).
+        surface.path.reset();
 
         surface.context.setTransform(savedTransform);
 
