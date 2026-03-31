@@ -85,7 +85,6 @@ public final class JairoSVG {
     public static final class ConversionBuilder {
 
         private byte[] bytestring;
-        private InputStream fileObj;
         private String url;
         private double dpi = 96;
         private Double parentWidth;
@@ -358,9 +357,6 @@ public final class JairoSVG {
 
         private Node parseInput() throws Exception {
             byte[] data = this.bytestring;
-            if (data == null && this.fileObj != null) {
-                data = this.fileObj.readAllBytes();
-            }
             if (data == null && this.url != null) {
                 return Node.parseTree(null, this.url, unsafe);
             }
@@ -372,11 +368,15 @@ public final class JairoSVG {
         }
 
         private static void checkPdfBoxAvailable() {
+            checkClassAvailable("org.apache.pdfbox.pdmodel.PDDocument",
+                    "PDF output requires Apache PDFBox. Add org.apache.pdfbox:pdfbox to your classpath.");
+        }
+
+        static void checkClassAvailable(String className, String errorMessage) {
             try {
-                Class.forName("org.apache.pdfbox.pdmodel.PDDocument");
+                Class.forName(className);
             } catch (ClassNotFoundException e) {
-                throw new UnsupportedOperationException(
-                        "PDF output requires Apache PDFBox. Add org.apache.pdfbox:pdfbox to your classpath.", e);
+                throw new UnsupportedOperationException(errorMessage, e);
             }
         }
     }
