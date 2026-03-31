@@ -289,8 +289,8 @@ class DefsTest {
 
     @Test
     void testUseWithSymbolNoWidthHeight() throws Exception {
-        // Symbol without explicit width/height on <use> — tests the !has("width")
-        // branch
+        // Symbol without explicit width/height on <use>: SVG 2 auto defaults to
+        // viewBox dimensions, so the green rect should be 20x20 at (10,10).
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                   <defs>
@@ -303,7 +303,42 @@ class DefsTest {
                 </svg>
                 """;
         BufferedImage img = render(svg);
-        assertNotNull(img, "use symbol without width/height should render");
+        // Inside the 20x20 green area at (10,10)
+        int[] inside = rgba(img, 20, 20);
+        assertTrue(inside[1] > 100 && inside[0] < 50,
+                "Inside should be green, got rgb(%d,%d,%d)".formatted(inside[0], inside[1], inside[2]));
+        // Outside the 20x20 area: (35,35) should be white
+        int[] outside = rgba(img, 35, 35);
+        assertTrue(outside[0] > 200 && outside[1] > 200 && outside[2] > 200,
+                "Outside should be white, got rgb(%d,%d,%d)".formatted(outside[0], outside[1], outside[2]));
+    }
+
+    @Test
+    void testMultipleUseSymbolDifferentSizes() throws Exception {
+        // Two <use> elements reference the same symbol at different sizes.
+        // Width/height must NOT leak from the first use to the second.
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <rect width="200" height="100" fill="white"/>
+                  <defs>
+                    <symbol id="s3" viewBox="0 0 10 10">
+                      <rect width="10" height="10" fill="red"/>
+                    </symbol>
+                  </defs>
+                  <use href="#s3" x="0" y="0" width="40" height="40"/>
+                  <use href="#s3" x="100" y="0" width="80" height="80"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        // First use: 40x40 red region at (0,0) — pixel (20,20) should be red
+        int[] first = rgba(img, 20, 20);
+        assertTrue(first[0] > 200 && first[1] < 50, "First use should be red at (20,20)");
+        // First use edge: pixel (45,20) should be white (outside 40px width)
+        int[] gap = rgba(img, 45, 20);
+        assertTrue(gap[0] > 200 && gap[1] > 200 && gap[2] > 200, "Gap should be white at (45,20)");
+        // Second use: 80x80 red region at (100,0) — pixel (140,40) should be red
+        int[] second = rgba(img, 140, 40);
+        assertTrue(second[0] > 200 && second[1] < 50, "Second use should be red at (140,40)");
     }
 
     @Test
