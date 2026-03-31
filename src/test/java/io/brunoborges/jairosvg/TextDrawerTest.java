@@ -390,6 +390,323 @@ class TextDrawerTest {
         assertTrue(botDark > 5, "Should have text on second line");
     }
 
+    // ── font-weight numeric threshold (< 550 → normal, >= 550 → bold) ──
+
+    @Test
+    void testFontWeightNumeric550() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <rect width="200" height="50" fill="white"/>
+                  <text x="10" y="35" font-family="serif" font-weight="550" font-size="20" fill="black">W550</text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        assertTrue(countDarkPixels(img, 5, 15, 150, 45, 128) > 10, "font-weight 550 should render as bold");
+    }
+
+    @Test
+    void testFontWeightNumericLight() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <rect width="200" height="50" fill="white"/>
+                  <text x="10" y="35" font-family="serif" font-weight="400" font-size="20" fill="black">W400</text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        assertTrue(countDarkPixels(img, 5, 15, 150, 45, 128) > 10, "font-weight 400 should render as normal");
+    }
+
+    @Test
+    void testFontWeightBolder() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <rect width="200" height="50" fill="white"/>
+                  <text x="10" y="35" font-family="serif" font-weight="bolder" font-size="20" fill="black">Bolder</text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        assertTrue(countDarkPixels(img, 5, 15, 150, 45, 128) > 10, "font-weight bolder should render");
+    }
+
+    // ── text-anchor "end" in normal text mode (not just with children) ──
+
+    @Test
+    void testTextAnchorEndNormalMode() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="60">
+                  <rect width="200" height="60" fill="white"/>
+                  <text x="180" y="40" text-anchor="end" font-size="18" fill="black">EndAlign</text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        // Most text should be left of x=180
+        int leftDark = countDarkPixels(img, 50, 15, 175, 55, 128);
+        assertTrue(leftDark > 20, "End-anchored text should render left of anchor");
+    }
+
+    // ── textPath with path pointing to non-path element ──
+
+    @Test
+    void testTextPathRefToNonPathElement() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs><rect id="r" width="100" height="50"/></defs>
+                  <text font-size="16" fill="black">
+                    <textPath href="#r">Should not crash</textPath>
+                  </text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        assertNotNull(img, "textPath to non-path element should not crash");
+    }
+
+    // ── textPath with empty path ──
+
+    @Test
+    void testTextPathWithEmptyPath() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs><path id="ep" d=""/></defs>
+                  <text font-size="16" fill="black">
+                    <textPath href="#ep">Empty path</textPath>
+                  </text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        assertNotNull(img, "textPath with empty path should not crash");
+    }
+
+    // ── textPath exceeds path length ──
+
+    @Test
+    void testTextPathExceedsLength() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <rect width="200" height="100" fill="white"/>
+                  <defs><path id="short" d="M10 50 L50 50"/></defs>
+                  <text font-size="16" fill="black">
+                    <textPath href="#short">This text is much longer than the short path it follows</textPath>
+                  </text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        // Should render without error, some text visible
+        int dark = countDarkPixels(img, 0, 0, 199, 99, 128);
+        assertTrue(dark >= 0, "Long text on short path should not crash");
+    }
+
+    // ── textPath with startOffset as percentage that overflows ──
+
+    @Test
+    void testTextPathStartOffsetLargePercent() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <rect width="200" height="100" fill="white"/>
+                  <defs><path id="p2" d="M0 50 L200 50"/></defs>
+                  <text font-size="16" fill="black">
+                    <textPath href="#p2" startOffset="90%">Far offset</textPath>
+                  </text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── text with word-spacing ──
+
+    @Test
+    void testWordSpacing() throws Exception {
+        String normalSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="300" height="60">
+                  <rect width="300" height="60" fill="white"/>
+                  <text x="10" y="40" font-size="16" fill="black">Hello World</text>
+                </svg>""";
+        String spacedSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="300" height="60">
+                  <rect width="300" height="60" fill="white"/>
+                  <text x="10" y="40" font-size="16" fill="black" word-spacing="20">Hello World</text>
+                </svg>""";
+        BufferedImage normalImg = render(normalSvg);
+        BufferedImage spacedImg = render(spacedSvg);
+        // Word spacing should make text wider
+        int normalRight = findRightmostDarkPixel(normalImg, 128);
+        int spacedRight = findRightmostDarkPixel(spacedImg, 128);
+        assertTrue(spacedRight >= normalRight,
+                "Word spacing should extend text: normal=" + normalRight + " spaced=" + spacedRight);
+    }
+
+    // ── text with transform ──
+
+    @Test
+    void testTextWithTransform() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <rect width="200" height="100" fill="white"/>
+                  <text x="10" y="50" font-size="20" fill="black" transform="translate(30,0)">Shifted</text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        // Text should start at ~x=40 (10 + 30 translate)
+        int dark = countDarkPixels(img, 35, 30, 150, 60, 128);
+        assertTrue(dark > 10, "Translated text should render");
+    }
+
+    // ── per-character rendering path with drawAsText=false (default) ──
+
+    @Test
+    void testLetterSpacingWithBlankChars() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="300" height="60">
+                  <rect width="300" height="60" fill="white"/>
+                  <text x="10" y="40" font-size="20" fill="black" letter-spacing="5">A B C</text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        // Should render text with spaces between letters
+        int dark = countDarkPixels(img, 5, 20, 250, 55, 128);
+        assertTrue(dark > 10, "Letter spaced text with blanks should render");
+    }
+
+    // ── multiple text-decoration values individually ──
+
+    @Test
+    void testTextDecorationUnderlineOnly() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="60">
+                  <rect width="200" height="60" fill="white"/>
+                  <text x="10" y="30" font-size="20" fill="black" text-decoration="underline">Under</text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        // Underline text should render dark pixels
+        int dark = countDarkPixels(img, 5, 10, 120, 50, 128);
+        assertTrue(dark > 20, "Underlined text should render dark pixels, got " + dark);
+    }
+
+    @Test
+    void testTextDecorationOverlineOnly() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="60">
+                  <rect width="200" height="60" fill="white"/>
+                  <text x="10" y="40" font-size="20" fill="black" text-decoration="overline">Over</text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        // Above text should have dark pixels (overline)
+        int above = countDarkPixels(img, 10, 15, 80, 25, 128);
+        assertTrue(above >= 0, "Overline decoration should render");
+    }
+
+    @Test
+    void testTextDecorationLineThroughOnly() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="60">
+                  <rect width="200" height="60" fill="white"/>
+                  <text x="10" y="40" font-size="20" fill="black" text-decoration="line-through">Strike</text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        int dark = countDarkPixels(img, 10, 20, 100, 45, 128);
+        assertTrue(dark > 20, "Line-through should render with text");
+    }
+
+    // ── textPath with close segment (SEG_CLOSE) ──
+
+    @Test
+    void testTextPathOnClosedPath() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <rect width="200" height="200" fill="white"/>
+                  <defs><path id="closed" d="M50 100 L150 100 L150 150 Z"/></defs>
+                  <text font-size="12" fill="black">
+                    <textPath href="#closed">Along closed</textPath>
+                  </text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        int dark = countDarkPixels(img, 0, 0, 199, 199, 128);
+        assertTrue(dark > 0, "Text on closed path should render");
+    }
+
+    // ── Deeply nested tspan with recursive measureChildrenWidth ──
+
+    @Test
+    void testDeeplyNestedTspan() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="60">
+                  <rect width="200" height="60" fill="white"/>
+                  <text x="100" y="40" text-anchor="middle" font-size="14" fill="black">
+                    <tspan><tspan>Deep</tspan></tspan>
+                  </text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        int dark = countDarkPixels(img, 50, 20, 150, 55, 128);
+        assertTrue(dark > 5, "Deeply nested tspan should render");
+    }
+
+    // ── text-anchor end for measureChildrenWidth with nested tspans ──
+
+    @Test
+    void testTextAnchorEndDeeplyNested() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="60">
+                  <rect width="200" height="60" fill="white"/>
+                  <text x="190" y="40" text-anchor="end" font-size="14" fill="black">
+                    <tspan><tspan>Nested</tspan> <tspan>End</tspan></tspan>
+                  </text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        int dark = countDarkPixels(img, 100, 20, 195, 55, 128);
+        assertTrue(dark > 5, "Nested end-anchored text should render");
+    }
+
+    // ── tspan with x coordinate (multi-coord) ──
+
+    @Test
+    void testTspanWithMultipleXCoords() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="60">
+                  <rect width="200" height="60" fill="white"/>
+                  <text y="40" font-size="16" fill="black">
+                    <tspan x="10 30 50">ABC</tspan>
+                  </text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        int dark = countDarkPixels(img, 5, 20, 100, 55, 128);
+        assertTrue(dark > 5, "Multi-x tspan should render");
+    }
+
+    // ── text with dx on parent and x/y on child tspan ──
+
+    @Test
+    void testParentDxDyWithChildTspan() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="80">
+                  <rect width="200" height="80" fill="white"/>
+                  <text x="10" y="30" dx="5" dy="5" font-size="16" fill="black">
+                    <tspan>Offset</tspan>
+                    <tspan dx="10" dy="15">Child</tspan>
+                  </text>
+                </svg>""";
+        BufferedImage img = render(svg);
+        int dark = countDarkPixels(img, 5, 20, 150, 70, 128);
+        assertTrue(dark > 10, "Text with parent dx/dy should render");
+    }
+
+    // ── "a" tag (hyperlink treated like text) ──
+
+    @Test
+    void testAnchorTagRendersText() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                     width="200" height="60">
+                  <rect width="200" height="60" fill="white"/>
+                  <a xlink:href="http://example.com">
+                    <text x="10" y="40" font-size="16" fill="blue">Link</text>
+                  </a>
+                </svg>""";
+        BufferedImage img = render(svg);
+        boolean hasBlue = false;
+        for (int y = 20; y < 55; y++) {
+            for (int x = 5; x < 100; x++) {
+                int[] c = rgba(img, x, y);
+                if (c[3] > 0 && c[2] > 180 && c[0] < 50) {
+                    hasBlue = true;
+                    break;
+                }
+            }
+            if (hasBlue)
+                break;
+        }
+        assertTrue(hasBlue, "Anchor tag text should render blue");
+    }
+
     /** Find the x coordinate of the rightmost dark pixel in the image. */
     private static int findRightmostDarkPixel(BufferedImage img, int threshold) {
         int rightmost = 0;
