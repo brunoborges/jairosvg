@@ -21,6 +21,8 @@ Each test case was run with 20 warmup iterations and 1000 measurement iterations
 | Defs + use + clipPath | 3.8 ms | **3.6 ms** | 13.6 ms | 4.2 ms | **3.6x faster** |
 | Markers + dashed strokes | 3.6 ms | **3.5 ms** | 12.5 ms | 4.5 ms | **3.5x faster** |
 
+![Benchmark chart](images/benchmark.png)
+
 ### Analysis
 
 - **JairoSVG is 2.5–31× faster than EchoSVG** across all test cases
@@ -32,6 +34,40 @@ Each test case was run with 20 warmup iterations and 1000 measurement iterations
   - Object reuse (GeneralPath.reset())
   - Efficient string processing
   - Sub-region effect buffers for filters and masks
+
+### PNG Output File Sizes
+
+JairoSVG produces the smallest PNGs overall — **8.0% smaller** than CairoSVG, **11.5% smaller** than JSVG, and **17.3% smaller** than EchoSVG:
+
+| Test Case      |    JairoSVG |     EchoSVG |    CairoSVG |        JSVG |
+| -------------- | ----------: | ----------: | ----------: | ----------: |
+| Basic shapes   |       6,718 |       8,159 |       8,920 |       7,031 |
+| Gradients      |      25,554 |      25,018 |      23,637 |      26,410 |
+| Complex paths  |      12,657 |      16,936 |      15,633 |      12,730 |
+| Text rendering |      13,276 |      19,125 |      16,317 |      15,626 |
+| Transforms     |       5,461 |       5,261 |       6,001 |       5,827 |
+| Stroke styles  |       3,363 |       5,038 |       4,478 |       4,074 |
+| Opacity blend  |       8,409 |      10,201 |       9,853 |       8,788 |
+| Viewbox aspect |      10,492 |      12,769 |      11,444 |      12,147 |
+| CSS styling    |       7,755 |      11,144 |      10,816 |       8,653 |
+| Use and defs   |       5,646 |       6,122 |       9,712 |       6,144 |
+| Star polygon   |       6,228 |       8,862 |       8,911 |       6,455 |
+| Nested svg     |      10,926 |      12,522 |      11,880 |      12,101 |
+| Patterns       |       9,532 |      11,832 |      11,095 |      11,043 |
+| Clip paths     |       9,342 |      10,558 |      13,552 |      10,253 |
+| Masks          |       5,692 |       5,566 |       1,161 |       6,209 |
+| Markers        |       6,334 |       8,117 |       8,378 |       6,727 |
+| Filters        |      28,934 |      24,063 |       8,520 |      32,346 |
+| Embedded image |       9,432 |      11,994 |      21,228 |      11,642 |
+| Text advanced  |      18,801 |      26,256 |      23,864 |      19,756 |
+| Blend modes    |      12,005 |      16,216 |      12,505 |      15,773 |
+| Fe tile        |       1,456 |       2,009 |       1,768 |       1,489 |
+| Feimage URI    |       2,539 |       4,385 |       3,225 |       3,666 |
+| Feimage ref    |       2,705 |       3,431 |       4,868 |       4,265 |
+| Localized masks |      18,389 |      17,868 |      13,218 |      20,239 |
+| **Total**      | **241,646** | **283,452** | **260,984** | **269,394** |
+
+![File size comparison chart](images/benchmark-size.png)
 
 ### Test SVGs
 
