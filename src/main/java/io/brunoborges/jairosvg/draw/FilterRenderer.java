@@ -484,8 +484,12 @@ public final class FilterRenderer {
             int b2 = p2 & 0xFF;
 
             // Convert to premultiplied alpha
-            int pr1 = r1 * a1 / 255, pg1 = g1 * a1 / 255, pb1 = b1 * a1 / 255;
-            int pr2 = r2 * a2 / 255, pg2 = g2 * a2 / 255, pb2 = b2 * a2 / 255;
+            int pr1 = r1 * a1 / 255;
+            int pg1 = g1 * a1 / 255;
+            int pb1 = b1 * a1 / 255;
+            int pr2 = r2 * a2 / 255;
+            int pg2 = g2 * a2 / 255;
+            int pb2 = b2 * a2 / 255;
 
             int oa, or, og, ob; // premultiplied output
             switch (operator) {
