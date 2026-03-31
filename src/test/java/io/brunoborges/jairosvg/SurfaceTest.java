@@ -1262,8 +1262,9 @@ class SurfaceTest {
                 """;
         BufferedImage img = render(svg);
         assertNotNull(img);
-        // Both use elements should render something
-        assertTrue(countDarkPixels(img, 0, 0, 99, 99, 200) > 0, "Use elements should render");
+        // Both use elements should render blue pixels
+        int[] px = rgba(img, 30, 30);
+        assertTrue(px[2] > 200, "Use element should render blue rect");
     }
 
     // ── stroke-dasharray ──
