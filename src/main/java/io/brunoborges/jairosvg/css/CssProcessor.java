@@ -1,5 +1,6 @@
 package io.brunoborges.jairosvg.css;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -18,6 +19,8 @@ import io.brunoborges.jairosvg.util.UrlHelper;
  * css.py
  */
 public final class CssProcessor {
+
+    private static final System.Logger LOG = System.getLogger(CssProcessor.class.getName());
 
     private static final Pattern COMMENT_PATTERN = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
     private static final Pattern IMPORT_PATTERN = Pattern.compile("@import[^;]*;");
@@ -113,7 +116,7 @@ public final class CssProcessor {
                     if (cssBytes != null && cssBytes.length > 0) {
                         parseStylesheet(new String(cssBytes, java.nio.charset.StandardCharsets.UTF_8), rules);
                     }
-                } catch (Exception e) {
+                } catch (IOException e) {
                     // Skip stylesheets that cannot be loaded
                 }
             }

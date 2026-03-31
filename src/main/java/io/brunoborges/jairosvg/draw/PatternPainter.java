@@ -1,5 +1,7 @@
 package io.brunoborges.jairosvg.draw;
 
+import static io.brunoborges.jairosvg.util.Helpers.parsePercent;
+import static io.brunoborges.jairosvg.util.Helpers.parsePercent;
 import static io.brunoborges.jairosvg.util.Helpers.size;
 
 import java.awt.AlphaComposite;
@@ -100,24 +102,25 @@ public final class PatternPainter {
         surface.contextWidth = patW;
         surface.contextHeight = patH;
 
-        // Translate so pattern children (in user space) are drawn relative to the tile
-        // origin
-        if (patX != 0 || patY != 0) {
-            patG2d.translate(-patX, -patY);
+        try {
+            // Translate so pattern children (in user space) are drawn relative to the tile
+            // origin
+            if (patX != 0 || patY != 0) {
+                patG2d.translate(-patX, -patY);
+            }
+
+            // Draw pattern children
+            for (Node child : patternNode.children) {
+                surface.draw(child);
+            }
+        } finally {
+            // Restore surface state
+            surface.context = savedContext;
+            surface.path = savedPath;
+            surface.contextWidth = savedWidth;
+            surface.contextHeight = savedHeight;
+            patG2d.dispose();
         }
-
-        // Draw pattern children
-        for (Node child : patternNode.children) {
-            surface.draw(child);
-        }
-
-        patG2d.dispose();
-
-        // Restore surface state
-        surface.context = savedContext;
-        surface.path = savedPath;
-        surface.contextWidth = savedWidth;
-        surface.contextHeight = savedHeight;
 
         // Create anchor rectangle (untransformed pattern region)
         Rectangle2D anchor = new Rectangle2D.Double(patX, patY, patW, patH);
@@ -159,13 +162,4 @@ public final class PatternPainter {
         return true;
     }
 
-    private static float parsePercent(String s) {
-        if (s == null)
-            return 0;
-        s = s.strip();
-        if (s.endsWith("%")) {
-            return Float.parseFloat(s.substring(0, s.length() - 1)) / 100f;
-        }
-        return Float.parseFloat(s);
-    }
 }

@@ -1,5 +1,9 @@
 package io.brunoborges.jairosvg.draw;
 
+import static io.brunoborges.jairosvg.util.Helpers.parseDouble;
+import static io.brunoborges.jairosvg.util.Helpers.parsePercent;
+import static io.brunoborges.jairosvg.util.Helpers.parseDouble;
+import static io.brunoborges.jairosvg.util.Helpers.parsePercent;
 import static io.brunoborges.jairosvg.util.Helpers.size;
 
 import java.awt.Color;
@@ -20,6 +24,8 @@ import io.brunoborges.jairosvg.util.UrlHelper;
  * Gradient rendering for linearGradient and radialGradient elements.
  */
 public final class GradientPainter {
+
+    private static final System.Logger LOG = System.getLogger(GradientPainter.class.getName());
 
     private GradientPainter() {
     }
@@ -202,21 +208,4 @@ public final class GradientPainter {
         };
     }
 
-    private static float parsePercent(String s) {
-        if (s == null)
-            return 0;
-        s = s.strip();
-        if (s.endsWith("%")) {
-            return Float.parseFloat(s.substring(0, s.length() - 1)) / 100f;
-        }
-        return Float.parseFloat(s);
-    }
-
-    private static double parseDouble(String s) {
-        try {
-            return Double.parseDouble(s);
-        } catch (Exception e) {
-            return 0;
-        }
-    }
 }

@@ -36,7 +36,6 @@ public final class Main {
         double scale = 1;
         String background = null;
         boolean negateColors = false;
-        boolean invertImages = false;
         boolean unsafe = false;
         Double outputWidth = null;
         Double outputHeight = null;
@@ -102,27 +101,12 @@ public final class Main {
         }
 
         // Write output
-        OutputStream out;
         if ("-".equals(output)) {
-            out = System.out;
+            writeOutput(builder, format, System.out);
         } else {
-            out = new FileOutputStream(output);
-        }
-
-        switch (format) {
-            case "PNG" -> builder.toPng(out);
-            case "JPEG" -> builder.toJpeg(out);
-            case "TIFF" -> builder.toTiff(out);
-            case "PDF" -> builder.toPdf(out);
-            case "PS", "EPS" -> {
-                byte[] data = builder.toPs();
-                out.write(data);
+            try (var out = new FileOutputStream(output)) {
+                writeOutput(builder, format, out);
             }
-            default -> builder.toPng(out);
-        }
-
-        if (!"-".equals(output)) {
-            out.close();
         }
     }
 
@@ -141,12 +125,26 @@ public final class Main {
                   -s, --scale FACTOR     Output scaling factor (default: 1)
                   -b, --background COLOR Output background color
                   -n, --negate-colors    Negate vector colors
-                  -i, --invert-images    Invert raster image colors
                   -u, --unsafe           Allow external file access and XML entities
                   --output-width PIXELS  Desired output width
                   --output-height PIXELS Desired output height
                   -v, --version          Show version
                   -h, --help             Show this help
                 """.formatted(JairoSVG.VERSION));
+    }
+
+    private static void writeOutput(JairoSVG.ConversionBuilder builder, String format, OutputStream out)
+            throws Exception {
+        switch (format) {
+            case "PNG" -> builder.toPng(out);
+            case "JPEG" -> builder.toJpeg(out);
+            case "TIFF" -> builder.toTiff(out);
+            case "PDF" -> builder.toPdf(out);
+            case "PS", "EPS" -> {
+                byte[] data = builder.toPs();
+                out.write(data);
+            }
+            default -> builder.toPng(out);
+        }
     }
 }

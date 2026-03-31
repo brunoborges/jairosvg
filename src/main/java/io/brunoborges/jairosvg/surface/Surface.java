@@ -3,6 +3,7 @@ package io.brunoborges.jairosvg.surface;
 import static io.brunoborges.jairosvg.util.Helpers.getViewbox;
 import static io.brunoborges.jairosvg.util.Helpers.nodeFormat;
 import static io.brunoborges.jairosvg.util.Helpers.normalize;
+import static io.brunoborges.jairosvg.util.Helpers.parseDoubleOr;
 import static io.brunoborges.jairosvg.util.Helpers.preserveRatio;
 import static io.brunoborges.jairosvg.util.Helpers.size;
 
@@ -748,15 +749,5 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     static Color toAwtColor(Colors.RGBA c) {
         return new Color((float) Math.max(0, Math.min(1, c.r())), (float) Math.max(0, Math.min(1, c.g())),
                 (float) Math.max(0, Math.min(1, c.b())), (float) Math.max(0, Math.min(1, c.a())));
-    }
-
-    private static double parseDoubleOr(String s, double def) {
-        if (s == null)
-            return def;
-        try {
-            return Double.parseDouble(s);
-        } catch (NumberFormatException e) {
-            return def;
-        }
     }
 }

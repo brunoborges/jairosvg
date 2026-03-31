@@ -43,6 +43,10 @@ public final class Helpers {
         }
     }
 
+    // ── Geometry ───────────────────────────────────────────────────────────
+
+    // ── Units & sizing ──────────────────────────────────────────────────────
+
     /** Distance between two points. */
     public static double distance(double x1, double y1, double x2, double y2) {
         return Math.hypot(x2 - x1, y2 - y1);
@@ -105,6 +109,8 @@ public final class Helpers {
         return new double[]{nodeFormat[2], nodeFormat[3], nodeFormat[4], nodeFormat[5]};
     }
 
+    // ── String normalization ─────────────────────────────────────────────
+
     /** Normalize a string corresponding to an array of various values. */
     public static String normalize(String string) {
         if (string == null || string.isEmpty())
@@ -145,6 +151,8 @@ public final class Helpers {
     public static double pointAngle(double cx, double cy, double px, double py) {
         return Math.atan2(py - cy, px - cx);
     }
+
+    // ── Transforms ─────────────────────────────────────────────────────────
 
     /**
      * Manage the ratio preservation. Returns [scaleX, scaleY, translateX,
@@ -407,6 +415,8 @@ public final class Helpers {
         transform(surface, transformString, null, null);
     }
 
+    // ── Clip / rotation helpers ─────────────────────────────────────────
+
     /** Parse clip rect values. */
     public static String[] clipRect(String string) {
         if (string == null || string.isEmpty())
@@ -445,6 +455,8 @@ public final class Helpers {
         }
         node.set("rotate", sb.toString());
     }
+
+    // ── Units and size parsing ──────────────────────────────────────────
 
     /**
      * Check if a string contains only plain numeric characters (digits, dot, minus,
@@ -787,6 +799,48 @@ public final class Helpers {
     private static void skipCalcWhitespace(String s, int[] pos) {
         while (pos[0] < s.length() && Character.isWhitespace(s.charAt(pos[0]))) {
             pos[0]++;
+        }
+    }
+
+    // ── Numeric parsing utilities ────────────────────────────────────────
+
+    /**
+     * Parse a double from a string, returning {@code def} on null or parse failure.
+     */
+    /**
+     * Parse a double from a string, returning the given default on
+     * null/empty/error.
+     */
+    public static double parseDoubleOr(String s, double defaultValue) {
+        if (s == null || s.isEmpty())
+            return defaultValue;
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+    /** Parse a double from a string, returning 0 on null or parse failure. */
+    public static double parseDouble(String s) {
+        return parseDoubleOr(s, 0);
+    }
+
+    /**
+     * Parse a float that may be expressed as a percentage (e.g. "50%"). Returns 0
+     * on null/empty/parse-error.
+     */
+    public static float parsePercent(String s) {
+        if (s == null || s.isEmpty())
+            return 0;
+        try {
+            s = s.strip();
+            if (s.endsWith("%")) {
+                return Float.parseFloat(s.substring(0, s.length() - 1)) / 100f;
+            }
+            return Float.parseFloat(s);
+        } catch (NumberFormatException e) {
+            return 0;
         }
     }
 }

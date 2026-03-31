@@ -14,6 +14,8 @@ import static io.brunoborges.jairosvg.util.Helpers.*;
  */
 public final class PathDrawer {
 
+    private static final System.Logger LOG = System.getLogger(PathDrawer.class.getName());
+
     private PathDrawer() {
     }
 
@@ -269,7 +271,8 @@ public final class PathDrawer {
                         }
                     }
                 }
-            } catch (Exception e) {
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                LOG.log(System.Logger.Level.DEBUG, "Skipping invalid path token", e);
                 sc.skipToken();
                 continue;
             }

@@ -60,15 +60,17 @@ public final class MaskPainter {
         surface.contextWidth = savedWidth;
         surface.contextHeight = savedHeight;
 
-        for (Node child : maskNode.children) {
-            surface.draw(child);
+        try {
+            for (Node child : maskNode.children) {
+                surface.draw(child);
+            }
+        } finally {
+            surface.context = savedContext;
+            surface.path = savedPath;
+            surface.contextWidth = savedWidth;
+            surface.contextHeight = savedHeight;
+            maskG2d.dispose();
         }
-
-        surface.context = savedContext;
-        surface.path = savedPath;
-        surface.contextWidth = savedWidth;
-        surface.contextHeight = savedHeight;
-        maskG2d.dispose();
 
         // Single combined pass: apply BT.709 luminance of mask pixel to source alpha.
         // Operates on the sub-region buffers — typically far smaller than the full

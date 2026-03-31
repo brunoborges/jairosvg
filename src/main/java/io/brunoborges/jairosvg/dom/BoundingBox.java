@@ -14,6 +14,9 @@ import io.brunoborges.jairosvg.util.ParsedPoint;
  */
 public final class BoundingBox {
 
+    private static final System.Logger LOG = System.getLogger(BoundingBox.class.getName());
+    private static final java.util.regex.Pattern WS = java.util.regex.Pattern.compile("\\s+");
+
     /** Bounding box as (minX, minY, width, height). */
     public record Box(double minX, double minY, double width, double height) {
     }
@@ -92,7 +95,7 @@ public final class BoundingBox {
 
         while (!d.isBlank()) {
             d = d.strip();
-            String first = d.split("\\s+", 2)[0];
+            String first = WS.split(d, 2)[0];
             if (first.length() == 1 && PATH_LETTERS.indexOf(first.charAt(0)) >= 0) {
                 letter = first;
                 d = d.substring(1).strip();
@@ -113,7 +116,7 @@ public final class BoundingBox {
                         py = y;
                     }
                     case "H", "h" -> {
-                        String[] sp = (d + " ").split("\\s+", 2);
+                        String[] sp = WS.split(d + " ", 2);
                         double x = Double.parseDouble(sp[0]);
                         d = sp[1];
                         if ("h".equals(letter))
@@ -122,7 +125,7 @@ public final class BoundingBox {
                         px = x;
                     }
                     case "V", "v" -> {
-                        String[] sp = (d + " ").split("\\s+", 2);
+                        String[] sp = WS.split(d + " ", 2);
                         double y = Double.parseDouble(sp[0]);
                         d = sp[1];
                         if ("v".equals(letter))
@@ -173,7 +176,7 @@ public final class BoundingBox {
                         ParsedPoint rxy = pointWithRemainder(null, d);
                         d = rxy.remainder();
                         // Skip rotation, large-arc, sweep
-                        String[] parts = (d + " ").split("\\s+", 4);
+                        String[] parts = WS.split(d + " ", 4);
                         d = parts.length > 3 ? parts[3] : "";
                         ParsedPoint ep = pointWithRemainder(null, d);
                         double x = ep.x(), y = ep.y();
@@ -192,12 +195,13 @@ public final class BoundingBox {
                     default -> {
                         // Unknown command, try to skip
                         if (!d.isEmpty()) {
-                            String[] sp = d.split("\\s+", 2);
+                            String[] sp = WS.split(d, 2);
                             d = sp.length > 1 ? sp[1] : "";
                         }
                     }
                 }
-            } catch (Exception e) {
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                LOG.log(System.Logger.Level.DEBUG, "Path bounding box parse error, using partial result", e);
                 break;
             }
             d = d.strip();

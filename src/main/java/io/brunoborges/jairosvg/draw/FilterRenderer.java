@@ -1,5 +1,9 @@
 package io.brunoborges.jairosvg.draw;
 
+import static io.brunoborges.jairosvg.util.Helpers.parseDouble;
+import static io.brunoborges.jairosvg.util.Helpers.parseDoubleOr;
+import static io.brunoborges.jairosvg.util.Helpers.parseDouble;
+import static io.brunoborges.jairosvg.util.Helpers.parseDoubleOr;
 import static io.brunoborges.jairosvg.util.Helpers.size;
 
 import java.awt.Graphics2D;
@@ -24,6 +28,7 @@ import io.brunoborges.jairosvg.util.UrlHelper;
  */
 public final class FilterRenderer {
 
+    private static final System.Logger LOG = System.getLogger(FilterRenderer.class.getName());
     private static final int MIN_IMAGE_BYTES = 5;
 
     private FilterRenderer() {
@@ -336,25 +341,6 @@ public final class FilterRenderer {
         return new java.awt.Rectangle(x, y, w, h);
     }
 
-    private static double parseDoubleOr(String s, double def) {
-        if (s == null) {
-            return def;
-        }
-        try {
-            return Double.parseDouble(s);
-        } catch (Exception e) {
-            return def;
-        }
-    }
-
-    private static double parseDouble(String s) {
-        try {
-            return Double.parseDouble(s);
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-
     private static BufferedImage resolveInput(Map<String, BufferedImage> results, String in, BufferedImage last,
             BufferedImage sourceGraphic) {
         if (in == null || in.isEmpty()) {
@@ -467,7 +453,7 @@ public final class FilterRenderer {
             return output;
         }
 
-        UrlHelper.ParsedUrl parsedUrl = UrlHelper.parseUrl(href, resolveBaseUrl(node));
+        UrlHelper.ParsedUrl parsedUrl = UrlHelper.parseUrl(href, UrlHelper.resolveBaseUrl(node));
         String refId = parsedUrl.fragment();
         if (refId != null && !parsedUrl.hasNonFragmentParts()) {
             Node imageNode = surface.images.get(refId);
@@ -493,17 +479,9 @@ public final class FilterRenderer {
             g.dispose();
             return output;
         } catch (IOException e) {
+            LOG.log(System.Logger.Level.DEBUG, "Failed to load feImage URL: {0}", e.getMessage());
             return output;
         }
-    }
-
-    private static String resolveBaseUrl(Node node) {
-        String baseUrl = node.get("{http://www.w3.org/XML/1998/namespace}base");
-        if (baseUrl == null && node.url != null) {
-            int lastSlash = node.url.lastIndexOf('/');
-            baseUrl = lastSlash >= 0 ? node.url.substring(0, lastSlash + 1) : null;
-        }
-        return baseUrl;
     }
 
     private static BufferedImage renderNode(Surface surface, Node node, BufferedImage output, int offsetX,
@@ -524,13 +502,15 @@ public final class FilterRenderer {
         surface.contextWidth = output.getWidth();
         surface.contextHeight = output.getHeight();
 
-        surface.draw(node);
-
-        surface.context = savedContext;
-        surface.path = savedPath;
-        surface.contextWidth = savedWidth;
-        surface.contextHeight = savedHeight;
-        imageContext.dispose();
+        try {
+            surface.draw(node);
+        } finally {
+            surface.context = savedContext;
+            surface.path = savedPath;
+            surface.contextWidth = savedWidth;
+            surface.contextHeight = savedHeight;
+            imageContext.dispose();
+        }
         return output;
     }
 

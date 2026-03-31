@@ -104,72 +104,86 @@ public final class JairoSVG {
         ConversionBuilder() {
         }
 
+        /** Set SVG input from a byte array. */
         public ConversionBuilder fromBytes(byte[] svgBytes) {
             this.bytestring = svgBytes;
             return this;
         }
 
+        /** Set SVG input from a string. */
         public ConversionBuilder fromString(String svgString) {
             this.bytestring = svgString.getBytes(java.nio.charset.StandardCharsets.UTF_8);
             return this;
         }
 
+        /** Set SVG input from a file path. */
         public ConversionBuilder fromFile(Path path) throws IOException {
             this.bytestring = Files.readAllBytes(path);
             this.url = path.toUri().toString();
             return this;
         }
 
+        /** Set SVG input from an input stream. */
         public ConversionBuilder fromStream(InputStream stream) throws IOException {
             this.bytestring = stream.readAllBytes();
             return this;
         }
 
+        /** Set SVG input from a URL string. */
         public ConversionBuilder fromUrl(String url) {
             this.url = url;
             return this;
         }
 
+        /** Set the DPI for conversion (default: 96). */
         public ConversionBuilder dpi(double dpi) {
             this.dpi = dpi;
             return this;
         }
 
+        /** Set the parent container width for percentage-based sizing. */
         public ConversionBuilder parentWidth(double width) {
             this.parentWidth = width;
             return this;
         }
 
+        /** Set the parent container height for percentage-based sizing. */
         public ConversionBuilder parentHeight(double height) {
             this.parentHeight = height;
             return this;
         }
 
+        /** Set the output scaling factor (default: 1). */
         public ConversionBuilder scale(double scale) {
             this.scale = scale;
             return this;
         }
 
+        /** Allow external file access and XML entities when true. */
         public ConversionBuilder unsafe(boolean unsafe) {
             this.unsafe = unsafe;
             return this;
         }
 
+        /** Set the output background color (e.g. "#ffffff"). */
         public ConversionBuilder backgroundColor(String color) {
             this.backgroundColor = color;
             return this;
         }
 
+        /** Negate vector colors when true. */
         public ConversionBuilder negateColors(boolean negate) {
             this.negateColors = negate;
             return this;
         }
 
+        /** Set the desired output width in pixels. */
         public ConversionBuilder outputWidth(double width) {
             this.outputWidth = width;
             return this;
         }
 
+        /** Set the desired output height in pixels. */
         public ConversionBuilder outputHeight(double height) {
             this.outputHeight = height;
             return this;
@@ -327,12 +341,16 @@ public final class JairoSVG {
         private void convert(Surface surface, OutputStream out) throws Exception {
             Node tree = parseInput();
             initSurface(surface, tree, out);
-            surface.finish();
+            try {
+                surface.finish();
+            } catch (Exception e) {
+                surface.context.dispose();
+                throw e;
+            }
         }
 
         private void initSurface(Surface surface, Node tree, OutputStream out) {
             UnaryOperator<Colors.RGBA> colorMapper = negateColors ? Colors::negateColor : null;
-            // invertImages handling would require a BufferedImage mapper
 
             surface.init(tree, out, dpi, null, parentWidth, parentHeight, scale, outputWidth, outputHeight,
                     backgroundColor, colorMapper, renderingHints);

@@ -13,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.brunoborges.jairosvg.JairoSVG;
+import io.brunoborges.jairosvg.dom.Node;
 
 /**
  * URL handling utilities. Port of CairoSVG url.py
@@ -233,10 +234,23 @@ public final class UrlHelper {
         } else {
             try {
                 return java.net.URLDecoder.decode(encoded, "UTF-8").getBytes();
-            } catch (Exception e) {
+            } catch (java.io.UnsupportedEncodingException e) {
                 return encoded.getBytes();
             }
         }
+    }
+
+    /**
+     * Resolve the base URL for a node using xml:base or falling back to the node's
+     * URL.
+     */
+    public static String resolveBaseUrl(Node node) {
+        String baseUrl = node.get("{http://www.w3.org/XML/1998/namespace}base");
+        if (baseUrl == null && node.url != null) {
+            int lastSlash = node.url.lastIndexOf('/');
+            baseUrl = lastSlash >= 0 ? node.url.substring(0, lastSlash + 1) : null;
+        }
+        return baseUrl;
     }
 
     private static byte[] fetchHttp(String url) throws IOException {

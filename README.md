@@ -117,6 +117,44 @@ BufferedImage image = JairoSVG.builder()
     .fromFile(Path.of("icon.svg"))
     .toImage();
 
+// SVG string → PNG
+byte[] png = JairoSVG.builder()
+    .fromString("<svg>...</svg>")
+    .toPng();
+
+// Stream input
+byte[] fromStream = JairoSVG.builder()
+    .fromStream(inputStream)
+    .toPng();
+
+// PS/EPS output (returns byte[])
+byte[] ps = JairoSVG.builder()
+    .fromFile(Path.of("diagram.svg"))
+    .toPs();
+
+byte[] eps = JairoSVG.builder()
+    .fromFile(Path.of("diagram.svg"))
+    .toEps();
+
+// TIFF output
+JairoSVG.builder()
+    .fromFile(Path.of("drawing.svg"))
+    .toTiff(new FileOutputStream("output.tiff"));
+
+// Negate colors + output dimensions
+byte[] inverted = JairoSVG.builder()
+    .fromBytes(svgBytes)
+    .negateColors(true)
+    .outputWidth(800)
+    .outputHeight(600)
+    .toPng();
+
+// Unsafe mode (allows external file access)
+byte[] result = JairoSVG.builder()
+    .fromUrl("https://example.com/chart.svg")
+    .unsafe(true)
+    .toPng();
+
 // Customize Java2D rendering hints
 import java.awt.RenderingHints;
 
@@ -136,7 +174,7 @@ jbang app install io.brunoborges:jairosvg:LATEST
 jairosvg input.svg -o output.png
 
 # SVG → PDF with 2x scale
-java input.svg -f pdf -s 2 -o output.pdf
+jairosvg input.svg -f pdf -s 2 -o output.pdf
 ```
 
 Manually build:

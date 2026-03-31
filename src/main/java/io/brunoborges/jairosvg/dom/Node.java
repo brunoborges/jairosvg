@@ -12,11 +12,13 @@ import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
 import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import io.brunoborges.jairosvg.css.CssProcessor;
@@ -40,7 +42,7 @@ public class Node {
         try {
             SAFE_SAX_FACTORY.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             SAFE_SAX_FACTORY.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-        } catch (Exception e) {
+        } catch (SAXException | ParserConfigurationException e) {
             throw new ExceptionInInitializerError(e);
         }
         UNSAFE_SAX_FACTORY = SAXParserFactory.newInstance();
@@ -50,14 +52,14 @@ public class Node {
     private static final ThreadLocal<SAXParser> SAFE_PARSER = ThreadLocal.withInitial(() -> {
         try {
             return SAFE_SAX_FACTORY.newSAXParser();
-        } catch (Exception e) {
+        } catch (SAXException | ParserConfigurationException e) {
             throw new ExceptionInInitializerError(e);
         }
     });
     private static final ThreadLocal<SAXParser> UNSAFE_PARSER = ThreadLocal.withInitial(() -> {
         try {
             return UNSAFE_SAX_FACTORY.newSAXParser();
-        } catch (Exception e) {
+        } catch (SAXException | ParserConfigurationException e) {
             throw new ExceptionInInitializerError(e);
         }
     });
@@ -302,7 +304,9 @@ public class Node {
 
         // Handle gzip
         if (bytestring.length > 2 && bytestring[0] == (byte) 0x1f && bytestring[1] == (byte) 0x8b) {
-            bytestring = new GZIPInputStream(new ByteArrayInputStream(bytestring)).readAllBytes();
+            try (var gzis = new GZIPInputStream(new ByteArrayInputStream(bytestring))) {
+                bytestring = gzis.readAllBytes();
+            }
         }
 
         UrlHelper.UrlFetcher fetcher = urlFetcher;

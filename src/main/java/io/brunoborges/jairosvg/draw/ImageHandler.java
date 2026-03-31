@@ -18,6 +18,8 @@ import static io.brunoborges.jairosvg.util.Helpers.*;
  */
 public final class ImageHandler {
 
+    private static final System.Logger LOG = System.getLogger(ImageHandler.class.getName());
+
     private ImageHandler() {
     }
 
@@ -36,17 +38,13 @@ public final class ImageHandler {
             resolvedUrl = href;
             imageBytes = UrlHelper.decodeDataUrl(href);
         } else {
-            String baseUrl = node.get("{http://www.w3.org/XML/1998/namespace}base");
-            if (baseUrl == null && node.url != null) {
-                int lastSlash = node.url.lastIndexOf('/');
-                baseUrl = lastSlash >= 0 ? node.url.substring(0, lastSlash + 1) : null;
-            }
-            UrlHelper.ParsedUrl url = UrlHelper.parseUrl(href, baseUrl);
+            UrlHelper.ParsedUrl url = UrlHelper.parseUrl(href, UrlHelper.resolveBaseUrl(node));
             cacheKey = url.getUrl();
             resolvedUrl = cacheKey;
             try {
                 imageBytes = node.fetchUrl(url, "image/*");
             } catch (IOException e) {
+                LOG.log(System.Logger.Level.DEBUG, "Failed to fetch image: {0}", e.getMessage());
                 return;
             }
         }
@@ -90,7 +88,7 @@ public final class ImageHandler {
                 surface.draw(tree);
                 surface.context.setComposite(savedComposite);
                 surface.context.setTransform(savedTransform);
-            } catch (Exception e) {
+            } catch (Exception e) { // parseTree may throw RuntimeException or IOException
                 // Skip invalid SVG images
             }
             return;

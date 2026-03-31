@@ -7,6 +7,7 @@ import java.util.Map;
 
 import io.brunoborges.jairosvg.draw.PathDrawer;
 import io.brunoborges.jairosvg.surface.Surface;
+import static io.brunoborges.jairosvg.util.Helpers.parseDoubleOr;
 
 /**
  * Represents a parsed SVG font with its glyphs. Supports {@code <font>},
@@ -15,6 +16,8 @@ import io.brunoborges.jairosvg.surface.Surface;
  * @see <a href="https://www.w3.org/TR/SVG11/fonts.html">SVG 1.1 — Fonts</a>
  */
 public final class SvgFont {
+
+    private static final System.Logger LOG = System.getLogger(SvgFont.class.getName());
 
     /** Font family name from {@code <font-face font-family="...">}. */
     public final String family;
@@ -62,7 +65,7 @@ public final class SvgFont {
      * Parse an SVG font from a {@code <font>} node.
      */
     public static SvgFont parse(Node fontNode) {
-        double defaultHorizAdvX = parseDouble(fontNode.get("horiz-adv-x"), 1000);
+        double defaultHorizAdvX = parseDoubleOr(fontNode.get("horiz-adv-x"), 1000);
 
         // Find <font-face>
         String family = null;
@@ -73,9 +76,9 @@ public final class SvgFont {
         for (Node child : fontNode.children) {
             if ("font-face".equals(child.tag)) {
                 family = child.get("font-family");
-                unitsPerEm = parseDouble(child.get("units-per-em"), 1000);
-                ascent = parseDouble(child.get("ascent"), unitsPerEm * 0.8);
-                descent = parseDouble(child.get("descent"), -unitsPerEm * 0.2);
+                unitsPerEm = parseDoubleOr(child.get("units-per-em"), 1000);
+                ascent = parseDoubleOr(child.get("ascent"), unitsPerEm * 0.8);
+                descent = parseDoubleOr(child.get("descent"), -unitsPerEm * 0.2);
                 break;
             }
         }
@@ -97,11 +100,11 @@ public final class SvgFont {
                 if (unicode == null || unicode.isEmpty())
                     continue;
                 String d = child.get("d", "");
-                double advX = parseDouble(child.get("horiz-adv-x"), defaultHorizAdvX);
+                double advX = parseDoubleOr(child.get("horiz-adv-x"), defaultHorizAdvX);
                 glyphs.put(unicode, new Glyph(parsePathData(d), advX));
             } else if ("missing-glyph".equals(child.tag)) {
                 String d = child.get("d", "");
-                double advX = parseDouble(child.get("horiz-adv-x"), defaultHorizAdvX);
+                double advX = parseDoubleOr(child.get("horiz-adv-x"), defaultHorizAdvX);
                 missingGlyph = new Glyph(parsePathData(d), advX);
             }
         }
@@ -187,18 +190,9 @@ public final class SvgFont {
 
             PathDrawer.path(tempSurface, tempNode);
             return tempSurface.path;
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
+            LOG.log(System.Logger.Level.DEBUG, "Failed to parse SVG font glyph path", e);
             return null;
-        }
-    }
-
-    private static double parseDouble(String s, double def) {
-        if (s == null)
-            return def;
-        try {
-            return Double.parseDouble(s);
-        } catch (NumberFormatException e) {
-            return def;
         }
     }
 }
