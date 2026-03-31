@@ -46,7 +46,7 @@ class SvgFontTest {
 
     @Test
     void testSvgFontWithMissingGlyph() throws Exception {
-        // SVG font that only defines glyph for 'X', so other chars use missing-glyph
+        // SVG font that only defines glyph for 'X', so 'Y' falls back to system font
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
                   <defs>
@@ -65,7 +65,64 @@ class SvgFontTest {
 
         BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
         assertEquals(200, image.getWidth());
-        // Should render without errors (Y uses missing-glyph)
+
+        // X glyph should render using the SVG font (filled rectangle)
+        int pxX = image.getRGB(30, 40);
+        assertTrue(((pxX >> 24) & 0xFF) > 0, "X glyph should be visible");
+        assertTrue((pxX & 0xFF) > 200, "X glyph should be blue");
+
+        // Y should fall back to system font (not use missing-glyph)
+        // The Y character rendered by a system font should still produce visible pixels
+        int pxY = image.getRGB(68, 40);
+        assertTrue(((pxY >> 24) & 0xFF) > 0, "Fallback Y should be visible");
+    }
+
+    @Test
+    void testSvgFontUndefinedCharFallsBackToSystemFont() throws Exception {
+        // Verify that characters not defined in the SVG font are rendered using
+        // the system font (not the missing-glyph), matching browser/EchoSVG behaviour.
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="300" height="100">
+                  <defs>
+                    <font id="FallbackTest" horiz-adv-x="1000">
+                      <font-face font-family="FallbackTest" units-per-em="1000" ascent="800" descent="-200"/>
+                      <glyph unicode="A" horiz-adv-x="1000" d="M 100 0 L 100 800 L 900 800 L 900 0 Z"/>
+                      <missing-glyph horiz-adv-x="500" d="M 50 0 L 50 800 L 450 800 L 450 0 Z
+                                                           M 150 100 L 350 100 L 350 700 L 150 700 Z"/>
+                    </font>
+                  </defs>
+                  <text x="10" y="60" font-family="FallbackTest" font-size="48" fill="red">AZ</text>
+                </svg>
+                """;
+
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));
+
+        // A glyph should be a filled rectangle (SVG font glyph)
+        int pxA = image.getRGB(25, 40);
+        assertTrue(((pxA >> 24) & 0xFF) > 0, "A (SVG glyph) should be visible");
+        assertTrue(((pxA >> 16) & 0xFF) > 200, "A should be red");
+
+        // Z should fall back to system font, producing a recognizable Z character.
+        // The Z character in a system font has a top horizontal stroke, a diagonal,
+        // and a bottom horizontal stroke. The centre of the character body should
+        // have some visible pixels.
+        // Advance of A is 1000*48/1000 = 48px, so Z starts at x≈58.
+        boolean zVisible = false;
+        for (int y = 30; y < 60; y++) {
+            for (int x = 58; x < 100; x++) {
+                int px = image.getRGB(x, y);
+                if (((px >> 24) & 0xFF) > 0 && ((px >> 16) & 0xFF) > 150) {
+                    zVisible = true;
+                    break;
+                }
+            }
+            if (zVisible)
+                break;
+        }
+        assertTrue(zVisible, "Z should fall back to system font and render visible red pixels");
     }
 
     @Test

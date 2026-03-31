@@ -171,7 +171,7 @@ public final class TextDrawer {
         String textAnchor = node.get("text-anchor");
         if (textAnchor != null && xStr != null) {
             double textWidth = svgFont != null
-                    ? measureSvgFontWidth(svgFont, textContent, surface.fontSize)
+                    ? measureSvgFontWidth(svgFont, textContent, surface.fontSize, font, frc)
                     : font.getStringBounds(textContent, frc).getWidth();
             if ("middle".equals(textAnchor)) {
                 startX -= textWidth / 2;
@@ -191,7 +191,8 @@ public final class TextDrawer {
 
         if (svgFont != null) {
             // Render using SVG font glyphs as paths (greedy longest-match for multi-char
-            // unicode)
+            // unicode). Characters without a defined glyph fall back to AWT font rendering
+            // (matching CairoSVG/EchoSVG/browser behaviour).
             double curX = startX;
             int i = 0;
             while (i < textContent.length()) {
@@ -202,8 +203,20 @@ public final class TextDrawer {
                     if (glyphPath != null) {
                         surface.path.append(glyphPath, false);
                     }
+                    curX += svgFont.getAdvance(glyph, surface.fontSize) + letterSpacing;
+                } else {
+                    // Fall back to AWT system font for characters without a defined SVG glyph
+                    int cp = textContent.codePointAt(i);
+                    String ch = new String(Character.toChars(cp));
+                    if (drawAsText) {
+                        surface.context.setFont(font);
+                        surface.context.drawString(ch, (float) curX, (float) startY);
+                    } else {
+                        GlyphVector gv = font.createGlyphVector(frc, ch);
+                        surface.path.append(gv.getOutline((float) curX, (float) startY), false);
+                    }
+                    curX += font.getStringBounds(ch, frc).getWidth() + letterSpacing;
                 }
-                curX += svgFont.getAdvance(glyph, surface.fontSize) + letterSpacing;
                 i += match.charsConsumed();
             }
             surface.cursorPosition[0] = curX;
@@ -429,7 +442,8 @@ public final class TextDrawer {
                 String family = parseFontFamily(child);
                 SvgFont svgF = surface.fonts.get(family);
                 if (svgF != null) {
-                    totalWidth += measureSvgFontWidth(svgF, child.text, surface.fontSize);
+                    totalWidth += measureSvgFontWidth(svgF, child.text, surface.fontSize, resolveFont(surface, child),
+                            frc);
                 } else {
                     totalWidth += resolveFont(surface, child).getStringBounds(child.text, frc).getWidth();
                 }
@@ -441,13 +455,23 @@ public final class TextDrawer {
         return totalWidth;
     }
 
-    /** Measure the width of text rendered with an SVG font. */
-    private static double measureSvgFontWidth(SvgFont svgFont, String text, double fontSize) {
+    /**
+     * Measure the width of text rendered with an SVG font, falling back to the AWT
+     * font for undefined glyphs.
+     */
+    private static double measureSvgFontWidth(SvgFont svgFont, String text, double fontSize, Font awtFont,
+            FontRenderContext frc) {
         double width = 0;
         int i = 0;
         while (i < text.length()) {
             SvgFont.GlyphMatch match = svgFont.getGlyph(text, i);
-            width += svgFont.getAdvance(match.glyph(), fontSize);
+            if (match.glyph() != null) {
+                width += svgFont.getAdvance(match.glyph(), fontSize);
+            } else {
+                int cp = text.codePointAt(i);
+                String ch = new String(Character.toChars(cp));
+                width += awtFont.getStringBounds(ch, frc).getWidth();
+            }
             i += match.charsConsumed();
         }
         return width;
