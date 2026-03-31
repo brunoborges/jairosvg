@@ -1,12 +1,6 @@
 name: Deploy Documentation
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'src/site/**'
-      - 'pom.xml'
-      - '.github/workflows/site.yml'
   workflow_dispatch:
 
 permissions:
