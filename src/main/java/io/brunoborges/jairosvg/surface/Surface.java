@@ -91,6 +91,9 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     private BufferedImage effectBuffer;
     private boolean effectBufferInUse;
 
+    // Pattern transform (set by PatternPainter, consumed by fill/stroke)
+    public AffineTransform paintTransform;
+
     // Surface dimensions
     protected BufferedImage image;
     protected double width;
@@ -458,7 +461,20 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                         } else {
                             path.setWindingRule(GeneralPath.WIND_NON_ZERO);
                         }
-                        context.fill(path);
+                        if (paintTransform != null) {
+                            AffineTransform saved = context.getTransform();
+                            context.transform(paintTransform);
+                            try {
+                                Shape fillShape = paintTransform.createInverse().createTransformedShape(path);
+                                context.fill(fillShape);
+                            } catch (java.awt.geom.NoninvertibleTransformException e) {
+                                context.fill(path);
+                            }
+                            context.setTransform(saved);
+                            paintTransform = null;
+                        } else {
+                            context.fill(path);
+                        }
                     }
                 }
 
@@ -506,7 +522,20 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                                 : new BasicStroke(strokeWidth, cap, join, miterLimit);
 
                         context.setStroke(stroke);
-                        context.draw(path);
+                        if (paintTransform != null) {
+                            AffineTransform saved = context.getTransform();
+                            context.transform(paintTransform);
+                            try {
+                                Shape strokeShape = paintTransform.createInverse().createTransformedShape(path);
+                                context.draw(strokeShape);
+                            } catch (java.awt.geom.NoninvertibleTransformException e) {
+                                context.draw(path);
+                            }
+                            context.setTransform(saved);
+                            paintTransform = null;
+                        } else {
+                            context.draw(path);
+                        }
                     }
                 }
 
