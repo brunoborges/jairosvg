@@ -53,8 +53,8 @@ public class benchmark {
         @Override public void close() throws IOException { try { primary.close(); } finally { secondary.close(); } }
     }
 
-    static int WARMUP = 20;
-    static int ITERATIONS = 1000;
+    static int WARMUP = 50;
+    static int ITERATIONS = 500;
 
     static final Path SVG_DIR = Path.of("comparison/svg");
 
