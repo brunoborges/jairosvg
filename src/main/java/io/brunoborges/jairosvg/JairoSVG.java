@@ -33,7 +33,20 @@ import io.brunoborges.jairosvg.surface.*;
  */
 public final class JairoSVG {
 
-    public static final String VERSION = "1.0.4";
+    public static final String VERSION = loadVersion();
+
+    private static String loadVersion() {
+        try (var is = JairoSVG.class.getResourceAsStream("/jairosvg.properties")) {
+            if (is != null) {
+                var props = new java.util.Properties();
+                props.load(is);
+                return props.getProperty("version", "unknown");
+            }
+        } catch (IOException e) {
+            // fall through
+        }
+        return "unknown";
+    }
 
     private JairoSVG() {
     }
