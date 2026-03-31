@@ -201,9 +201,19 @@ public class Node {
             }
         }
 
-        for (var entry : new ArrayList<>(this.attributes.entrySet())) {
-            this.attributes.put(entry.getKey(),
-                    CssProcessor.resolveCustomProperties(entry.getValue(), this.attributes));
+        // Resolve CSS custom properties (var() references)
+        // Collect mutations first to avoid ConcurrentModificationException
+        Map<String, String> varResolved = null;
+        for (var entry : this.attributes.entrySet()) {
+            String resolved = CssProcessor.resolveCustomProperties(entry.getValue(), this.attributes);
+            if (resolved != entry.getValue()) {
+                if (varResolved == null)
+                    varResolved = new LinkedHashMap<>();
+                varResolved.put(entry.getKey(), resolved);
+            }
+        }
+        if (varResolved != null) {
+            this.attributes.putAll(varResolved);
         }
 
         // Replace currentColor (lazy-resolve only if needed)
@@ -216,13 +226,21 @@ public class Node {
             }
         }
 
-        // Replace inherit
-        for (var entry : new ArrayList<>(this.attributes.entrySet())) {
+        // Replace inherit — collect keys first to avoid ConcurrentModificationException
+        List<String> inheritKeys = null;
+        for (var entry : this.attributes.entrySet()) {
             if ("inherit".equals(entry.getValue())) {
-                if (parent != null && parent.attributes.containsKey(entry.getKey())) {
-                    this.attributes.put(entry.getKey(), parent.get(entry.getKey()));
+                if (inheritKeys == null)
+                    inheritKeys = new ArrayList<>();
+                inheritKeys.add(entry.getKey());
+            }
+        }
+        if (inheritKeys != null) {
+            for (String key : inheritKeys) {
+                if (parent != null && parent.attributes.containsKey(key)) {
+                    this.attributes.put(key, parent.get(key));
                 } else {
-                    this.attributes.remove(entry.getKey());
+                    this.attributes.remove(key);
                 }
             }
         }

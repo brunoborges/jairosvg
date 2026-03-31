@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.MemoryCacheImageInputStream;
@@ -86,6 +87,22 @@ public final class FilterRenderer {
         Map<String, BufferedImage> results = new HashMap<>();
         results.put("SourceGraphic", workSource);
         BufferedImage last = workSource;
+
+        // Pre-scan which named results are actually referenced by later primitives
+        Set<String> referencedResults = new java.util.HashSet<>();
+        for (Node child : filterNode.children) {
+            String in = child.get("in");
+            if (in != null && !in.isEmpty())
+                referencedResults.add(in);
+            String in2 = child.get("in2");
+            if (in2 != null && !in2.isEmpty())
+                referencedResults.add(in2);
+            for (Node grandchild : child.children) {
+                String mergeIn = grandchild.get("in");
+                if (mergeIn != null && !mergeIn.isEmpty())
+                    referencedResults.add(mergeIn);
+            }
+        }
 
         for (Node child : filterNode.children) {
             BufferedImage input = resolveInput(results, child.get("in"), last, workSource);
@@ -161,8 +178,10 @@ public final class FilterRenderer {
                 default -> input;
             };
             String resultName = child.get("result");
-            if (resultName != null && !resultName.isEmpty()) {
-                results.put(resultName, cloneImage(output));
+            if (resultName != null && !resultName.isEmpty() && referencedResults.contains(resultName)) {
+                // Only clone if the output is a managed buffer that may be overwritten
+                boolean isManaged = output == buf1 || output == buf2 || output == buf3;
+                results.put(resultName, isManaged ? cloneImage(output) : output);
             }
             last = output;
             results.put("last", last);
@@ -184,6 +203,20 @@ public final class FilterRenderer {
     public static java.awt.Rectangle computeFilterRegion(BufferedImage sourceGraphic, Node filterNode) {
         int w = sourceGraphic.getWidth();
         int h = sourceGraphic.getHeight();
+
+        // Short-circuit: if filter has explicit userSpaceOnUse region, skip pixel scan
+        if (filterNode != null && filterNode.has("width") && filterNode.has("height")) {
+            boolean userSpace = "userSpaceOnUse".equals(filterNode.get("filterUnits"));
+            if (userSpace) {
+                int fx = (int) parseDoubleOr(filterNode.get("x"), 0);
+                int fy = (int) parseDoubleOr(filterNode.get("y"), 0);
+                int fw = (int) parseDoubleOr(filterNode.get("width"), w);
+                int fh = (int) parseDoubleOr(filterNode.get("height"), h);
+                return new java.awt.Rectangle(fx, fy, fw, fh);
+            }
+        }
+
+        // Scan for opaque bounds
         int[] pixels = ((DataBufferInt) sourceGraphic.getRaster().getDataBuffer()).getData();
         int minX = w, minY = h, maxX = -1, maxY = -1;
         for (int y = 0; y < h; y++) {
@@ -207,16 +240,8 @@ public final class FilterRenderer {
         int bw = maxX - minX + 1;
         int bh = maxY - minY + 1;
 
-        // Check for explicit filter region attributes on the <filter> element
+        // Check for explicit percentage-based filter region
         if (filterNode != null && filterNode.has("width") && filterNode.has("height")) {
-            boolean userSpace = "userSpaceOnUse".equals(filterNode.get("filterUnits"));
-            if (userSpace) {
-                int fx = (int) parseDoubleOr(filterNode.get("x"), 0);
-                int fy = (int) parseDoubleOr(filterNode.get("y"), 0);
-                int fw = (int) parseDoubleOr(filterNode.get("width"), w);
-                int fh = (int) parseDoubleOr(filterNode.get("height"), h);
-                return new java.awt.Rectangle(fx, fy, fw, fh);
-            }
             double pctX = parsePercentOrFraction(filterNode.get("x", "-10%"), -0.1);
             double pctY = parsePercentOrFraction(filterNode.get("y", "-10%"), -0.1);
             double pctW = parsePercentOrFraction(filterNode.get("width", "120%"), 1.2);
