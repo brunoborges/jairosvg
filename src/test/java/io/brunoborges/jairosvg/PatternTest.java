@@ -165,4 +165,89 @@ class PatternTest {
         int red = (pixel >> 16) & 0xFF;
         assertTrue(red > 200, "Pattern with translate transform should still produce red pixels");
     }
+
+    @Test
+    void testSvgWithPatternTransformScaleRotateCombined() throws Exception {
+        // Pattern: 12×12 tile, left half orange, right half cream.
+        // With scale(1.5) rotate(30), the pattern tiling grid should be scaled and
+        // rotated.
+        // Verify that the combined transform produces a different layout from each
+        // individual transform and that pixels are fully filled (no gaps from
+        // incorrect tiling).
+        String svgCombo = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <defs>
+                    <pattern id="patCombo" x="0" y="0" width="12" height="12"
+                             patternUnits="userSpaceOnUse"
+                             patternTransform="scale(1.5) rotate(30)">
+                      <rect width="6" height="12" fill="#f39c12"/>
+                      <rect x="6" width="6" height="12" fill="#fdebd0"/>
+                    </pattern>
+                  </defs>
+                  <rect width="200" height="200" fill="url(#patCombo)"/>
+                </svg>
+                """;
+        String svgScaleOnly = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <defs>
+                    <pattern id="patScale" x="0" y="0" width="12" height="12"
+                             patternUnits="userSpaceOnUse"
+                             patternTransform="scale(1.5)">
+                      <rect width="6" height="12" fill="#f39c12"/>
+                      <rect x="6" width="6" height="12" fill="#fdebd0"/>
+                    </pattern>
+                  </defs>
+                  <rect width="200" height="200" fill="url(#patScale)"/>
+                </svg>
+                """;
+        String svgRotateOnly = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <defs>
+                    <pattern id="patRotate" x="0" y="0" width="12" height="12"
+                             patternUnits="userSpaceOnUse"
+                             patternTransform="rotate(30)">
+                      <rect width="6" height="12" fill="#f39c12"/>
+                      <rect x="6" width="6" height="12" fill="#fdebd0"/>
+                    </pattern>
+                  </defs>
+                  <rect width="200" height="200" fill="url(#patRotate)"/>
+                </svg>
+                """;
+
+        BufferedImage imgCombo = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(svgCombo.getBytes(StandardCharsets.UTF_8))));
+        BufferedImage imgScale = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(svgScaleOnly.getBytes(StandardCharsets.UTF_8))));
+        BufferedImage imgRotate = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(svgRotateOnly.getBytes(StandardCharsets.UTF_8))));
+
+        assertEquals(200, imgCombo.getWidth());
+        assertEquals(200, imgScale.getWidth());
+        assertEquals(200, imgRotate.getWidth());
+
+        // The combined transform should produce output different from scale-only and
+        // rotate-only
+        int diffFromScale = 0, diffFromRotate = 0;
+        for (int y = 0; y < 200; y += 5) {
+            for (int x = 0; x < 200; x += 5) {
+                if (imgCombo.getRGB(x, y) != imgScale.getRGB(x, y))
+                    diffFromScale++;
+                if (imgCombo.getRGB(x, y) != imgRotate.getRGB(x, y))
+                    diffFromRotate++;
+            }
+        }
+        assertTrue(diffFromScale > 0, "Combined transform should differ from scale-only");
+        assertTrue(diffFromRotate > 0, "Combined transform should differ from rotate-only");
+
+        // Verify that every pixel in the center region is filled (no transparent gaps
+        // from incorrect tiling). The pattern has two opaque halves, so the entire
+        // rectangle should be opaque.
+        for (int y = 50; y < 150; y += 5) {
+            for (int x = 50; x < 150; x += 5) {
+                int alpha = (imgCombo.getRGB(x, y) >> 24) & 0xFF;
+                assertTrue(alpha > 250,
+                        "Combined pattern should be fully opaque at (%d,%d), alpha=%d".formatted(x, y, alpha));
+            }
+        }
+    }
 }

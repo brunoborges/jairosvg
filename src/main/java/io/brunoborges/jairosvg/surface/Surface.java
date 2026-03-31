@@ -91,6 +91,9 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     private BufferedImage effectBuffer;
     private boolean effectBufferInUse;
 
+    // Pattern transform (set by PatternPainter, consumed by fill/stroke)
+    public AffineTransform paintTransform;
+
     // Surface dimensions
     protected BufferedImage image;
     protected double width;
@@ -458,7 +461,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                         } else {
                             path.setWindingRule(GeneralPath.WIND_NON_ZERO);
                         }
-                        context.fill(path);
+                        paintWithTransform(path, true);
                     }
                 }
 
@@ -506,7 +509,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                                 : new BasicStroke(strokeWidth, cap, join, miterLimit);
 
                         context.setStroke(stroke);
-                        context.draw(path);
+                        paintWithTransform(path, false);
                     }
                 }
 
@@ -654,6 +657,38 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     /** Get the rendered image. */
     public BufferedImage getImage() {
         return image;
+    }
+
+    /**
+     * Paint a shape (fill or stroke) while honouring a pending
+     * {@link #paintTransform}. When a pattern's {@code patternTransform} is active
+     * the Graphics2D coordinate system is temporarily transformed so that the
+     * TexturePaint tiling grid is correctly scaled/rotated/skewed.
+     */
+    private void paintWithTransform(Shape shape, boolean fill) {
+        if (paintTransform != null) {
+            AffineTransform saved = context.getTransform();
+            context.transform(paintTransform);
+            try {
+                Shape mapped = paintTransform.createInverse().createTransformedShape(shape);
+                if (fill)
+                    context.fill(mapped);
+                else
+                    context.draw(mapped);
+            } catch (java.awt.geom.NoninvertibleTransformException e) {
+                if (fill)
+                    context.fill(shape);
+                else
+                    context.draw(shape);
+            }
+            context.setTransform(saved);
+            paintTransform = null;
+        } else {
+            if (fill)
+                context.fill(shape);
+            else
+                context.draw(shape);
+        }
     }
 
     private static int getLineCap(String cap) {
