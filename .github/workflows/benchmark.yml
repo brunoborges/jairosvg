@@ -40,6 +40,9 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
+          # Sync JBang script dependency version with pom.xml so it never drifts
+          VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout --no-transfer-progress)
+          sed -i "s|io.brunoborges:jairosvg:[^ ]*|io.brunoborges:jairosvg:${VERSION}|" comparison/benchmark.java
           jbang comparison/benchmark.java --no-progress | tee /tmp/benchmark-output.txt
 
       - name: Post Summary
