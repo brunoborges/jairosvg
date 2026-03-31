@@ -10,7 +10,7 @@ A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to 
 
 ## Features
 
-- 🎨 **SVG 1.1 rendering** using Java2D — no native dependencies
+- 🎨 **SVG 1.1 rendering** using Java2D — no native dependencies (with [selective SVG 2 alignment](LIMITATIONS.md#svg-2-behavioral-alignment))
 - 📄 **Multiple output formats**: PNG, JPEG, TIFF, PDF (via optional [Apache PDFBox](https://pdfbox.apache.org/)), PostScript/EPS
 - 🔷 **Full shape support**: rect, circle, ellipse, line, polygon, polyline, path
 - 🌈 **Gradients**: linear and radial with stop colors and opacity
