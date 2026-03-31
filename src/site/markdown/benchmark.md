@@ -21,7 +21,7 @@ Each test case was run with 20 warmup iterations and 1000 measurement iterations
 | Defs + use + clipPath | 3.8 ms | **3.6 ms** | 13.6 ms | 4.2 ms | **3.6x faster** |
 | Markers + dashed strokes | 3.6 ms | **3.5 ms** | 12.5 ms | 4.5 ms | **3.5x faster** |
 
-![Benchmark chart](images/benchmark.png)
+<a href="images/benchmark.png" target="_blank"><img src="images/benchmark.png" alt="Benchmark chart" width="560"/></a>
 
 ### Analysis
 
@@ -67,7 +67,7 @@ JairoSVG produces the smallest PNGs overall — **8.0% smaller** than CairoSVG, 
 | Localized masks |      18,389 |      17,868 |      13,218 |      20,239 |
 | **Total**      | **241,646** | **283,452** | **260,984** | **269,394** |
 
-![File size comparison chart](images/benchmark-size.png)
+<a href="images/benchmark-size.png" target="_blank"><img src="images/benchmark-size.png" alt="File size comparison chart" width="560"/></a>
 
 ### Test SVGs
 
