@@ -141,6 +141,23 @@ class FilterRendererTest {
     }
 
     @Test
+    void feTileWithNonZeroFilterOffset() throws Exception {
+        // filterRegion.x=5 → txStart != 0 → exercises first-partial-row copy
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="tile2" filterUnits="userSpaceOnUse" x="5" y="5" width="90" height="90">
+                      <feTile in="SourceGraphic"/>
+                    </filter>
+                  </defs>
+                  <rect x="10" y="10" width="30" height="30" fill="red" filter="url(#tile2)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
     void feImageWithDataUri() throws Exception {
         var svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
