@@ -48,8 +48,7 @@ public final class Features {
     public static boolean matchFeatures(String requiredFeatures, String requiredExtensions, String systemLanguage) {
         if (requiredExtensions != null && !requiredExtensions.isEmpty())
             return false;
-        if (requiredFeatures != null && !requiredFeatures.isEmpty() && !hasFeatures(requiredFeatures))
-            return false;
+        // requiredFeatures is deprecated in SVG 2 and ignored by modern browsers
         if (systemLanguage != null && !systemLanguage.isEmpty() && !supportLanguages(systemLanguage))
             return false;
         return true;
