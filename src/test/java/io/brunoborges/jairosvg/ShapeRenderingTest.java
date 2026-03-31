@@ -795,4 +795,93 @@ class ShapeRenderingTest {
         }
         assertTrue(curvedBandPixels > 20, "textPath should render visible pixels along the curved path");
     }
+
+    @Test
+    void testFeCompositeOperatorInMasksFloodByOffsetAlpha() throws Exception {
+        // feComposite operator="in" should mask the flood color by the alpha of the
+        // offset source graphic, producing a shadow only where the offset shape exists.
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="80">
+                  <defs>
+                    <filter id="fOffset" filterUnits="userSpaceOnUse"
+                            x="-10" y="-10" width="140" height="100">
+                      <feOffset in="SourceGraphic" dx="6" dy="6" result="offset"/>
+                      <feFlood flood-color="#000" flood-opacity="0.3" result="shadow-color"/>
+                      <feComposite in="shadow-color" in2="offset" operator="in" result="shadow"/>
+                      <feMerge>
+                        <feMergeNode in="shadow"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  <rect x="10" y="10" width="60" height="40" rx="5" fill="#2c7be5"
+                        filter="url(#fOffset)"/>
+                </svg>
+                """;
+        BufferedImage image = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
+
+        // The blue rect is at (10,10)-(70,50). With dx=6,dy=6 the shadow starts at
+        // (16,16). The shadow (black, 30% opacity) should appear only where the offset
+        // shape exists, not fill the entire canvas.
+        // Check that a point far from the rect (e.g. 5,5) is transparent.
+        int farPixel = image.getRGB(5, 5);
+        int farAlpha = (farPixel >>> 24) & 0xFF;
+        assertTrue(farAlpha < 10, "Pixel far from rect should be transparent, but alpha=" + farAlpha);
+
+        // Check that the shadow area (e.g. 72,52 — offset region beyond the source
+        // rect) has some opacity from the shadow.
+        int shadowPixel = image.getRGB(72, 52);
+        int shadowAlpha = (shadowPixel >>> 24) & 0xFF;
+        assertTrue(shadowAlpha > 10, "Shadow area should have some opacity, but alpha=" + shadowAlpha);
+
+        // Check that the original rect area is still rendered (e.g. center at 40,30).
+        int centerPixel = image.getRGB(40, 30);
+        int centerAlpha = (centerPixel >>> 24) & 0xFF;
+        int centerBlue = centerPixel & 0xFF;
+        assertTrue(centerAlpha > 200, "Center of rect should be opaque");
+        assertTrue(centerBlue > 150, "Center of rect should be blue");
+    }
+
+    @Test
+    void testMultiLayerFeMergeWithOffsets() throws Exception {
+        // Multi-layer feMerge should composite two offset copies plus the original.
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="80">
+                  <defs>
+                    <filter id="fMulti" filterUnits="userSpaceOnUse"
+                            x="-10" y="-10" width="130" height="90">
+                      <feOffset in="SourceGraphic" dx="8" dy="8" result="off1"/>
+                      <feOffset in="SourceGraphic" dx="4" dy="4" result="off2"/>
+                      <feMerge>
+                        <feMergeNode in="off1"/>
+                        <feMergeNode in="off2"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  <rect x="10" y="10" width="50" height="30" rx="5" fill="#9b59b6"
+                        filter="url(#fMulti)"/>
+                </svg>
+                """;
+        BufferedImage image = ImageIO
+                .read(new ByteArrayInputStream(JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8))));
+
+        // off1 shifts by (8,8), off2 by (4,4). The original rect is at (10,10)-(60,40).
+        // off1 should place a copy at (18,18)-(68,48).
+        // Point (64,44) is inside off1 but outside the original rect and off2.
+        int off1Pixel = image.getRGB(64, 44);
+        int off1Alpha = (off1Pixel >>> 24) & 0xFF;
+        assertTrue(off1Alpha > 200, "off1 region should be visible, but alpha=" + off1Alpha);
+
+        // Point (12,12) should have the original rect (on top via SourceGraphic layer).
+        int origPixel = image.getRGB(12, 12);
+        int origAlpha = (origPixel >>> 24) & 0xFF;
+        assertTrue(origAlpha > 200, "Original rect region should be visible, but alpha=" + origAlpha);
+
+        // A point outside all three layers (e.g. 5,5) should be transparent.
+        int farPixel = image.getRGB(5, 5);
+        int farAlpha = (farPixel >>> 24) & 0xFF;
+        assertTrue(farAlpha < 10, "Point outside all layers should be transparent, but alpha=" + farAlpha);
+    }
 }

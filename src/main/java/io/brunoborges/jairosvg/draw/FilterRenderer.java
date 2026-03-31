@@ -152,6 +152,19 @@ public final class FilterRenderer {
                     BufferedImage out = pickBuffer(input, in2, buf1, buf2, buf3);
                     yield BlendCompositor.blend(input, in2, child.get("mode", "normal"), out);
                 }
+                case "feComposite" -> {
+                    if (buf1 == null)
+                        buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null)
+                        buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null)
+                        buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    BufferedImage in2 = resolveInput(results, child.get("in2"), last, workSource);
+                    BufferedImage out = pickBuffer(input, in2, buf1, buf2, buf3);
+                    yield composite(input, in2, child.get("operator", "over"), parseDoubleOr(child.get("k1"), 0),
+                            parseDoubleOr(child.get("k2"), 0), parseDoubleOr(child.get("k3"), 0),
+                            parseDoubleOr(child.get("k4"), 0), out);
+                }
                 case "feMerge" -> {
                     if (buf1 == null)
                         buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
@@ -446,6 +459,89 @@ public final class FilterRenderer {
         int b = Math.clamp((int) (floodColor.b() * 255 + 0.5), 0, 255);
         int pixel = (a << 24) | (r << 16) | (g << 8) | b;
         java.util.Arrays.fill(((DataBufferInt) output.getRaster().getDataBuffer()).getData(), pixel);
+        return output;
+    }
+
+    private static BufferedImage composite(BufferedImage in1, BufferedImage in2, String operator, double k1, double k2,
+            double k3, double k4, BufferedImage output) {
+        int[] in1Data = ((DataBufferInt) in1.getRaster().getDataBuffer()).getData();
+        int[] in2Data = ((DataBufferInt) in2.getRaster().getDataBuffer()).getData();
+        int[] outData = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
+        int len = outData.length;
+
+        for (int i = 0; i < len; i++) {
+            int p1 = in1Data[i];
+            int p2 = in2Data[i];
+
+            int a1 = p1 >>> 24;
+            int r1 = (p1 >> 16) & 0xFF;
+            int g1 = (p1 >> 8) & 0xFF;
+            int b1 = p1 & 0xFF;
+
+            int a2 = p2 >>> 24;
+            int r2 = (p2 >> 16) & 0xFF;
+            int g2 = (p2 >> 8) & 0xFF;
+            int b2 = p2 & 0xFF;
+
+            // Convert to premultiplied alpha
+            int pr1 = r1 * a1 / 255;
+            int pg1 = g1 * a1 / 255;
+            int pb1 = b1 * a1 / 255;
+            int pr2 = r2 * a2 / 255;
+            int pg2 = g2 * a2 / 255;
+            int pb2 = b2 * a2 / 255;
+
+            int oa, or, og, ob; // premultiplied output
+            switch (operator) {
+                case "in" -> {
+                    oa = a1 * a2 / 255;
+                    or = pr1 * a2 / 255;
+                    og = pg1 * a2 / 255;
+                    ob = pb1 * a2 / 255;
+                }
+                case "out" -> {
+                    oa = a1 * (255 - a2) / 255;
+                    or = pr1 * (255 - a2) / 255;
+                    og = pg1 * (255 - a2) / 255;
+                    ob = pb1 * (255 - a2) / 255;
+                }
+                case "atop" -> {
+                    oa = a2;
+                    or = (pr1 * a2 + pr2 * (255 - a1)) / 255;
+                    og = (pg1 * a2 + pg2 * (255 - a1)) / 255;
+                    ob = (pb1 * a2 + pb2 * (255 - a1)) / 255;
+                }
+                case "xor" -> {
+                    oa = (a1 * (255 - a2) + a2 * (255 - a1)) / 255;
+                    or = (pr1 * (255 - a2) + pr2 * (255 - a1)) / 255;
+                    og = (pg1 * (255 - a2) + pg2 * (255 - a1)) / 255;
+                    ob = (pb1 * (255 - a2) + pb2 * (255 - a1)) / 255;
+                }
+                case "arithmetic" -> {
+                    oa = Math.clamp((int) (k1 * a1 * a2 / 255 + k2 * a1 + k3 * a2 + k4 * 255), 0, 255);
+                    or = Math.clamp((int) (k1 * pr1 * pr2 / 255 + k2 * pr1 + k3 * pr2 + k4 * 255), 0, 255);
+                    og = Math.clamp((int) (k1 * pg1 * pg2 / 255 + k2 * pg1 + k3 * pg2 + k4 * 255), 0, 255);
+                    ob = Math.clamp((int) (k1 * pb1 * pb2 / 255 + k2 * pb1 + k3 * pb2 + k4 * 255), 0, 255);
+                }
+                default -> { // "over"
+                    oa = a1 + a2 * (255 - a1) / 255;
+                    or = pr1 + pr2 * (255 - a1) / 255;
+                    og = pg1 + pg2 * (255 - a1) / 255;
+                    ob = pb1 + pb2 * (255 - a1) / 255;
+                }
+            }
+
+            // Convert back from premultiplied to non-premultiplied
+            oa = Math.clamp(oa, 0, 255);
+            if (oa == 0) {
+                outData[i] = 0;
+            } else {
+                or = Math.clamp(or * 255 / oa, 0, 255);
+                og = Math.clamp(og * 255 / oa, 0, 255);
+                ob = Math.clamp(ob * 255 / oa, 0, 255);
+                outData[i] = (oa << 24) | (or << 16) | (og << 8) | ob;
+            }
+        }
         return output;
     }
 
