@@ -151,7 +151,8 @@ public final class SvgFont {
     /**
      * Look up a glyph starting at {@code offset} in {@code text} using greedy
      * longest-match. Handles multi-character unicode values and supplementary
-     * (non-BMP) code points.
+     * (non-BMP) code points. Returns a null glyph when the character has no defined
+     * glyph, signalling the caller to fall back to a system font.
      */
     public GlyphMatch getGlyph(String text, int offset) {
         // Try longest match first
@@ -162,10 +163,11 @@ public final class SvgFont {
             if (g != null)
                 return new GlyphMatch(g, len);
         }
-        // No match — consume one code point and use missing glyph
+        // No match — consume one code point; return null glyph so the caller
+        // falls back to the system font (matching browser/EchoSVG behaviour).
         int cp = text.codePointAt(offset);
         int cpLen = Character.charCount(cp);
-        return new GlyphMatch(missingGlyph, cpLen);
+        return new GlyphMatch(null, cpLen);
     }
 
     /**
