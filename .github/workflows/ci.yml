@@ -39,6 +39,7 @@ jobs:
         with:
           files: target/site/jacoco/jacoco.xml
           fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   site:
     needs: build
