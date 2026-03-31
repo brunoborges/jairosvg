@@ -8,16 +8,31 @@
 
 A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to PNG, JPEG, TIFF, PDF, and PS/EPS converter powered by Java2D.
 
+## Why JairoSVG?
+
+- **Zero native dependencies** — pure Java, runs anywhere the JVM runs
+- **No heavyweight frameworks** — no Batik, no Cairo, no WebKit; just Java2D
+- **Secure by default** — XXE protection enabled, `<script>` elements ignored, external resource access disabled unless explicitly opted in
+- **Fast** — 3-30× faster than EchoSVG (Batik), competitive with JSVG, 1-2× faster than CairoSVG's native C backend
+- **Drop-in API** — static one-liners, fluent builder, or CLI — your choice
+
 ## Features
 
 - 🎨 **SVG 1.1 rendering** using Java2D — no native dependencies (with [selective SVG 2 alignment](LIMITATIONS.md#svg-2-behavioral-alignment))
 - 📄 **Multiple output formats**: PNG, JPEG, TIFF, PDF (via optional [Apache PDFBox](https://pdfbox.apache.org/)), PostScript/EPS
 - 🔷 **Full shape support**: rect, circle, ellipse, line, polygon, polyline, path
-- 🌈 **Gradients**: linear and radial with stop colors and opacity
-- ✍️ **Text rendering** with font control, letter-spacing, text-anchor
-- 🔄 **Transforms**: translate, rotate, scale, skew, matrix
-- 🎭 **Advanced features**: clip-path, viewBox, preserveAspectRatio, `<use>`, CSS stylesheets
-- ⚡ **Fast**: 2-26x faster than EchoSVG (Batik fork), on par with JSVG, 1-2.4x faster than CairoSVG's native C backend
+- 🌈 **Gradients**: linear and radial with stop colors, opacity, and `spreadMethod`
+- ✍️ **Text rendering** with font control, letter-spacing, text-anchor, `<tspan>`, and `<textPath>`
+- 🔄 **Transforms**: translate, rotate, scale, skewX, skewY, matrix
+- 🎭 **Definitions**: `<use>`, `<symbol>`, `<defs>`, clip-path, viewBox, preserveAspectRatio
+- 🖌️ **Patterns**: `<pattern>` with `patternTransform` and `patternUnits`
+- 🎯 **Markers**: `<marker>` with `orient="auto"` tangent direction support
+- 😷 **Masks**: `<mask>` with luminance-to-alpha compositing
+- 🔍 **Filters**: `feGaussianBlur`, `feOffset`, `feFlood`, `feBlend`, `feMerge`, `feDropShadow`, `feImage`, `feTile`
+- 🔤 **SVG Fonts**: `<font>` and `<glyph>` with system font fallback for undefined characters
+- 🎨 **CSS**: stylesheets, inline styles, CSS variables (`var()`), `currentColor`, `inherit`
+- 🔀 **Conditional processing**: `<switch>`, `systemLanguage`, `requiredExtensions`
+- ⚡ **Fast**: 3-30× faster than EchoSVG (Batik fork), on par with JSVG, 1-2× faster than CairoSVG's native C backend
 - 🛡️ **Secure**: XML external entity (XXE) protection by default
 - 🧰 **Flexible API**: Static methods, fluent builder, CLI
 
@@ -34,19 +49,24 @@ A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to 
 
 | Test Case                | JairoSVG (Java) | EchoSVG (Java) | JSVG (Java) | CairoSVG (Python) |
 | ------------------------ | :-------------: | :------------: | :---------: | :---------------: |
-| Simple shapes            |     3.2 ms      |    15.7 ms     | **3.2 ms**  |      4.1 ms       |
-| Gradients                |   **4.1 ms**    |    128.8 ms    |   4.1 ms    |      10.4 ms      |
-| Complex paths + text     |   **4.0 ms**    |    21.9 ms     |   4.1 ms    |      4.3 ms       |
-| Defs + use + clipPath    |     3.8 ms      |    13.6 ms     | **3.6 ms**  |      4.2 ms       |
-| Markers + strokes        |     3.6 ms      |    12.5 ms     | **3.5 ms**  |      4.5 ms       |
+| Simple shapes            |     3.4 ms      |    16.7 ms     | **3.3 ms**  |      4.1 ms       |
+| Gradients                |   **4.3 ms**    |    131.3 ms    |   4.2 ms    |      10.4 ms      |
+| Filters                  |   **6.8 ms**    |    34.2 ms     |   8.2 ms    |       N/A         |
+| Fe blend modes           |   **9.5 ms**    |    27.7 ms     |  20.0 ms    |       N/A         |
+| Embedded image           |   **4.4 ms**    |    16.8 ms     |  11.0 ms    |      6.2 ms       |
+| Localized masks          |  **14.5 ms**    |    56.0 ms     |  15.6 ms    |       N/A         |
 
-_JairoSVG is 2–26× faster than EchoSVG, on par with JSVG, and 1–2.4× faster than CairoSVG's native C backend._
+_JairoSVG is 3–30× faster than EchoSVG, on par with JSVG for simple SVGs, and significantly faster on filters, blends, masks, and images._
 
 Run the benchmark yourself: `jbang comparison/benchmark.java`.
 
 See **[comparison/README.md](comparison/README.md)** for full benchmark results, PNG file size comparisons, and feature matrices across JairoSVG, EchoSVG, CairoSVG, and JSVG.
 
+See **[comparison/VISUAL_COMPARISON.md](comparison/VISUAL_COMPARISON.md)** for side-by-side rendered PNG comparisons of 35 SVG test cases.
+
 ## Installation
+
+> **Tip:** Check [Maven Central](https://central.sonatype.com/artifact/io.brunoborges/jairosvg) for the latest released version.
 
 ### Maven
 
@@ -216,36 +236,73 @@ native-image -jar target/jairosvg-1.0.4-cli.jar
 
 ## Supported SVG Features
 
+### Elements
+
 - ✅ Basic shapes: `rect`, `circle`, `ellipse`, `line`, `polygon`, `polyline`
 - ✅ Path commands: M, L, C, S, Q, T, A, H, V, Z (absolute and relative)
-- ✅ Linear and radial gradients with `spreadMethod`
-- ✅ CSS stylesheets and inline styles
-- ✅ Text and tspan with font properties
+- ✅ `<use>`, `<symbol>`, `<defs>`, `<g>`
+- ✅ `<svg>` with nesting and viewBox
+- ✅ `<image>` — embedded raster (data URI and external) and nested SVG
+- ✅ `<text>`, `<tspan>`, `<textPath>`, `<a>`
+- ✅ `<marker>` with `orient="auto"` tangent direction
+- ✅ `<clipPath>`
+- ✅ `<mask>` with luminance-to-alpha compositing
+- ✅ `<pattern>` with `patternTransform` and `patternUnits`
+- ✅ `<linearGradient>`, `<radialGradient>` with `spreadMethod` and href chaining
+- ✅ `<font>`, `<font-face>`, `<glyph>`, `<missing-glyph>` (SVG fonts)
+- ✅ `<switch>` with conditional processing (`systemLanguage`, `requiredExtensions`)
+- ✅ `<cursor>`, `<foreignObject>` (parsed but not rendered — see [LIMITATIONS.md](LIMITATIONS.md))
+
+### Filters
+
+- ✅ `<filter>` with `filterUnits` and sub-region optimization
+- ✅ `feGaussianBlur`, `feOffset`, `feFlood`, `feBlend` (normal, multiply, screen, darken, lighten)
+- ✅ `feMerge`, `feDropShadow`, `feImage` (data URI + inline references), `feTile`
+
+### Styling
+
+- ✅ CSS stylesheets (embedded `<style>`) and inline `style` attributes
+- ✅ CSS selectors: class, id, element, descendant, `:first-child`, `:last-child`, `:nth-child()`, `:not()`
+- ✅ CSS custom properties / variables (`var(--name, fallback)`)
+- ✅ `currentColor`, `inherit`
+- ✅ Opacity: element, fill, stroke, group
+- ✅ `display`, `visibility`
+
+### Other
+
 - ✅ Transforms: translate, rotate, scale, skewX, skewY, matrix
-- ✅ `<use>` element and `<defs>`
-- ✅ Clip paths
-- ✅ viewBox and preserveAspectRatio
-- ✅ Opacity (element, fill, stroke)
-- ✅ Image embedding (raster and nested SVG)
-- ✅ Stroke properties: dasharray, linecap, linejoin, width
+- ✅ viewBox and preserveAspectRatio (all 9 align values + meet/slice)
+- ✅ Stroke properties: dasharray, dashoffset, linecap, linejoin, miterlimit, width
+- ✅ Named colors (170+), hex, `rgb()`, `rgba()`, `hsl()`, `hsla()`
+- ✅ Units: px, pt, em, ex, %, cm, mm, in, pc
 
 ## Architecture
 
 JairoSVG is a module-by-module port of CairoSVG's Python codebase to Java 25:
 
-| Java Class     | Python Module | Role                       |
-| -------------- | ------------- | -------------------------- |
-| `JairoSVG`     | `__init__.py` | Public API + Builder       |
-| `Surface`      | `surface.py`  | Java2D rendering engine    |
-| `Node`         | `parser.py`   | SVG DOM tree               |
-| `PathDrawer`   | `path.py`     | SVG path commands          |
-| `ShapeDrawer`  | `shapes.py`   | Basic shapes               |
-| `TextDrawer`   | `text.py`     | Text rendering             |
-| `Defs`         | `defs.py`     | Gradients, clips, use      |
-| `Colors`       | `colors.py`   | Color parsing (170+ named) |
-| `Helpers`      | `helpers.py`  | Units, transforms          |
-| `CssProcessor` | `css.py`      | CSS parsing                |
-| `Main`         | `__main__.py` | CLI                        |
+| Java Class        | Python Module | Role                                     |
+| ----------------- | ------------- | ---------------------------------------- |
+| `JairoSVG`        | `__init__.py` | Public API + fluent Builder              |
+| `Surface`         | `surface.py`  | Java2D rendering engine + state mgmt     |
+| `Node`            | `parser.py`   | SVG DOM tree with CSS cascade            |
+| `PathDrawer`      | `path.py`     | SVG path commands → GeneralPath          |
+| `ShapeDrawer`     | `shapes.py`   | Basic shape elements                     |
+| `TextDrawer`      | `text.py`     | Text, tspan, textPath rendering          |
+| `Defs`            | `defs.py`     | Definition elements + clip paths         |
+| `GradientPainter` | `defs.py`     | Linear/radial gradient rendering         |
+| `PatternPainter`  | `defs.py`     | Pattern → TexturePaint                   |
+| `MaskPainter`     | `defs.py`     | Mask luminance-to-alpha compositing      |
+| `MarkerDrawer`    | `defs.py`     | Marker placement and orientation         |
+| `FilterRenderer`  | `defs.py`     | Filter pipeline (blur, blend, merge...) |
+| `GaussianBlur`    | —             | Optimized box-blur Gaussian              |
+| `BlendCompositor` | —             | feBlend pixel blending modes             |
+| `ImageHandler`    | `image.py`    | Embedded image handling                  |
+| `SvgDrawer`       | —             | Nested `<svg>` viewport handling         |
+| `Colors`          | `colors.py`   | Color parsing (170+ named)               |
+| `CssProcessor`    | `css.py`      | CSS parsing and selector matching        |
+| `SvgFont`         | —             | SVG font glyph caching                  |
+| `Helpers`         | `helpers.py`  | Units, transforms, aspect ratio          |
+| `Main`            | `__main__.py` | CLI entry point                          |
 
 **Key technology mapping:**
 
