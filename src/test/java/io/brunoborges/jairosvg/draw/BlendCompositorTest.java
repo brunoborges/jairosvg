@@ -210,4 +210,44 @@ class BlendCompositorTest {
         assertEquals(255, red(pixel));
         assertEquals(0, blue(pixel));
     }
+
+    @Test
+    void blendCompositeFullyOpaqueLayers() {
+        // Both layers fully opaque — exercises alpha == 255 branch in blendComposite
+        BufferedImage src = solidImage(2, 2, 0xFF804020);
+        BufferedImage dst = solidImage(2, 2, 0xFF204080);
+        BufferedImage result = BlendCompositor.blend(src, dst, "multiply", null);
+        int pixel = result.getRGB(0, 0);
+        assertEquals(255, alpha(pixel));
+        // multiply(0x80,0x20) / 255 = (128*32+127)/255 ≈ 16
+        assertTrue(red(pixel) >= 15 && red(pixel) <= 17, "Red multiply should be ~16, was " + red(pixel));
+    }
+
+    @Test
+    void blendCompositeFullyTransparentLayer() {
+        // Fully transparent src over opaque dst — exercises alpha == 0 branch
+        BufferedImage src = solidImage(2, 2, 0x00FF0000);
+        BufferedImage dst = solidImage(2, 2, 0xFF00FF00);
+        BufferedImage result = BlendCompositor.blend(src, dst, "screen", null);
+        int pixel = result.getRGB(0, 0);
+        assertEquals(255, alpha(pixel));
+        assertEquals(0, red(pixel));
+        assertEquals(255, green(pixel));
+    }
+
+    @Test
+    void blendDirectWithPartiallyTransparentTop() {
+        // Semi-transparent src over semi-transparent dst — exercises blendDirect
+        // non-opaque branch
+        BufferedImage src = solidImage(3, 3, 0x80FF0000);
+        BufferedImage dst = solidImage(3, 3, 0x800000FF);
+        BufferedImage result = BlendCompositor.blend(src, dst, "normal", null);
+        int pixel = result.getRGB(1, 1);
+        int a = alpha(pixel);
+        // Combined alpha should be > 128 but < 255
+        assertTrue(a > 128 && a <= 255, "Combined alpha should be >128, was " + a);
+        // Red should dominate since it's the "source" in normal blend
+        assertTrue(red(pixel) > blue(pixel),
+                "Red should dominate in normal blend, R=" + red(pixel) + " B=" + blue(pixel));
+    }
 }

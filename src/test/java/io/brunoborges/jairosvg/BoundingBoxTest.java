@@ -2,17 +2,40 @@ package io.brunoborges.jairosvg;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.image.BufferedImage;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
+
+import io.brunoborges.jairosvg.dom.BoundingBox;
+import io.brunoborges.jairosvg.dom.Node;
 
 /**
  * Tests for bounding box calculation via SVG rendering with clip/viewBox
  * interactions, plus integration tests exercising BoundingBox indirectly.
  */
 class BoundingBoxTest {
+
+    private static Node findChild(Node parent, String tag) {
+        for (Node c : parent.children) {
+            if (tag.equals(c.tag))
+                return c;
+            Node found = findChild(c, tag);
+            if (found != null)
+                return found;
+        }
+        return null;
+    }
+
+    private static Node parseSvgChild(String svg, String tag) throws Exception {
+        Node tree = Node.parseTree(svg.getBytes(StandardCharsets.UTF_8), null, null, true);
+        Node child = findChild(tree, tag);
+        assertNotNull(child, "Expected to find <" + tag + "> in SVG");
+        return child;
+    }
 
     @Test
     void rectBoundingBox() throws Exception {
@@ -211,5 +234,279 @@ class BoundingBoxTest {
         int pixel = img.getRGB(100, 100);
         int r = (pixel >> 16) & 0xFF;
         assertTrue(r > 200, "Filter center should still be predominantly red");
+    }
+
+    // ── Direct BoundingBox.calculate tests ──────────────────────────────────
+
+    @Test
+    void testPathWithSmoothCubicBezier() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="M10 60 C20 10 40 10 50 60 S80 110 110 60" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box, "Smooth cubic path should produce a bounding box");
+        assertTrue(BoundingBox.isValid(box), "Box should be valid");
+        assertTrue(box.minX() <= 10, "minX should include start point");
+        assertTrue(box.minX() + box.width() >= 110, "maxX should include end point");
+    }
+
+    @Test
+    void testPathWithQuadraticBezier() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="M10 60 Q60 10 110 60" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box, "Quadratic bezier path should produce a bounding box");
+        assertTrue(BoundingBox.isValid(box), "Box should be valid");
+        assertTrue(box.minX() <= 10, "minX should include start");
+        assertTrue(box.minX() + box.width() >= 110, "maxX should include end");
+        assertTrue(box.minY() <= 10, "minY should include control point");
+    }
+
+    @Test
+    void testPathWithSmoothQuadratic() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="M10 30 Q30 5 60 30 T110 30" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box, "Smooth quadratic path should produce a bounding box");
+        assertTrue(BoundingBox.isValid(box), "Box should be valid");
+        assertTrue(box.minX() <= 10, "minX should include start");
+        assertTrue(box.minX() + box.width() >= 110, "maxX should include T endpoint");
+    }
+
+    @Test
+    void testPathWithRelativeArc() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="M10 10 a20 20 0 0 1 30 30" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box, "Relative arc path should produce a bounding box");
+        assertTrue(BoundingBox.isValid(box), "Box should be valid");
+        assertTrue(box.minX() <= 10, "minX should include start");
+        assertTrue(box.minX() + box.width() >= 40, "maxX should include arc endpoint (10+30)");
+        assertTrue(box.minY() + box.height() >= 40, "maxY should include arc endpoint (10+30)");
+    }
+
+    @Test
+    void testPathWithUnknownCommand() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="M10 10 L50 50 X20 20" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        // Should not throw — unknown command X is skipped
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box, "Path with unknown command should still produce a box");
+        assertTrue(BoundingBox.isValid(box), "Box should be valid from M and L");
+        assertTrue(box.minX() <= 10, "minX should include M start");
+        assertTrue(box.minX() + box.width() >= 50, "maxX should include L endpoint");
+    }
+
+    @Test
+    void testPathWithInvalidNumbers() throws Exception {
+        // Use H command which parses a single number via Double.parseDouble,
+        // triggering NumberFormatException caught by the path parser
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="M10 10 L50 50 Habc" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        // NumberFormatException is caught, partial result returned
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box, "Path with invalid numbers should still return a box");
+        assertTrue(BoundingBox.isValid(box), "Partial box from M and L should be valid");
+        assertEquals(10, box.minX(), 1.0, "minX from M command");
+        assertEquals(10, box.minY(), 1.0, "minY from M command");
+    }
+
+    @Test
+    void testNestedGroupBoundingBox() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <g><g><rect x="10" y="20" width="30" height="40"/></g></g>
+                </svg>
+                """;
+        // Get the outermost <g>
+        Node tree = Node.parseTree(svg.getBytes(StandardCharsets.UTF_8), null, null, true);
+        Node outerG = findChild(tree, "g");
+        assertNotNull(outerG);
+        BoundingBox.Box box = BoundingBox.calculate(null, outerG);
+        assertNotNull(box, "Nested group should produce a bounding box");
+        assertTrue(BoundingBox.isValid(box), "Box should be valid");
+        assertEquals(10, box.minX(), 1.0);
+        assertEquals(20, box.minY(), 1.0);
+        assertEquals(30, box.width(), 1.0);
+        assertEquals(40, box.height(), 1.0);
+    }
+
+    @Test
+    void testGroupWithTransform() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <g transform="translate(50,50)"><rect width="10" height="10"/></g>
+                </svg>
+                """;
+        Node gNode = parseSvgChild(svg, "g");
+        // BoundingBox.group doesn't account for transforms, but should not crash
+        BoundingBox.Box box = BoundingBox.calculate(null, gNode);
+        assertNotNull(box, "Group with transform should produce a bounding box");
+        assertTrue(BoundingBox.isValid(box), "Box should be valid");
+    }
+
+    @Test
+    void testEmptyGroupBoundingBox() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <g></g>
+                </svg>
+                """;
+        Node gNode = parseSvgChild(svg, "g");
+        BoundingBox.Box box = BoundingBox.calculate(null, gNode);
+        assertNotNull(box, "Empty group should return EMPTY box");
+        // EMPTY box has POSITIVE_INFINITY, so isValid returns false
+        assertTrue(!BoundingBox.isValid(box), "Empty group box should not be valid");
+    }
+
+    @Test
+    void testUseBoundingBox() throws Exception {
+        // <use> is not handled in the calculate switch — returns null
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <defs><rect id="r1" width="30" height="30"/></defs>
+                  <use href="#r1" x="10" y="10"/>
+                </svg>
+                """;
+        Node useNode = parseSvgChild(svg, "use");
+        BoundingBox.Box box = BoundingBox.calculate(null, useNode);
+        // <use> is not in the switch — returns null
+        assertNull(box, "use element should return null from calculate");
+    }
+
+    @Test
+    void testTextBoundingBox() throws Exception {
+        // <text> is not handled in the calculate switch — returns null
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <text x="10" y="30" font-size="14">Hello</text>
+                </svg>
+                """;
+        Node textNode = parseSvgChild(svg, "text");
+        BoundingBox.Box box = BoundingBox.calculate(null, textNode);
+        assertNull(box, "text element should return null from calculate");
+    }
+
+    @Test
+    void testUnsupportedTagReturnsNull() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <foreignObject x="10" y="10" width="50" height="50"/>
+                </svg>
+                """;
+        Node foNode = parseSvgChild(svg, "foreignObject");
+        BoundingBox.Box box = BoundingBox.calculate(null, foNode);
+        assertNull(box, "Unsupported tag should return null");
+    }
+
+    @Test
+    void testGroupWithMixedValidAndInvalidChildren() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <g>
+                    <rect x="10" y="10" width="20" height="20"/>
+                    <foreignObject x="50" y="50" width="30" height="30"/>
+                    <circle cx="80" cy="80" r="10"/>
+                  </g>
+                </svg>
+                """;
+        Node gNode = parseSvgChild(svg, "g");
+        BoundingBox.Box box = BoundingBox.calculate(null, gNode);
+        assertNotNull(box, "Group with mixed children should produce a bounding box");
+        assertTrue(BoundingBox.isValid(box), "Box should be valid");
+        // Rect: 10,10 -> 30,30; Circle: 70,70 -> 90,90; foreignObject ignored
+        assertTrue(box.minX() <= 10, "minX should include rect");
+        assertTrue(box.minX() + box.width() >= 90, "maxX should include circle");
+        assertTrue(box.minY() <= 10, "minY should include rect");
+        assertTrue(box.minY() + box.height() >= 90, "maxY should include circle");
+    }
+
+    @Test
+    void testPathWithMultipleSubpaths() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="M10 10 L40 10 L40 40 Z M60 60 L90 60 L90 90 Z" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box, "Path with multiple subpaths should produce a bounding box");
+        assertTrue(BoundingBox.isValid(box), "Box should be valid");
+        assertTrue(box.minX() <= 10, "minX should include first subpath");
+        assertTrue(box.minX() + box.width() >= 90, "maxX should include second subpath");
+        assertTrue(box.minY() <= 10, "minY should include first subpath");
+        assertTrue(box.minY() + box.height() >= 90, "maxY should include second subpath");
+    }
+
+    @Test
+    void testPathWithOnlyMoveTo() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="M50 50" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box, "Path with only M should produce a bounding box");
+        assertTrue(BoundingBox.isValid(box), "Box should be valid");
+        assertEquals(50, box.minX(), 1.0, "minX should be M x");
+        assertEquals(50, box.minY(), 1.0, "minY should be M y");
+        assertEquals(0, box.width(), 1.0, "Point-size box should have zero width");
+        assertEquals(0, box.height(), 1.0, "Point-size box should have zero height");
+    }
+
+    @Test
+    void testPathWithRelativeSmoothCubic() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="M10 60 c10 -50 30 -50 40 0 s30 50 40 0" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box, "Relative smooth cubic path should produce a bounding box");
+        assertTrue(BoundingBox.isValid(box), "Box should be valid");
+        assertTrue(box.minX() <= 10, "minX should include start");
+        // End point: 10 + 40 + 40 = 90
+        assertTrue(box.minX() + box.width() >= 90, "maxX should include final endpoint");
+    }
+
+    @Test
+    void testPathWithRelativeSmoothQuadratic() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="M10 30 q20 -25 50 0 t50 0" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box, "Relative smooth quadratic path should produce a bounding box");
+        assertTrue(BoundingBox.isValid(box), "Box should be valid");
+        assertTrue(box.minX() <= 10, "minX should include start");
+        // End point: 10 + 50 + 50 = 110
+        assertTrue(box.minX() + box.width() >= 110, "maxX should include final endpoint");
     }
 }
