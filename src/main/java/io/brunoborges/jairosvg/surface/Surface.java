@@ -83,6 +83,10 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     // Reusable mask buffer (lazily allocated, avoids per-mask allocation)
     public BufferedImage maskBuffer;
 
+    // Reusable filter primitive buffers (lazily allocated, shared across filter
+    // invocations)
+    public BufferedImage filterBuf1, filterBuf2, filterBuf3;
+
     // Reusable off-screen effect buffer for filters/masks/opacity
     private BufferedImage effectBuffer;
     private boolean effectBufferInUse;
@@ -534,7 +538,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                 // feFlood don't bleed into other elements' areas when composited back.
                 Node filterNode = this.filters.get(filterName);
                 filterClip = FilterRenderer.computeFilterRegion(effectSourceImage, filterNode);
-                renderedImage = FilterRenderer.applyFilter(this, filterName, renderedImage);
+                renderedImage = FilterRenderer.applyFilter(this, filterName, renderedImage, filterClip);
             }
             if (maskName != null) {
                 renderedImage = MaskPainter.paintMask(this, node, maskName, renderedImage,

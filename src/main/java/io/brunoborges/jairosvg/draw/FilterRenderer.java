@@ -2,8 +2,6 @@ package io.brunoborges.jairosvg.draw;
 
 import static io.brunoborges.jairosvg.util.Helpers.parseDouble;
 import static io.brunoborges.jairosvg.util.Helpers.parseDoubleOr;
-import static io.brunoborges.jairosvg.util.Helpers.parseDouble;
-import static io.brunoborges.jairosvg.util.Helpers.parseDoubleOr;
 import static io.brunoborges.jairosvg.util.Helpers.size;
 
 import java.awt.Graphics2D;
@@ -40,8 +38,9 @@ public final class FilterRenderer {
         // Filter processing is handled after node rendering.
     }
 
-    /** Apply filter primitives to an image. */
-    public static BufferedImage applyFilter(Surface surface, String name, BufferedImage sourceGraphic) {
+    /** Apply filter primitives to an image with a pre-computed filter region. */
+    public static BufferedImage applyFilter(Surface surface, String name, BufferedImage sourceGraphic,
+            java.awt.Rectangle precomputedRegion) {
         Node filterNode = surface.filters.get(name);
         if (filterNode == null) {
             return sourceGraphic;
@@ -50,8 +49,10 @@ public final class FilterRenderer {
         int fullW = sourceGraphic.getWidth();
         int fullH = sourceGraphic.getHeight();
 
-        // Compute filter region once for primitives that need it (e.g. feTile)
-        java.awt.Rectangle filterRegion = computeFilterRegion(sourceGraphic, filterNode);
+        // Use pre-computed filter region if available, otherwise compute
+        java.awt.Rectangle filterRegion = precomputedRegion != null
+                ? precomputedRegion
+                : computeFilterRegion(sourceGraphic, filterNode);
 
         // Compute expanded processing region (includes blur/offset padding)
         java.awt.Rectangle subRegion = computeProcessingRegion(filterRegion, filterNode, fullW, fullH);
@@ -80,9 +81,10 @@ public final class FilterRenderer {
             workSource = sourceGraphic;
         }
 
-        BufferedImage buf1 = null;
-        BufferedImage buf2 = null;
-        BufferedImage buf3 = null;
+        // Reuse or allocate filter primitive buffers from the Surface cache
+        BufferedImage buf1 = reuseOrNull(surface.filterBuf1, w, h);
+        BufferedImage buf2 = reuseOrNull(surface.filterBuf2, w, h);
+        BufferedImage buf3 = reuseOrNull(surface.filterBuf3, w, h);
 
         Map<String, BufferedImage> results = new HashMap<>();
         results.put("SourceGraphic", workSource);
@@ -187,6 +189,14 @@ public final class FilterRenderer {
             results.put("last", last);
         }
 
+        // Cache buffers back to Surface for reuse across filter invocations
+        if (buf1 != null)
+            surface.filterBuf1 = buf1;
+        if (buf2 != null)
+            surface.filterBuf2 = buf2;
+        if (buf3 != null)
+            surface.filterBuf3 = buf3;
+
         if (usingSubRegion) {
             placeSubRegion(sourceGraphic, last, subRegion);
             return sourceGraphic;
@@ -216,26 +226,56 @@ public final class FilterRenderer {
             }
         }
 
-        // Scan for opaque bounds
+        // Scan for opaque bounds — early-exit on row boundaries
         int[] pixels = ((DataBufferInt) sourceGraphic.getRaster().getDataBuffer()).getData();
-        int minX = w, minY = h, maxX = -1, maxY = -1;
+
+        // Find minY: scan rows top-down, break at first non-transparent row
+        int minY = -1;
         for (int y = 0; y < h; y++) {
             int off = y * w;
             for (int x = 0; x < w; x++) {
                 if ((pixels[off + x] >>> 24) != 0) {
-                    if (x < minX)
-                        minX = x;
-                    if (x > maxX)
-                        maxX = x;
-                    if (y < minY)
-                        minY = y;
-                    if (y > maxY)
-                        maxY = y;
+                    minY = y;
+                    break;
                 }
             }
+            if (minY >= 0)
+                break;
         }
-        if (maxX < minX) {
-            return null;
+        if (minY < 0) {
+            return null; // fully transparent
+        }
+
+        // Find maxY: scan rows bottom-up
+        int maxY = minY;
+        for (int y = h - 1; y > minY; y--) {
+            int off = y * w;
+            for (int x = 0; x < w; x++) {
+                if ((pixels[off + x] >>> 24) != 0) {
+                    maxY = y;
+                    break;
+                }
+            }
+            if (maxY > minY)
+                break;
+        }
+
+        // Find minX/maxX only within active rows
+        int minX = w, maxX = -1;
+        for (int y = minY; y <= maxY; y++) {
+            int off = y * w;
+            for (int x = 0; x < minX; x++) {
+                if ((pixels[off + x] >>> 24) != 0) {
+                    minX = x;
+                    break;
+                }
+            }
+            for (int x = w - 1; x > maxX; x--) {
+                if ((pixels[off + x] >>> 24) != 0) {
+                    maxX = x;
+                    break;
+                }
+            }
         }
         int bw = maxX - minX + 1;
         int bh = maxY - minY + 1;
@@ -261,6 +301,17 @@ public final class FilterRenderer {
     }
 
     // ── Private helpers ──────────────────────────────────────────────────
+
+    /**
+     * Return cached buffer if dimensions match (cleared), else null for lazy init.
+     */
+    private static BufferedImage reuseOrNull(BufferedImage cached, int w, int h) {
+        if (cached != null && cached.getWidth() == w && cached.getHeight() == h) {
+            clearBuffer(cached);
+            return cached;
+        }
+        return null;
+    }
 
     private static double parsePercentOrFraction(String value, double defaultVal) {
         if (value == null || value.isEmpty()) {

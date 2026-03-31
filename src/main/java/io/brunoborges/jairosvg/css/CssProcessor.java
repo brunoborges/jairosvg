@@ -350,14 +350,22 @@ public final class CssProcessor {
 
     /** Get all matching CSS declarations in a single pass through the rules. */
     public static MatchResult getAllMatchingDeclarations(Node node, List<StyleRule> rules) {
-        List<Declaration> normal = new ArrayList<>();
-        List<Declaration> important = new ArrayList<>();
+        List<Declaration> normal = null;
+        List<Declaration> important = null;
         for (StyleRule rule : rules) {
             if (matchesSelector(node, rule.selector())) {
-                (rule.important() ? important : normal).addAll(rule.declarations());
+                if (rule.important()) {
+                    if (important == null)
+                        important = new ArrayList<>();
+                    important.addAll(rule.declarations());
+                } else {
+                    if (normal == null)
+                        normal = new ArrayList<>();
+                    normal.addAll(rule.declarations());
+                }
             }
         }
-        return new MatchResult(normal, important);
+        return new MatchResult(normal != null ? normal : List.of(), important != null ? important : List.of());
     }
 
     /** Get CSS declarations that apply to this node from a list of rules. */
