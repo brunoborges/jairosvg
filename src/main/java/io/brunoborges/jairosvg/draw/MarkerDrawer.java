@@ -1,7 +1,6 @@
 package io.brunoborges.jairosvg.draw;
 
 import static io.brunoborges.jairosvg.util.Helpers.clipMarkerBox;
-import static io.brunoborges.jairosvg.util.Helpers.pointAngle;
 import static io.brunoborges.jairosvg.util.Helpers.preserveRatio;
 import static io.brunoborges.jairosvg.util.Helpers.size;
 
@@ -53,10 +52,12 @@ public final class MarkerDrawer {
         List<MarkerVertex> markerVertices = new ArrayList<>();
         boolean expectsPoint = true;
         MarkerVertex previous = null;
+        double pendingInAngle = Double.NaN;
         for (Object vertex : vertices) {
             if (vertex == null) {
                 expectsPoint = true;
                 previous = null;
+                pendingInAngle = Double.NaN;
                 continue;
             }
             if (!(vertex instanceof double[] values) || values.length != 2) {
@@ -65,13 +66,19 @@ public final class MarkerDrawer {
             if (expectsPoint) {
                 MarkerVertex current = new MarkerVertex(values[0], values[1]);
                 markerVertices.add(current);
-                if (previous != null) {
-                    previous.outAngle = pointAngle(previous.x, previous.y, current.x, current.y);
-                    current.inAngle = previous.outAngle;
+                if (!Double.isNaN(pendingInAngle)) {
+                    current.inAngle = pendingInAngle;
+                    pendingInAngle = Double.NaN;
                 }
                 previous = current;
                 expectsPoint = false;
             } else {
+                // Angle entry: [0]=outgoing tangent at segment start, [1]=incoming tangent at
+                // segment end
+                if (previous != null) {
+                    previous.outAngle = values[0];
+                }
+                pendingInAngle = values[1];
                 expectsPoint = true;
             }
         }
@@ -123,9 +130,30 @@ public final class MarkerDrawer {
     private static double markerAngle(Node markerNode, MarkerVertex vertex, boolean isStart, boolean isEnd) {
         String orient = markerNode.get("orient", "0");
         if ("auto".equals(orient) || "auto-start-reverse".equals(orient)) {
-            double angle = isEnd ? vertex.inAngle : vertex.outAngle;
-            if (Double.isNaN(angle)) {
-                angle = isEnd ? vertex.outAngle : vertex.inAngle;
+            double angle;
+            if (isEnd) {
+                angle = vertex.inAngle;
+                if (Double.isNaN(angle)) {
+                    angle = vertex.outAngle;
+                }
+            } else if (isStart) {
+                angle = vertex.outAngle;
+                if (Double.isNaN(angle)) {
+                    angle = vertex.inAngle;
+                }
+            } else {
+                // Mid marker: bisector of incoming and outgoing tangent angles
+                if (!Double.isNaN(vertex.inAngle) && !Double.isNaN(vertex.outAngle)) {
+                    double dx = Math.cos(vertex.inAngle) + Math.cos(vertex.outAngle);
+                    double dy = Math.sin(vertex.inAngle) + Math.sin(vertex.outAngle);
+                    angle = Math.atan2(dy, dx);
+                } else if (!Double.isNaN(vertex.outAngle)) {
+                    angle = vertex.outAngle;
+                } else if (!Double.isNaN(vertex.inAngle)) {
+                    angle = vertex.inAngle;
+                } else {
+                    angle = 0;
+                }
             }
             if (Double.isNaN(angle)) {
                 angle = 0;

@@ -84,7 +84,7 @@ public final class PathDrawer {
                     case 'L' -> {
                         double x = sc.nextDouble(), y = sc.nextDouble();
                         double angle = pointAngle(cx, cy, x, y);
-                        node.vertices.add(new double[]{Math.PI - angle, angle});
+                        node.vertices.add(new double[]{angle, angle});
                         surface.path.lineTo(x, y);
                         cx = x;
                         cy = y;
@@ -92,7 +92,7 @@ public final class PathDrawer {
                     case 'l' -> {
                         double dx = sc.nextDouble(), dy = sc.nextDouble();
                         double angle = pointAngle(0, 0, dx, dy);
-                        node.vertices.add(new double[]{Math.PI - angle, angle});
+                        node.vertices.add(new double[]{angle, angle});
                         cx += dx;
                         cy += dy;
                         surface.path.lineTo(cx, cy);
@@ -100,28 +100,28 @@ public final class PathDrawer {
                     case 'H' -> {
                         double x = sc.nextDouble();
                         double angle = x > cx ? 0 : Math.PI;
-                        node.vertices.add(new double[]{Math.PI - angle, angle});
+                        node.vertices.add(new double[]{angle, angle});
                         surface.path.lineTo(x, cy);
                         cx = x;
                     }
                     case 'h' -> {
                         double dx = sc.nextDouble();
                         double angle = dx > 0 ? 0 : Math.PI;
-                        node.vertices.add(new double[]{Math.PI - angle, angle});
+                        node.vertices.add(new double[]{angle, angle});
                         cx += dx;
                         surface.path.lineTo(cx, cy);
                     }
                     case 'V' -> {
                         double y = sc.nextDouble();
                         double angle = Math.copySign(Math.PI / 2, y - cy);
-                        node.vertices.add(new double[]{-angle, angle});
+                        node.vertices.add(new double[]{angle, angle});
                         surface.path.lineTo(cx, y);
                         cy = y;
                     }
                     case 'v' -> {
                         double dy = sc.nextDouble();
                         double angle = Math.copySign(Math.PI / 2, dy);
-                        node.vertices.add(new double[]{-angle, angle});
+                        node.vertices.add(new double[]{angle, angle});
                         cy += dy;
                         surface.path.lineTo(cx, cy);
                     }
@@ -132,7 +132,7 @@ public final class PathDrawer {
                         y2 = sc.nextDouble();
                         x3 = sc.nextDouble();
                         y3 = sc.nextDouble();
-                        node.vertices.add(new double[]{pointAngle(x2, y2, x1, y1), pointAngle(x2, y2, x3, y3)});
+                        node.vertices.add(new double[]{pointAngle(cx, cy, x1, y1), pointAngle(x2, y2, x3, y3)});
                         surface.path.curveTo(x1, y1, x2, y2, x3, y3);
                         cx = x3;
                         cy = y3;
@@ -147,7 +147,7 @@ public final class PathDrawer {
                         y2 = cy + dy2;
                         x3 = cx + dx3;
                         y3 = cy + dy3;
-                        node.vertices.add(new double[]{pointAngle(x2, y2, x1, y1), pointAngle(x2, y2, x3, y3)});
+                        node.vertices.add(new double[]{pointAngle(cx, cy, x1, y1), pointAngle(x2, y2, x3, y3)});
                         surface.path.curveTo(x1, y1, x2, y2, x3, y3);
                         cx = x3;
                         cy = y3;
@@ -164,7 +164,7 @@ public final class PathDrawer {
                         y3 = sc.nextDouble();
                         x1 = sx1;
                         y1 = sy1;
-                        node.vertices.add(new double[]{pointAngle(x2, y2, x1, y1), pointAngle(x2, y2, x3, y3)});
+                        node.vertices.add(new double[]{pointAngle(cx, cy, x1, y1), pointAngle(x2, y2, x3, y3)});
                         surface.path.curveTo(x1, y1, x2, y2, x3, y3);
                         cx = x3;
                         cy = y3;
@@ -183,7 +183,7 @@ public final class PathDrawer {
                         y2 = cy + dy2;
                         x3 = cx + dx3;
                         y3 = cy + dy3;
-                        node.vertices.add(new double[]{pointAngle(x2, y2, x1, y1), pointAngle(x2, y2, x3, y3)});
+                        node.vertices.add(new double[]{pointAngle(cx, cy, x1, y1), pointAngle(x2, y2, x3, y3)});
                         surface.path.curveTo(x1, y1, x2, y2, x3, y3);
                         cx = x3;
                         cy = y3;
@@ -195,7 +195,7 @@ public final class PathDrawer {
                         y3 = sc.nextDouble();
                         double[] qp = quadraticPoints(cx, cy, x2, y2, x3, y3);
                         surface.path.curveTo(qp[0], qp[1], qp[2], qp[3], qp[4], qp[5]);
-                        node.vertices.add(new double[]{0, 0});
+                        node.vertices.add(new double[]{pointAngle(cx, cy, x2, y2), pointAngle(x2, y2, x3, y3)});
                         cx = x3;
                         cy = y3;
                     }
@@ -208,7 +208,7 @@ public final class PathDrawer {
                         y3 = cy + dy3;
                         double[] qp = quadraticPoints(0, 0, dx2, dy2, dx3, dy3);
                         surface.path.curveTo(cx + qp[0], cy + qp[1], cx + qp[2], cy + qp[3], cx + qp[4], cy + qp[5]);
-                        node.vertices.add(new double[]{0, 0});
+                        node.vertices.add(new double[]{pointAngle(cx, cy, x2, y2), pointAngle(x2, y2, x3, y3)});
                         cx = x3;
                         cy = y3;
                     }
@@ -224,7 +224,7 @@ public final class PathDrawer {
                         y3 = sc.nextDouble();
                         double[] qp = quadraticPoints(cx, cy, x2, y2, x3, y3);
                         surface.path.curveTo(qp[0], qp[1], qp[2], qp[3], qp[4], qp[5]);
-                        node.vertices.add(new double[]{0, 0});
+                        node.vertices.add(new double[]{pointAngle(cx, cy, x2, y2), pointAngle(x2, y2, x3, y3)});
                         cx = x3;
                         cy = y3;
                     }
@@ -241,7 +241,7 @@ public final class PathDrawer {
                         y3 = cy + dy3;
                         double[] qp = quadraticPoints(cx, cy, x2, y2, x3, y3);
                         surface.path.curveTo(qp[0], qp[1], qp[2], qp[3], qp[4], qp[5]);
-                        node.vertices.add(new double[]{0, 0});
+                        node.vertices.add(new double[]{pointAngle(cx, cy, x2, y2), pointAngle(x2, y2, x3, y3)});
                         cx = x3;
                         cy = y3;
                     }
@@ -258,6 +258,8 @@ public final class PathDrawer {
                             ex += cx;
                             ey += cy;
                         }
+                        double arcAngle = pointAngle(cx, cy, ex, ey);
+                        node.vertices.add(new double[]{arcAngle, arcAngle});
                         drawArc(surface, cx, cy, rx, ry, rotation, largeArc != 0, sweepFlag != 0, ex, ey);
                         cx = ex;
                         cy = ey;

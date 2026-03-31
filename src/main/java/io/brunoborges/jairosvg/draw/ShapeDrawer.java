@@ -55,7 +55,7 @@ public final class ShapeDrawer {
             double angle = pointAngle(x1, y1, x2, y2);
             node.vertices = new java.util.ArrayList<>();
             node.vertices.add(new double[]{x1, y1});
-            node.vertices.add(new double[]{Math.PI - angle, angle});
+            node.vertices.add(new double[]{angle, angle});
             node.vertices.add(new double[]{x2, y2});
         }
     }
@@ -92,7 +92,7 @@ public final class ShapeDrawer {
                 if (computeVertices) {
                     double[] prev = getPrevPoint(node);
                     double angle = pointAngle(prev[0], prev[1], x, y);
-                    node.vertices.add(new double[]{Math.PI - angle, angle});
+                    node.vertices.add(new double[]{angle, angle});
                     node.vertices.add(new double[]{x, y});
                 }
                 surface.path.lineTo(x, y);
