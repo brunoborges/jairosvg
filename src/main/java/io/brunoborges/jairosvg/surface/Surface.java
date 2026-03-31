@@ -33,7 +33,10 @@ import io.brunoborges.jairosvg.dom.BoundingBox;
 import io.brunoborges.jairosvg.dom.Node;
 import io.brunoborges.jairosvg.dom.SvgFont;
 import io.brunoborges.jairosvg.draw.Defs;
+import io.brunoborges.jairosvg.draw.FilterRenderer;
 import io.brunoborges.jairosvg.draw.ImageHandler;
+import io.brunoborges.jairosvg.draw.MarkerDrawer;
+import io.brunoborges.jairosvg.draw.MaskPainter;
 import io.brunoborges.jairosvg.draw.PathDrawer;
 import io.brunoborges.jairosvg.draw.ShapeDrawer;
 import io.brunoborges.jairosvg.draw.SvgDrawer;
@@ -323,7 +326,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         boolean groupOpacity = opacity < 1 && !node.children.isEmpty();
 
         if (filterName != null) {
-            Defs.prepareFilter(this, node, filterName);
+            FilterRenderer.prepareFilter(this, node, filterName);
         }
 
         Graphics2D effectBaseContext = null;
@@ -544,7 +547,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                     }
                 }
 
-                Defs.drawMarkers(this, node);
+                MarkerDrawer.drawMarkers(this, node);
             } else {
                 path.reset();
             }
@@ -571,11 +574,11 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                 // Compute the filter region BEFORE filtering so that primitives like
                 // feFlood don't bleed into other elements' areas when composited back.
                 Node filterNode = this.filters.get(filterName);
-                filterClip = Defs.computeFilterRegion(effectSourceImage, filterNode);
-                renderedImage = Defs.applyFilter(this, filterName, renderedImage);
+                filterClip = FilterRenderer.computeFilterRegion(effectSourceImage, filterNode);
+                renderedImage = FilterRenderer.applyFilter(this, filterName, renderedImage);
             }
             if (maskName != null) {
-                renderedImage = Defs.paintMask(this, node, maskName, renderedImage,
+                renderedImage = MaskPainter.paintMask(this, node, maskName, renderedImage,
                         subRegionEffect ? subRegionXform : null);
             }
             context = effectBaseContext;
