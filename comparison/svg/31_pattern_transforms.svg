@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="220" viewBox="0 0 420 220">
+  <rect width="420" height="220" fill="#f7f9fb"/>
+
+  <text x="210" y="25" text-anchor="middle" font-size="16" fill="#555"
+        font-family="sans-serif">Pattern Transforms</text>
+
+  <defs>
+    <!-- Base stripe pattern -->
+    <pattern id="stripes" x="0" y="0" width="20" height="20"
+             patternUnits="userSpaceOnUse">
+      <rect width="10" height="20" fill="#2c7be5"/>
+      <rect x="10" width="10" height="20" fill="#85c1e9"/>
+    </pattern>
+
+    <!-- Scaled pattern (2x) -->
+    <pattern id="stripes-scaled" x="0" y="0" width="20" height="20"
+             patternUnits="userSpaceOnUse"
+             patternTransform="scale(2)">
+      <rect width="10" height="20" fill="#e74c3c"/>
+      <rect x="10" width="10" height="20" fill="#f5b7b1"/>
+    </pattern>
+
+    <!-- Rotated pattern (45°) -->
+    <pattern id="stripes-rotated" x="0" y="0" width="20" height="20"
+             patternUnits="userSpaceOnUse"
+             patternTransform="rotate(45)">
+      <rect width="10" height="20" fill="#27ae60"/>
+      <rect x="10" width="10" height="20" fill="#82e0aa"/>
+    </pattern>
+
+    <!-- Translated pattern -->
+    <pattern id="stripes-translated" x="0" y="0" width="20" height="20"
+             patternUnits="userSpaceOnUse"
+             patternTransform="translate(10, 5)">
+      <rect width="10" height="20" fill="#8e44ad"/>
+      <rect x="10" width="10" height="20" fill="#d2b4de"/>
+    </pattern>
+
+    <!-- Combined: scale + rotate -->
+    <pattern id="stripes-combo" x="0" y="0" width="12" height="12"
+             patternUnits="userSpaceOnUse"
+             patternTransform="scale(1.5) rotate(30)">
+      <rect width="6" height="12" fill="#f39c12"/>
+      <rect x="6" width="6" height="12" fill="#fdebd0"/>
+    </pattern>
+  </defs>
+
+  <!-- No transform -->
+  <rect x="20" y="40" width="110" height="70" rx="6" fill="url(#stripes)"
+        stroke="#2c7be5" stroke-width="1"/>
+  <text x="75" y="125" text-anchor="middle" font-size="10" fill="#555"
+        font-family="sans-serif">no transform</text>
+
+  <!-- Scaled -->
+  <rect x="155" y="40" width="110" height="70" rx="6" fill="url(#stripes-scaled)"
+        stroke="#e74c3c" stroke-width="1"/>
+  <text x="210" y="125" text-anchor="middle" font-size="10" fill="#555"
+        font-family="sans-serif">scale(2)</text>
+
+  <!-- Rotated -->
+  <rect x="290" y="40" width="110" height="70" rx="6" fill="url(#stripes-rotated)"
+        stroke="#27ae60" stroke-width="1"/>
+  <text x="345" y="125" text-anchor="middle" font-size="10" fill="#555"
+        font-family="sans-serif">rotate(45)</text>
+
+  <!-- Translated -->
+  <rect x="20" y="140" width="110" height="55" rx="6" fill="url(#stripes-translated)"
+        stroke="#8e44ad" stroke-width="1"/>
+  <text x="75" y="210" text-anchor="middle" font-size="10" fill="#555"
+        font-family="sans-serif">translate(10,5)</text>
+
+  <!-- Combined -->
+  <rect x="155" y="140" width="245" height="55" rx="6" fill="url(#stripes-combo)"
+        stroke="#f39c12" stroke-width="1"/>
+  <text x="278" y="210" text-anchor="middle" font-size="10" fill="#555"
+        font-family="sans-serif">scale(1.5) rotate(30)</text>
+</svg>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="220" viewBox="0 0 420 220">
+  <style>
+    svg {
+      --color-primary: #2c7be5;
+      --color-secondary: #e74c3c;
+      --color-accent: #f1c40f;
+      --color-success: #27ae60;
+      --radius: 8;
+    }
+    .primary { fill: var(--color-primary); }
+    .secondary { fill: var(--color-secondary); }
+    .accent { fill: var(--color-accent); }
+    .success { fill: var(--color-success); }
+    .fallback { fill: var(--undefined-var, #9b59b6); }
+  </style>
+
+  <rect width="420" height="220" fill="#f7f9fb"/>
+
+  <text x="210" y="25" text-anchor="middle" font-size="16" fill="#555"
+        font-family="sans-serif">CSS Custom Properties (var())</text>
+
+  <!-- Color cards using CSS variables -->
+  <rect class="primary" x="20" y="40" width="80" height="60" rx="8"/>
+  <text x="60" y="115" text-anchor="middle" font-size="10" fill="#555"
+        font-family="sans-serif">--primary</text>
+
+  <rect class="secondary" x="115" y="40" width="80" height="60" rx="8"/>
+  <text x="155" y="115" text-anchor="middle" font-size="10" fill="#555"
+        font-family="sans-serif">--secondary</text>
+
+  <rect class="accent" x="210" y="40" width="80" height="60" rx="8"/>
+  <text x="250" y="115" text-anchor="middle" font-size="10" fill="#555"
+        font-family="sans-serif">--accent</text>
+
+  <rect class="success" x="305" y="40" width="80" height="60" rx="8"/>
+  <text x="345" y="115" text-anchor="middle" font-size="10" fill="#555"
+        font-family="sans-serif">--success</text>
+
+  <!-- Fallback value -->
+  <rect class="fallback" x="20" y="135" width="170" height="50" rx="8"/>
+  <text x="105" y="165" text-anchor="middle" font-size="13" fill="white"
+        font-family="sans-serif">var(--undefined, #9b59b6)</text>
+
+  <!-- Circles using CSS variables -->
+  <circle class="primary" cx="260" cy="160" r="25"/>
+  <circle class="secondary" cx="320" cy="160" r="25"/>
+  <circle class="accent" cx="380" cy="160" r="25"/>
+
+  <text x="320" y="200" text-anchor="middle" font-size="10" fill="#555"
+        font-family="sans-serif">circles with var() fills</text>
+</svg>

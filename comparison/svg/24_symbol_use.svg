@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="220" viewBox="0 0 420 220">
+  <rect width="420" height="220" fill="#f7f9fb"/>
+
+  <defs>
+    <!-- A simple icon symbol with its own viewBox -->
+    <symbol id="icon-star" viewBox="0 0 100 100">
+      <polygon points="50,5 63,38 98,38 70,60 80,95 50,73 20,95 30,60 2,38 37,38"
+               fill="#f1c40f" stroke="#e67e22" stroke-width="3"/>
+    </symbol>
+
+    <symbol id="icon-heart" viewBox="0 0 100 100">
+      <path d="M50,90 C20,65 0,45 0,30 Q0,0 25,0 Q40,0 50,15 Q60,0 75,0 Q100,0 100,30
+               C100,45 80,65 50,90 Z"
+            fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+    </symbol>
+
+    <symbol id="icon-badge" viewBox="0 0 80 80">
+      <circle cx="40" cy="40" r="38" fill="#3498db" stroke="#2980b9" stroke-width="3"/>
+      <text x="40" y="48" text-anchor="middle" font-size="28" fill="white"
+            font-family="sans-serif" font-weight="bold">✓</text>
+    </symbol>
+  </defs>
+
+  <text x="210" y="25" text-anchor="middle" font-size="16" fill="#555"
+        font-family="sans-serif">Symbol + Use — Reusable Icons</text>
+
+  <!-- Row 1: Same symbol at different sizes -->
+  <use href="#icon-star" x="10" y="35" width="40" height="40"/>
+  <use href="#icon-star" x="60" y="35" width="60" height="60"/>
+  <use href="#icon-star" x="130" y="35" width="80" height="80"/>
+
+  <!-- Row 1 labels -->
+  <text x="30" y="88" text-anchor="middle" font-size="10" fill="#888"
+        font-family="sans-serif">40×40</text>
+  <text x="90" y="108" text-anchor="middle" font-size="10" fill="#888"
+        font-family="sans-serif">60×60</text>
+  <text x="170" y="128" text-anchor="middle" font-size="10" fill="#888"
+        font-family="sans-serif">80×80</text>
+
+  <!-- Row 2: Different symbols side by side -->
+  <use href="#icon-heart" x="230" y="40" width="55" height="55"/>
+  <use href="#icon-badge" x="300" y="40" width="55" height="55"/>
+  <use href="#icon-star" x="370" y="45" width="40" height="40"/>
+
+  <!-- Row 3: Repeated pattern using use -->
+  <use href="#icon-star" x="10" y="140" width="30" height="30"/>
+  <use href="#icon-heart" x="50" y="140" width="30" height="30"/>
+  <use href="#icon-badge" x="90" y="140" width="30" height="30"/>
+  <use href="#icon-star" x="130" y="140" width="30" height="30"/>
+  <use href="#icon-heart" x="170" y="140" width="30" height="30"/>
+  <use href="#icon-badge" x="210" y="140" width="30" height="30"/>
+  <use href="#icon-star" x="250" y="140" width="30" height="30"/>
+  <use href="#icon-heart" x="290" y="140" width="30" height="30"/>
+  <use href="#icon-badge" x="330" y="140" width="30" height="30"/>
+  <use href="#icon-star" x="370" y="140" width="30" height="30"/>
+
+  <!-- Use without explicit width/height (should use symbol viewBox) -->
+  <use href="#icon-heart" x="10" y="180"/>
+  <text x="120" y="200" font-size="11" fill="#888" font-family="sans-serif">← no width/height</text>
+</svg>

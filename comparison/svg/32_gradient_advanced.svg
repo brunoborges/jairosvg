@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="320" viewBox="0 0 420 320">
+  <rect width="420" height="320" fill="#f7f9fb"/>
+
+  <text x="210" y="25" text-anchor="middle" font-size="16" fill="#555"
+        font-family="sans-serif">Advanced Gradients</text>
+
+  <defs>
+    <!-- spreadMethod="reflect" -->
+    <linearGradient id="gReflect" gradientUnits="userSpaceOnUse"
+                    x1="0" y1="0" x2="60" y2="0" spreadMethod="reflect">
+      <stop offset="0%" stop-color="#2c7be5"/>
+      <stop offset="100%" stop-color="#e74c3c"/>
+    </linearGradient>
+
+    <!-- spreadMethod="repeat" -->
+    <linearGradient id="gRepeat" gradientUnits="userSpaceOnUse"
+                    x1="0" y1="0" x2="60" y2="0" spreadMethod="repeat">
+      <stop offset="0%" stop-color="#27ae60"/>
+      <stop offset="100%" stop-color="#f1c40f"/>
+    </linearGradient>
+
+    <!-- spreadMethod="pad" (default) -->
+    <linearGradient id="gPad" gradientUnits="userSpaceOnUse"
+                    x1="80" y1="0" x2="140" y2="0" spreadMethod="pad">
+      <stop offset="0%" stop-color="#9b59b6"/>
+      <stop offset="100%" stop-color="#1abc9c"/>
+    </linearGradient>
+
+    <!-- Radial with fx/fy focus point -->
+    <radialGradient id="gFocus" cx="50%" cy="50%" r="50%" fx="25%" fy="25%">
+      <stop offset="0%" stop-color="white"/>
+      <stop offset="100%" stop-color="#2c7be5"/>
+    </radialGradient>
+
+    <!-- Radial with offset focus -->
+    <radialGradient id="gFocusOffset" cx="50%" cy="50%" r="50%" fx="80%" fy="20%">
+      <stop offset="0%" stop-color="white"/>
+      <stop offset="100%" stop-color="#e74c3c"/>
+    </radialGradient>
+
+    <!-- href inheritance: base gradient defines stops -->
+    <linearGradient id="gBase">
+      <stop offset="0%" stop-color="#e74c3c"/>
+      <stop offset="50%" stop-color="#f1c40f"/>
+      <stop offset="100%" stop-color="#27ae60"/>
+    </linearGradient>
+    <!-- Derived: inherits stops, sets direction -->
+    <linearGradient id="gDerived" href="#gBase" x1="0" y1="0" x2="1" y2="0"/>
+    <!-- Derived vertical: inherits stops, different direction -->
+    <linearGradient id="gDerivedV" href="#gBase" x1="0" y1="0" x2="0" y2="1"/>
+
+    <!-- gradientUnits="userSpaceOnUse" -->
+    <linearGradient id="gUserSpace" gradientUnits="userSpaceOnUse"
+                    x1="20" y1="250" x2="200" y2="250">
+      <stop offset="0%" stop-color="#e74c3c"/>
+      <stop offset="100%" stop-color="#3498db"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Row 1: spreadMethod -->
+  <text x="20" y="50" font-size="12" fill="#555" font-family="sans-serif">spreadMethod:</text>
+  <rect x="20" y="55" width="200" height="35" rx="4" fill="url(#gReflect)"/>
+  <text x="120" y="105" text-anchor="middle" font-size="9" fill="#888"
+        font-family="sans-serif">reflect</text>
+
+  <rect x="20" y="110" width="200" height="35" rx="4" fill="url(#gRepeat)"/>
+  <text x="120" y="160" text-anchor="middle" font-size="9" fill="#888"
+        font-family="sans-serif">repeat</text>
+
+  <rect x="20" y="165" width="200" height="35" rx="4" fill="url(#gPad)"/>
+  <text x="120" y="215" text-anchor="middle" font-size="9" fill="#888"
+        font-family="sans-serif">pad (default)</text>
+
+  <!-- Row 1 right: fx/fy focus -->
+  <text x="330" y="50" font-size="12" fill="#555" font-family="sans-serif">fx/fy focus:</text>
+  <circle cx="290" cy="100" r="45" fill="url(#gFocus)"/>
+  <text x="290" y="155" text-anchor="middle" font-size="9" fill="#888"
+        font-family="sans-serif">fx=25% fy=25%</text>
+
+  <circle cx="390" cy="100" r="45" fill="url(#gFocusOffset)"/>
+  <text x="390" y="155" text-anchor="middle" font-size="9" fill="#888"
+        font-family="sans-serif">fx=80% fy=20%</text>
+
+  <!-- Row 3: href inheritance -->
+  <text x="260" y="175" font-size="12" fill="#555" font-family="sans-serif">href inheritance:</text>
+  <rect x="260" y="180" width="140" height="30" rx="4" fill="url(#gDerived)"/>
+  <text x="330" y="225" text-anchor="middle" font-size="9" fill="#888"
+        font-family="sans-serif">horizontal (inherited stops)</text>
+
+  <rect x="260" y="235" width="140" height="30" rx="4" fill="url(#gDerivedV)"/>
+  <text x="330" y="280" text-anchor="middle" font-size="9" fill="#888"
+        font-family="sans-serif">vertical (inherited stops)</text>
+
+  <!-- Row 4: gradientUnits="userSpaceOnUse" -->
+  <text x="20" y="230" font-size="12" fill="#555" font-family="sans-serif">gradientUnits="userSpaceOnUse":</text>
+  <rect x="20" y="240" width="180" height="35" rx="4" fill="url(#gUserSpace)"/>
+  <circle cx="80" cy="300" r="15" fill="url(#gUserSpace)"/>
+  <circle cx="140" cy="300" r="15" fill="url(#gUserSpace)"/>
+  <text x="110" y="315" text-anchor="middle" font-size="9" fill="#888"
+        font-family="sans-serif">shared coordinate space</text>
+</svg>

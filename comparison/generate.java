@@ -216,7 +216,18 @@ public class generate {
             Map.entry("17_filters",         "17 — Filters"),
             Map.entry("18_embedded_image",  "18 — Embedded Images"),
             Map.entry("19_text_advanced",   "19 — Advanced Text"),
-            Map.entry("20_fe_blend_modes",  "20 — feBlend Modes")
+            Map.entry("20_fe_blend_modes",  "20 — feBlend Modes"),
+            Map.entry("23_svg_fonts",       "23 — SVG Fonts"),
+            Map.entry("24_symbol_use",      "24 — Symbol + Use"),
+            Map.entry("25_switch_features", "25 — Switch & requiredFeatures"),
+            Map.entry("26_css_variables",   "26 — CSS Custom Properties"),
+            Map.entry("27_current_color",   "27 — currentColor"),
+            Map.entry("28_display_visibility", "28 — Display & Visibility"),
+            Map.entry("29_nested_overflow", "29 — Nested SVG Overflow"),
+            Map.entry("30_stroke_advanced", "30 — Advanced Strokes"),
+            Map.entry("31_pattern_transforms", "31 — Pattern Transforms"),
+            Map.entry("32_gradient_advanced", "32 — Advanced Gradients"),
+            Map.entry("33_filter_merge_offset", "33 — feMerge & feOffset")
     );
 
     static final Map<String, String> SVG_DESCRIPTIONS = Map.ofEntries(
@@ -239,7 +250,18 @@ public class generate {
             Map.entry("17_filters",         "Gaussian blur and drop-shadow filters on shapes and text."),
             Map.entry("18_embedded_image",  "Base64-encoded PNG images with clipping, transforms, and opacity."),
             Map.entry("19_text_advanced",   "Multi-span text (tspan), text-decoration, textPath on curves, and rotated text."),
-            Map.entry("20_fe_blend_modes",  "feBlend modes: normal, multiply, screen, darken, and lighten.")
+            Map.entry("20_fe_blend_modes",  "feBlend modes: normal, multiply, screen, darken, and lighten."),
+            Map.entry("23_svg_fonts",       "Custom SVG font with glyph paths and missing-glyph fallback."),
+            Map.entry("24_symbol_use",      "Reusable `<symbol>` elements instantiated with `<use>` at different sizes and positions."),
+            Map.entry("25_switch_features", "`<switch>` element with requiredFeatures and systemLanguage conditional rendering."),
+            Map.entry("26_css_variables",   "CSS custom properties with `var()` function and fallback values."),
+            Map.entry("27_current_color",   "`currentColor` keyword for fill, stroke, and gradient stops with nested inheritance."),
+            Map.entry("28_display_visibility", "`display:none` vs `visibility:hidden` behavior, group suppression, and child override."),
+            Map.entry("29_nested_overflow", "Nested `<svg>` elements with `overflow` values: hidden, scroll, visible, and auto."),
+            Map.entry("30_stroke_advanced", "`stroke-dashoffset` phase shifting and `stroke-miterlimit` miter-to-bevel fallback."),
+            Map.entry("31_pattern_transforms", "`patternTransform` with scale, rotate, translate, and combined transforms."),
+            Map.entry("32_gradient_advanced", "Gradient `spreadMethod` (reflect/repeat/pad), `fx`/`fy` focus, `href` inheritance, and `userSpaceOnUse`."),
+            Map.entry("33_filter_merge_offset", "`feMerge` for compositing layers and `feOffset` for position shifting with shadow effects.")
     );
 
     static void generateReadme(List<Path> svgFiles, Map<String, boolean[]> results) throws Exception {

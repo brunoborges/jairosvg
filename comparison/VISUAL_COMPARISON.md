@@ -1,6 +1,6 @@
 # Visual Rendering Comparison
 
-Side-by-side visual comparison of 24 SVG test cases across all four libraries.
+Side-by-side visual comparison of 35 SVG test cases across all four libraries.
 
 ### 01 — Basic Shapes
 
@@ -185,3 +185,91 @@ feBlend modes: normal, multiply, screen, darken, and lighten.
 | Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
 | :-------: | :------: | :-----: | :------: | :--: |
 | [SVG](svg/22_localized_masks.svg) | ![JairoSVG](png/jairosvg/22_localized_masks.png) | ![EchoSVG](png/echosvg/22_localized_masks.png) | ![CairoSVG](png/cairosvg/22_localized_masks.png) | ![JSVG](png/jsvg/22_localized_masks.png) |
+
+### 23 — SVG Fonts
+
+Custom SVG font with glyph paths and missing-glyph fallback.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/23_svg_fonts.svg) | ![JairoSVG](png/jairosvg/23_svg_fonts.png) | ![EchoSVG](png/echosvg/23_svg_fonts.png) | ![CairoSVG](png/cairosvg/23_svg_fonts.png) | ![JSVG](png/jsvg/23_svg_fonts.png) |
+
+### 24 — Symbol + Use
+
+Reusable `<symbol>` elements instantiated with `<use>` at different sizes and positions.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/24_symbol_use.svg) | ![JairoSVG](png/jairosvg/24_symbol_use.png) | ![EchoSVG](png/echosvg/24_symbol_use.png) | ![CairoSVG](png/cairosvg/24_symbol_use.png) | ![JSVG](png/jsvg/24_symbol_use.png) |
+
+### 25 — Switch & requiredFeatures
+
+`<switch>` element with requiredFeatures and systemLanguage conditional rendering.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/25_switch_features.svg) | ![JairoSVG](png/jairosvg/25_switch_features.png) | ![EchoSVG](png/echosvg/25_switch_features.png) | ![CairoSVG](png/cairosvg/25_switch_features.png) | ![JSVG](png/jsvg/25_switch_features.png) |
+
+### 26 — CSS Custom Properties
+
+CSS custom properties with `var()` function and fallback values.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/26_css_variables.svg) | ![JairoSVG](png/jairosvg/26_css_variables.png) | ![EchoSVG](png/echosvg/26_css_variables.png) | — | ![JSVG](png/jsvg/26_css_variables.png) |
+
+### 27 — currentColor
+
+`currentColor` keyword for fill, stroke, and gradient stops with nested inheritance.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/27_current_color.svg) | ![JairoSVG](png/jairosvg/27_current_color.png) | ![EchoSVG](png/echosvg/27_current_color.png) | ![CairoSVG](png/cairosvg/27_current_color.png) | ![JSVG](png/jsvg/27_current_color.png) |
+
+### 28 — Display & Visibility
+
+`display:none` vs `visibility:hidden` behavior, group suppression, and child override.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/28_display_visibility.svg) | ![JairoSVG](png/jairosvg/28_display_visibility.png) | ![EchoSVG](png/echosvg/28_display_visibility.png) | ![CairoSVG](png/cairosvg/28_display_visibility.png) | ![JSVG](png/jsvg/28_display_visibility.png) |
+
+### 29 — Nested SVG Overflow
+
+Nested `<svg>` elements with `overflow` values: hidden, scroll, visible, and auto.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/29_nested_overflow.svg) | ![JairoSVG](png/jairosvg/29_nested_overflow.png) | ![EchoSVG](png/echosvg/29_nested_overflow.png) | ![CairoSVG](png/cairosvg/29_nested_overflow.png) | ![JSVG](png/jsvg/29_nested_overflow.png) |
+
+### 30 — Advanced Strokes
+
+`stroke-dashoffset` phase shifting and `stroke-miterlimit` miter-to-bevel fallback.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/30_stroke_advanced.svg) | ![JairoSVG](png/jairosvg/30_stroke_advanced.png) | ![EchoSVG](png/echosvg/30_stroke_advanced.png) | ![CairoSVG](png/cairosvg/30_stroke_advanced.png) | ![JSVG](png/jsvg/30_stroke_advanced.png) |
+
+### 31 — Pattern Transforms
+
+`patternTransform` with scale, rotate, translate, and combined transforms.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/31_pattern_transforms.svg) | ![JairoSVG](png/jairosvg/31_pattern_transforms.png) | ![EchoSVG](png/echosvg/31_pattern_transforms.png) | ![CairoSVG](png/cairosvg/31_pattern_transforms.png) | ![JSVG](png/jsvg/31_pattern_transforms.png) |
+
+### 32 — Advanced Gradients
+
+Gradient `spreadMethod` (reflect/repeat/pad), `fx`/`fy` focus, `href` inheritance, and `userSpaceOnUse`.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/32_gradient_advanced.svg) | ![JairoSVG](png/jairosvg/32_gradient_advanced.png) | ![EchoSVG](png/echosvg/32_gradient_advanced.png) | ![CairoSVG](png/cairosvg/32_gradient_advanced.png) | ![JSVG](png/jsvg/32_gradient_advanced.png) |
+
+### 33 — feMerge & feOffset
+
+`feMerge` for compositing layers and `feOffset` for position shifting with shadow effects.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/33_filter_merge_offset.svg) | ![JairoSVG](png/jairosvg/33_filter_merge_offset.png) | ![EchoSVG](png/echosvg/33_filter_merge_offset.png) | ![CairoSVG](png/cairosvg/33_filter_merge_offset.png) | ![JSVG](png/jsvg/33_filter_merge_offset.png) |
