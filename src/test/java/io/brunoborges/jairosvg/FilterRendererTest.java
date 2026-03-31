@@ -986,16 +986,19 @@ class FilterRendererTest {
         assertNotNull(img);
     }
 
-    // ── feDropShadow with managed input (chain from feOffset) ──
+    // ── feDropShadow with managed input (implicit last from feOffset, no result
+    // name) ──
 
     @Test
     void feDropShadowWithManagedInput() throws Exception {
+        // feOffset output goes into buf1 (managed). Since no result= attribute,
+        // it becomes "last" without being cloned. feDropShadow gets managed input.
         var svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
                   <defs>
                     <filter id="chain">
-                      <feOffset dx="2" dy="2" result="off"/>
-                      <feDropShadow dx="1" dy="1" stdDeviation="1" in="off"
+                      <feOffset dx="2" dy="2"/>
+                      <feDropShadow dx="1" dy="1" stdDeviation="1"
                                     flood-color="black" flood-opacity="0.5"/>
                     </filter>
                   </defs>
@@ -1006,16 +1009,18 @@ class FilterRendererTest {
         assertNotNull(img);
     }
 
-    // ── feDropShadow preceded by feFlood (managed buffer as input) ──
+    // ── feDropShadow preceded by feFlood (managed buffer, no result name) ──
 
     @Test
     void feDropShadowAfterFlood() throws Exception {
+        // feFlood output goes to managed buf1. No result= → last = buf1.
+        // feDropShadow detects inputIsManaged=true → calls dropShadow().
         var svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
                   <defs>
                     <filter id="fdf">
-                      <feFlood flood-color="blue" flood-opacity="0.8" result="fl"/>
-                      <feDropShadow dx="1" dy="1" stdDeviation="0.5" in="fl"
+                      <feFlood flood-color="blue" flood-opacity="0.8"/>
+                      <feDropShadow dx="1" dy="1" stdDeviation="0.5"
                                     flood-color="red" flood-opacity="0.3"/>
                     </filter>
                   </defs>
