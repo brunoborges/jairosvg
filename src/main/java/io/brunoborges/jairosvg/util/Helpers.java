@@ -1,8 +1,6 @@
 package io.brunoborges.jairosvg.util;
 
 import java.awt.geom.AffineTransform;
-import java.awt.geom.NoninvertibleTransformException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -335,18 +333,17 @@ public final class Helpers {
      * Apply SVG transform string to the surface Graphics2D, with Node-level
      * caching.
      */
-    public static void transform(Surface surface, Node node, String transformString, AffineTransform gradient,
-            String transformOrigin) {
+    public static void transform(Surface surface, Node node, String transformString, String transformOrigin) {
         if (transformString == null || transformString.isEmpty())
             return;
 
         AffineTransform matrix;
-        if (gradient == null && transformOrigin == null && node.cachedTransformStr != null
+        if (transformOrigin == null && node.cachedTransformStr != null
                 && node.cachedTransformStr.equals(transformString)) {
             matrix = node.cachedTransform;
         } else {
             matrix = parseTransform(surface, transformString);
-            if (gradient == null && transformOrigin == null) {
+            if (transformOrigin == null) {
                 node.cachedTransform = matrix;
                 node.cachedTransformStr = transformString;
             }
@@ -365,57 +362,10 @@ public final class Helpers {
             matrix = withOrigin;
         }
 
-        if (gradient != null) {
-            try {
-                AffineTransform inv = matrix.createInverse();
-                gradient.concatenate(inv);
-            } catch (NoninvertibleTransformException e) {
-                // Non-invertible, skip
-            }
-        } else {
-            surface.context.transform(matrix);
-        }
+        surface.context.transform(matrix);
     }
 
-    /** Apply SVG transform string to the surface Graphics2D. */
-    public static void transform(Surface surface, String transformString, AffineTransform gradient,
-            String transformOrigin) {
-        if (transformString == null || transformString.isEmpty())
-            return;
-
-        AffineTransform matrix = parseTransform(surface, transformString);
-
-        // Handle transform-origin
-        if (transformOrigin != null && !transformOrigin.isEmpty()) {
-            String[] origin = WHITESPACE.split(transformOrigin.strip());
-            double originX = parseOriginComponent(surface, origin[0], true);
-            double originY = origin.length > 1
-                    ? parseOriginComponent(surface, origin[1], false)
-                    : surface.contextHeight / 2;
-            AffineTransform withOrigin = new AffineTransform();
-            withOrigin.translate(originX, originY);
-            withOrigin.concatenate(matrix);
-            withOrigin.translate(-originX, -originY);
-            matrix = withOrigin;
-        }
-
-        if (gradient != null) {
-            try {
-                AffineTransform inv = matrix.createInverse();
-                gradient.concatenate(inv);
-            } catch (NoninvertibleTransformException e) {
-                // Non-invertible, skip
-            }
-        } else {
-            surface.context.transform(matrix);
-        }
-    }
-
-    public static void transform(Surface surface, String transformString) {
-        transform(surface, transformString, null, null);
-    }
-
-    // ── Clip / rotation helpers ─────────────────────────────────────────
+    // ── Clip helpers ────────────────────────────────────────────────────
 
     /** Parse clip rect values. */
     public static String[] clipRect(String string) {
@@ -426,34 +376,6 @@ public final class Helpers {
             return WHITESPACE.split(m.group(1));
         }
         return new String[0];
-    }
-
-    /** Get original rotation values from a node. */
-    public static List<Double> rotations(Node node) {
-        String rotate = node.get("rotate");
-        if (rotate != null && !rotate.isEmpty()) {
-            List<Double> result = new ArrayList<>();
-            for (String s : WHITESPACE.split(normalize(rotate).strip())) {
-                result.add(Double.parseDouble(s));
-            }
-            return result;
-        }
-        return new ArrayList<>();
-    }
-
-    /** Pop rotation values already used. */
-    public static void popRotation(Node node, List<Double> originalRotate, List<Double> rotate) {
-        String text = node.text;
-        if (text == null)
-            text = "";
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < text.length(); i++) {
-            if (i > 0)
-                sb.append(' ');
-            double r = !rotate.isEmpty() ? rotate.remove(0) : originalRotate.get(originalRotate.size() - 1);
-            sb.append(r);
-        }
-        node.set("rotate", sb.toString());
     }
 
     // ── Units and size parsing ──────────────────────────────────────────

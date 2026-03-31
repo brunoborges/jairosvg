@@ -64,8 +64,6 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     public double contextWidth;
     public double contextHeight;
     public double[] cursorPosition = {0, 0};
-    public double[] cursorDPosition = {0, 0};
-    public double textPathWidth = 0;
     public double dpi;
     public double fontSize;
     public boolean strokeAndFill = true;
@@ -132,14 +130,6 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     public final Map<String, Node> nodeById = new HashMap<>();
 
     public Surface() {
-    }
-
-    /** Initialize the surface. */
-    public void init(Node tree, OutputStream output, double dpi, Surface parentSurface, Double parentWidth,
-            Double parentHeight, double scale, Double outputWidth, Double outputHeight, String backgroundColor,
-            UnaryOperator<Colors.RGBA> mapRgba) {
-        init(tree, output, dpi, parentSurface, parentWidth, parentHeight, scale, outputWidth, outputHeight,
-                backgroundColor, mapRgba, null);
     }
 
     /** Initialize the surface with optional rendering hint overrides. */
@@ -265,10 +255,6 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         return mapRgba != null ? mapRgba.apply(rgba) : rgba;
     }
 
-    public Colors.RGBA mapColor(String string) {
-        return mapColor(string, 1.0);
-    }
-
     /** Main draw method - renders a node and its children. */
     public void draw(Node node) {
         if ("svg".equals(node.tag)) {
@@ -309,7 +295,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         Stroke savedStroke = context.getStroke();
 
         // Apply transformations
-        Helpers.transform(this, node, node.get("transform"), null, node.get("transform-origin"));
+        Helpers.transform(this, node, node.get("transform"), node.get("transform-origin"));
 
         // Filter and opacity
         String filterName = null;

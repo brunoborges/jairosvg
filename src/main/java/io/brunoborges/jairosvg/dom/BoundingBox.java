@@ -21,7 +21,7 @@ public final class BoundingBox {
     public record Box(double minX, double minY, double width, double height) {
     }
 
-    public static final Box EMPTY = new Box(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, 0, 0);
+    private static final Box EMPTY = new Box(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, 0, 0);
 
     private BoundingBox() {
     }

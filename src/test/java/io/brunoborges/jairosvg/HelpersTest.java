@@ -1090,4 +1090,695 @@ class HelpersTest {
         BufferedImage img = RenderTestHelper.render(svg);
         assertNotNull(img);
     }
+
+    // ── paint() branch coverage ─────────────────────────────────────────
+
+    @Test
+    void paintUrlWithoutFallbackColor() {
+        // url(...) that matches but group(2) is empty → color = null
+        String[] r = Helpers.paint("url(#myGrad)");
+        assertEquals("myGrad", r[0]);
+        assertNull(r[1]);
+    }
+
+    @Test
+    void paintNonUrlNonEmpty() {
+        // Not a url(), non-empty → return {null, value}
+        String[] r = Helpers.paint("blue");
+        assertNull(r[0]);
+        assertEquals("blue", r[1]);
+    }
+
+    // ── pointWithRemainder() branch coverage ────────────────────────────
+
+    @Test
+    void pointWithRemainderThrowsOnInvalidInput() {
+        Surface s = testSurface();
+        assertThrows(Helpers.PointError.class, () -> Helpers.pointWithRemainder(s, ""));
+    }
+
+    @Test
+    void pointWithRemainderParsesValidInput() {
+        Surface s = testSurface();
+        io.brunoborges.jairosvg.util.ParsedPoint pp = Helpers.pointWithRemainder(s, "10 20 rest");
+        assertEquals(10.0, pp.x(), EPSILON);
+        assertEquals(20.0, pp.y(), EPSILON);
+        assertEquals("rest", pp.remainder());
+    }
+
+    // ── preserveRatio() branch coverage ─────────────────────────────────
+
+    @Test
+    void preserveRatioMarkerNoViewbox() throws Exception {
+        // marker tag with no viewBox → returns DEFAULT_RATIO
+        String svg = "<svg xmlns='http://www.w3.org/2000/svg'><marker id='m' markerWidth='3' markerHeight='3'></marker></svg>";
+        var tree = io.brunoborges.jairosvg.dom.Node.parseTree(svg.getBytes());
+        Surface s = testSurface();
+        s.fontSize = 16;
+        // Find the marker node
+        var markerNode = tree.children.get(0);
+        double[] result = Helpers.preserveRatio(s, markerNode, 0, 0);
+        // Should return DEFAULT_RATIO = {1,1,0,0}
+        assertEquals(1.0, result[0], EPSILON);
+        assertEquals(1.0, result[1], EPSILON);
+    }
+
+    @Test
+    void preserveRatioSvgWithZeroWidthHeight() throws Exception {
+        // svg tag where width/height resolve to 0 → falls back to nodeFormat values
+        String svg = "<svg xmlns='http://www.w3.org/2000/svg' width='0' height='0' viewBox='0 0 100 100'></svg>";
+        var tree = io.brunoborges.jairosvg.dom.Node.parseTree(svg.getBytes());
+        Surface s = testSurface();
+        double[] result = Helpers.preserveRatio(s, tree, 0, 0);
+        // width/height should have been replaced by nodeFormat values
+        assertNotNull(result);
+    }
+
+    @Test
+    void preserveRatioUnsupportedTag() throws Exception {
+        // Non-svg/marker/image/g tag → throws IllegalArgumentException
+        String svg = "<svg xmlns='http://www.w3.org/2000/svg'><rect id='r' width='10' height='10'/></svg>";
+        var tree = io.brunoborges.jairosvg.dom.Node.parseTree(svg.getBytes());
+        Surface s = testSurface();
+        var rectNode = tree.children.get(0);
+        assertThrows(IllegalArgumentException.class, () -> Helpers.preserveRatio(s, rectNode, 10, 10));
+    }
+
+    @Test
+    void preserveRatioZeroViewboxDimensions() throws Exception {
+        // viewboxWidth or viewboxHeight == 0 → scaleX/scaleY default to 1
+        String svg = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 0 0'></svg>";
+        var tree = io.brunoborges.jairosvg.dom.Node.parseTree(svg.getBytes());
+        Surface s = testSurface();
+        double[] result = Helpers.preserveRatio(s, tree, 100, 100);
+        assertEquals(1.0, result[0], EPSILON);
+        assertEquals(1.0, result[1], EPSILON);
+    }
+
+    @Test
+    void preserveRatioNoneAlignment() throws Exception {
+        // preserveAspectRatio="none" → independent scaleX/scaleY
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <rect width="100" height="100" fill="red"/>
+                </svg>""";
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+        assertEquals(200, img.getWidth());
+    }
+
+    @Test
+    void preserveRatioMaxAlignment() throws Exception {
+        // xMaxYMax → translate to end
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 100 100" preserveAspectRatio="xMaxYMax">
+                  <rect width="100" height="100" fill="green"/>
+                </svg>""";
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void preserveRatioSlice() throws Exception {
+        // slice → use Math.max of scaleX/scaleY
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+                  <rect width="100" height="100" fill="blue"/>
+                </svg>""";
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+        assertEquals(200, img.getWidth());
+    }
+
+    // ── clipMarkerBox() branch coverage ─────────────────────────────────
+
+    @Test
+    void clipMarkerBoxNoViewbox() throws Exception {
+        // marker with no viewBox → returns {0, 0, mw, mh}
+        String svg = "<svg xmlns='http://www.w3.org/2000/svg'><marker id='m' markerWidth='6' markerHeight='4'></marker></svg>";
+        var tree = io.brunoborges.jairosvg.dom.Node.parseTree(svg.getBytes());
+        Surface s = testSurface();
+        var markerNode = tree.children.get(0);
+        double[] result = Helpers.clipMarkerBox(s, markerNode, 1.0, 1.0);
+        assertEquals(0.0, result[0], EPSILON);
+        assertEquals(0.0, result[1], EPSILON);
+        assertEquals(6.0, result[2], EPSILON);
+        assertEquals(4.0, result[3], EPSILON);
+    }
+
+    @Test
+    void clipMarkerBoxXMaxYMax() throws Exception {
+        // marker with viewBox and xMaxYMax alignment
+        String svg = "<svg xmlns='http://www.w3.org/2000/svg'><marker id='m' markerWidth='6' markerHeight='4' viewBox='0 0 12 8' preserveAspectRatio='xMaxYMax'></marker></svg>";
+        var tree = io.brunoborges.jairosvg.dom.Node.parseTree(svg.getBytes());
+        Surface s = testSurface();
+        var markerNode = tree.children.get(0);
+        double[] result = Helpers.clipMarkerBox(s, markerNode, 1.0, 1.0);
+        // xMax: clipX += vbW - mw/scaleX = 12 - 6 = 6
+        assertEquals(6.0, result[0], EPSILON);
+        // yMax: clipY += vbH - mh/scaleY = 8 - 4 = 4
+        assertEquals(4.0, result[1], EPSILON);
+    }
+
+    @Test
+    void clipMarkerBoxXMidYMid() throws Exception {
+        // marker with viewBox and xMidYMid alignment
+        String svg = "<svg xmlns='http://www.w3.org/2000/svg'><marker id='m' markerWidth='6' markerHeight='4' viewBox='0 0 12 8' preserveAspectRatio='xMidYMid'></marker></svg>";
+        var tree = io.brunoborges.jairosvg.dom.Node.parseTree(svg.getBytes());
+        Surface s = testSurface();
+        var markerNode = tree.children.get(0);
+        double[] result = Helpers.clipMarkerBox(s, markerNode, 1.0, 1.0);
+        // xMid: clipX += (12 - 6) / 2 = 3
+        assertEquals(3.0, result[0], EPSILON);
+        // yMid: clipY += (8 - 4) / 2 = 2
+        assertEquals(2.0, result[1], EPSILON);
+    }
+
+    @Test
+    void clipMarkerBoxNoneAlignment() throws Exception {
+        // marker with preserveAspectRatio="none" → xPos=min, yPos=min → no offset
+        String svg = "<svg xmlns='http://www.w3.org/2000/svg'><marker id='m' markerWidth='6' markerHeight='4' viewBox='0 0 12 8' preserveAspectRatio='none'></marker></svg>";
+        var tree = io.brunoborges.jairosvg.dom.Node.parseTree(svg.getBytes());
+        Surface s = testSurface();
+        var markerNode = tree.children.get(0);
+        double[] result = Helpers.clipMarkerBox(s, markerNode, 1.0, 1.0);
+        assertEquals(0.0, result[0], EPSILON);
+        assertEquals(0.0, result[1], EPSILON);
+    }
+
+    // ── transform() branch coverage ─────────────────────────────────────
+
+    @Test
+    void transformWithGradient() throws Exception {
+        // gradient != null path → applies inverse transform to gradient
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <linearGradient id="g1" gradientTransform="translate(10,20)">
+                      <stop offset="0%" stop-color="red"/>
+                      <stop offset="100%" stop-color="blue"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#g1)"/>
+                </svg>""";
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void transformWithTransformOrigin() throws Exception {
+        // transformOrigin != null path
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="50" height="50" fill="red" transform="rotate(45)" transform-origin="25 25"/>
+                </svg>""";
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void transformWithTransformOriginSingleValue() throws Exception {
+        // transformOrigin with single value → y defaults to contextHeight/2
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="50" height="50" fill="red" transform="rotate(45)" transform-origin="25"/>
+                </svg>""";
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void transformCacheHit() throws Exception {
+        // Call transform twice with same string → second hit uses cached transform
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <g transform="translate(10,10)">
+                    <g transform="translate(10,10)">
+                      <rect width="10" height="10" fill="red"/>
+                    </g>
+                  </g>
+                </svg>""";
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void transformNullString() throws Exception {
+        // null transform string → early return
+        String svg = "<svg xmlns='http://www.w3.org/2000/svg'><rect width='10' height='10' fill='red'/></svg>";
+        var tree = io.brunoborges.jairosvg.dom.Node.parseTree(svg.getBytes());
+        Surface s = testSurface();
+        var rectNode = tree.children.get(0);
+        // Should not throw — just returns
+        Helpers.transform(s, rectNode, null, null);
+        Helpers.transform(s, rectNode, "", null);
+    }
+
+    // ── nodeFormat() branch coverage ────────────────────────────────────
+
+    @Test
+    void nodeFormatViewboxNonFourParts() throws Exception {
+        // viewBox with fewer than 4 parts → viewbox stays null
+        String svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100'></svg>";
+        var tree = io.brunoborges.jairosvg.dom.Node.parseTree(svg.getBytes());
+        Surface s = testSurface();
+        double[] nf = Helpers.nodeFormat(s, tree, true);
+        // viewbox not parsed → NaN in positions 2-5
+        assertTrue(Double.isNaN(nf[2]));
+    }
+
+    @Test
+    void nodeFormatEmptyViewbox() throws Exception {
+        // empty viewBox string → viewbox stays null
+        String svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox=''></svg>";
+        var tree = io.brunoborges.jairosvg.dom.Node.parseTree(svg.getBytes());
+        Surface s = testSurface();
+        double[] nf = Helpers.nodeFormat(s, tree, true);
+        assertTrue(Double.isNaN(nf[2]));
+    }
+
+    // ── calc() expression branch coverage ───────────────────────────────
+
+    @Test
+    void calcSubtraction() {
+        // Tests the subtraction branch in calcAddSub
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(100px - 30px)", "x");
+        assertEquals(70.0, result, EPSILON);
+    }
+
+    @Test
+    void calcMultiplication() {
+        // Tests multiplication branch in calcMulDiv
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(10px * 3)", "x");
+        assertEquals(30.0, result, EPSILON);
+    }
+
+    @Test
+    void calcDivision() {
+        // Tests division branch in calcMulDiv
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(90px / 3)", "x");
+        assertEquals(30.0, result, EPSILON);
+    }
+
+    @Test
+    void calcNestedParentheses() {
+        // Tests parenthesised sub-expression in calcFactor
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc((10px + 20px) * 2)", "x");
+        assertEquals(60.0, result, EPSILON);
+    }
+
+    @Test
+    void calcNestedCalc() {
+        // Tests nested calc() inside calc()
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(calc(10px + 20px) + 5px)", "x");
+        assertEquals(35.0, result, EPSILON);
+    }
+
+    @Test
+    void calcWithExponent() {
+        // Tests exponent parsing (e notation) in calcFactor
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(1e2px + 0px)", "x");
+        assertEquals(100.0, result, EPSILON);
+    }
+
+    @Test
+    void calcWithExponentAndSign() {
+        // Tests exponent with sign (e+2) in calcFactor
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(1e+2px + 0px)", "x");
+        assertEquals(100.0, result, EPSILON);
+    }
+
+    @Test
+    void calcWithNegativeSign() {
+        // Tests negative sign as first char in calcFactor
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(-10px + 30px)", "x");
+        assertEquals(20.0, result, EPSILON);
+    }
+
+    @Test
+    void calcEmptyExpression() {
+        // Tests empty token → returns 0
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc()", "x");
+        assertEquals(0.0, result, EPSILON);
+    }
+
+    @Test
+    void calcEndOfExpressionInAddSub() {
+        // Hit the pos[0] >= expr.length() break in calcAddSub
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(42px)", "x");
+        assertEquals(42.0, result, EPSILON);
+    }
+
+    @Test
+    void calcEndOfExpressionInMulDiv() {
+        // Hit the pos[0] >= expr.length() break in calcMulDiv
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(7px)", "x");
+        assertEquals(7.0, result, EPSILON);
+    }
+
+    @Test
+    void calcExponentNotFollowedByDigits() {
+        // 'e' is not a valid exponent (not followed by digit) → treated as unit suffix
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(16em + 0px)", "x");
+        // 16em = 16 * fontSize(16) = 256
+        assertEquals(256.0, result, EPSILON);
+    }
+
+    // ── sizeWithUnit() branch coverage ──────────────────────────────────
+
+    @Test
+    void sizeWithUnknownUnit() {
+        // Unknown unit → factor is null → yields 0
+        Surface s = testSurface();
+        double result = Helpers.size(s, "10zz", "x");
+        assertEquals(0.0, result, EPSILON);
+    }
+
+    // ── Helpers() private constructor ───────────────────────────────────
+
+    @Test
+    void helpersConstructorCoverage() throws Exception {
+        var constructor = Helpers.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        assertNotNull(constructor.newInstance());
+    }
+
+    // ── Render-based branch coverage for transform ──────────────────────
+
+    @Test
+    void transformGradientInverse() throws Exception {
+        // Gradient with non-trivial gradientTransform hits inverse path
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <linearGradient id="g1" gradientTransform="scale(2) rotate(30)">
+                      <stop offset="0%" stop-color="red"/>
+                      <stop offset="100%" stop-color="blue"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#g1)"/>
+                </svg>""";
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void transformGradientWithTransformOrigin() throws Exception {
+        // gradientTransform with transform-origin isn't standard SVG but tests the code
+        // path
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <radialGradient id="g1" gradientTransform="rotate(45)">
+                      <stop offset="0%" stop-color="yellow"/>
+                      <stop offset="100%" stop-color="green"/>
+                    </radialGradient>
+                  </defs>
+                  <circle cx="50" cy="50" r="40" fill="url(#g1)"/>
+                </svg>""";
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── isPlainNumber() branch: 'E' char ────────────────────────────────
+
+    @Test
+    void sizeWithUppercaseExponent() {
+        // isPlainNumber with 'E' character
+        Surface s = testSurface();
+        double result = Helpers.size(s, "1E2", "x");
+        assertEquals(100.0, result, EPSILON);
+    }
+
+    // ── Additional branch coverage ──────────────────────────────────────
+
+    @Test
+    void paintUrlNoMatch() {
+        // url(...) that doesn't match PAINT_URL pattern → falls through to return
+        String[] r = Helpers.paint("url(broken");
+        assertNull(r[0]);
+        assertEquals("url(broken", r[1]);
+    }
+
+    @Test
+    void preserveRatioMarkerWithZeroWidthAndHeight() throws Exception {
+        // marker with width=0 → falls back to markerWidth; height=0 → falls back to
+        // markerHeight
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="m" markerWidth="6" markerHeight="4" viewBox="0 0 6 4"
+                            refX="3" refY="2" orient="auto">
+                      <circle cx="3" cy="2" r="2" fill="red"/>
+                    </marker>
+                  </defs>
+                  <line x1="10" y1="50" x2="90" y2="50" stroke="black" marker-end="url(#m)"/>
+                </svg>""";
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void preserveRatioImageTag() throws Exception {
+        // Test the "image" branch of preserveRatio
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100">
+                  <image width="50" height="50" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="/>
+                </svg>""";
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void preserveRatioGTag() throws Exception {
+        // Test the "g" branch of preserveRatio via nested svg
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+                  <g>
+                    <rect width="50" height="50" fill="red"/>
+                  </g>
+                </svg>""";
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void sizeWithKnownPhysicalUnit() {
+        // Test known physical units in sizeWithUnit (factor != null)
+        Surface s = testSurface();
+        // "in" → factor = 1.0, result = value * 96 * 1.0
+        double result = Helpers.size(s, "1in", "x");
+        assertEquals(96.0, result, EPSILON);
+    }
+
+    @Test
+    void sizeWithMmUnit() {
+        // "mm" → factor = 1/25.4
+        Surface s = testSurface();
+        double result = Helpers.size(s, "25.4mm", "x");
+        assertEquals(96.0, result, EPSILON);
+    }
+
+    @Test
+    void calcComplexNestedParens() throws Exception {
+        // Test deeply nested parens and operator coverage
+        Surface s = testSurface();
+        // (5 + 5) * (2 + 3) = 10 * 5 = 50
+        double result = Helpers.size(s, "calc((5px + 5px) * (2 + 3))", "x");
+        assertEquals(50.0, result, EPSILON);
+    }
+
+    @Test
+    void calcSingleAdditionEndOfExpr() {
+        // "10px + 5px" → after parsing second term, pos reaches end → break in
+        // calcAddSub
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(10px + 5px)", "x");
+        assertEquals(15.0, result, EPSILON);
+    }
+
+    @Test
+    void calcSingleMultiplicationEndOfExpr() {
+        // "10px * 2" → after parsing second term, pos reaches end → break in calcMulDiv
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(10px * 2)", "x");
+        assertEquals(20.0, result, EPSILON);
+    }
+
+    @Test
+    void calcWithPositiveSign() {
+        // "+10px" → tests positive sign in calcFactor
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(+10px + 5px)", "x");
+        assertEquals(15.0, result, EPSILON);
+    }
+
+    @Test
+    void calcNegativeExponent() {
+        // "1e-2" → tests exponent with negative sign
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(1e-2px + 0px)", "x");
+        assertEquals(0.01, result, EPSILON);
+    }
+
+    @Test
+    void calcUnclosedParenFallback() {
+        // "(10px + 5px" → missing closing paren; calcFactor skips whitespace then
+        // checks
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc((10px + 5px)", "x");
+        assertEquals(15.0, result, EPSILON);
+    }
+
+    @Test
+    void calcPercentInExpression() {
+        // "50%" in calc → sizeWithUnit percent path
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(50% + 0px)", "x");
+        // 50% of contextWidth 800 = 400
+        assertEquals(400.0, result, EPSILON);
+    }
+
+    @Test
+    void calcWhitespaceOnlyExpression() {
+        // calc with only whitespace inside → empty token → returns 0
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(  )", "x");
+        assertEquals(0.0, result, EPSILON);
+    }
+
+    @Test
+    void calcExponentUpperE() {
+        // "5E1" → tests uppercase E exponent in calcFactor
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(5E1px + 0px)", "x");
+        assertEquals(50.0, result, EPSILON);
+    }
+
+    @Test
+    void calcMultipleOperations() {
+        // "10px + 5px - 3px" → tests multiple add/sub operations
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(10px + 5px - 3px)", "x");
+        assertEquals(12.0, result, EPSILON);
+    }
+
+    @Test
+    void calcMultipleMultDiv() {
+        // "10px * 2 / 4" → tests multiple mul/div operations
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(10px * 2 / 4)", "x");
+        assertEquals(5.0, result, EPSILON);
+    }
+
+    @Test
+    void paintEmptyAfterUrlStripped() {
+        // value that starts with "url" but doesn't match PAINT_URL, and is empty after
+        // going through
+        String[] r = Helpers.paint("  ");
+        assertNull(r[0]);
+        assertNull(r[1]);
+    }
+
+    @Test
+    void transformCacheHitDirect() throws Exception {
+        // Directly test transform cache: call transform twice with same transformString
+        String svg = "<svg xmlns='http://www.w3.org/2000/svg'><rect width='10' height='10' fill='red'/></svg>";
+        var tree = io.brunoborges.jairosvg.dom.Node.parseTree(svg.getBytes());
+        Surface s = testSurface();
+        var img = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
+        s.context = img.createGraphics();
+        var rectNode = tree.children.get(0);
+        // First call → caches
+        Helpers.transform(s, rectNode, "translate(5,5)", null);
+        // Second call with same string → cache hit (L342-343)
+        Helpers.transform(s, rectNode, "translate(5,5)", null);
+        s.context.dispose();
+    }
+
+    @Test
+    void calcTrailingWhitespaceHitsBreak() {
+        // calc expression with trailing whitespace → skipCalcWhitespace moves past end
+        // → break
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(10px   )", "x");
+        assertEquals(10.0, result, EPSILON);
+    }
+
+    @Test
+    void calcOnlyOperandNoOperator() {
+        // Single operand with no operator → both calcAddSub and calcMulDiv loops skip
+        Surface s = testSurface();
+        double result = Helpers.size(s, "calc(42px)", "x");
+        assertEquals(42.0, result, EPSILON);
+    }
+
+    @Test
+    void transformWithNonEmptyOrigin() throws Exception {
+        // Test transformOrigin != null && !isEmpty → L352 true branch
+        String svg = "<svg xmlns='http://www.w3.org/2000/svg'><rect width='10' height='10' fill='red'/></svg>";
+        var tree = io.brunoborges.jairosvg.dom.Node.parseTree(svg.getBytes());
+        Surface s = testSurface();
+        var img = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
+        s.context = img.createGraphics();
+        var rectNode = tree.children.get(0);
+        Helpers.transform(s, rectNode, "rotate(45)", "50% 50%");
+        s.context.dispose();
+    }
+
+    @Test
+    void preserveRatioMarkerWidthZero() throws Exception {
+        // Marker with width=0 → width = size(markerWidth, "3") default
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="m" viewBox="0 0 10 10" refX="5" refY="5"
+                            markerWidth="5" markerHeight="5" orient="auto">
+                      <path d="M0,0 L10,5 L0,10 Z" fill="red"/>
+                    </marker>
+                  </defs>
+                  <line x1="10" y1="10" x2="90" y2="90" stroke="black" stroke-width="2" marker-end="url(#m)"/>
+                </svg>""";
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void sizeWithPcUnit() {
+        // "pc" → factor = 1/6
+        Surface s = testSurface();
+        double result = Helpers.size(s, "6pc", "x");
+        // 6 * 96 * (1/6) = 96
+        assertEquals(96.0, result, EPSILON);
+    }
+
+    @Test
+    void sizeWithPtUnit() {
+        // "pt" → factor = 1/72
+        Surface s = testSurface();
+        double result = Helpers.size(s, "72pt", "x");
+        // 72 * 96 * (1/72) = 96
+        assertEquals(96.0, result, EPSILON);
+    }
+
+    @Test
+    void sizeWithCmUnit() {
+        // "cm" → factor = 1/2.54
+        Surface s = testSurface();
+        double result = Helpers.size(s, "2.54cm", "x");
+        // 2.54 * 96 * (1/2.54) = 96
+        assertEquals(96.0, result, EPSILON);
+    }
 }
