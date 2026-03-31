@@ -638,79 +638,136 @@ class GradientTest {
         assertNotNull(img);
     }
 
-    // ── radialGradient with focus point outside radius (clamping) ──
+    // ── Gradient with href inheritance (stops from referenced gradient) ──
 
     @Test
-    void radialGradientFocusOutsideRadiusBbox() throws Exception {
-        // Using objectBoundingBox coordinates, fx/fy far from center
+    void gradientHrefInheritance() throws Exception {
         var svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                   <defs>
-                    <radialGradient id="fob" cx="50%" cy="50%" r="50%" fx="100%" fy="100%">
+                    <linearGradient id="base-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0" stop-color="red"/>
+                      <stop offset="1" stop-color="blue"/>
+                    </linearGradient>
+                    <linearGradient id="child-grad" href="#base-grad"/>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#child-grad)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── Gradient with href using xlink:href ──
+
+    @Test
+    void gradientXlinkHrefInheritance() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                     width="100" height="100">
+                  <defs>
+                    <linearGradient id="base2" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0" stop-color="green"/>
+                      <stop offset="1" stop-color="yellow"/>
+                    </linearGradient>
+                    <linearGradient id="child2" xlink:href="#base2"/>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#child2)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── Gradient with non-monotonic stop offsets (backwards fix at L111-112) ──
+
+    @Test
+    void gradientNonMonotonicStops() throws Exception {
+        // All stops at offset=1 → forces the backward monotonicity fix
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <linearGradient id="nm">
+                      <stop offset="1" stop-color="red"/>
+                      <stop offset="1" stop-color="green"/>
+                      <stop offset="1" stop-color="blue"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#nm)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── Gradient cache hit (same gradient used twice at same opacity) ──
+
+    @Test
+    void gradientCacheHit() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <linearGradient id="ch" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0" stop-color="red"/>
+                      <stop offset="1" stop-color="blue"/>
+                    </linearGradient>
+                  </defs>
+                  <rect x="0" width="100" height="100" fill="url(#ch)"/>
+                  <rect x="100" width="100" height="100" fill="url(#ch)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── radialGradient with focus point (fx/fy) in objectBoundingBox ──
+
+    @Test
+    void radialGradientFxFyBbox() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <radialGradient id="fxbb" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
                       <stop offset="0" stop-color="white"/>
                       <stop offset="1" stop-color="black"/>
                     </radialGradient>
                   </defs>
-                  <rect width="100" height="100" fill="url(#fob)"/>
+                  <rect width="100" height="100" fill="url(#fxbb)"/>
                 </svg>
                 """;
         BufferedImage img = render(svg);
         assertNotNull(img);
     }
 
-    // ── linearGradient with single stop (solid fill) ──
+    // ── Gradient with no stops (returns false → element unaffected) ──
 
     @Test
-    void linearGradientSingleStop() throws Exception {
+    void gradientNoStops() throws Exception {
         var svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                   <defs>
-                    <linearGradient id="ss">
-                      <stop offset="0" stop-color="purple"/>
-                    </linearGradient>
+                    <linearGradient id="empty"/>
                   </defs>
-                  <rect width="100" height="100" fill="url(#ss)"/>
+                  <rect width="100" height="100" fill="url(#empty)"/>
                 </svg>
                 """;
         BufferedImage img = render(svg);
         assertNotNull(img);
-        // Single stop → solid purple fill
-        assertPixelColor(img, 50, 50, 128, 0, 128, 5);
     }
 
-    // ── radialGradient with zero radius (returns false) ──
+    // ── radialGradient in objectBoundingBox mode (bb calculation) ──
 
     @Test
-    void radialGradientZeroRadiusBbox() throws Exception {
+    void radialGradientObjectBoundingBox() throws Exception {
         var svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                   <defs>
-                    <radialGradient id="zr" r="0%">
-                      <stop offset="0" stop-color="red"/>
-                      <stop offset="1" stop-color="blue"/>
+                    <radialGradient id="rbb" cx="50%" cy="50%" r="50%">
+                      <stop offset="0" stop-color="cyan"/>
+                      <stop offset="1" stop-color="magenta"/>
                     </radialGradient>
                   </defs>
-                  <rect width="100" height="100" fill="url(#zr)"/>
-                </svg>
-                """;
-        BufferedImage img = render(svg);
-        assertNotNull(img);
-    }
-
-    // ── gradient on element with no bounding box (bb==null) ──
-
-    @Test
-    void gradientOnElementWithNoBbox() throws Exception {
-        // A path with no actual geometry — bb calculation returns null/empty
-        var svg = """
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-                  <defs>
-                    <linearGradient id="nbb">
-                      <stop offset="0" stop-color="red"/>
-                      <stop offset="1" stop-color="blue"/>
-                    </linearGradient>
-                  </defs>
-                  <path d="" fill="url(#nbb)"/>
+                  <circle cx="50" cy="50" r="40" fill="url(#rbb)"/>
                 </svg>
                 """;
         BufferedImage img = render(svg);

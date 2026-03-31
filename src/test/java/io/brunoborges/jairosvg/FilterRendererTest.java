@@ -1279,19 +1279,18 @@ class FilterRendererTest {
 
     @Test
     void feTileNullRegionWithPartialContent() throws Exception {
-        // A small semi-transparent rect on a transparent canvas.
-        // No userSpaceOnUse filter region → computeFilterRegion scans pixels.
-        // The filter chain uses feOffset to shift content, then feTile tiles it.
-        // The offset source will have non-transparent bounds that tile() discovers.
+        // Source graphic is fully transparent (fill="none" stroke="none").
+        // computeFilterRegion returns null for fully transparent source.
+        // feFlood creates visible content, then feTile uses null-region fallback.
         var svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">
                   <defs>
                     <filter id="tnr">
-                      <feOffset dx="10" dy="10" in="SourceGraphic"/>
+                      <feFlood flood-color="red" flood-opacity="0.8" x="10" y="10" width="20" height="20"/>
                       <feTile/>
                     </filter>
                   </defs>
-                  <rect x="5" y="5" width="15" height="15" fill="red" filter="url(#tnr)"/>
+                  <rect x="5" y="5" width="70" height="70" fill="none" stroke="none" filter="url(#tnr)"/>
                 </svg>
                 """;
         BufferedImage img = render(svg);
