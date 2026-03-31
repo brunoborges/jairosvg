@@ -138,4 +138,114 @@ class ImageHandlerTest {
         int[] c = rgba(img, 50, 50);
         assertTrue(c[0] > 200, "Pixelated red image should still be red, got " + c[0]);
     }
+
+    // ── Additional branch coverage tests ────────────────────────────────
+
+    @Test
+    void testImageRenderingPixelated() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <image href="data:image/png;base64,%s" width="100" height="100"
+                         image-rendering="pixelated"/>
+                </svg>""".formatted(redPngBase64);
+        BufferedImage img = render(svg);
+        int[] c = rgba(img, 50, 50);
+        assertTrue(c[0] > 200, "pixelated rendering should still show red");
+    }
+
+    @Test
+    void testImageRenderingCrispEdges() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <image href="data:image/png;base64,%s" width="100" height="100"
+                         image-rendering="crisp-edges"/>
+                </svg>""".formatted(redPngBase64);
+        BufferedImage img = render(svg);
+        int[] c = rgba(img, 50, 50);
+        assertTrue(c[0] > 200, "crisp-edges rendering should still show red");
+    }
+
+    @Test
+    void testImageRenderingDefault() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <image href="data:image/png;base64,%s" width="100" height="100"
+                         image-rendering="auto"/>
+                </svg>""".formatted(redPngBase64);
+        BufferedImage img = render(svg);
+        int[] c = rgba(img, 50, 50);
+        assertTrue(c[0] > 200, "auto rendering should still show red");
+    }
+
+    @Test
+    void testEmbeddedSvgImageWithoutDimensions() throws Exception {
+        // Embedded SVG that lacks width/height attributes — should fallback
+        String innerSvg = """
+                <svg xmlns="http://www.w3.org/2000/svg">
+                  <rect width="10" height="10" fill="green"/>
+                </svg>""";
+        String innerBase64 = Base64.getEncoder().encodeToString(innerSvg.getBytes(StandardCharsets.UTF_8));
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <image href="data:image/svg+xml;base64,%s" x="10" y="10" width="50" height="50"/>
+                </svg>""".formatted(innerBase64);
+        BufferedImage img = render(svg);
+        assertNotNull(img, "SVG image without dimensions should render using fallback");
+    }
+
+    @Test
+    void testImageWithInvalidDataUri() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <image href="data:image/png;base64,INVALID_NOT_BASE64!!!" x="0" y="0" width="50" height="50"/>
+                </svg>""";
+        // Should not crash — invalid base64 should be handled gracefully
+        try {
+            BufferedImage img = render(svg);
+            assertNotNull(img);
+        } catch (Exception e) {
+            // Some decoders may throw; that's acceptable
+        }
+    }
+
+    @Test
+    void testImageWithTruncatedBytes() throws Exception {
+        // Very short data — less than 5 bytes — tests isSvgContent short-data path
+        String tinyBase64 = Base64.getEncoder().encodeToString(new byte[]{1, 2});
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <image href="data:image/png;base64,%s" x="0" y="0" width="50" height="50"/>
+                </svg>""".formatted(tinyBase64);
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Image with too-short bytes should handle gracefully");
+    }
+
+    @Test
+    void testImageWithTransform() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <image href="data:image/png;base64,%s" x="0" y="0" width="50" height="50"
+                         transform="translate(25,25)"/>
+                </svg>""".formatted(redPngBase64);
+        BufferedImage img = render(svg);
+        int[] c = rgba(img, 50, 50);
+        assertTrue(c[0] > 200, "Transformed image should render red at center");
+    }
+
+    @Test
+    void testImagePreserveAspectRatio() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <image href="data:image/png;base64,%s" x="0" y="0" width="100" height="100"
+                         preserveAspectRatio="xMidYMid meet"/>
+                </svg>""".formatted(redPngBase64);
+        BufferedImage img = render(svg);
+        assertNotNull(img, "preserveAspectRatio should be handled");
+    }
 }

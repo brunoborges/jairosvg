@@ -486,4 +486,232 @@ class PathDrawerTest {
         }
         assertTrue(foundRed, "Expected red zigzag line from repeated L coordinates");
     }
+
+    // ── Additional branch coverage tests ────────────────────────────────
+
+    @Test
+    void testRelativeMoveTo() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <path d="m10 10 l80 0 l0 80 l-80 0 z" fill="red"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        // Center should be red
+        int[] center = rgba(img, 50, 50);
+        assertTrue(center[0] > 200, "Expected red fill from relative m command");
+    }
+
+    @Test
+    void testRelativeArc() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <path d="M10 50 a40 40 0 0 1 80 0" fill="none" stroke="red" stroke-width="2"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        boolean foundRed = false;
+        for (int x = 10; x < 90; x++) {
+            for (int y = 0; y < 100; y++) {
+                int[] c = rgba(img, x, y);
+                if (c[0] > 200 && c[1] < 50 && c[2] < 50) {
+                    foundRed = true;
+                    break;
+                }
+            }
+            if (foundRed)
+                break;
+        }
+        assertTrue(foundRed, "Expected red arc from relative a command");
+    }
+
+    @Test
+    void testInvalidArcFlags() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <path d="M10 50 A20 20 0 2 0 90 50" fill="none" stroke="red" stroke-width="2"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Invalid arc flags should not crash");
+    }
+
+    @Test
+    void testPathWithNegativeNumbers() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <path d="M50 50L50-10L-10 50Z" fill="red"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Negative number parsing should work");
+    }
+
+    @Test
+    void testPathWithCommaDelimitedCoords() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <path d="M10,10 L90,10 L90,90 L10,90 Z" fill="blue"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        int[] center = rgba(img, 50, 50);
+        assertTrue(center[2] > 200, "Expected blue fill from comma-separated coords");
+    }
+
+    @Test
+    void testPathWithExponentNotationNegative() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <path d="M1e+1 5e1 L9e1 5e1" fill="none" stroke="red" stroke-width="2"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        boolean foundRed = false;
+        for (int x = 15; x < 85; x++) {
+            int[] c = rgba(img, x, 50);
+            if (c[0] > 200 && c[1] < 50 && c[2] < 50) {
+                foundRed = true;
+                break;
+            }
+        }
+        assertTrue(foundRed, "Expected red from exponent notation with +");
+    }
+
+    @Test
+    void testPathMultipleSubpathsWithMarkers() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <defs>
+                    <marker id="dot" viewBox="0 0 10 10" refX="5" refY="5"
+                            markerWidth="5" markerHeight="5">
+                      <circle cx="5" cy="5" r="5" fill="red"/>
+                    </marker>
+                  </defs>
+                  <rect width="200" height="200" fill="white"/>
+                  <path d="M10 10 L50 10 M100 100 L150 100" fill="none" stroke="black"
+                        marker-start="url(#dot)" marker-end="url(#dot)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void testPathWithSmoothCubicAfterCubic() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <rect width="200" height="100" fill="white"/>
+                  <path d="M10 50 C20 10 40 10 50 50 S80 90 90 50" fill="none" stroke="red" stroke-width="2"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        boolean foundRed = false;
+        for (int x = 10; x < 90; x++) {
+            for (int y = 0; y < 100; y++) {
+                int[] c = rgba(img, x, y);
+                if (c[0] > 200 && c[1] < 50 && c[2] < 50) {
+                    foundRed = true;
+                    break;
+                }
+            }
+            if (foundRed)
+                break;
+        }
+        assertTrue(foundRed, "S command after C should render smooth continuation");
+    }
+
+    @Test
+    void testPathWithSmoothQuadAfterQuad() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <rect width="200" height="100" fill="white"/>
+                  <path d="M10 50 Q30 10 50 50 T90 50" fill="none" stroke="blue" stroke-width="2"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        boolean foundBlue = false;
+        for (int x = 10; x < 90; x++) {
+            for (int y = 0; y < 100; y++) {
+                int[] c = rgba(img, x, y);
+                if (c[2] > 200 && c[0] < 50 && c[1] < 50) {
+                    foundBlue = true;
+                    break;
+                }
+            }
+            if (foundBlue)
+                break;
+        }
+        assertTrue(foundBlue, "T command after Q should render smooth continuation");
+    }
+
+    @Test
+    void testRelativeSmoothCubic() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <rect width="200" height="100" fill="white"/>
+                  <path d="M10 50 c10 -40 30 -40 40 0 s30 40 40 0" fill="none" stroke="red" stroke-width="2"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        boolean foundRed = false;
+        for (int x = 10; x < 90; x++) {
+            for (int y = 0; y < 100; y++) {
+                int[] c = rgba(img, x, y);
+                if (c[0] > 200 && c[1] < 50 && c[2] < 50) {
+                    foundRed = true;
+                    break;
+                }
+            }
+            if (foundRed)
+                break;
+        }
+        assertTrue(foundRed, "Relative s command should work");
+    }
+
+    @Test
+    void testPathArcBothRadiiZero() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <path d="M10 10 A0 0 0 0 1 80 80" fill="none" stroke="red" stroke-width="2"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Both radii zero should produce a line");
+        boolean foundRed = false;
+        for (int x = 0; x < 100; x++) {
+            for (int y = 0; y < 100; y++) {
+                int[] c = rgba(img, x, y);
+                if (c[0] > 200 && c[1] < 50 && c[2] < 50) {
+                    foundRed = true;
+                    break;
+                }
+            }
+            if (foundRed)
+                break;
+        }
+        assertTrue(foundRed, "Zero-radii arc should produce straight line");
+    }
+
+    @Test
+    void testPathWithWhitespaceAndNewlines() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <path d="  M 10  10
+                             L 90  10
+                             L 90  90  Z  " fill="red"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        int[] c = rgba(img, 50, 30);
+        assertTrue(c[0] > 200, "Path with extra whitespace should render correctly");
+    }
 }

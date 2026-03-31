@@ -285,6 +285,90 @@ class DefsTest {
                 "Center of symbol should be blue, got rgb(%d,%d,%d)".formatted(center[0], center[1], center[2]));
     }
 
+    // ── Additional branch coverage tests ────────────────────────────────
+
+    @Test
+    void testUseWithSymbolNoWidthHeight() throws Exception {
+        // Symbol without explicit width/height on <use> — tests the !has("width")
+        // branch
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <symbol id="s2" viewBox="0 0 20 20">
+                      <rect width="20" height="20" fill="green"/>
+                    </symbol>
+                  </defs>
+                  <rect width="100" height="100" fill="white"/>
+                  <use href="#s2" x="10" y="10"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img, "use symbol without width/height should render");
+    }
+
+    @Test
+    void testUseWithHrefWithoutHash() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <use href="externalWithoutHash" x="10" y="10"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img, "use without fragment should not crash");
+    }
+
+    @Test
+    void testDefWithoutId() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <linearGradient>
+                      <stop offset="0%" stop-color="red"/>
+                      <stop offset="100%" stop-color="blue"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="50" height="50" fill="red"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Def without id should be skipped gracefully");
+    }
+
+    @Test
+    void testFontDefRegistration() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <font id="TestFont2" horiz-adv-x="1000">
+                      <font-face font-family="TestFont2" units-per-em="1000" ascent="800" descent="-200"/>
+                      <glyph unicode="X" horiz-adv-x="1000" d="M 0 0 L 0 800 L 1000 800 L 1000 0 Z"/>
+                    </font>
+                  </defs>
+                  <text x="10" y="60" font-family="TestFont2" font-size="48" fill="red">X</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Font def should be registered and used");
+    }
+
+    @Test
+    void testClipPathNullId() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <clipPath>
+                      <rect width="50" height="50"/>
+                    </clipPath>
+                  </defs>
+                  <rect width="100" height="100" fill="red"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        // No clipPath effect, full rect should render
+        int[] center = rgba(img, 50, 50);
+        assertTrue(center[0] > 200, "Without clipPath id, full rect should render red");
+    }
+
     /** Check if a region contains any blue pixel. */
     private static boolean hasBluePixel(BufferedImage img, int x1, int y1, int x2, int y2) {
         for (int y = y1; y <= Math.min(y2, img.getHeight() - 1); y++) {

@@ -135,4 +135,107 @@ class ShapeDrawerTest {
         BufferedImage img = render(svg);
         assertNotNull(img, "Should render without error with negative dimensions");
     }
+
+    // ── Additional branch coverage tests ────────────────────────────────
+
+    @Test
+    void testRectWithOnlyRy() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <rect x="10" y="10" width="80" height="80" ry="20" fill="green"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        // Center should be green
+        int[] c = rgba(img, 50, 50);
+        assertTrue(c[1] > 100, "ry-only rect should render green");
+    }
+
+    @Test
+    void testRectZeroRxNonZeroRy() throws Exception {
+        // rx=0 ry=5 → should produce a straight rect (rx=0 means no rounding)
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <rect x="10" y="10" width="80" height="80" rx="0" ry="5" fill="blue"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        int[] c = rgba(img, 50, 50);
+        assertTrue(c[2] > 200, "Rect with rx=0 should render blue");
+    }
+
+    @Test
+    void testEmptyPolylinePoints() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <polyline points="" stroke="red" fill="none"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Empty polyline points should not crash");
+    }
+
+    @Test
+    void testLineWithMarkers() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="mk" viewBox="0 0 10 10" refX="5" refY="5"
+                            markerWidth="5" markerHeight="5">
+                      <circle cx="5" cy="5" r="5" fill="red"/>
+                    </marker>
+                  </defs>
+                  <rect width="100" height="100" fill="white"/>
+                  <line x1="10" y1="50" x2="90" y2="50" stroke="black" stroke-width="2"
+                        marker-start="url(#mk)" marker-end="url(#mk)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        // Should have red marker pixels
+        boolean hasRed = false;
+        for (int y = 40; y < 60; y++) {
+            for (int x = 0; x < 30; x++) {
+                int[] c = rgba(img, x, y);
+                if (c[0] > 200 && c[1] < 50 && c[2] < 50) {
+                    hasRed = true;
+                    break;
+                }
+            }
+            if (hasRed)
+                break;
+        }
+        assertTrue(hasRed, "Line with markers should show red marker circles");
+    }
+
+    @Test
+    void testPolylineWithMarkers() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <marker id="m2" viewBox="0 0 10 10" refX="5" refY="5"
+                            markerWidth="5" markerHeight="5">
+                      <circle cx="5" cy="5" r="5" fill="blue"/>
+                    </marker>
+                  </defs>
+                  <rect width="100" height="100" fill="white"/>
+                  <polyline points="10,50 50,10 90,50" fill="none" stroke="black" stroke-width="2"
+                            marker-start="url(#m2)" marker-mid="url(#m2)" marker-end="url(#m2)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Polyline with markers should render");
+    }
+
+    @Test
+    void testEllipseWithZeroRy() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <ellipse cx="25" cy="25" rx="20" ry="0" fill="red"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Ellipse with zero ry should render without error");
+    }
 }

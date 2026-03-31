@@ -137,4 +137,103 @@ class SvgFontTest {
         assertTrue(alpha > 0, "SVG font without id should still render glyphs");
         assertTrue(red > 200, "SVG font glyph should be red (fill='red')");
     }
+
+    // ── Additional branch coverage tests ────────────────────────────────
+
+    @Test
+    void testSvgFontWithEmptyGlyphPath() throws Exception {
+        // Glyph with empty d="" — should be handled gracefully
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <font id="EmptyGlyph" horiz-adv-x="1000">
+                      <font-face font-family="EmptyGlyph" units-per-em="1000" ascent="800" descent="-200"/>
+                      <glyph unicode="A" horiz-adv-x="1000" d=""/>
+                      <glyph unicode="B" horiz-adv-x="1000" d="M 0 0 L 0 800 L 1000 800 L 1000 0 Z"/>
+                      <missing-glyph horiz-adv-x="500" d="M 0 0 L 0 800 L 500 800 L 500 0 Z"/>
+                    </font>
+                  </defs>
+                  <text x="10" y="60" font-family="EmptyGlyph" font-size="48" fill="red">AB</text>
+                </svg>
+                """;
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        assertTrue(png.length > 0, "Empty glyph path should be handled");
+    }
+
+    @Test
+    void testSvgFontGlyphWithoutUnicode() throws Exception {
+        // Glyph without unicode attribute — should be skipped
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <font id="NoUnicode" horiz-adv-x="1000">
+                      <font-face font-family="NoUnicode" units-per-em="1000" ascent="800" descent="-200"/>
+                      <glyph horiz-adv-x="1000" d="M 0 0 L 0 800 L 1000 800 L 1000 0 Z"/>
+                      <glyph unicode="X" horiz-adv-x="1000" d="M 0 0 L 0 800 L 1000 800 L 1000 0 Z"/>
+                      <missing-glyph horiz-adv-x="500" d="M 0 0 L 0 800 L 500 800 L 500 0 Z"/>
+                    </font>
+                  </defs>
+                  <text x="10" y="60" font-family="NoUnicode" font-size="48" fill="blue">X</text>
+                </svg>
+                """;
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        assertTrue(png.length > 0);
+    }
+
+    @Test
+    void testSvgFontWithoutFontFace() throws Exception {
+        // <font> without <font-face> — family resolved via font id
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <font id="NoFace" horiz-adv-x="1000">
+                      <glyph unicode="A" horiz-adv-x="1000" d="M 0 0 L 0 800 L 1000 800 L 1000 0 Z"/>
+                    </font>
+                  </defs>
+                  <text x="10" y="60" font-family="NoFace" font-size="48" fill="red">A</text>
+                </svg>
+                """;
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        assertTrue(png.length > 0, "Font without font-face should fallback to font id");
+    }
+
+    @Test
+    void testSvgFontWithoutFontFaceAndNoId() throws Exception {
+        // <font> with neither <font-face> nor id — should return null and be skipped
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <font horiz-adv-x="1000">
+                      <glyph unicode="A" horiz-adv-x="1000" d="M 0 0 L 0 800 L 1000 800 L 1000 0 Z"/>
+                    </font>
+                  </defs>
+                  <text x="10" y="60" font-family="SansSerif" font-size="24" fill="black">Hello</text>
+                </svg>
+                """;
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        assertTrue(png.length > 0, "Font without face/id should be ignored gracefully");
+    }
+
+    @Test
+    void testSvgFontGlyphDefaultAdvance() throws Exception {
+        // Glyph without horiz-adv-x — should use font's default horiz-adv-x
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                  <defs>
+                    <font id="DefAdv" horiz-adv-x="800">
+                      <font-face font-family="DefAdv" units-per-em="1000" ascent="800" descent="-200"/>
+                      <glyph unicode="A" d="M 0 0 L 0 800 L 800 800 L 800 0 Z"/>
+                    </font>
+                  </defs>
+                  <text x="10" y="60" font-family="DefAdv" font-size="48" fill="red">AA</text>
+                </svg>
+                """;
+        byte[] png = JairoSVG.svg2png(svg.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(png);
+        assertTrue(png.length > 0, "Glyph should use default advance when horiz-adv-x missing");
+    }
 }

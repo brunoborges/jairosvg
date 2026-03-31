@@ -296,4 +296,164 @@ class GradientTest {
         int[] right = rgba(img, 95, 25);
         assertTrue(right[3] < 50, "Right should be nearly transparent, got A=" + right[3]);
     }
+
+    // ── Additional branch coverage tests ────────────────────────────────
+
+    @Test
+    void testGradientWithDuplicateStopOffsets() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50">
+                  <defs>
+                    <linearGradient id="dup" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stop-color="red"/>
+                      <stop offset="0%" stop-color="green"/>
+                      <stop offset="100%" stop-color="blue"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="100" height="50" fill="url(#dup)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Gradient with duplicate offsets should render without error");
+    }
+
+    @Test
+    void testDegenerateLinearGradientSameEndpoints() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <linearGradient id="degen" x1="0.5" y1="0.5" x2="0.5" y2="0.5">
+                      <stop offset="0%" stop-color="red"/>
+                      <stop offset="100%" stop-color="blue"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#degen)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Degenerate linear gradient (same endpoints) should render");
+    }
+
+    @Test
+    void testMissingGradientReference() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50">
+                  <rect width="100" height="50" fill="url(#nonexistent_gradient)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Missing gradient reference should not crash");
+    }
+
+    @Test
+    void testRadialGradientUserSpaceOnUse() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <radialGradient id="rgusu" gradientUnits="userSpaceOnUse" cx="50" cy="50" r="50">
+                      <stop offset="0%" stop-color="white"/>
+                      <stop offset="100%" stop-color="black"/>
+                    </radialGradient>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#rgusu)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        int[] center = rgba(img, 50, 50);
+        int centerBrightness = center[0] + center[1] + center[2];
+        assertTrue(centerBrightness > 300, "Center should be bright (white), got " + centerBrightness);
+    }
+
+    @Test
+    void testRadialGradientFocusOutsideRadius() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <radialGradient id="rfar" cx="50%" cy="50%" r="10%" fx="0%" fy="0%">
+                      <stop offset="0%" stop-color="white"/>
+                      <stop offset="100%" stop-color="black"/>
+                    </radialGradient>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#rfar)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Radial gradient with focus outside radius should render");
+    }
+
+    @Test
+    void testGradientHrefInheritMissingAttributes() throws Exception {
+        // Child gradient has no x1/y1/x2/y2, inherits from base
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50">
+                  <defs>
+                    <linearGradient id="parent" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stop-color="red"/>
+                      <stop offset="100%" stop-color="blue"/>
+                    </linearGradient>
+                    <linearGradient id="child" href="#parent"/>
+                  </defs>
+                  <rect width="100" height="50" fill="url(#child)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        int[] left = rgba(img, 5, 25);
+        assertTrue(left[0] > 150, "Should inherit stops and attributes from parent");
+    }
+
+    @Test
+    void testGradientWithNonStopChildren() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50">
+                  <defs>
+                    <linearGradient id="mixed" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stop-color="red"/>
+                      <desc>This is a description</desc>
+                      <stop offset="100%" stop-color="blue"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="100" height="50" fill="url(#mixed)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        int[] left = rgba(img, 5, 25);
+        assertTrue(left[0] > 200, "Should skip non-stop children");
+    }
+
+    @Test
+    void testLinearGradientUserSpaceOnUse() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <linearGradient id="lusu" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="100">
+                      <stop offset="0%" stop-color="red"/>
+                      <stop offset="100%" stop-color="blue"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#lusu)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        int[] top = rgba(img, 50, 5);
+        int[] bottom = rgba(img, 50, 95);
+        assertTrue(top[0] > 200, "Top should be red");
+        assertTrue(bottom[2] > 200, "Bottom should be blue");
+    }
+
+    @Test
+    void testGradientOnZeroSizeElement() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <linearGradient id="g">
+                      <stop offset="0%" stop-color="red"/>
+                      <stop offset="100%" stop-color="blue"/>
+                    </linearGradient>
+                  </defs>
+                  <rect x="50" y="50" width="0" height="0" fill="url(#g)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Gradient on zero-size element should not crash");
+    }
 }

@@ -509,4 +509,158 @@ class BoundingBoxTest {
         // End point: 10 + 50 + 50 = 110
         assertTrue(box.minX() + box.width() >= 110, "maxX should include final endpoint");
     }
+
+    // ── Additional branch coverage tests ────────────────────────────────
+
+    @Test
+    void testEmptyPolylinePoints() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <polyline points="" stroke="black"/>
+                </svg>
+                """;
+        Node node = parseSvgChild(svg, "polyline");
+        BoundingBox.Box box = BoundingBox.calculate(null, node);
+        // Empty points should produce an empty/invalid bounding box
+        assertNotNull(box);
+    }
+
+    @Test
+    void testPathWithRelativeHorizontalLine() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="M10 50 h80" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box);
+        assertTrue(BoundingBox.isValid(box), "Box should be valid");
+        assertTrue(box.minX() <= 10, "minX should include M start");
+        assertTrue(box.minX() + box.width() >= 90, "maxX should include h endpoint");
+    }
+
+    @Test
+    void testPathWithRelativeVerticalLine() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="M50 10 v80" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box);
+        assertTrue(BoundingBox.isValid(box), "Box should be valid");
+        assertTrue(box.minY() <= 10, "minY should include M start");
+        assertTrue(box.minY() + box.height() >= 90, "maxY should include v endpoint");
+    }
+
+    @Test
+    void testPathWithRelativeArcLowercase() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="M10 50 a30 30 0 0 1 60 0" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box);
+        assertTrue(BoundingBox.isValid(box), "Box should be valid");
+        assertTrue(box.minX() + box.width() >= 70, "maxX should include arc endpoint (10+60)");
+    }
+
+    @Test
+    void testPathWithRelativeMoveTo() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="m10 10 l80 0 l0 80 l-80 0 z" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box);
+        assertTrue(BoundingBox.isValid(box), "Box should be valid");
+        assertTrue(box.minX() <= 10, "minX from relative moveto");
+        assertTrue(box.minX() + box.width() >= 90, "maxX from relative lineto");
+    }
+
+    @Test
+    void testZeroLengthLineBoundingBox() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <line x1="50" y1="50" x2="50" y2="50" stroke="black"/>
+                </svg>
+                """;
+        Node node = parseSvgChild(svg, "line");
+        BoundingBox.Box box = BoundingBox.calculate(null, node);
+        assertNotNull(box);
+        // Zero-length line: width and height are 0
+        assertEquals(0, box.width(), 0.01);
+        assertEquals(0, box.height(), 0.01);
+    }
+
+    @Test
+    void testGroupWithOnlyUnsupportedChildren() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <g>
+                    <text x="10" y="10">hello</text>
+                    <foreignObject x="50" y="50" width="30" height="30"/>
+                  </g>
+                </svg>
+                """;
+        Node gNode = parseSvgChild(svg, "g");
+        BoundingBox.Box box = BoundingBox.calculate(null, gNode);
+        // Both children return null boxes, group combine produces EMPTY
+        assertNotNull(box);
+        assertTrue(!BoundingBox.isValid(box), "Group with only unsupported children should be invalid");
+    }
+
+    @Test
+    void testPathWithAbsoluteHorizontalAndVertical() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="M10 10 H90 V90" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box);
+        assertTrue(BoundingBox.isValid(box));
+        assertTrue(box.minX() <= 10);
+        assertTrue(box.minX() + box.width() >= 90);
+        assertTrue(box.minY() + box.height() >= 90);
+    }
+
+    @Test
+    void testPathWithRelativeLines() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="M10 10 l30 0 l0 30 l-30 0 z" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box);
+        assertTrue(BoundingBox.isValid(box));
+        assertEquals(10, box.minX(), 1.0);
+        assertEquals(10, box.minY(), 1.0);
+        assertEquals(30, box.width(), 1.0);
+        assertEquals(30, box.height(), 1.0);
+    }
+
+    @Test
+    void testPathWithAbsoluteArc() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                  <path d="M50 10 A40 40 0 1 1 50 90" fill="none" stroke="black"/>
+                </svg>
+                """;
+        Node pathNode = parseSvgChild(svg, "path");
+        BoundingBox.Box box = BoundingBox.calculate(null, pathNode);
+        assertNotNull(box);
+        assertTrue(BoundingBox.isValid(box));
+        assertTrue(box.minY() <= 10, "minY from start");
+        assertTrue(box.minY() + box.height() >= 90, "maxY from endpoint");
+    }
 }

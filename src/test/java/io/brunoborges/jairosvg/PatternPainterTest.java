@@ -144,4 +144,81 @@ class PatternPainterTest {
         }
         assertTrue(hasRed, "objectBoundingBox pattern should render red tiles");
     }
+
+    // ── Additional branch coverage tests ────────────────────────────────
+
+    @Test
+    void testPatternWithXYOffset() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <pattern id="pxy" patternUnits="userSpaceOnUse" x="5" y="5" width="20" height="20">
+                      <rect width="10" height="10" fill="green"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#pxy)"/>
+                </svg>""";
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Pattern with x/y offset should render");
+        // Somewhere should be green
+        boolean hasGreen = false;
+        for (int y = 0; y < 100 && !hasGreen; y++) {
+            for (int x = 0; x < 100 && !hasGreen; x++) {
+                int[] c = rgba(img, x, y);
+                if (c[1] > 100 && c[0] < 50 && c[2] < 50) {
+                    hasGreen = true;
+                }
+            }
+        }
+        assertTrue(hasGreen, "Pattern with x/y offset should produce green pixels");
+    }
+
+    @Test
+    void testPatternZeroHeight() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <pattern id="zh" patternUnits="userSpaceOnUse" width="10" height="0">
+                      <rect width="5" height="5" fill="red"/>
+                    </pattern>
+                  </defs>
+                  <rect width="50" height="50" fill="url(#zh)"/>
+                </svg>""";
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Should render without error when pattern has zero height");
+    }
+
+    @Test
+    void testPatternOnZeroSizeElement() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <pattern id="pz" width="0.2" height="0.2">
+                      <rect width="100%" height="100%" fill="red"/>
+                    </pattern>
+                  </defs>
+                  <rect x="50" y="50" width="0" height="0" fill="url(#pz)"/>
+                </svg>""";
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Pattern on zero-size element should not crash");
+    }
+
+    @Test
+    void testPatternHrefInheritAttributes() throws Exception {
+        // Child pattern inherits width/height/patternUnits from base
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <pattern id="pbase" patternUnits="userSpaceOnUse" width="20" height="20">
+                      <rect width="10" height="10" fill="blue"/>
+                    </pattern>
+                    <pattern id="pchild" href="#pbase">
+                      <rect width="5" height="5" fill="red"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#pchild)"/>
+                </svg>""";
+        BufferedImage img = render(svg);
+        assertNotNull(img, "Pattern with href inheriting attrs should render");
+    }
 }

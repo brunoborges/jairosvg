@@ -250,4 +250,165 @@ class BlendCompositorTest {
         assertTrue(red(pixel) > blue(pixel),
                 "Red should dominate in normal blend, R=" + red(pixel) + " B=" + blue(pixel));
     }
+
+    // ── Different-size blend (slow path) with various modes ─────────────
+
+    @Test
+    void multiplyBlendDifferentDimensions() {
+        BufferedImage src = solidImage(4, 4, 0xFFFFFFFF);
+        BufferedImage dst = solidImage(2, 2, 0xFF804020);
+        BufferedImage result = BlendCompositor.blend(src, dst, "multiply", null);
+        assertNotNull(result);
+        assertEquals(4, result.getWidth());
+        // In the overlap area, multiply(white, color) = color
+        int pixel = result.getRGB(0, 0);
+        assertTrue(Math.abs(red(pixel) - 0x80) <= 2, "multiply(white,color) overlap: R");
+    }
+
+    @Test
+    void screenBlendDifferentDimensions() {
+        BufferedImage src = solidImage(4, 4, 0xFF000000);
+        BufferedImage dst = solidImage(2, 2, 0xFF804020);
+        BufferedImage result = BlendCompositor.blend(src, dst, "screen", null);
+        assertNotNull(result);
+        // screen(black, color) = color in overlap region
+        int pixel = result.getRGB(0, 0);
+        assertTrue(Math.abs(red(pixel) - 0x80) <= 2, "screen(black,color): R");
+    }
+
+    @Test
+    void darkenBlendDifferentDimensions() {
+        BufferedImage src = solidImage(4, 4, 0xFFFF4080);
+        BufferedImage dst = solidImage(2, 2, 0xFF408040);
+        BufferedImage result = BlendCompositor.blend(src, dst, "darken", null);
+        assertNotNull(result);
+        int pixel = result.getRGB(0, 0);
+        assertEquals(0x40, red(pixel));
+    }
+
+    @Test
+    void lightenBlendDifferentDimensions() {
+        BufferedImage src = solidImage(4, 4, 0xFFFF4080);
+        BufferedImage dst = solidImage(2, 2, 0xFF408040);
+        BufferedImage result = BlendCompositor.blend(src, dst, "lighten", null);
+        assertNotNull(result);
+        int pixel = result.getRGB(0, 0);
+        assertEquals(0xFF, red(pixel));
+    }
+
+    // ── Different-size with transparency ────────────────────────────────
+
+    @Test
+    void blendDifferentDimensionsBothTransparent() {
+        BufferedImage src = solidImage(4, 4, 0x00000000);
+        BufferedImage dst = solidImage(2, 2, 0x00000000);
+        BufferedImage result = BlendCompositor.blend(src, dst, "multiply", null);
+        assertEquals(0, alpha(result.getRGB(0, 0)));
+    }
+
+    @Test
+    void blendDifferentDimensionsPartialAlpha() {
+        BufferedImage src = solidImage(4, 4, 0x80FF0000);
+        BufferedImage dst = solidImage(2, 2, 0x800000FF);
+        BufferedImage result = BlendCompositor.blend(src, dst, "screen", null);
+        assertNotNull(result);
+        int pixel = result.getRGB(0, 0);
+        assertTrue(alpha(pixel) > 100, "Combined alpha should be >100");
+    }
+
+    // ── Reuse output buffer in slow path ────────────────────────────────
+
+    @Test
+    void blendDifferentDimensionsReuseOutput() {
+        BufferedImage src = solidImage(4, 4, 0xFFFF0000);
+        BufferedImage dst = solidImage(2, 2, 0xFF0000FF);
+        BufferedImage output = new BufferedImage(4, 4, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage result = BlendCompositor.blend(src, dst, "normal", output);
+        assertEquals(output, result, "Should reuse output buffer for slow path");
+    }
+
+    // ── Slow path with out-of-bounds pixel access ───────────────────────
+
+    @Test
+    void blendSlowPathPixelOutsideSrc() {
+        // dst is larger than src — pixel outside src bounds
+        BufferedImage src = solidImage(2, 2, 0xFFFF0000);
+        BufferedImage dst = solidImage(4, 4, 0xFF0000FF);
+        BufferedImage result = BlendCompositor.blend(src, dst, "normal", null);
+        assertEquals(4, result.getWidth());
+        // (3,3) is outside src but inside dst — should be blue
+        int pixel = result.getRGB(3, 3);
+        assertEquals(0, red(pixel));
+        assertTrue(blue(pixel) > 200, "Out-of-src pixel should be dst (blue)");
+    }
+
+    // ── blendComposite via SVG feBlend rendering ────────────────────────
+
+    @Test
+    void feBlendMultiplySvg() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feFlood flood-color="white" result="bg"/>
+                      <feBlend in="SourceGraphic" in2="bg" mode="multiply"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="#804020" filter="url(#f)"/>
+                </svg>
+                """;
+        var img = io.brunoborges.jairosvg.RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void feBlendScreenSvg() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feFlood flood-color="black" result="bg"/>
+                      <feBlend in="SourceGraphic" in2="bg" mode="screen"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="#804020" filter="url(#f)"/>
+                </svg>
+                """;
+        var img = io.brunoborges.jairosvg.RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void feBlendDarkenSvg() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feFlood flood-color="#FF8040" result="bg"/>
+                      <feBlend in="SourceGraphic" in2="bg" mode="darken"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="#408040" filter="url(#f)"/>
+                </svg>
+                """;
+        var img = io.brunoborges.jairosvg.RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void feBlendLightenSvg() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feFlood flood-color="#408040" result="bg"/>
+                      <feBlend in="SourceGraphic" in2="bg" mode="lighten"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="#FF8040" filter="url(#f)"/>
+                </svg>
+                """;
+        var img = io.brunoborges.jairosvg.RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
 }
