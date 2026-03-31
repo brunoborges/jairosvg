@@ -243,16 +243,11 @@ public class generate {
     );
 
     static void generateReadme(List<Path> svgFiles, Map<String, boolean[]> results) throws Exception {
-        Path readmePath = BASE_DIR.resolve("README.md");
-        if (!Files.exists(readmePath)) {
-            System.out.println("README.md not found, skipping regeneration.");
-            return;
-        }
-        String readme = Files.readString(readmePath, StandardCharsets.UTF_8);
+        Path visualPath = BASE_DIR.resolve("VISUAL_COMPARISON.md");
 
-        // Build the new visual comparison section content
+        // Build the visual comparison file content
         var sb = new StringBuilder();
-        sb.append("## Visual Rendering Comparison\n\n");
+        sb.append("# Visual Rendering Comparison\n\n");
         sb.append("Side-by-side visual comparison of ").append(svgFiles.size())
           .append(" SVG test cases across all four libraries.\n");
 
@@ -283,23 +278,7 @@ public class generate {
               .append(jsvg).append(" |\n");
         }
 
-        // Replace the Visual Rendering Comparison section in the README
-        // Section starts at "## Visual Rendering Comparison" and ends at the next "---" separator
-        String marker = "## Visual Rendering Comparison";
-        String endMarker = "\n---\n";
-        int start = readme.indexOf(marker);
-        if (start < 0) {
-            System.out.println("Could not find '## Visual Rendering Comparison' in README.md, skipping.");
-            return;
-        }
-        int end = readme.indexOf(endMarker, start);
-        if (end < 0) {
-            System.out.println("Could not find section end in README.md, skipping.");
-            return;
-        }
-
-        String newReadme = readme.substring(0, start) + sb + readme.substring(end);
-        Files.writeString(readmePath, newReadme, StandardCharsets.UTF_8);
-        System.out.println("\nREADME.md visual comparison section regenerated → " + readmePath);
+        Files.writeString(visualPath, sb.toString(), StandardCharsets.UTF_8);
+        System.out.println("\nVisual comparison regenerated → " + visualPath);
     }
 }
