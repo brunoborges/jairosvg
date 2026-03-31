@@ -82,7 +82,8 @@ public final class UrlHelper {
                 } else {
                     // file: URI — strip query/fragment to avoid IllegalArgumentException
                     if (uri.getRawQuery() != null || uri.getRawFragment() != null) {
-                        filePath = Path.of(uri.getPath());
+                        URI cleanUri = new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), null, null);
+                        filePath = Path.of(cleanUri);
                     } else {
                         filePath = Path.of(uri);
                     }
