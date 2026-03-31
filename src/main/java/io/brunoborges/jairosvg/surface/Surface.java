@@ -461,20 +461,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                         } else {
                             path.setWindingRule(GeneralPath.WIND_NON_ZERO);
                         }
-                        if (paintTransform != null) {
-                            AffineTransform saved = context.getTransform();
-                            context.transform(paintTransform);
-                            try {
-                                Shape fillShape = paintTransform.createInverse().createTransformedShape(path);
-                                context.fill(fillShape);
-                            } catch (java.awt.geom.NoninvertibleTransformException e) {
-                                context.fill(path);
-                            }
-                            context.setTransform(saved);
-                            paintTransform = null;
-                        } else {
-                            context.fill(path);
-                        }
+                        paintWithTransform(path, true);
                     }
                 }
 
@@ -522,20 +509,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                                 : new BasicStroke(strokeWidth, cap, join, miterLimit);
 
                         context.setStroke(stroke);
-                        if (paintTransform != null) {
-                            AffineTransform saved = context.getTransform();
-                            context.transform(paintTransform);
-                            try {
-                                Shape strokeShape = paintTransform.createInverse().createTransformedShape(path);
-                                context.draw(strokeShape);
-                            } catch (java.awt.geom.NoninvertibleTransformException e) {
-                                context.draw(path);
-                            }
-                            context.setTransform(saved);
-                            paintTransform = null;
-                        } else {
-                            context.draw(path);
-                        }
+                        paintWithTransform(path, false);
                     }
                 }
 
@@ -683,6 +657,38 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     /** Get the rendered image. */
     public BufferedImage getImage() {
         return image;
+    }
+
+    /**
+     * Paint a shape (fill or stroke) while honouring a pending
+     * {@link #paintTransform}. When a pattern's {@code patternTransform} is active
+     * the Graphics2D coordinate system is temporarily transformed so that the
+     * TexturePaint tiling grid is correctly scaled/rotated/skewed.
+     */
+    private void paintWithTransform(Shape shape, boolean fill) {
+        if (paintTransform != null) {
+            AffineTransform saved = context.getTransform();
+            context.transform(paintTransform);
+            try {
+                Shape mapped = paintTransform.createInverse().createTransformedShape(shape);
+                if (fill)
+                    context.fill(mapped);
+                else
+                    context.draw(mapped);
+            } catch (java.awt.geom.NoninvertibleTransformException e) {
+                if (fill)
+                    context.fill(shape);
+                else
+                    context.draw(shape);
+            }
+            context.setTransform(saved);
+            paintTransform = null;
+        } else {
+            if (fill)
+                context.fill(shape);
+            else
+                context.draw(shape);
+        }
     }
 
     private static int getLineCap(String cap) {
