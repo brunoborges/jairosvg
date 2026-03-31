@@ -868,4 +868,282 @@ class SurfaceTest {
         assertTrue(r[0] > 150, "First rect should be reddish");
         assertTrue(b[2] > 150, "Second rect should be bluish");
     }
+
+    // ── zero-size SVG still renders (minimum 1x1) ──
+
+    @Test
+    void testZeroWidthSvgRendersMinimum() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="0" height="100">
+                  <rect width="100" height="100" fill="red"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertTrue(img.getWidth() >= 1);
+    }
+
+    @Test
+    void testZeroHeightSvgRendersMinimum() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="0">
+                  <rect width="100" height="100" fill="red"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertTrue(img.getHeight() >= 1);
+    }
+
+    // ── outputWidth/outputHeight scaling branches ──
+
+    @Test
+    void testOutputWidthOnlyScaling() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                  <rect width="100" height="100" fill="green"/>
+                </svg>
+                """;
+        byte[] png = JairoSVG.builder().fromBytes(svg.getBytes(StandardCharsets.UTF_8)).outputWidth(50.0).toPng();
+        BufferedImage img = javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(png));
+        assertEquals(50, img.getWidth());
+    }
+
+    @Test
+    void testOutputHeightOnlyScaling() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                  <rect width="100" height="100" fill="green"/>
+                </svg>
+                """;
+        byte[] png = JairoSVG.builder().fromBytes(svg.getBytes(StandardCharsets.UTF_8)).outputHeight(50.0).toPng();
+        BufferedImage img = javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(png));
+        assertEquals(50, img.getHeight());
+    }
+
+    @Test
+    void testOutputWidthWithZeroW() throws Exception {
+        // SVG with no width, no viewBox → nodeFormat returns w=0
+        // outputWidth is set → if (w > 0) should be false
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" height="100">
+                  <rect width="100" height="100" fill="green"/>
+                </svg>
+                """;
+        byte[] png = JairoSVG.builder().fromBytes(svg.getBytes(StandardCharsets.UTF_8)).outputWidth(50.0).toPng();
+        BufferedImage img = javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(png));
+        assertEquals(50, img.getWidth());
+    }
+
+    @Test
+    void testOutputHeightWithZeroH() throws Exception {
+        // SVG with no height, no viewBox → nodeFormat returns h=0
+        // outputHeight is set → if (h > 0) should be false
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100">
+                  <rect width="100" height="100" fill="green"/>
+                </svg>
+                """;
+        byte[] png = JairoSVG.builder().fromBytes(svg.getBytes(StandardCharsets.UTF_8)).outputHeight(50.0).toPng();
+        BufferedImage img = javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(png));
+        assertEquals(50, img.getHeight());
+    }
+
+    // ── font shorthand (expanded during CSS cascade, tested in NodeTest) ──
+
+    @Test
+    void testFontShorthandRendersCorrectly() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50">
+                  <rect width="200" height="50" fill="white"/>
+                  <text x="10" y="30" font="bold 24px serif" fill="black">Test</text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        int dark = RenderTestHelper.countDarkPixels(img, 0, 0, 199, 49, 128);
+        assertTrue(dark > 10, "Text should render with font shorthand");
+    }
+
+    // ── def tags outside <defs> ──
+
+    @Test
+    void testDefTagsOutsideDefs() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <clipPath id="cp"><rect width="50" height="50"/></clipPath>
+                  <filter id="f1"><feGaussianBlur stdDeviation="1"/></filter>
+                  <linearGradient id="lg1"><stop offset="0" stop-color="red"/><stop offset="1" stop-color="blue"/></linearGradient>
+                  <marker id="mk1"><circle r="2" fill="red"/></marker>
+                  <mask id="m1"><rect width="100" height="100" fill="white"/></mask>
+                  <pattern id="p1" width="10" height="10"><rect width="10" height="10" fill="red"/></pattern>
+                  <radialGradient id="rg1"><stop offset="0" stop-color="green"/><stop offset="1" stop-color="yellow"/></radialGradient>
+                  <rect width="100" height="100" fill="url(#lg1)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        assertTrue(img.getWidth() > 0);
+    }
+
+    // ── PointError catch (malformed polyline) ──
+
+    @Test
+    void testMalformedPolylinePointsIgnored() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <polyline points="abc,def" stroke="red" fill="none"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertPixelColor(img, 50, 50, 255, 255, 255);
+    }
+
+    // ── getLineCap default value ──
+
+    @Test
+    void testUnknownStrokeLinecapDefaultsToButt() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <line x1="10" y1="50" x2="90" y2="50" stroke="black" stroke-width="10"
+                        stroke-linecap="invalid"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        int dark = RenderTestHelper.countDarkPixels(img, 10, 45, 90, 55, 128);
+        assertTrue(dark > 20, "Line should render with default cap");
+    }
+
+    // ── effect buffer reuse via consecutive groups with opacity ──
+
+    @Test
+    void testEffectBufferReuseFullCanvas() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <g opacity="0.5"><rect width="100" height="100" fill="red"/></g>
+                  <g opacity="0.5"><rect width="100" height="100" fill="blue"/></g>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        int[] c = rgba(img, 50, 50);
+        assertTrue(c[0] > 30 || c[2] > 30, "Should show blended colors");
+    }
+
+    // ── per-element opacity < 1 with no children ──
+
+    @Test
+    void testElementOpacityNoChildren() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <rect width="100" height="100" fill="black" opacity="0.5"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        int[] c = rgba(img, 50, 50);
+        assertTrue(c[0] > 100 && c[0] < 160, "Should be grayish: " + c[0]);
+    }
+
+    // ── fill starting with 'u' but not "url" ──
+
+    @Test
+    void testFillStartingWithUNotUrl() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="urchin"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── clip-path edge cases ──
+
+    @Test
+    void testClipPathNoFragment() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="green" clip-path="url()"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertPixelColor(img, 50, 50, 0, 128, 0, 10);
+    }
+
+    @Test
+    void testClipPathNonExistentId() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="green" clip-path="url(#doesNotExist)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertPixelColor(img, 50, 50, 0, 128, 0, 10);
+    }
+
+    // ── stroke with gradient ──
+
+    @Test
+    void testStrokeWithGradient() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <linearGradient id="sg" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0" stop-color="red"/>
+                      <stop offset="1" stop-color="blue"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="100" height="100" fill="white"/>
+                  <rect x="10" y="10" width="80" height="80" fill="none" stroke="url(#sg)" stroke-width="8"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── transparent fill suppressed ──
+
+    @Test
+    void testTransparentFillSuppressed() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <rect x="10" y="10" width="80" height="80" fill="transparent"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertPixelColor(img, 50, 50, 255, 255, 255);
+    }
+
+    // ── stroke with zero alpha suppressed ──
+
+    @Test
+    void testStrokeWithZeroAlphaSuppressed() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect width="100" height="100" fill="white"/>
+                  <rect x="10" y="10" width="80" height="80" fill="none" stroke="transparent" stroke-width="4"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertPixelColor(img, 12, 12, 255, 255, 255);
+    }
+
+    // ── mask on element with large bounding box (no sub-region) ──
+
+    @Test
+    void testMaskOnLargeElement() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <mask id="m"><rect width="100" height="100" fill="white"/></mask>
+                  </defs>
+                  <rect width="100" height="100" fill="white"/>
+                  <g mask="url(#m)">
+                    <rect width="100" height="100" fill="red"/>
+                  </g>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertPixelColor(img, 50, 50, 255, 0, 0);
+    }
 }

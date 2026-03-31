@@ -133,9 +133,9 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     }
 
     /** Initialize the surface with optional rendering hint overrides. */
-    public void init(Node tree, OutputStream output, double dpi, Surface parentSurface, Double parentWidth,
-            Double parentHeight, double scale, Double outputWidth, Double outputHeight, String backgroundColor,
-            UnaryOperator<Colors.RGBA> mapRgba, Map<RenderingHints.Key, Object> renderingHintOverrides) {
+    public void init(Node tree, OutputStream output, double dpi, Double parentWidth, Double parentHeight, double scale,
+            Double outputWidth, Double outputHeight, String backgroundColor, UnaryOperator<Colors.RGBA> mapRgba,
+            Map<RenderingHints.Key, Object> renderingHintOverrides) {
 
         this.output = output;
         this.dpi = dpi;
@@ -143,18 +143,6 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         this.contextWidth = parentWidth != null ? parentWidth : 0;
         this.contextHeight = parentHeight != null ? parentHeight : 0;
         this.rootNode = tree;
-
-        if (parentSurface != null) {
-            this.markers = parentSurface.markers;
-            this.gradients = parentSurface.gradients;
-            this.patterns = parentSurface.patterns;
-            this.masks = parentSurface.masks;
-            this.paths = parentSurface.paths;
-            this.filters = parentSurface.filters;
-            this.images = parentSurface.images;
-            this.fonts = parentSurface.fonts;
-            this.rasterImageCache = parentSurface.rasterImageCache;
-        }
 
         this.fontSize = size(this, "12pt");
 
@@ -182,10 +170,6 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         }
 
         createSurface(w, h);
-
-        if (width == 0 || height == 0) {
-            throw new IllegalArgumentException("The SVG size is undefined");
-        }
 
         this.context = image.createGraphics();
         setupRenderingHints(renderingHintOverrides);
@@ -276,16 +260,6 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         double oldContextHeight = this.contextHeight;
         this.parentNode = node;
 
-        // Handle font shorthand
-        if (node.has("font")) {
-            var font = Helpers.parseFont(node.get("font"));
-            for (var entry : font.entrySet()) {
-                if (!node.has(entry.getKey()) && !entry.getValue().isEmpty()) {
-                    node.set(entry.getKey(), entry.getValue());
-                }
-            }
-        }
-
         this.fontSize = size(this, node.get("font-size", "12pt"));
 
         int savedDepth = transformDepth;
@@ -319,7 +293,6 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         Graphics2D effectBaseContext = null;
         Graphics2D effectContext = null;
         BufferedImage effectSourceImage = null;
-        boolean ownEffectBuffer = false;
         boolean subRegionEffect = false;
         int ebX = 0, ebY = 0;
         AffineTransform subRegionXform = null;
@@ -347,7 +320,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                     double dMaxX = Math.max(Math.max(dst[0], dst[2]), Math.max(dst[4], dst[6]));
                     double dMaxY = Math.max(Math.max(dst[1], dst[3]), Math.max(dst[5], dst[7]));
 
-                    int pad = computeEffectPadding(node, null);
+                    int pad = computeEffectPadding(node);
                     ebX = Math.max(0, (int) Math.floor(dMinX) - pad);
                     ebY = Math.max(0, (int) Math.floor(dMinY) - pad);
                     int ebW = Math.min(fullW, (int) Math.ceil(dMaxX) + pad) - ebX;
@@ -373,7 +346,6 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                 }
             }
             effectBufferInUse = true;
-            ownEffectBuffer = true;
             effectContext = effectSourceImage.createGraphics();
             effectContext.setRenderingHints(effectBaseContext.getRenderingHints());
             if (subRegionEffect) {
@@ -592,9 +564,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                 effectBaseContext.setComposite(savedComposite);
             }
             effectContext.dispose();
-            if (ownEffectBuffer) {
-                effectBufferInUse = false;
-            }
+            effectBufferInUse = false;
         }
 
         this.parentNode = oldParentNode;
@@ -609,9 +579,9 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
 
     /**
      * Compute device-pixel padding for the sub-region effect buffer. Accounts for
-     * stroke width and filter blur/offset extent.
+     * stroke width extent.
      */
-    private int computeEffectPadding(Node node, String filterName) {
+    private int computeEffectPadding(Node node) {
         int pad = 4; // base padding for anti-aliasing and rounding
 
         // Stroke extent
@@ -622,35 +592,6 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
             double sx = Math.sqrt(xf.getScaleX() * xf.getScaleX() + xf.getShearX() * xf.getShearX());
             double sy = Math.sqrt(xf.getScaleY() * xf.getScaleY() + xf.getShearY() * xf.getShearY());
             pad += (int) Math.ceil(sw * Math.max(sx, sy) / 2) + 1;
-        }
-
-        // Filter blur/offset extent (in device pixels)
-        if (filterName != null) {
-            Node filterNode = this.filters.get(filterName);
-            if (filterNode != null) {
-                int blurPad = 0, offsetPad = 0;
-                for (Node child : filterNode.children) {
-                    switch (child.tag) {
-                        case "feGaussianBlur" -> {
-                            double sigma = parseDoubleOr(child.get("stdDeviation"), 0);
-                            blurPad = Math.max(blurPad, (int) Math.ceil(sigma * 3));
-                        }
-                        case "feDropShadow" -> {
-                            double sigma = parseDoubleOr(child.get("stdDeviation"), 0);
-                            blurPad = Math.max(blurPad, (int) Math.ceil(sigma * 3));
-                            offsetPad = Math.max(offsetPad, (int) Math.ceil(Math.abs(parseDoubleOr(child.get("dx"), 0)))
-                                    + (int) Math.ceil(Math.abs(parseDoubleOr(child.get("dy"), 0))));
-                        }
-                        case "feOffset" -> {
-                            offsetPad = Math.max(offsetPad, (int) Math.ceil(Math.abs(parseDoubleOr(child.get("dx"), 0)))
-                                    + (int) Math.ceil(Math.abs(parseDoubleOr(child.get("dy"), 0))));
-                        }
-                        default -> {
-                        }
-                    }
-                }
-                pad += blurPad + offsetPad;
-            }
         }
 
         return pad;
