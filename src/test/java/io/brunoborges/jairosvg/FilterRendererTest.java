@@ -1110,4 +1110,97 @@ class FilterRendererTest {
         BufferedImage img = render(svg);
         assertNotNull(img);
     }
+
+    // ── feBlend as first primitive (allocates buf1/buf2/buf3 itself) ──
+
+    @Test
+    void feBlendAsFirstPrimitive() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="bf">
+                      <feBlend in="SourceGraphic" in2="SourceGraphic" mode="multiply"/>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="red" filter="url(#bf)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feMerge as first primitive ──
+
+    @Test
+    void feMergeAsFirstPrimitive() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="mf">
+                      <feMerge>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="blue" filter="url(#mf)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feDropShadow as first primitive ──
+
+    @Test
+    void feDropShadowAsFirstPrimitive() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="ds">
+                      <feDropShadow dx="2" dy="2" stdDeviation="1"
+                                    flood-color="black" flood-opacity="0.5"/>
+                    </filter>
+                  </defs>
+                  <rect width="30" height="30" fill="red" filter="url(#ds)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feOffset as first primitive ──
+
+    @Test
+    void feOffsetAsFirstPrimitive() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="of">
+                      <feOffset dx="5" dy="5"/>
+                    </filter>
+                  </defs>
+                  <rect width="30" height="30" fill="green" filter="url(#of)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feFlood as first primitive ──
+
+    @Test
+    void feFloodAsFirstPrimitive() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="ff">
+                      <feFlood flood-color="purple" flood-opacity="0.7"/>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="yellow" filter="url(#ff)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
 }

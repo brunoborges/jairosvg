@@ -774,4 +774,72 @@ class BoundingBoxTest {
         assertEquals(80, box.width(), 1.0);
         assertEquals(80, box.height(), 1.0);
     }
+
+    // ── path with Z (close) command ──
+
+    @Test
+    void pathBBoxWithCloseCommand() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,10 L90,10 L90,90 Z" fill="red"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── path with unknown command letter ──
+
+    @Test
+    void pathBBoxWithUnknownCommand() throws Exception {
+        // 'X' is not a valid SVG path command — BoundingBox should skip it
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <clipPath id="cp">
+                      <path d="M10,10 L90,10 X50,90 L90,90 Z"/>
+                    </clipPath>
+                  </defs>
+                  <rect width="100" height="100" fill="red" clip-path="url(#cp)"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── path with A (absolute arc) ──
+
+    @Test
+    void pathBBoxWithAbsoluteArc() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <clipPath id="ac">
+                      <path d="M10,50 A30,30 0 0,1 90,50"/>
+                    </clipPath>
+                  </defs>
+                  <rect width="100" height="100" fill="blue" clip-path="url(#ac)"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
+
+    // ── path with a (relative arc) ──
+
+    @Test
+    void pathBBoxWithRelativeArc() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <clipPath id="ra">
+                      <path d="M10,50 a30,30 0 0,1 80,0"/>
+                    </clipPath>
+                  </defs>
+                  <rect width="100" height="100" fill="green" clip-path="url(#ra)"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+    }
 }

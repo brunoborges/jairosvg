@@ -1146,4 +1146,151 @@ class SurfaceTest {
         BufferedImage img = render(svg);
         assertPixelColor(img, 50, 50, 255, 0, 0);
     }
+
+    // ── fill-rule evenodd ──
+
+    @Test
+    void fillRuleEvenOdd() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <path d="M10,10 L90,10 L90,90 L10,90 Z M30,30 L70,30 L70,70 L30,70 Z"
+                        fill="red" fill-rule="evenodd"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── stroke with gradient ──
+
+    @Test
+    void strokeWithGradient() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <linearGradient id="sg" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stop-color="red"/>
+                      <stop offset="100%" stop-color="blue"/>
+                    </linearGradient>
+                  </defs>
+                  <rect x="10" y="10" width="80" height="80" fill="none"
+                        stroke="url(#sg)" stroke-width="5"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── element with stroke-opacity ──
+
+    @Test
+    void elementWithStrokeOpacity() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect x="10" y="10" width="80" height="80"
+                        fill="red" stroke="blue" stroke-width="5"
+                        stroke-opacity="0.5" fill-opacity="0.5"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── element with opacity < 1 and children ──
+
+    @Test
+    void groupWithOpacity() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <g opacity="0.5">
+                    <rect width="50" height="100" fill="red"/>
+                    <rect x="50" width="50" height="100" fill="blue"/>
+                  </g>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── PointError in draw → caught and ignored ──
+
+    @Test
+    void pointErrorInDrawCaught() throws Exception {
+        // Malformed numeric data triggers PointError which is caught by Surface.draw
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <circle cx="abc" cy="50" r="20" fill="red"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── clipPath ──
+
+    @Test
+    void clipPathRendering() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <clipPath id="clip">
+                      <circle cx="50" cy="50" r="40"/>
+                    </clipPath>
+                  </defs>
+                  <rect width="100" height="100" fill="green" clip-path="url(#clip)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // Corner should be transparent (clipped)
+        int[] corner = rgba(img, 2, 2);
+        assertTrue(corner[1] < 50 || corner[3] < 50, "Corner should be clipped");
+    }
+
+    // ── use element ──
+
+    @Test
+    void useElement() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <rect id="myRect" width="40" height="40" fill="blue"/>
+                  </defs>
+                  <use href="#myRect" x="10" y="10"/>
+                  <use href="#myRect" x="50" y="50"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // Both use elements should render something
+        assertTrue(countDarkPixels(img, 0, 0, 99, 99, 200) > 0, "Use elements should render");
+    }
+
+    // ── stroke-dasharray ──
+
+    @Test
+    void strokeDashArray() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50">
+                  <line x1="10" y1="25" x2="90" y2="25" stroke="black"
+                        stroke-width="3" stroke-dasharray="10,5"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── stroke-linecap and stroke-linejoin ──
+
+    @Test
+    void strokeLinecapAndLinejoin() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <polyline points="20,80 50,20 80,80" fill="none" stroke="black"
+                            stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
 }
