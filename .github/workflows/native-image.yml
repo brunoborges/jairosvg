@@ -13,6 +13,9 @@ on:
       - 'src/**'
       - 'pom.xml'
       - '.github/workflows/native-image.yml'
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   workflow_dispatch:
 
 permissions:

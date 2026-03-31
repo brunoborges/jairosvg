@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: '0 0 * * 1'  # Weekly on Monday at midnight UTC
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   benchmark:
     runs-on: ubuntu-latest
