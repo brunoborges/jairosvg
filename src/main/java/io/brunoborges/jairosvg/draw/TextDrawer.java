@@ -206,8 +206,7 @@ public final class TextDrawer {
                     curX += svgFont.getAdvance(glyph, surface.fontSize) + letterSpacing;
                 } else {
                     // Fall back to AWT system font for characters without a defined SVG glyph
-                    int cp = textContent.codePointAt(i);
-                    String ch = new String(Character.toChars(cp));
+                    String ch = textContent.substring(i, i + match.charsConsumed());
                     if (drawAsText) {
                         surface.context.setFont(font);
                         surface.context.drawString(ch, (float) curX, (float) startY);
@@ -468,8 +467,7 @@ public final class TextDrawer {
             if (match.glyph() != null) {
                 width += svgFont.getAdvance(match.glyph(), fontSize);
             } else {
-                int cp = text.codePointAt(i);
-                String ch = new String(Character.toChars(cp));
+                String ch = text.substring(i, i + match.charsConsumed());
                 width += awtFont.getStringBounds(ch, frc).getWidth();
             }
             i += match.charsConsumed();
