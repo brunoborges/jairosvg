@@ -44,7 +44,7 @@ A high-performance SVG 1.1 to PNG, JPEG, TIFF, PDF, and PS/EPS converter powered
 <p align="center">
   <a href="comparison/benchmark/benchmark.png"><img src="comparison/benchmark/benchmark.png" width="256" alt="SVG to PNG benchmark latency chart"/></a>
   &nbsp;&nbsp;
-  <a href="comparison/benchmark/benchmark-size.png"><img src="comparison/benchmark/benchmark-size.png" width="256" alt="PNG output file sizes chart"/></a>
+  <a href="comparison/visual/size-comparison.png"><img src="comparison/visual/size-comparison.png" width="256" alt="PNG output file sizes chart"/></a>
   <br/><sub><i>Click to enlarge</i></sub>
 </p>
 

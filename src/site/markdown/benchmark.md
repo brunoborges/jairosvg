@@ -67,7 +67,7 @@ JairoSVG produces the smallest PNGs overall — **8.0% smaller** than CairoSVG, 
 | Localized masks |      18,389 |      17,868 |      13,218 |      20,239 |
 | **Total**      | **241,646** | **283,452** | **260,984** | **269,394** |
 
-<a href="images/benchmark-size.png" target="_blank"><img src="images/benchmark-size.png" alt="File size comparison chart" width="560"/></a>
+<a href="images/size-comparison.png" target="_blank"><img src="images/size-comparison.png" alt="File size comparison chart" width="560"/></a>
 
 ### Test SVGs
 
