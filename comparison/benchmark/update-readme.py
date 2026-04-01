@@ -61,8 +61,8 @@ def load_jsonl():
 
 
 def make_anchor(num, slug):
-    """Generate a markdown anchor from test case number and slug."""
-    return f"{num:02d}--{slug.replace('_', '-')}"
+    """Generate a markdown anchor matching the visual README headings."""
+    return f"{num:02d}_{slug}"
 
 
 def generate_benchmark_table(cases, data):
@@ -102,7 +102,7 @@ def generate_benchmark_table(cases, data):
                 cells.append(formatted)
 
         anchor = make_anchor(num, slug)
-        label = f"[{case_name}](README.md#{anchor})"
+        label = f"[{case_name}](../visual/README.md#{anchor})"
         if case_name in WARN_CASES:
             label += " ⚠️"
 
