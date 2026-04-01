@@ -39,15 +39,6 @@ A high-performance SVG 1.1 to PNG, JPEG, TIFF, PDF, and PS/EPS converter powered
 - 🛡️ **Secure**: XML external entity (XXE) protection by default
 - 🧰 **Flexible API**: Static methods, fluent builder, CLI
 
-## Benchmark and Feature Comparison
-
-<p align="center">
-  <a href="comparison/benchmark/benchmark.png"><img src="comparison/benchmark/benchmark.png" width="256" alt="SVG to PNG benchmark latency chart"/></a>
-  &nbsp;&nbsp;
-  <a href="comparison/visual/size-comparison.png"><img src="comparison/visual/size-comparison.png" width="256" alt="PNG output file sizes chart"/></a>
-  <br/><sub><i>Click to enlarge</i></sub>
-</p>
-
 ### Sample SVG → PNG conversion benchmark (lower is better):
 
 | Test Case                | JairoSVG (Java) | EchoSVG (Java) | JSVG (Java) | CairoSVG (Python) |
