@@ -15,3 +15,4 @@ Thumbs.db
 benchmark-results.jsonl
 comparison/benchmark/benchmark-results.jsonl
 benchmark-*.log
+comparison/profiling/flamegraphs/*.html
