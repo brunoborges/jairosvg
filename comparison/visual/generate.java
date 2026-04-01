@@ -349,10 +349,8 @@ public class generate {
               .append(sizeCell(sCairo, minSize)).append(" | ")
               .append(sizeCell(sJsvg, minSize)).append(" |\n");
 
-            // Benchmark time row (markers are inline so they don't break the table)
-            sb.append("<!-- BEGIN:TIME:").append(name).append(" -->")
-              .append(timeRow(name, benchData))
-              .append("<!-- END:TIME:").append(name).append(" -->\n");
+            // Benchmark time row
+            sb.append(timeRow(name, benchData)).append("\n");
         }
 
         // Aggregate sections wrapped in markers

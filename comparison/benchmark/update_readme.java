@@ -259,18 +259,11 @@ public class update_readme {
     }
 
     static String replaceSection(String content, String tag, String replacement) {
-        return replaceSection(content, tag, replacement, false);
-    }
-
-    static String replaceSection(String content, String tag, String replacement, boolean inline) {
         String begin = "<!-- BEGIN:" + tag + " -->";
         String end = "<!-- END:" + tag + " -->";
         int start = content.indexOf(begin);
         int finish = content.indexOf(end);
         if (start < 0 || finish < 0) return content;
-        if (inline) {
-            return content.substring(0, start) + begin + replacement + end + content.substring(finish + end.length());
-        }
         return content.substring(0, start) + begin + "\n" + replacement + "\n" + end + content.substring(finish + end.length());
     }
 
@@ -319,8 +312,15 @@ public class update_readme {
                     benchTimeCell(vals[0], minVal), benchTimeCell(vals[1], minVal),
                     benchTimeCell(vals[2], minVal), benchTimeCell(vals[3], minVal));
 
-            String tag = "TIME:%02d_%s".formatted(svgCase.num(), svgCase.slug());
-            content = replaceSection(content, tag, timeRow, true);
+            // Find the | **Time** | row in this test case's section
+            String anchor = "### %02d_%s".formatted(svgCase.num(), svgCase.slug());
+            int sectionStart = content.indexOf(anchor);
+            if (sectionStart < 0) continue;
+            int timeStart = content.indexOf("| **Time** |", sectionStart);
+            if (timeStart < 0) continue;
+            int timeEnd = content.indexOf("\n", timeStart);
+            if (timeEnd < 0) timeEnd = content.length();
+            content = content.substring(0, timeStart) + timeRow + content.substring(timeEnd);
         }
 
         Files.writeString(README_PATH, content);
