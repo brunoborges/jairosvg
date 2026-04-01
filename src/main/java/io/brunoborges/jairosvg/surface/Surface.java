@@ -551,12 +551,13 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
             if (groupOpacity) {
                 effectBaseContext.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) opacity));
             }
+            // Full-size effect buffers already contain content at device
+            // coordinates (the node's transform was applied during rendering).
+            // Composite with identity transform to avoid double-applying it.
+            transformStack[transformDepth].setTransform(effectBaseContext.getTransform());
+            effectBaseContext.setTransform(IDENTITY_TRANSFORM);
             if (subRegionEffect) {
-                // Composite sub-region at device coordinates using identity transform
-                transformStack[transformDepth].setTransform(effectBaseContext.getTransform());
-                effectBaseContext.setTransform(IDENTITY_TRANSFORM);
                 effectBaseContext.drawImage(renderedImage, ebX, ebY, null);
-                effectBaseContext.setTransform(transformStack[transformDepth]);
             } else {
                 if (filterClip != null) {
                     Shape prevClip = effectBaseContext.getClip();
@@ -567,6 +568,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                     effectBaseContext.drawImage(renderedImage, 0, 0, null);
                 }
             }
+            effectBaseContext.setTransform(transformStack[transformDepth]);
             if (groupOpacity) {
                 effectBaseContext.setComposite(savedComposite);
             }

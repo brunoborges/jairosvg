@@ -904,6 +904,8 @@ public final class FilterRenderer {
             }
         }
 
+        // SVG spec: feColorMatrix operates on non-premultiplied color values.
+        // TYPE_INT_ARGB buffers already store non-premultiplied data.
         int[] inData = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
         int[] outData = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
         for (int i = 0; i < w * h; i++) {
@@ -912,22 +914,11 @@ public final class FilterRenderer {
             int r = (p >> 16) & 0xFF;
             int g = (p >> 8) & 0xFF;
             int b = p & 0xFF;
-            // Un-premultiply
-            if (a > 0 && a < 255) {
-                r = Math.min(255, r * 255 / a);
-                g = Math.min(255, g * 255 / a);
-                b = Math.min(255, b * 255 / a);
-            }
             int nr = clamp((int) Math.round(m[0] * r + m[1] * g + m[2] * b + m[3] * a + m[4] * 255));
             int ng = clamp((int) Math.round(m[5] * r + m[6] * g + m[7] * b + m[8] * a + m[9] * 255));
             int nb = clamp((int) Math.round(m[10] * r + m[11] * g + m[12] * b + m[13] * a + m[14] * 255));
             int na = clamp((int) Math.round(m[15] * r + m[16] * g + m[17] * b + m[18] * a + m[19] * 255));
-            // Re-premultiply
-            if (na > 0 && na < 255) {
-                nr = nr * na / 255;
-                ng = ng * na / 255;
-                nb = nb * na / 255;
-            } else if (na == 0) {
+            if (na == 0) {
                 nr = ng = nb = 0;
             }
             outData[i] = (na << 24) | (nr << 16) | (ng << 8) | nb;
@@ -951,25 +942,16 @@ public final class FilterRenderer {
 
         int[] inData = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
         int[] outData = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
+        // SVG spec: feComponentTransfer operates on non-premultiplied color values.
+        // TYPE_INT_ARGB buffers already store non-premultiplied data.
         for (int i = 0; i < w * h; i++) {
             int p = inData[i];
             int a = (p >> 24) & 0xFF;
             int r = (p >> 16) & 0xFF;
             int g = (p >> 8) & 0xFF;
             int b = p & 0xFF;
-            // Un-premultiply
-            if (a > 0 && a < 255) {
-                r = Math.min(255, r * 255 / a);
-                g = Math.min(255, g * 255 / a);
-                b = Math.min(255, b * 255 / a);
-            }
             int nr = lutR[r], ng = lutG[g], nb = lutB[b], na = lutA[a];
-            // Re-premultiply
-            if (na > 0 && na < 255) {
-                nr = nr * na / 255;
-                ng = ng * na / 255;
-                nb = nb * na / 255;
-            } else if (na == 0) {
+            if (na == 0) {
                 nr = ng = nb = 0;
             }
             outData[i] = (na << 24) | (nr << 16) | (ng << 8) | nb;
@@ -1153,20 +1135,44 @@ public final class FilterRenderer {
                         int sy = y + ky - targetY;
                         int pixel = sampleEdge(inData, w, h, sx, sy, edgeMode);
                         double kVal = kernel[ky * orderX + kx];
-                        sumA += kVal * ((pixel >> 24) & 0xFF);
-                        sumR += kVal * ((pixel >> 16) & 0xFF);
-                        sumG += kVal * ((pixel >> 8) & 0xFF);
-                        sumB += kVal * (pixel & 0xFF);
+                        int pa = (pixel >> 24) & 0xFF;
+                        // SVG spec: convolution operates on premultiplied color values
+                        int pr = (pixel >> 16) & 0xFF;
+                        int pg = (pixel >> 8) & 0xFF;
+                        int pb = pixel & 0xFF;
+                        if (pa > 0 && pa < 255) {
+                            pr = pr * pa / 255;
+                            pg = pg * pa / 255;
+                            pb = pb * pa / 255;
+                        } else if (pa == 0) {
+                            pr = pg = pb = 0;
+                        }
+                        sumA += kVal * pa;
+                        sumR += kVal * pr;
+                        sumG += kVal * pg;
+                        sumB += kVal * pb;
                     }
                 }
                 int a, r, g, b;
-                r = clamp((int) Math.round(sumR / divisor + bias * 255));
-                g = clamp((int) Math.round(sumG / divisor + bias * 255));
-                b = clamp((int) Math.round(sumB / divisor + bias * 255));
+                int pR = clamp((int) Math.round(sumR / divisor + bias * 255));
+                int pG = clamp((int) Math.round(sumG / divisor + bias * 255));
+                int pB = clamp((int) Math.round(sumB / divisor + bias * 255));
                 if (preserveAlpha) {
                     a = (inData[y * w + x] >> 24) & 0xFF;
                 } else {
                     a = clamp((int) Math.round(sumA / divisor + bias * 255));
+                }
+                // Un-premultiply for storage in TYPE_INT_ARGB
+                if (a > 0 && a < 255) {
+                    r = Math.min(255, pR * 255 / a);
+                    g = Math.min(255, pG * 255 / a);
+                    b = Math.min(255, pB * 255 / a);
+                } else if (a == 0) {
+                    r = g = b = 0;
+                } else {
+                    r = pR;
+                    g = pG;
+                    b = pB;
                 }
                 outData[y * w + x] = (a << 24) | (r << 16) | (g << 8) | b;
             }
