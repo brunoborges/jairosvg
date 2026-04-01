@@ -279,7 +279,26 @@ ImageIO.write(image, "PNG", new File("output.png"));
 
 ## Benchmark
 
-See [BENCHMARK.md](BENCHMARK.md) for detailed performance benchmarks, PNG file size comparisons, and instructions on running the benchmark suite.
+SVG → PNG conversion benchmarks comparing all four libraries across 42 SVG test files. Full results in **[benchmark/](benchmark/)**.
+
+**Highlights** (lower is better):
+
+| Test Case              | JairoSVG (Java) | EchoSVG (Java) | JSVG (Java)  | CairoSVG (Python) |
+| ---------------------- | :-------------: | :------------: | :----------: | :---------------: |
+| Basic shapes           |     3.2 ms      |    15.7 ms     | **3.2 ms**   |      4.1 ms       |
+| Gradients              |   **4.1 ms**    |    128.8 ms    |   4.1 ms     |     10.4 ms       |
+| Filters                |   **7.1 ms**    |    33.7 ms     |   7.9 ms     |     4.3 ms ⚠️     |
+| Fe blend modes         |  **10.1 ms**    |    27.2 ms     |  20.0 ms     |     12.4 ms       |
+| Embedded image         |   **4.3 ms**    |    15.7 ms     |  10.8 ms     |      6.9 ms       |
+| Localized masks        |  **14.3 ms**    |    55.0 ms     |  14.3 ms     |     15.3 ms       |
+
+_JairoSVG is **2–26× faster** than EchoSVG, **on par with JSVG** in most scenarios, and **1–2.4× faster** than CairoSVG._
+
+> ⚠️ Where CairoSVG appears faster on filters/masks, it is because it silently **skips** rendering those effects.
+
+JairoSVG also produces the **smallest PNGs** overall — 8% smaller than CairoSVG, 11.5% smaller than JSVG, and 17.3% smaller than EchoSVG.
+
+See **[benchmark/](benchmark/)** for the full timing table, file size comparison, rendering settings analysis, and instructions to run the benchmark yourself.
 
 ---
 
@@ -314,7 +333,17 @@ JairoSVG, CairoSVG, and JSVG share a similar security posture: no scripting supp
 
 ## Visual Rendering Comparison
 
-See [VISUAL_COMPARISON.md](VISUAL_COMPARISON.md) for a side-by-side rendering comparison of 24 SVG test cases across all four libraries.
+Side-by-side PNG rendering of 42 SVG test cases across all four libraries. Full gallery in **[visual/](visual/)**.
+
+**Sample** — `20_fe_blend_modes`:
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| ![SVG](svg/20_fe_blend_modes.svg) | ![JairoSVG](visual/png/jairosvg/20_fe_blend_modes.png) | ![EchoSVG](visual/png/echosvg/20_fe_blend_modes.png) | ![CairoSVG](visual/png/cairosvg/20_fe_blend_modes.png) | ![JSVG](visual/png/jsvg/20_fe_blend_modes.png) |
+
+The test suite covers basic shapes, gradients, paths, text, transforms, strokes, opacity, viewBox, CSS styling, patterns, clip paths, masks, markers, filters (blur, blend, tile, image, color matrix, morphology, turbulence, displacement, lighting, convolve matrix, component transfer), embedded images, SVG fonts, symbols, and more.
+
+See **[visual/](visual/)** for the complete gallery with browser-rendered SVG alongside each library's PNG output.
 
 ---
 
