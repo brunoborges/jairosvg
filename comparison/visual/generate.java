@@ -280,6 +280,19 @@ public class generate {
               .append(echo).append(" | ")
               .append(cairo).append(" | ")
               .append(jsvg).append(" |\n");
+
+            // File size row
+            long sJairo = fileSize(PNG_JAIRO_DIR.resolve(name + ".png"));
+            long sEcho  = fileSize(PNG_ECHO_DIR.resolve(name + ".png"));
+            long sCairo = fileSize(PNG_CAIRO_DIR.resolve(name + ".png"));
+            long sJsvg  = fileSize(PNG_JSVG_DIR.resolve(name + ".png"));
+            long minSize = LongStream.of(sJairo, sEcho, sCairo, sJsvg)
+                    .filter(s -> s > 0).min().orElse(0);
+            sb.append("| | ")
+              .append(sizeCell(sJairo, minSize)).append(" | ")
+              .append(sizeCell(sEcho, minSize)).append(" | ")
+              .append(sizeCell(sCairo, minSize)).append(" | ")
+              .append(sizeCell(sJsvg, minSize)).append(" |\n");
         }
 
         Files.writeString(visualPath, sb.toString(), StandardCharsets.UTF_8);
@@ -415,5 +428,11 @@ public class generate {
     static long fileSize(Path path) {
         try { return Files.exists(path) ? Files.size(path) : 0; }
         catch (IOException e) { return 0; }
+    }
+
+    static String sizeCell(long size, long minSize) {
+        if (size <= 0) return "—";
+        String formatted = NumberFormat.getIntegerInstance(Locale.US).format(size) + " bytes";
+        return size == minSize ? formatted + " ✅" : formatted;
     }
 }
