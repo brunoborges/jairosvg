@@ -2,17 +2,17 @@
 # Generate async-profiler CPU flame charts for JairoSVG and JSVG.
 #
 # Usage:
-#   ./comparison/flamegraph.sh [scenario] [iterations] [mode]
+#   ./comparison/profiling/flamegraph.sh [scenario] [iterations] [mode]
 #
 # Mode: "render" (default) = SVG parse+render only, no PNG encode
 #       "full"             = parse+render+PNG encode (matches benchmark)
 #
 # Examples:
-#   ./comparison/flamegraph.sh gradients 3000 render
-#   ./comparison/flamegraph.sh masks 3000 full
-#   ./comparison/flamegraph.sh          # profiles all default scenarios in render mode
+#   ./comparison/profiling/flamegraph.sh gradients 3000 render
+#   ./comparison/profiling/flamegraph.sh masks 3000 full
+#   ./comparison/profiling/flamegraph.sh          # profiles all default scenarios in render mode
 #
-# Output: comparison/flamegraphs/<scenario>-<library>-<mode>.html
+# Output: comparison/profiling/flamegraphs/<scenario>-<library>-<mode>.html
 
 set -euo pipefail
 

@@ -90,10 +90,10 @@ Prerequisites: [JBang](https://www.jbang.dev/), Python 3 with CairoSVG (`pip ins
 ./mvnw install -DskipTests
 
 # Run benchmark
-jbang comparison/benchmark.java
+jbang comparison/benchmark/benchmark.java
 
 # Run without progress bar (CI mode)
-jbang comparison/benchmark.java --no-progress
+jbang comparison/benchmark/benchmark.java --no-progress
 ```
 
-The benchmark script is in the comparison folder: [`comparison/benchmark.java`](https://github.com/brunoborges/jairosvg/blob/main/comparison/benchmark.java). See [`comparison/README.md`](https://github.com/brunoborges/jairosvg/blob/main/comparison/README.md) for full results, PNG file size comparisons, and feature matrices.
+The benchmark script is in the comparison folder: [`comparison/benchmark/benchmark.java`](https://github.com/brunoborges/jairosvg/blob/main/comparison/benchmark/benchmark.java). See [`comparison/README.md`](https://github.com/brunoborges/jairosvg/blob/main/comparison/README.md) for full results, PNG file size comparisons, and feature matrices.

@@ -28,8 +28,8 @@ import javax.imageio.ImageIO;
 
 public class generate {
 
-    static final Path BASE_DIR = Path.of("comparison");
-    static final Path SVG_DIR = BASE_DIR.resolve("svg");
+    static final Path BASE_DIR = Path.of("comparison/visual");
+    static final Path SVG_DIR = Path.of("comparison/svg");
     static final Path PNG_JAIRO_DIR = BASE_DIR.resolve("png/jairosvg");
     static final Path PNG_ECHO_DIR = BASE_DIR.resolve("png/echosvg");
     static final Path PNG_CAIRO_DIR = BASE_DIR.resolve("png/cairosvg");
@@ -242,7 +242,7 @@ public class generate {
     );
 
     static void generateReadme(List<Path> svgFiles, Map<String, boolean[]> results) throws Exception {
-        Path visualPath = BASE_DIR.resolve("VISUAL_COMPARISON.md");
+        Path visualPath = BASE_DIR.resolve("README.md");
 
         // Build the visual comparison file content
         var sb = new StringBuilder();
@@ -271,7 +271,7 @@ public class generate {
             String jsvg  = Files.exists(PNG_JSVG_DIR.resolve(name + ".png"))
                     ? "![JSVG](png/jsvg/" + name + ".png)" : "—";
 
-            sb.append("| ![SVG](svg/").append(name).append(".svg) | ")
+            sb.append("| ![SVG](../svg/").append(name).append(".svg) | ")
               .append(jairo).append(" | ")
               .append(echo).append(" | ")
               .append(cairo).append(" | ")

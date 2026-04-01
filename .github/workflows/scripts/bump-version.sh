@@ -77,7 +77,7 @@ if [[ "$MODE" == "release" ]]; then
     done
 
     # 6. comparison JBang scripts
-    for f in benchmark.java generate.java; do
+    for f in benchmark/benchmark.java visual/generate.java; do
         filepath="$ROOT/comparison/$f"
         if [[ -f "$filepath" ]]; then
             sedi "s|io.brunoborges:jairosvg:$OLD_VERSION|io.brunoborges:jairosvg:$NEW_VERSION|g" "$filepath"
@@ -108,7 +108,7 @@ elif [[ "$MODE" == "snapshot" ]]; then
     echo "  ✓ pom.xml"
 
     # 2. comparison JBang scripts
-    for f in benchmark.java generate.java; do
+    for f in benchmark/benchmark.java visual/generate.java; do
         filepath="$ROOT/comparison/$f"
         if [[ -f "$filepath" ]]; then
             sedi "s|io.brunoborges:jairosvg:$OLD_POM_VERSION|io.brunoborges:jairosvg:$NEW_SNAPSHOT|g" "$filepath"

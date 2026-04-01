@@ -92,25 +92,25 @@ Prerequisites: [JBang], Java 25+, Python 3 with CairoSVG (`pip install cairosvg`
 
 ```bash
 ./mvnw install -DskipTests
-jbang comparison/benchmark.java
+jbang comparison/benchmark/benchmark.java
 ```
 
 Options:
 
 ```bash
 # Run specific SVG categories only
-jbang comparison/benchmark.java filters embedded
+jbang comparison/benchmark/benchmark.java filters embedded
 
 # Skip engines
-jbang comparison/benchmark.java --no-cairosvg
-jbang comparison/benchmark.java --no-echosvg
-jbang comparison/benchmark.java --no-jsvg
+jbang comparison/benchmark/benchmark.java --no-cairosvg
+jbang comparison/benchmark/benchmark.java --no-echosvg
+jbang comparison/benchmark/benchmark.java --no-jsvg
 
 # Disable progress bar output (useful for CI logs)
-jbang comparison/benchmark.java --no-progress
+jbang comparison/benchmark/benchmark.java --no-progress
 
 # Adjust warmup and measurement iterations (defaults: 20 and 1000)
-jbang comparison/benchmark.java --warmup=5 --iterations=100
+jbang comparison/benchmark/benchmark.java --warmup=5 --iterations=100
 ```
 
 The benchmark loads all SVG files from `comparison/svg/` (currently 24 files). Each runs 20 warm-up iterations followed by 1000 measured iterations. Stats reported: average, median, p95, and minimum times.

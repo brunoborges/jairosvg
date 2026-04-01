@@ -56,7 +56,7 @@ public class benchmark {
     static int WARMUP = 50;
     static int ITERATIONS = 500;
 
-    static final Path SVG_DIR = Path.of("comparison/svg");
+    static final Path SVG_DIR = Path.of("comparison", "svg");
 
     record SvgCase(String name, String content, byte[] contentBytes) {}
 

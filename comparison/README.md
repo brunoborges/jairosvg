@@ -425,22 +425,22 @@ ImageMagick is an excellent tool for raster image manipulation (resize, crop, co
 
 ## Regenerating
 
-**PNG renders + visual comparison** — regenerates all PNG renders and rewrites [VISUAL_COMPARISON.md](VISUAL_COMPARISON.md):
+**PNG renders + visual comparison** — regenerates all PNG renders and rewrites [visual/README.md](visual/):
 
 Prerequisites: [JBang], Java 25+, Python 3 with CairoSVG (`python3 -m pip install cairosvg`), JairoSVG installed in local Maven repo.
 
 ```bash
 ./mvnw install -DskipTests
-jbang comparison/generate.java
+jbang comparison/visual/generate.java
 ```
 
-**Benchmark data** — the timing table and file size table in [BENCHMARK.md](BENCHMARK.md) must be updated manually after running:
+**Benchmark data** — the timing table and file size table in [benchmark/README.md](benchmark/) must be updated manually after running:
 
 ```bash
-jbang comparison/benchmark.java
+jbang comparison/benchmark/benchmark.java
 ```
 
-Copy the benchmark output into `BENCHMARK.md`.
+Copy the benchmark output into `benchmark/README.md`.
 
 ---
 

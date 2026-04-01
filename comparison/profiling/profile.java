@@ -21,11 +21,11 @@ import java.util.stream.*;
  * Profiling harness for JairoSVG vs JSVG flame chart generation.
  *
  * Usage:
- *   jbang comparison/profile.java [scenario] [library] [iterations]
+ *   jbang comparison/profiling/profile.java [scenario] [library] [iterations]
  *
  * Examples:
- *   jbang comparison/profile.java gradients jairosvg 2000
- *   jbang comparison/profile.java masks jsvg 2000
+ *   jbang comparison/profiling/profile.java gradients jairosvg 2000
+ *   jbang comparison/profiling/profile.java masks jsvg 2000
  *
  * The harness warms up for half the iterations, then signals ready via
  * a file (profile.ready) so async-profiler can be attached externally,
@@ -34,11 +34,11 @@ import java.util.stream.*;
  * Recommended usage with async-profiler:
  *   java -agentpath:/opt/homebrew/lib/libasyncProfiler.dylib=start,event=cpu,\
  *        file=profile-jairosvg-gradients.html,flamegraph \
- *        -jar ... comparison/profile.java gradients jairosvg 5000
+ *        -jar ... comparison/profiling/profile.java gradients jairosvg 5000
  */
 public class profile {
 
-    static final Path SVG_DIR = Path.of("comparison/svg");
+    static final Path SVG_DIR = Path.of("comparison", "svg");
     static final int DEFAULT_ITERATIONS = 3000;
     static final int WARMUP_FRACTION = 2; // warmup = iterations / WARMUP_FRACTION
 

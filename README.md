@@ -42,9 +42,9 @@ A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to 
 ## Benchmark and Feature Comparison
 
 <p align="center">
-  <a href="comparison/benchmark.png"><img src="comparison/benchmark.png" width="256" alt="SVG to PNG benchmark latency chart"/></a>
+  <a href="comparison/benchmark/benchmark.png"><img src="comparison/benchmark/benchmark.png" width="256" alt="SVG to PNG benchmark latency chart"/></a>
   &nbsp;&nbsp;
-  <a href="comparison/benchmark-size.png"><img src="comparison/benchmark-size.png" width="256" alt="PNG output file sizes chart"/></a>
+  <a href="comparison/benchmark/benchmark-size.png"><img src="comparison/benchmark/benchmark-size.png" width="256" alt="PNG output file sizes chart"/></a>
   <br/><sub><i>Click to enlarge</i></sub>
 </p>
 
@@ -61,11 +61,11 @@ A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to 
 
 _JairoSVG is 3–30× faster than EchoSVG, on par with JSVG for simple SVGs, and significantly faster on filters, blends, masks, and images._
 
-Run the benchmark yourself: `jbang comparison/benchmark.java`.
+Run the benchmark yourself: `jbang comparison/benchmark/benchmark.java`.
 
 See **[comparison/README.md](comparison/README.md)** for full benchmark results, PNG file size comparisons, and feature matrices across JairoSVG, EchoSVG, CairoSVG, and JSVG.
 
-See **[comparison/VISUAL_COMPARISON.md](comparison/VISUAL_COMPARISON.md)** for side-by-side rendered PNG comparisons of 35 SVG test cases.
+See **[comparison/visual/](comparison/visual/)** for side-by-side rendered PNG comparisons of 42 SVG test cases.
 
 ## Installation
 
