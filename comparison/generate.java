@@ -293,7 +293,7 @@ public class generate {
             String jsvg  = Files.exists(PNG_JSVG_DIR.resolve(name + ".png"))
                     ? "![JSVG](png/jsvg/" + name + ".png)" : "—";
 
-            sb.append("| [SVG](svg/").append(name).append(".svg) | ")
+            sb.append("| ![SVG](svg/").append(name).append(".svg) | ")
               .append(jairo).append(" | ")
               .append(echo).append(" | ")
               .append(cairo).append(" | ")
