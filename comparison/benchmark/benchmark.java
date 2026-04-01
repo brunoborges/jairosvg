@@ -8,10 +8,13 @@
 //DEPS io.sf.carte:echosvg-transcoder:2.4
 //DEPS com.github.weisj:jsvg:2.0.0
 //DEPS me.tongfei:progressbar:0.10.2
+//DEPS com.google.code.gson:gson:2.13.1
 
 import com.github.weisj.jsvg.SVGDocument;
 import com.github.weisj.jsvg.parser.LoaderContext;
 import com.github.weisj.jsvg.parser.SVGLoader;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import io.brunoborges.jairosvg.JairoSVG;
 import io.sf.carte.echosvg.transcoder.TranscoderInput;
 import io.sf.carte.echosvg.transcoder.TranscoderOutput;
@@ -59,6 +62,8 @@ public class benchmark {
     static final Path SVG_DIR = Path.of("comparison", "svg");
     static final Path JSONL_FILE = Path.of("comparison", "benchmark", "benchmark-results.jsonl");
 
+    static final Gson GSON = new Gson();
+
     record SvgCase(String name, String content, byte[] contentBytes) {}
 
     /** Append a JSON line to the results file. */
@@ -67,17 +72,24 @@ public class benchmark {
         double median = times[times.length / 2];
         double p95 = times[(int) (times.length * 0.95)];
         double min = times[0];
-        String json = "{\"engine\":\"%s\",\"case\":\"%s\",\"avg\":%.4f,\"median\":%.4f,\"p95\":%.4f,\"min\":%.4f}"
-                .formatted(engine, caseName, avg, median, p95, min);
-        Files.writeString(JSONL_FILE, json + "\n",
+        var obj = new JsonObject();
+        obj.addProperty("engine", engine);
+        obj.addProperty("case", caseName);
+        obj.addProperty("avg", Math.round(avg * 10000.0) / 10000.0);
+        obj.addProperty("median", Math.round(median * 10000.0) / 10000.0);
+        obj.addProperty("p95", Math.round(p95 * 10000.0) / 10000.0);
+        obj.addProperty("min", Math.round(min * 10000.0) / 10000.0);
+        Files.writeString(JSONL_FILE, GSON.toJson(obj) + "\n",
                 StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
 
     /** Append an error JSON line to the results file. */
     static void emitJsonError(String engine, String caseName, String error) throws IOException {
-        String json = "{\"engine\":\"%s\",\"case\":\"%s\",\"error\":\"%s\"}"
-                .formatted(engine, caseName, error.replace("\"", "\\\"").replace("\n", " "));
-        Files.writeString(JSONL_FILE, json + "\n",
+        var obj = new JsonObject();
+        obj.addProperty("engine", engine);
+        obj.addProperty("case", caseName);
+        obj.addProperty("error", error);
+        Files.writeString(JSONL_FILE, GSON.toJson(obj) + "\n",
                 StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
 
@@ -231,10 +243,9 @@ public class benchmark {
         }
 
         // Parse JSON array of doubles
-        String inner = output.substring(1, output.length() - 1);
-        return Arrays.stream(inner.split(",\\s*"))
-                     .mapToDouble(Double::parseDouble)
-                     .toArray();
+        double[] times = GSON.fromJson(output, double[].class);
+        Arrays.sort(times);
+        return times;
     }
 
     static void printComparison(String nameA, double avgA, String nameB, double avgB) {

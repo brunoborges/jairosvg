@@ -7,6 +7,10 @@
     "benchmark": {
       "script-ref": "comparison/benchmark/benchmark.java",
       "description": "SVG → PNG benchmark: JairoSVG vs EchoSVG vs JSVG vs CairoSVG"
+    },
+    "update-readme": {
+      "script-ref": "comparison/benchmark/update_readme.java",
+      "description": "Regenerate benchmark README tables from benchmark-results.jsonl"
     }
   }
 }

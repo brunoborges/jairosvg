@@ -131,6 +131,12 @@ Prerequisites: [JBang], Java 25+, Python 3 with CairoSVG (`pip install cairosvg`
 jbang comparison/benchmark/benchmark.java
 ```
 
+After running, update the README tables from the results:
+
+```bash
+jbang comparison/benchmark/update_readme.java --warmup=50 --iterations=500
+```
+
 Options:
 
 ```bash
@@ -145,11 +151,11 @@ jbang comparison/benchmark/benchmark.java --no-jsvg
 # Disable progress bar output (useful for CI logs)
 jbang comparison/benchmark/benchmark.java --no-progress
 
-# Adjust warmup and measurement iterations (defaults: 20 and 1000)
+# Adjust warmup and measurement iterations (defaults: 50 and 500)
 jbang comparison/benchmark/benchmark.java --warmup=5 --iterations=100
 ```
 
-The benchmark loads all SVG files from `comparison/svg/` (currently 42 files). Each runs 20 warm-up iterations followed by 1000 measured iterations. Stats reported: average, median, p95, and minimum times.
+The benchmark writes results to `benchmark-results.jsonl` (JSON lines) and logs to a timestamped file. The `update_readme.java` script reads the JSONL and PNG files to regenerate both the timing table and PNG file sizes table in this README.
 
 <!-- Link references -->
 
