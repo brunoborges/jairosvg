@@ -282,7 +282,7 @@ public final class FilterRenderer {
                     if (buf3 == null)
                         buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                     BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
-                    yield diffuseLighting(input, child, out);
+                    yield diffuseLighting(input, child, out, offsetX, offsetY);
                 }
                 case "feSpecularLighting" -> {
                     if (buf1 == null)
@@ -292,7 +292,7 @@ public final class FilterRenderer {
                     if (buf3 == null)
                         buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                     BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
-                    yield specularLighting(input, child, out);
+                    yield specularLighting(input, child, out, offsetX, offsetY);
                 }
                 case "feImage" -> feImage(surface, child, w, h, offsetX, offsetY);
                 case "feTile" -> tile(input, filterRegion);
@@ -1453,7 +1453,8 @@ public final class FilterRenderer {
         return null;
     }
 
-    private static double[] computeLightVector(LightSource light, int px, int py, double surfaceZ) {
+    private static double[] computeLightVector(LightSource light, int px, int py, double surfaceZ, int offsetX,
+            int offsetY) {
         return switch (light.type) {
             case "distant" -> {
                 double az = Math.toRadians(light.azimuth);
@@ -1461,8 +1462,10 @@ public final class FilterRenderer {
                 yield new double[]{Math.cos(el) * Math.cos(az), Math.cos(el) * Math.sin(az), Math.sin(el)};
             }
             case "point", "spot" -> {
-                double dx = light.x - px;
-                double dy = light.y - py;
+                // Light coordinates are in SVG user space; px/py are in the
+                // working buffer which may be offset by (offsetX, offsetY).
+                double dx = light.x - (px + offsetX);
+                double dy = light.y - (py + offsetY);
                 double dz = light.z - surfaceZ;
                 double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
                 if (len < 1e-10)
@@ -1529,7 +1532,8 @@ public final class FilterRenderer {
 
     // ── feDiffuseLighting ────────────────────────────────────────────────
 
-    private static BufferedImage diffuseLighting(BufferedImage input, Node node, BufferedImage output) {
+    private static BufferedImage diffuseLighting(BufferedImage input, Node node, BufferedImage output, int offsetX,
+            int offsetY) {
         int w = input.getWidth();
         int h = input.getHeight();
         double surfaceScale = parseDoubleOr(node.get("surfaceScale"), 1);
@@ -1556,7 +1560,7 @@ public final class FilterRenderer {
                 double[] N = surfaceNormal(inData, px, py, w, h, surfaceScale);
                 double alpha = (inData[py * w + px] >>> 24);
                 double sz = surfaceScale * alpha / 255.0;
-                double[] L = computeLightVector(light, px, py, sz);
+                double[] L = computeLightVector(light, px, py, sz, offsetX, offsetY);
                 double spotIntensity = computeSpotIntensity(light, L);
                 double nDotL = Math.max(0, N[0] * L[0] + N[1] * L[1] + N[2] * L[2]);
                 double factor = kd * nDotL * spotIntensity;
@@ -1572,7 +1576,8 @@ public final class FilterRenderer {
 
     // ── feSpecularLighting ───────────────────────────────────────────────
 
-    private static BufferedImage specularLighting(BufferedImage input, Node node, BufferedImage output) {
+    private static BufferedImage specularLighting(BufferedImage input, Node node, BufferedImage output, int offsetX,
+            int offsetY) {
         int w = input.getWidth();
         int h = input.getHeight();
         double surfaceScale = parseDoubleOr(node.get("surfaceScale"), 1);
@@ -1600,7 +1605,7 @@ public final class FilterRenderer {
                 double[] N = surfaceNormal(inData, px, py, w, h, surfaceScale);
                 double alpha = (inData[py * w + px] >>> 24);
                 double sz = surfaceScale * alpha / 255.0;
-                double[] L = computeLightVector(light, px, py, sz);
+                double[] L = computeLightVector(light, px, py, sz, offsetX, offsetY);
                 double spotIntensity = computeSpotIntensity(light, L);
 
                 // Half-angle vector H = normalize(L + E), E = (0, 0, 1)
