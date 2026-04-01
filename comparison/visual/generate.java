@@ -22,6 +22,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.stream.*;
 import javax.imageio.ImageIO;
@@ -194,6 +195,9 @@ public class generate {
 
         // Regenerate the Visual Rendering Comparison section of README.md
         generateReadme(svgFiles, results);
+
+        // Generate the size comparison chart SVG and render to PNG
+        generateSizeComparison(svgFiles);
     }
 
     static final Map<String, String> SVG_DESCRIPTIONS = Map.ofEntries(
@@ -280,5 +284,136 @@ public class generate {
 
         Files.writeString(visualPath, sb.toString(), StandardCharsets.UTF_8);
         System.out.println("\nVisual comparison regenerated → " + visualPath);
+    }
+
+    static void generateSizeComparison(List<Path> svgFiles) throws Exception {
+        record CaseSize(String label, long jairo, long echo, long jsvg, long cairo) {
+            long max() { return Math.max(Math.max(jairo, echo), Math.max(jsvg, cairo)); }
+            long min() {
+                long m = Long.MAX_VALUE;
+                if (jairo > 0) m = Math.min(m, jairo);
+                if (echo > 0) m = Math.min(m, echo);
+                if (jsvg > 0) m = Math.min(m, jsvg);
+                if (cairo > 0) m = Math.min(m, cairo);
+                return m == Long.MAX_VALUE ? 0 : m;
+            }
+        }
+
+        var cases = new ArrayList<CaseSize>();
+        for (var svgPath : svgFiles) {
+            String name = svgPath.getFileName().toString().replace(".svg", "");
+            String label = name.replaceFirst("^\\d+_", "").replace('_', ' ');
+            label = Character.toUpperCase(label.charAt(0)) + label.substring(1);
+
+            long jairo = fileSize(PNG_JAIRO_DIR.resolve(name + ".png"));
+            long echo = fileSize(PNG_ECHO_DIR.resolve(name + ".png"));
+            long jsvg = fileSize(PNG_JSVG_DIR.resolve(name + ".png"));
+            long cairo = fileSize(PNG_CAIRO_DIR.resolve(name + ".png"));
+
+            if (jairo > 0 || echo > 0 || jsvg > 0 || cairo > 0) {
+                cases.add(new CaseSize(label, jairo, echo, jsvg, cairo));
+            }
+        }
+
+        if (cases.isEmpty()) {
+            System.out.println("No PNG files found for size comparison chart");
+            return;
+        }
+
+        long globalMax = cases.stream().mapToLong(CaseSize::max).max().orElse(1);
+        var fmt = NumberFormat.getIntegerInstance(Locale.US);
+
+        int rowHeight = 70;
+        int headerHeight = 102;
+        int svgHeight = headerHeight + cases.size() * rowHeight + 20;
+        int svgWidth = 760;
+        int barStart = 160;
+        int barMaxWidth = 500;
+
+        var svg = new StringBuilder();
+        svg.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        svg.append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%d\" height=\"%d\" viewBox=\"0 0 %d %d\">\n"
+                .formatted(svgWidth, svgHeight, svgWidth, svgHeight));
+        svg.append("  <style>\n");
+        svg.append("    text { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Helvetica, Arial, sans-serif; }\n");
+        svg.append("  </style>\n");
+        svg.append("  <rect width=\"%d\" height=\"%d\" rx=\"16\" fill=\"#0f172a\"/>\n".formatted(svgWidth, svgHeight));
+        svg.append("\n");
+
+        // Title
+        svg.append("  <text x=\"380\" y=\"40\" text-anchor=\"middle\" font-size=\"20\" font-weight=\"600\" font-style=\"italic\" fill=\"#f1f5f9\">PNG Output File Sizes (bytes)</text>\n");
+        svg.append("  <text x=\"380\" y=\"60\" text-anchor=\"middle\" font-size=\"13\" font-style=\"italic\" fill=\"#64748b\">lower is better — JairoSVG vs EchoSVG vs JSVG vs CairoSVG</text>\n");
+        svg.append("\n");
+
+        // Legend
+        String[][] legend = {
+            {"60",  "#4ade80", "JairoSVG (Java)"},
+            {"220", "#f87171", "EchoSVG (Java)"},
+            {"390", "#60a5fa", "JSVG (Java)"},
+            {"540", "#fb923c", "CairoSVG (Python)"},
+        };
+        for (var l : legend) {
+            svg.append("  <rect x=\"%s\" y=\"75\" width=\"12\" height=\"12\" rx=\"3\" fill=\"%s\"/>\n".formatted(l[0], l[1]));
+            svg.append("  <text x=\"%d\" y=\"86\" font-size=\"12\" fill=\"#94a3b8\">%s</text>\n"
+                    .formatted(Integer.parseInt(l[0]) + 18, l[2]));
+        }
+        svg.append("\n");
+        svg.append("  <line x1=\"30\" y1=\"%d\" x2=\"730\" y2=\"%d\" stroke=\"#1e293b\" stroke-width=\"1\"/>\n"
+                .formatted(headerHeight, headerHeight));
+        svg.append("\n");
+
+        // Bars
+        String[] colors = {"#4ade80", "#f87171", "#60a5fa", "#fb923c"};
+        int barHeight = 12;
+        int barGap = 13;
+
+        for (int i = 0; i < cases.size(); i++) {
+            var c = cases.get(i);
+            int groupY = headerHeight + i * rowHeight + 10;
+            long minSize = c.min();
+            long[] sizes = {c.jairo, c.echo, c.jsvg, c.cairo};
+
+            // Label
+            int labelY = groupY + 2 * barGap + 2;
+            svg.append("  <text x=\"152\" y=\"%d\" text-anchor=\"end\" font-size=\"11\" font-weight=\"500\" fill=\"#94a3b8\">%s</text>\n"
+                    .formatted(labelY, c.label));
+
+            for (int j = 0; j < 4; j++) {
+                long size = sizes[j];
+                if (size <= 0) continue;
+                int barY = groupY + j * barGap;
+                int barW = Math.max(2, (int) (size * barMaxWidth / globalMax));
+                int textY = barY + 10;
+
+                svg.append("  <rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" rx=\"4\" fill=\"%s\"/>\n"
+                        .formatted(barStart, barY, barW, barHeight, colors[j]));
+                svg.append("  <text x=\"700\" y=\"%d\" text-anchor=\"end\" font-size=\"10\" fill=\"%s\">%s</text>\n"
+                        .formatted(textY, colors[j], fmt.format(size)));
+
+                if (size == minSize) {
+                    svg.append("  <text x=\"720\" y=\"%d\" text-anchor=\"middle\" font-size=\"10\" fill=\"%s\">◄</text>\n"
+                            .formatted(textY, colors[j]));
+                }
+            }
+            svg.append("\n");
+        }
+
+        svg.append("</svg>\n");
+
+        // Write SVG
+        Path svgOut = BASE_DIR.resolve("size-comparison.svg");
+        Files.writeString(svgOut, svg.toString(), StandardCharsets.UTF_8);
+        System.out.println("Size comparison chart → " + svgOut);
+
+        // Render to PNG using JairoSVG
+        byte[] pngBytes = JairoSVG.svg2png(svg.toString().getBytes(StandardCharsets.UTF_8));
+        Path pngOut = BASE_DIR.resolve("size-comparison.png");
+        Files.write(pngOut, pngBytes);
+        System.out.printf("Size comparison PNG   → %s (%,d bytes)%n", pngOut, pngBytes.length);
+    }
+
+    static long fileSize(Path path) {
+        try { return Files.exists(path) ? Files.size(path) : 0; }
+        catch (IOException e) { return 0; }
     }
 }
