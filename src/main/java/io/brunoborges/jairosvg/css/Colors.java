@@ -6,8 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * SVG color parsing. Converts color strings to RGBA tuples (0.0–1.0). Port of
- * CairoSVG colors.py
+ * SVG color parsing. Converts color strings to RGBA tuples (0.0–1.0).
  */
 public final class Colors {
 

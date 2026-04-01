@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-JairoSVG is a Java port of [CairoSVG](https://cairosvg.org) (Python) — an SVG 1.1 to PNG/PDF/PS converter using Java2D. The architecture mirrors CairoSVG's module structure, mapping `cairo.Context` → `Graphics2D`, `cairo.ImageSurface` → `BufferedImage`, and `cairo.Matrix` → `AffineTransform`.
+JairoSVG is an SVG 1.1 to PNG/PDF/PS converter using Java2D, with an API inspired by [CairoSVG](https://cairosvg.org) for simplicity.
 
 ## Dependencies
 
@@ -51,7 +51,7 @@ jbang comparison/visual/generate.java
 | `linearGradient`, `radialGradient`, `clipPath`, `pattern`, `use`, `mask`, `marker`, `filter` | `Defs` |
 | `svg` | `SvgDrawer` |
 
-### Key Class Roles (mapped to CairoSVG Python modules)
+### Key Class Roles
 
 - **`JairoSVG`** — Public API: static convenience methods (`svg2png`, `svg2pdf`) + fluent `ConversionBuilder`
 - **`Surface`** — Rendering engine holding `Graphics2D` context, `GeneralPath`, and def maps (gradients, patterns, masks, fonts, etc.). Manages save/restore of graphics state per node

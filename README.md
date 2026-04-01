@@ -9,7 +9,7 @@
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 [![Java 25+](https://img.shields.io/badge/Java-25%2B-orange)](https://openjdk.org/)
 
-A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to PNG, JPEG, TIFF, PDF, and PS/EPS converter powered by Java2D.
+A high-performance SVG 1.1 to PNG, JPEG, TIFF, PDF, and PS/EPS converter powered by Java2D. API inspired by [CairoSVG](https://cairosvg.org).
 
 ## Why JairoSVG?
 
@@ -288,38 +288,38 @@ native-image -jar target/jairosvg-1.0.4-cli.jar
 
 ## Architecture
 
-JairoSVG is a module-by-module port of CairoSVG's Python codebase to Java 25:
+JairoSVG renders SVG through the standard Java2D (`Graphics2D` / `BufferedImage`) API. The architecture is intentionally compact:
 
-| Java Class        | Python Module | Role                                     |
-| ----------------- | ------------- | ---------------------------------------- |
-| `JairoSVG`        | `__init__.py` | Public API + fluent Builder              |
-| `Surface`         | `surface.py`  | Java2D rendering engine + state mgmt     |
-| `Node`            | `parser.py`   | SVG DOM tree with CSS cascade            |
-| `PathDrawer`      | `path.py`     | SVG path commands → GeneralPath          |
-| `ShapeDrawer`     | `shapes.py`   | Basic shape elements                     |
-| `TextDrawer`      | `text.py`     | Text, tspan, textPath rendering          |
-| `Defs`            | `defs.py`     | Definition elements + clip paths         |
-| `GradientPainter` | `defs.py`     | Linear/radial gradient rendering         |
-| `PatternPainter`  | `defs.py`     | Pattern → TexturePaint                   |
-| `MaskPainter`     | `defs.py`     | Mask luminance-to-alpha compositing      |
-| `MarkerDrawer`    | `defs.py`     | Marker placement and orientation         |
-| `FilterRenderer`  | `defs.py`     | Filter pipeline (blur, blend, merge...) |
-| `GaussianBlur`    | —             | Optimized box-blur Gaussian              |
-| `BlendCompositor` | —             | feBlend pixel blending modes             |
-| `ImageHandler`    | `image.py`    | Embedded image handling                  |
-| `SvgDrawer`       | —             | Nested `<svg>` viewport handling         |
-| `Colors`          | `colors.py`   | Color parsing (170+ named)               |
-| `CssProcessor`    | `css.py`      | CSS parsing and selector matching        |
-| `SvgFont`         | —             | SVG font glyph caching                  |
-| `Helpers`         | `helpers.py`  | Units, transforms, aspect ratio          |
-| `Main`            | `__main__.py` | CLI entry point                          |
+| Java Class        | Role                                     |
+| ----------------- | ---------------------------------------- |
+| `JairoSVG`        | Public API + fluent Builder              |
+| `Surface`         | Java2D rendering engine + state mgmt     |
+| `Node`            | SVG DOM tree with CSS cascade            |
+| `PathDrawer`      | SVG path commands → GeneralPath          |
+| `ShapeDrawer`     | Basic shape elements                     |
+| `TextDrawer`      | Text, tspan, textPath rendering          |
+| `Defs`            | Definition elements + clip paths         |
+| `GradientPainter` | Linear/radial gradient rendering         |
+| `PatternPainter`  | Pattern → TexturePaint                   |
+| `MaskPainter`     | Mask luminance-to-alpha compositing      |
+| `MarkerDrawer`    | Marker placement and orientation         |
+| `FilterRenderer`  | Filter pipeline (blur, blend, merge...) |
+| `GaussianBlur`    | Optimized box-blur Gaussian              |
+| `BlendCompositor` | feBlend pixel blending modes             |
+| `ImageHandler`    | Embedded image handling                  |
+| `SvgDrawer`       | Nested `<svg>` viewport handling         |
+| `Colors`          | Color parsing (170+ named)               |
+| `CssProcessor`    | CSS parsing and selector matching        |
+| `SvgFont`         | SVG font glyph caching                  |
+| `Helpers`         | Units, transforms, aspect ratio          |
+| `Main`            | CLI entry point                          |
 
-**Key technology mapping:**
+**Key technologies:**
 
-- `cairo.Context` → `java.awt.Graphics2D`
-- `cairo.ImageSurface` → `java.awt.image.BufferedImage`
-- `cairo.Matrix` → `java.awt.geom.AffineTransform`
-- PDF output via Apache PDFBox 3.0 (optional dependency — only needed for PDF output)
+- `java.awt.Graphics2D` — 2D rendering context
+- `java.awt.image.BufferedImage` — raster image buffer
+- `java.awt.geom.AffineTransform` — coordinate transforms
+- Apache PDFBox 3.0 — PDF output (optional dependency)
 
 ## Building
 
@@ -346,4 +346,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on building, testing, and 
 
 ## License
 
-JairoSVG is based on [CairoSVG](https://cairosvg.org) and is licensed under the [GNU Lesser General Public License v3.0](LICENSE).
+JairoSVG is licensed under the [GNU Lesser General Public License v3.0](LICENSE).

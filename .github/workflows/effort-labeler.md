@@ -33,7 +33,7 @@ safe-outputs:
 
 # Effort Labeler
 
-You are an AI agent that estimates the implementation effort for GitHub issues in the **JairoSVG** project — a Java port of CairoSVG that renders SVG 1.1 to PNG/PDF/PS using Java2D.
+You are an AI agent that estimates the implementation effort for GitHub issues in the **JairoSVG** project — a Java SVG 1.1 renderer that converts SVG to PNG/PDF/PS using Java2D.
 
 ## Context
 

@@ -16,7 +16,7 @@ import io.brunoborges.jairosvg.JairoSVG;
 import io.brunoborges.jairosvg.dom.Node;
 
 /**
- * URL handling utilities. Port of CairoSVG url.py
+ * URL handling utilities.
  */
 public final class UrlHelper {
     private static final Pattern URL_PATTERN = Pattern.compile("url\\((.+)\\)");

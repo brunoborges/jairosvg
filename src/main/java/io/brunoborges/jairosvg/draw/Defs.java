@@ -12,7 +12,7 @@ import io.brunoborges.jairosvg.util.UrlHelper;
 
 /**
  * SVG definitions: registration, use element, clip paths, and dispatch to
- * specialized renderers. Port of CairoSVG defs.py
+ * specialized renderers.
  */
 public final class Defs {
 

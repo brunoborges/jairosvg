@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
 
     <name>JairoSVG</name>
-    <description>A Java port of CairoSVG - SVG 1.1 to PNG, PDF, PS and SVG converter</description>
+    <description>SVG 1.1 to PNG, JPEG, TIFF, PDF, PS/EPS, and SVG converter powered by Java2D</description>
     <url>https://github.com/brunoborges/jairosvg</url>
 
     <licenses>

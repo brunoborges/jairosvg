@@ -14,7 +14,7 @@ import io.brunoborges.jairosvg.util.UrlHelper;
 import static io.brunoborges.jairosvg.util.Helpers.*;
 
 /**
- * SVG image element handler. Port of CairoSVG image.py
+ * SVG image element handler.
  */
 public final class ImageHandler {
 

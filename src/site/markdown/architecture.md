@@ -1,56 +1,55 @@
 # Architecture
 
-JairoSVG is a module-by-module port of [CairoSVG](https://cairosvg.org)'s Python codebase to Java 25.
+JairoSVG is a pure Java SVG 1.1 renderer using Java2D.
 
-## Module Mapping
+## Module Overview
 
-| Java Class | Python Module | Responsibility |
-|------------|---------------|----------------|
-| `JairoSVG` | `__init__.py` | Public API and ConversionBuilder |
-| `Surface` | `surface.py` | Core Java2D rendering engine |
-| `PngSurface` | `surface.py` | PNG output via `javax.imageio` |
-| `JpegSurface` | `surface.py` | JPEG output via `javax.imageio` |
-| `TiffSurface` | `surface.py` | TIFF output via `javax.imageio` |
-| `PdfSurface` | `surface.py` | PDF output via Apache PDFBox |
-| `PsSurface` | `surface.py` | PostScript/EPS output via `PrinterJob` |
-| `Node` | `parser.py` | SVG DOM tree with CSS application (SAX-based) |
-| `PathDrawer` | `path.py` | SVG path command parser (M, L, C, Q, A, H, V, ...) |
-| `ShapeDrawer` | `shapes.py` | Basic shapes (rect, circle, ellipse, line, polygon, polyline) |
-| `TextDrawer` | `text.py` | Text, tspan, and textPath rendering |
-| `Defs` | `defs.py` | Clip paths, `<use>`, `<symbol>` handling |
-| `GradientPainter` | `defs.py` | Linear and radial gradient rendering with href chains |
-| `PatternPainter` | `defs.py` | Pattern fill rendering with `patternTransform` |
-| `FilterRenderer` | `defs.py` | SVG filter pipeline (feGaussianBlur, feBlend, feMerge, ...) |
-| `BlendCompositor` | `defs.py` | Pixel-level blend mode compositing |
-| `GaussianBlur` | `defs.py` | Optimized box-blur Gaussian approximation |
-| `MarkerDrawer` | `defs.py` | Marker rendering on paths and shapes |
-| `MaskPainter` | `defs.py` | Luminance-based mask compositing |
-| `ImageHandler` | `image.py` | Embedded raster and SVG image handling |
-| `Colors` | `colors.py` | SVG/CSS color parsing (170+ named, hex, rgb, hsl) |
-| `Helpers` | `helpers.py` | Units, transforms, size calculations, path normalization |
-| `CssProcessor` | `css.py` | CSS stylesheet parsing and selector matching |
-| `BoundingBox` | `bounding_box.py` | Element bounding box computation |
-| `Features` | `features.py` | SVG conditional feature detection |
-| `UrlHelper` | `url.py` | URL resolution, fetching, and data URI parsing |
-| `SvgDrawer` | `svg.py` | Root `<svg>` element handler |
-| `SvgFont` | `text.py` | SVG font glyph parsing and caching |
-| `Main` | `__main__.py` | CLI entry point |
+| Java Class | Responsibility |
+|------------|----------------|
+| `JairoSVG` | Public API and ConversionBuilder |
+| `Surface` | Core Java2D rendering engine |
+| `PngSurface` | PNG output via `javax.imageio` |
+| `JpegSurface` | JPEG output via `javax.imageio` |
+| `TiffSurface` | TIFF output via `javax.imageio` |
+| `PdfSurface` | PDF output via Apache PDFBox |
+| `PsSurface` | PostScript/EPS output via `PrinterJob` |
+| `Node` | SVG DOM tree with CSS application (SAX-based) |
+| `PathDrawer` | SVG path command parser (M, L, C, Q, A, H, V, ...) |
+| `ShapeDrawer` | Basic shapes (rect, circle, ellipse, line, polygon, polyline) |
+| `TextDrawer` | Text, tspan, and textPath rendering |
+| `Defs` | Clip paths, `<use>`, `<symbol>` handling |
+| `GradientPainter` | Linear and radial gradient rendering with href chains |
+| `PatternPainter` | Pattern fill rendering with `patternTransform` |
+| `FilterRenderer` | SVG filter pipeline (feGaussianBlur, feBlend, feMerge, ...) |
+| `BlendCompositor` | Pixel-level blend mode compositing |
+| `GaussianBlur` | Optimized box-blur Gaussian approximation |
+| `MarkerDrawer` | Marker rendering on paths and shapes |
+| `MaskPainter` | Luminance-based mask compositing |
+| `ImageHandler` | Embedded raster and SVG image handling |
+| `Colors` | SVG/CSS color parsing (170+ named, hex, rgb, hsl) |
+| `Helpers` | Units, transforms, size calculations, path normalization |
+| `CssProcessor` | CSS stylesheet parsing and selector matching |
+| `BoundingBox` | Element bounding box computation |
+| `Features` | SVG conditional feature detection |
+| `UrlHelper` | URL resolution, fetching, and data URI parsing |
+| `SvgDrawer` | Root `<svg>` element handler |
+| `SvgFont` | SVG font glyph parsing and caching |
+| `Main` | CLI entry point |
 
-## Technology Mapping
+## Key Technologies
 
-| CairoSVG (Python) | JairoSVG (Java) |
-|--------------------|-----------------|
-| `cairocffi.Context` | `java.awt.Graphics2D` |
-| `cairocffi.ImageSurface` | `java.awt.image.BufferedImage` |
-| `cairocffi.Matrix` | `java.awt.geom.AffineTransform` |
-| `cairocffi.LinearGradient` | `java.awt.LinearGradientPaint` |
-| `cairocffi.RadialGradient` | `java.awt.RadialGradientPaint` |
-| `cairocffi` stroke/fill | `java.awt.BasicStroke` + `Graphics2D` |
-| `tinycss2` | Custom CSS declaration parser |
-| `cssselect2` | Custom CSS selector matcher |
-| `defusedxml` | SAX parser with secure configuration |
-| `Pillow (PIL)` | `javax.imageio.ImageIO` |
-| PDF via Cairo | PDF via Apache PDFBox 3.0 |
+| Technology | Usage |
+|------------|-------|
+| `java.awt.Graphics2D` | 2D rendering context |
+| `java.awt.image.BufferedImage` | Raster image buffer |
+| `java.awt.geom.AffineTransform` | Coordinate transforms |
+| `java.awt.LinearGradientPaint` | Linear gradient rendering |
+| `java.awt.RadialGradientPaint` | Radial gradient rendering |
+| `java.awt.BasicStroke` | Stroke styling |
+| `javax.imageio.ImageIO` | PNG/JPEG/TIFF encoding |
+| Apache PDFBox 3.0 | PDF output (optional) |
+| SAX parser | Secure XML parsing |
+| Custom CSS parser | SVG stylesheet support |
 
 ## Rendering Pipeline
 

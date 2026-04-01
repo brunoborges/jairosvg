@@ -10,7 +10,7 @@ import java.awt.geom.GeneralPath;
 import static io.brunoborges.jairosvg.util.Helpers.*;
 
 /**
- * SVG path command parser and drawer. Port of CairoSVG path.py
+ * SVG path command parser and drawer.
  */
 public final class PathDrawer {
 

@@ -8,7 +8,7 @@ import java.util.Map;
 import io.brunoborges.jairosvg.JairoSVG;
 
 /**
- * Command-line interface to JairoSVG. Port of CairoSVG __main__.py
+ * Command-line interface to JairoSVG.
  */
 public final class Main {
 

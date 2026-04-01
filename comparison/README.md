@@ -1,6 +1,6 @@
 # Feature Comparison: JairoSVG vs EchoSVG vs CairoSVG vs JSVG
 
-A comprehensive comparison of four SVG libraries — **JairoSVG** (Java), **EchoSVG** (Java), **CairoSVG** (Python), and **JSVG** (Java) — to help developers choose the right tool for their SVG rendering needs. JairoSVG is a Java port of [CairoSVG], so this comparison also tracks porting fidelity.
+A comprehensive comparison of four SVG libraries — **JairoSVG** (Java), **EchoSVG** (Java), **CairoSVG** (Python), and **JSVG** (Java) — to help developers choose the right tool for their SVG rendering needs.
 
 ## Table of Contents
 
@@ -27,7 +27,7 @@ A comprehensive comparison of four SVG libraries — **JairoSVG** (Java), **Echo
 |                       | JairoSVG                                                       | EchoSVG                                                    | CairoSVG                               | JSVG                                              |
 | --------------------- | -------------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------- | ------------------------------------------------- |
 | **Language**          | Java 25+                                                       | Java 8+                                                    | Python 3.6+                            | Java 8+                                           |
-| **Origin**            | Java port of [CairoSVG]                                        | Fork of [Apache Batik]                                     | Original project                       | Independent project                               |
+| **Origin**            | Independent project, API inspired by [CairoSVG]               | Fork of [Apache Batik]                                     | Original project                       | Independent project                               |
 | **Maintainer**        | Bruno Borges                                                   | css4j project                                              | CourtBouillon / Kozea                  | Jannis Weis                                       |
 | **Primary goal**      | Fast, lightweight SVG → raster/vector conversion               | Full-featured SVG toolkit: render, manipulate, and convert | SVG → PNG/PDF/PS conversion            | Lightweight SVG renderer for Swing / Java2D       |
 | **License**           | LGPL-3.0                                                       | Apache-2.0                                                 | LGPL-3.0                               | MIT                                               |
@@ -43,27 +43,27 @@ A comprehensive comparison of four SVG libraries — **JairoSVG** (Java), **Echo
 
 ### JairoSVG
 
-JairoSVG is a **direct port of CairoSVG's Python codebase** to modern Java, rendering SVG through the standard **Java2D** (`Graphics2D` / `BufferedImage`) API. The architecture is intentionally compact:
+JairoSVG renders SVG through the standard **Java2D** (`Graphics2D` / `BufferedImage`) API. The architecture is intentionally compact:
 
-| Java Class     | Python Module | Role                       |
-| -------------- | ------------- | -------------------------- |
-| `JairoSVG`     | `__init__.py` | Public API + Builder       |
-| `Surface`      | `surface.py`  | Java2D rendering engine    |
-| `Node`         | `parser.py`   | SVG DOM tree               |
-| `PathDrawer`   | `path.py`     | SVG path commands          |
-| `ShapeDrawer`  | `shapes.py`   | Basic shapes               |
-| `TextDrawer`   | `text.py`     | Text rendering             |
-| `Defs`         | `defs.py`     | Gradients, clips, use      |
-| `Colors`       | `colors.py`   | Color parsing (170+ named) |
-| `Helpers`      | `helpers.py`  | Units, transforms          |
-| `CssProcessor` | `css.py`      | CSS parsing                |
+| Java Class     | Role                       |
+| -------------- | -------------------------- |
+| `JairoSVG`     | Public API + Builder       |
+| `Surface`      | Java2D rendering engine    |
+| `Node`         | SVG DOM tree               |
+| `PathDrawer`   | SVG path commands          |
+| `ShapeDrawer`  | Basic shapes               |
+| `TextDrawer`   | Text rendering             |
+| `Defs`         | Gradients, clips, use      |
+| `Colors`       | Color parsing (170+ named) |
+| `Helpers`      | Units, transforms          |
+| `CssProcessor` | CSS parsing                |
 
-**Key technology mapping:**
+**Key technologies:**
 
-- `cairo.Context` → `java.awt.Graphics2D`
-- `cairo.ImageSurface` → `java.awt.image.BufferedImage`
-- `cairo.Matrix` → `java.awt.geom.AffineTransform`
-- PDF output via Apache PDFBox 3.0
+- `java.awt.Graphics2D` — 2D rendering context
+- `java.awt.image.BufferedImage` — raster image buffer
+- `java.awt.geom.AffineTransform` — coordinate transforms
+- Apache PDFBox 3.0 — PDF output (optional dependency)
 
 **Total codebase:** ~4,100 lines of Java across 20 source files — a deliberately minimal footprint.
 
@@ -403,19 +403,19 @@ See **[visual/](visual/)** for the complete gallery with browser-rendered SVG al
 
 ---
 
-### JairoSVG Porting Fidelity
+### JairoSVG vs CairoSVG
 
-Since JairoSVG is a port of CairoSVG, most features should be at parity. Key differences:
+JairoSVG's API design was inspired by CairoSVG's simplicity. Key differences:
 
-| Feature                           |   JairoSVG (Java port)   | CairoSVG (Python original) |
-| --------------------------------- | :----------------------: | :------------------------: |
-| `<symbol>` element                |            ✅            |             ❌             |
-| `font` shorthand                  |            ✅            |             ❌             |
-| EPS output                        |            ✅            |             ❌             |
-| External CSS `<?xml-stylesheet?>` | ✅ (requires `--unsafe`) |             ✅             |
-| Gzip-compressed `.svgz` input     |            ✅            |             ✅             |
+| Feature                           |       JairoSVG       |       CairoSVG       |
+| --------------------------------- | :------------------: | :------------------: |
+| `<symbol>` element                |          ✅          |          ❌          |
+| `font` shorthand                  |          ✅          |          ❌          |
+| EPS output                        |          ✅          |          ❌          |
+| External CSS `<?xml-stylesheet?>` | ✅ (requires `--unsafe`) |          ✅          |
+| Gzip-compressed `.svgz` input     |          ✅          |          ✅          |
 
-JairoSVG adds features beyond CairoSVG (fluent builder API, `BufferedImage` output, EPS support) while maintaining the same core rendering approach.
+JairoSVG adds features beyond CairoSVG (fluent builder API, `BufferedImage` output, EPS support, extensive filter primitives) while maintaining a similarly simple API surface.
 
 ---
 

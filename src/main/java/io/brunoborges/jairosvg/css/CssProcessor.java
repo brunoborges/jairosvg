@@ -16,8 +16,7 @@ import io.brunoborges.jairosvg.dom.Node;
 import io.brunoborges.jairosvg.util.UrlHelper;
 
 /**
- * Minimal CSS parsing for SVG inline styles and stylesheets. Port of CairoSVG
- * css.py
+ * Minimal CSS parsing for SVG inline styles and stylesheets.
  */
 public final class CssProcessor {
 

@@ -1,6 +1,6 @@
 # JairoSVG
 
-**A high-performance Java port of [CairoSVG](https://cairosvg.org) — SVG 1.1 to PNG, JPEG, TIFF, PDF, and PS/EPS converter powered by Java2D.**
+**A high-performance SVG 1.1 to PNG, JPEG, TIFF, PDF, and PS/EPS converter powered by Java2D.**
 
 ## Why JairoSVG?
 

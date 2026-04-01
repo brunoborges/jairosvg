@@ -10,8 +10,7 @@ import io.brunoborges.jairosvg.dom.Node;
 import io.brunoborges.jairosvg.surface.Surface;
 
 /**
- * Surface helpers: size parsing, transforms, normalize, point, etc. Port of
- * CairoSVG helpers.py
+ * Surface helpers: size parsing, transforms, normalize, point, etc.
  */
 public final class Helpers {
 

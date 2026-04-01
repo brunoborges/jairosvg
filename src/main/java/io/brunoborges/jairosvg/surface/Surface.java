@@ -46,8 +46,7 @@ import io.brunoborges.jairosvg.util.Helpers;
 import io.brunoborges.jairosvg.util.UrlHelper;
 
 /**
- * Abstract base surface for SVG rendering using Java2D. Port of CairoSVG
- * surface.py
+ * Abstract base surface for SVG rendering using Java2D.
  */
 public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSurface, PsSurface {
 

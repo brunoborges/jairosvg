@@ -14,7 +14,7 @@ import io.brunoborges.jairosvg.dom.Node;
 import io.brunoborges.jairosvg.surface.*;
 
 /**
- * JairoSVG - A Java port of CairoSVG. SVG 1.1 to PNG, PDF, and PS converter.
+ * JairoSVG — SVG 1.1 to PNG, PDF, and PS converter powered by Java2D.
  *
  * <p>
  * Usage:

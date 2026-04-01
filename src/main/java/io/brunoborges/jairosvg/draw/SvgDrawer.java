@@ -6,7 +6,7 @@ import io.brunoborges.jairosvg.surface.Surface;
 import static io.brunoborges.jairosvg.util.Helpers.*;
 
 /**
- * Root SVG tag drawer. Port of CairoSVG svg.py
+ * Root SVG tag drawer.
  */
 public final class SvgDrawer {
 

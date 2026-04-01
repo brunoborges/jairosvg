@@ -1,11 +1,11 @@
 project:
   name: JairoSVG
-  description: A Java port of CairoSVG - SVG 1.1 to PNG, PDF, JPEG, TIFF, PS and SVG converter
+  description: SVG 1.1 to PNG, JPEG, TIFF, PDF, PS/EPS, and SVG converter powered by Java2D
   longDescription: |
     JairoSVG is a pure Java SVG 1.1 renderer using Java2D. It converts SVG files
-    to PNG, JPEG, TIFF, PDF, PostScript, EPS, and SVG formats. A direct port of
-    the popular Python CairoSVG library, JairoSVG delivers native-level performance
-    without requiring any native dependencies.
+    to PNG, JPEG, TIFF, PDF, PostScript, EPS, and SVG formats. Designed for
+    simplicity and performance, JairoSVG delivers fast rendering without
+    requiring any native dependencies.
   website: https://github.com/brunoborges/jairosvg
   authors:
     - Bruno Borges

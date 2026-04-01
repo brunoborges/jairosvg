@@ -11,7 +11,7 @@ import io.brunoborges.jairosvg.util.ParsedPoint;
 import static io.brunoborges.jairosvg.util.Helpers.*;
 
 /**
- * SVG shape drawers. Port of CairoSVG shapes.py
+ * SVG shape drawers.
  */
 public final class ShapeDrawer {
 

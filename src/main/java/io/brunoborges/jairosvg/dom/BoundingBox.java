@@ -9,8 +9,7 @@ import io.brunoborges.jairosvg.surface.Surface;
 import io.brunoborges.jairosvg.util.ParsedPoint;
 
 /**
- * Bounding box calculations for SVG shapes and paths. Port of CairoSVG
- * bounding_box.py
+ * Bounding box calculations for SVG shapes and paths.
  */
 public final class BoundingBox {
 

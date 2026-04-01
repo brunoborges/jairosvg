@@ -29,8 +29,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 
 /**
- * SVG Node with dict-like properties and children. Port of CairoSVG parser.py
- * (Node and Tree classes).
+ * SVG Node with dict-like properties and children.
  */
 public class Node {
 

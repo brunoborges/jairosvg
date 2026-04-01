@@ -4,7 +4,7 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * SVG conditional processing helpers. Port of CairoSVG features.py.
+ * SVG conditional processing helpers.
  *
  * <p>
  * JairoSVG targets SVG 1.1 but selectively aligns with SVG 2 where modern

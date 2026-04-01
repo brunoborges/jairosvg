@@ -24,7 +24,7 @@ import io.brunoborges.jairosvg.util.UrlHelper;
 import static io.brunoborges.jairosvg.util.Helpers.*;
 
 /**
- * SVG text rendering. Port of CairoSVG text.py
+ * SVG text rendering.
  */
 public final class TextDrawer {
 
