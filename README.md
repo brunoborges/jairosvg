@@ -116,6 +116,18 @@ byte[] png = JairoSVG.svg2png(svgBytes);
 // SVG file → PDF file
 JairoSVG.svg2pdf(Path.of("input.svg"), Path.of("output.pdf"));
 
+// One-liner conversions for all formats
+byte[] jpeg = JairoSVG.svg2jpeg(svgBytes);
+byte[] tiff = JairoSVG.svg2tiff(svgBytes);
+byte[] ps   = JairoSVG.svg2ps(svgBytes);
+byte[] eps  = JairoSVG.svg2eps(svgBytes);
+
+// File-to-file for any format
+JairoSVG.svg2jpeg(Path.of("input.svg"), Path.of("output.jpg"));
+JairoSVG.svg2tiff(Path.of("input.svg"), Path.of("output.tiff"));
+JairoSVG.svg2ps(Path.of("input.svg"), Path.of("output.ps"));
+JairoSVG.svg2eps(Path.of("input.svg"), Path.of("output.eps"));
+
 // Builder API with options
 byte[] scaled = JairoSVG.builder()
     .fromBytes(svgBytes)

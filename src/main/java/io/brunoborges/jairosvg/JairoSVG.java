@@ -58,14 +58,46 @@ public final class JairoSVG {
         return builder().fromBytes(svgBytes).toPng();
     }
 
+    /** Convert SVG bytes to JPEG bytes. */
+    public static byte[] svg2jpeg(byte[] svgBytes) throws Exception {
+        return builder().fromBytes(svgBytes).toJpeg();
+    }
+
+    /** Convert SVG bytes to TIFF bytes. */
+    public static byte[] svg2tiff(byte[] svgBytes) throws Exception {
+        return builder().fromBytes(svgBytes).toTiff();
+    }
+
     /** Convert SVG bytes to PDF bytes. */
     public static byte[] svg2pdf(byte[] svgBytes) throws Exception {
         return builder().fromBytes(svgBytes).toPdf();
     }
 
+    /** Convert SVG bytes to PostScript bytes. */
+    public static byte[] svg2ps(byte[] svgBytes) throws Exception {
+        return builder().fromBytes(svgBytes).toPs();
+    }
+
+    /** Convert SVG bytes to Encapsulated PostScript bytes. */
+    public static byte[] svg2eps(byte[] svgBytes) throws Exception {
+        return builder().fromBytes(svgBytes).toEps();
+    }
+
     /** Convert SVG file to PNG file. */
     public static void svg2png(Path input, Path output) throws Exception {
         byte[] result = builder().fromFile(input).toPng();
+        Files.write(output, result);
+    }
+
+    /** Convert SVG file to JPEG file. */
+    public static void svg2jpeg(Path input, Path output) throws Exception {
+        byte[] result = builder().fromFile(input).toJpeg();
+        Files.write(output, result);
+    }
+
+    /** Convert SVG file to TIFF file. */
+    public static void svg2tiff(Path input, Path output) throws Exception {
+        byte[] result = builder().fromFile(input).toTiff();
         Files.write(output, result);
     }
 
@@ -75,14 +107,46 @@ public final class JairoSVG {
         Files.write(output, result);
     }
 
+    /** Convert SVG file to PostScript file. */
+    public static void svg2ps(Path input, Path output) throws Exception {
+        byte[] result = builder().fromFile(input).toPs();
+        Files.write(output, result);
+    }
+
+    /** Convert SVG file to Encapsulated PostScript file. */
+    public static void svg2eps(Path input, Path output) throws Exception {
+        byte[] result = builder().fromFile(input).toEps();
+        Files.write(output, result);
+    }
+
     /** Convert SVG URL to PNG bytes. */
     public static byte[] svg2png(String url) throws Exception {
         return builder().fromUrl(url).toPng();
     }
 
+    /** Convert SVG URL to JPEG bytes. */
+    public static byte[] svg2jpeg(String url) throws Exception {
+        return builder().fromUrl(url).toJpeg();
+    }
+
+    /** Convert SVG URL to TIFF bytes. */
+    public static byte[] svg2tiff(String url) throws Exception {
+        return builder().fromUrl(url).toTiff();
+    }
+
     /** Convert SVG URL to PDF bytes. */
     public static byte[] svg2pdf(String url) throws Exception {
         return builder().fromUrl(url).toPdf();
+    }
+
+    /** Convert SVG URL to PostScript bytes. */
+    public static byte[] svg2ps(String url) throws Exception {
+        return builder().fromUrl(url).toPs();
+    }
+
+    /** Convert SVG URL to Encapsulated PostScript bytes. */
+    public static byte[] svg2eps(String url) throws Exception {
+        return builder().fromUrl(url).toEps();
     }
 
     // ---- Builder API ----
@@ -331,9 +395,19 @@ public final class JairoSVG {
             return convert(new PsSurface());
         }
 
+        /** Convert to PS and write to output stream. */
+        public void toPs(OutputStream out) throws Exception {
+            convert(new PsSurface(), out);
+        }
+
         /** Convert to EPS bytes. */
         public byte[] toEps() throws Exception {
             return convert(new PsSurface(true));
+        }
+
+        /** Convert to EPS and write to output stream. */
+        public void toEps(OutputStream out) throws Exception {
+            convert(new PsSurface(true), out);
         }
 
         /** Convert and return the rendered BufferedImage (useful for in-memory use). */
