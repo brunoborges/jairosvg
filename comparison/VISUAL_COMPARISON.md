@@ -2,6 +2,8 @@
 
 Side-by-side visual comparison of 42 SVG test cases across all four libraries.
 
+> **Note:** The **Input SVG** column is rendered live by your browser's built-in SVG engine. Use it as a reference to compare each library's PNG output against what a modern browser produces.
+
 ### 01 — Basic Shapes
 
 Rectangles, circles, ellipses, and lines with solid fills and strokes.

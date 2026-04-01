@@ -271,7 +271,9 @@ public class generate {
         var sb = new StringBuilder();
         sb.append("# Visual Rendering Comparison\n\n");
         sb.append("Side-by-side visual comparison of ").append(svgFiles.size())
-          .append(" SVG test cases across all four libraries.\n");
+          .append(" SVG test cases across all four libraries.\n\n");
+        sb.append("> **Note:** The **Input SVG** column is rendered live by your browser's built-in SVG engine.")
+          .append(" Use it as a reference to compare each library's PNG output against what a modern browser produces.\n");
 
         for (var svgPath : svgFiles) {
             String name = svgPath.getFileName().toString().replace(".svg", "");
