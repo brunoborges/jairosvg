@@ -12,11 +12,12 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  release:
+  build-jars:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.release }}
     permissions:
       contents: write
-      issues: write
     steps:
       - uses: actions/checkout@v6
         with:
@@ -55,12 +56,155 @@ jobs:
       - name: Build and stage artifacts
         run: ./mvnw clean deploy -Prelease --no-transfer-progress
 
+      - name: Upload staged artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: staged-artifacts
+          path: target/staging-deploy/
+
+      - name: Upload release JARs
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-jars
+          path: |
+            target/jairosvg-*.jar
+            !target/original-jairosvg-*.jar
+
+  build-natives:
+    needs: build-jars
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+          - os: ubuntu-24.04-arm
+            platform: linux
+            arch: arm64
+          - os: macos-latest
+            platform: macos
+            arch: arm64
+          - os: macos-13
+            platform: macos
+            arch: x64
+          - os: windows-latest
+            platform: windows
+            arch: x64
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: v${{ needs.build-jars.outputs.version }}
+
+      - name: Set up GraalVM JDK 25
+        uses: graalvm/setup-graalvm@v1
+        with:
+          distribution: graalvm
+          java-version: '25'
+          cache: maven
+          components: native-image
+
+      - name: Build shaded CLI JAR
+        env:
+          MAVEN_OPTS: --enable-preview
+        run: ./mvnw -DskipTests package --no-transfer-progress
+
+      - name: Build native image (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          shopt -s nullglob
+          cli_jars=(target/*-cli.jar)
+          if [ ${#cli_jars[@]} -eq 0 ]; then
+            echo "No shaded CLI jar found in target/"
+            exit 1
+          fi
+          VERSION="${{ needs.build-jars.outputs.version }}"
+          native-image --enable-preview \
+            -o "jairosvg-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}" \
+            -jar "${cli_jars[0]}"
+
+      - name: Build native image (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $cliJars = Get-ChildItem target\*-cli.jar
+          if ($cliJars.Count -eq 0) {
+            Write-Error "No shaded CLI jar found in target\"
+            exit 1
+          }
+          $version = "${{ needs.build-jars.outputs.version }}"
+          native-image --enable-preview `
+            -o "jairosvg-${version}-${{ matrix.platform }}-${{ matrix.arch }}" `
+            -jar $cliJars[0].FullName
+
+      - name: Smoke test (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          VERSION="${{ needs.build-jars.outputs.version }}"
+          ./"jairosvg-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}" --help
+
+      - name: Smoke test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $version = "${{ needs.build-jars.outputs.version }}"
+          & ".\jairosvg-${version}-${{ matrix.platform }}-${{ matrix.arch }}.exe" --help
+
+      - name: Upload native binary
+        uses: actions/upload-artifact@v7
+        with:
+          name: native-${{ matrix.platform }}-${{ matrix.arch }}
+          path: jairosvg-${{ needs.build-jars.outputs.version }}-${{ matrix.platform }}-${{ matrix.arch }}*
+
+  release:
+    needs: [build-jars, build-natives]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: v${{ needs.build-jars.outputs.version }}
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Download staged artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: staged-artifacts
+          path: target/staging-deploy/
+
+      - name: Download release JARs
+        uses: actions/download-artifact@v4
+        with:
+          name: release-jars
+          path: target/
+
+      - name: Download native binaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: native-*
+          merge-multiple: true
+          path: target/native/
+
       - name: Run JReleaser
         uses: jreleaser/release-action@v2
         with:
           arguments: full-release
         env:
-          JRELEASER_PROJECT_VERSION: ${{ steps.version.outputs.release }}
+          JRELEASER_PROJECT_VERSION: ${{ needs.build-jars.outputs.version }}
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JRELEASER_MAVENCENTRAL_APP_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           JRELEASER_MAVENCENTRAL_APP_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
@@ -79,7 +223,11 @@ jobs:
 
       - name: Bump to next SNAPSHOT version
         run: |
-          VERSION="${{ steps.version.outputs.release }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout main
+          VERSION="${{ needs.build-jars.outputs.version }}"
           IFS='.' read -r major minor patch <<< "${VERSION}"
           NEXT_VERSION="${major}.${minor}.$((patch + 1))"
           ./mvnw versions:set -DnewVersion=${NEXT_VERSION}-SNAPSHOT -DgenerateBackupPoms=false --no-transfer-progress
@@ -92,7 +240,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="${{ steps.version.outputs.release }}"
+          VERSION="${{ needs.build-jars.outputs.version }}"
           IFS='.' read -r major minor patch <<< "${VERSION}"
           NEXT_VERSION="${major}.${minor}.$((patch + 1))"
 

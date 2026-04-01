@@ -62,6 +62,27 @@ See **[comparison/COMPARISON.md](comparison/COMPARISON.md)** for side-by-side re
 
 > **Tip:** Check [Maven Central](https://central.sonatype.com/artifact/io.brunoborges/jairosvg) for the latest released version.
 
+### Native Binary (GraalVM)
+
+Download pre-built native binaries (no JVM required) from the [GitHub Releases page](https://github.com/brunoborges/jairosvg/releases):
+
+| Platform    | Binary                                        |
+|-------------|-----------------------------------------------|
+| Linux x64   | `jairosvg-{version}-linux-x64`               |
+| Linux arm64 | `jairosvg-{version}-linux-arm64`             |
+| macOS x64   | `jairosvg-{version}-macos-x64`               |
+| macOS arm64 | `jairosvg-{version}-macos-arm64`             |
+| Windows x64 | `jairosvg-{version}-windows-x64.exe`         |
+
+```bash
+# Linux / macOS: make executable and run
+chmod +x jairosvg-{version}-linux-x64
+./jairosvg-{version}-linux-x64 input.svg -o output.png
+
+# Windows (PowerShell)
+.\jairosvg-{version}-windows-x64.exe input.svg -o output.png
+```
+
 ### Maven
 
 ```xml
