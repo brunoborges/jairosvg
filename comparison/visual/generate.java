@@ -357,12 +357,15 @@ public class generate {
         sb.append("\n---\n\n");
 
         sb.append("""
-                > **⚠️ Filters/Masks caveat:** CairoSVG does **not** correctly render masks \
-                (missing gradient and circle content) or `feGaussianBlur`/`feDropShadow` filters \
-                — it silently skips them. For those tests, CairoSVG appears faster because it \
-                skips rendering work. JairoSVG and JSVG perform the actual computation, so their \
-                speed reflects the true cost of correct rendering. Note: JairoSVG now \
-                **outperforms CairoSVG on both Masks and feBlend modes** despite rendering them correctly.
+                > **⚠️ Filters/Masks caveat:** CairoSVG supports only three SVG filter primitives \
+                (`feBlend`, `feFlood`, `feOffset`) — all others (`feGaussianBlur`, `feDropShadow`, \
+                `feTurbulence`, `feDisplacementMap`, `feLighting`, `feColorMatrix`, `feMorphology`, \
+                `feConvolveMatrix`, `feComponentTransfer`, `feComposite`, `feMerge`, `feImage`, `feTile`) \
+                are silently skipped. Masks are also rendered incorrectly (missing gradient and shape content). \
+                For those tests, CairoSVG appears faster and produces smaller files because it skips the \
+                rendering work. JairoSVG and JSVG perform the actual computation. Note: JairoSVG \
+                **outperforms CairoSVG on both Masks and feBlend modes** despite rendering them correctly. \
+                CairoSVG also **crashes** on CSS custom properties (`var()`) — test 28 produces no output.
 
                 """);
 
@@ -393,10 +396,10 @@ public class generate {
 
         sb.append("""
                 > **⚠️ Filters/Masks:** Where CairoSVG produces much smaller output, it is because CairoSVG \
-                **does not render** certain features correctly — filter effects (blur, drop-shadow) are silently \
-                skipped, and masks are rendered without gradient/circle content. This results in simpler images \
-                that compress better. JairoSVG and JSVG render these effects correctly, producing visually \
-                accurate but larger PNGs.
+                **does not implement** most SVG filter primitives — only `feBlend`, `feFlood`, and `feOffset` \
+                are supported; all others are silently skipped. Masks are also rendered without gradient/shape \
+                content. This results in simpler images that compress better. JairoSVG and JSVG render these \
+                effects correctly, producing visually accurate but larger PNGs.
 
                 ## Running the Benchmark
 
