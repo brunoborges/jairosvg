@@ -32,10 +32,10 @@ A comprehensive comparison of four SVG libraries — **JairoSVG** (Java), **Echo
 | **Primary goal**      | Fast, lightweight SVG → raster/vector conversion               | Full-featured SVG toolkit: render, manipulate, and convert | SVG → PNG/PDF/PS conversion            | Lightweight SVG renderer for Swing / Java2D       |
 | **License**           | MIT                                                            | Apache-2.0                                                 | LGPL-3.0                               | MIT                                               |
 | **Repository**        | [brunoborges/jairosvg]                                         | [css4j/echosvg]                                            | [Kozea/CairoSVG]                       | [weisJ/jsvg]                                      |
-| **Current version**   | 1.0.4                                                          | 2.4                                                        | 2.7+                                   | 2.0.0                                             |
+| **Current version**   | 1.0.5                                                          | 2.4                                                        | 2.7+                                   | 2.0.0                                             |
 | **SVG spec target**   | SVG 1.1 + [selective SVG 2](../LIMITATIONS.md#svg-2-behavioral-alignment) | SVG 1.1 + partial SVG 2                                    | SVG 1.1                                | SVG 1.1 + partial SVG 2                           |
 | **Rendering backend** | Java2D                                                         | GVT (Batik) → Java2D                                       | Cairo (C library)                      | Java2D                                            |
-| **Key strength**      | Speed (2–26× faster than EchoSVG, on par with JSVG, 1–2.4× faster than CairoSVG) | Feature completeness and standard compliance               | Native C performance, mature ecosystem | Designed for Swing GUI embedding (IntelliJ, etc.) |
+| **Key strength**      | Speed (2–30× faster than EchoSVG, on par with JSVG, faster than CairoSVG) | Feature completeness and standard compliance               | Native C performance, mature ecosystem | Designed for Swing GUI embedding (IntelliJ, etc.) |
 
 ---
 
@@ -65,7 +65,7 @@ JairoSVG renders SVG through the standard **Java2D** (`Graphics2D` / `BufferedIm
 - `java.awt.geom.AffineTransform` — coordinate transforms
 - Apache PDFBox 3.0 — PDF output (optional dependency)
 
-**Total codebase:** ~4,100 lines of Java across 20 source files — a deliberately minimal footprint.
+**Total codebase:** ~8,800 lines of Java across 31 source files — a deliberately minimal footprint.
 
 ### EchoSVG
 
@@ -96,7 +96,7 @@ JSVG is a **lightweight Java SVG renderer** designed for AWT/Swing applications.
 | **Core rendering**   | Java2D (`Graphics2D`)   | GVT → Java2D             | Cairo (C library)                         | Java2D (`Graphics2D`)            |
 | **CSS engine**       | Custom lightweight      | css4j (CSS4 support)     | tinycss2 + cssselect2                     | Built-in (partial)               |
 | **SVG DOM**          | Read-only `Node` tree   | Full mutable W3C DOM     | ElementTree (read-only)                   | `SVGDocument` (pre-processed)    |
-| **Module structure** | Single JAR, ~20 classes | 20+ Gradle modules       | Single Python package                     | Single JAR, ~30K LOC             |
+| **Module structure** | Single JAR, ~31 classes | 20+ Gradle modules       | Single Python package                     | Single JAR, ~30K LOC             |
 | **Animation engine** | None                    | Full SMIL                | None                                      | ⚠️ Partial (experimental)         |
 | **Scripting**        | None                    | Mozilla Rhino (JS)       | None                                      | None                             |
 | **Filter pipeline**  | Full (16 primitives)    | Full primitives          | 3 primitives (feBlend, feFlood, feOffset) | Most primitives (15+ supported)  |
@@ -292,11 +292,11 @@ SVG → PNG conversion benchmarks comparing all four libraries across 42 SVG tes
 | Embedded image         |   **4.3 ms**    |    15.7 ms     |  10.8 ms     |      6.9 ms       |
 | Localized masks        |  **14.3 ms**    |    55.0 ms     |  14.3 ms     |     15.3 ms       |
 
-_JairoSVG is **2–26× faster** than EchoSVG, **on par with JSVG** in most scenarios, and **1–2.4× faster** than CairoSVG._
+_JairoSVG is **2–30× faster** than EchoSVG, **on par with JSVG** in most scenarios, and **faster than CairoSVG** in most scenarios._
 
 > ⚠️ Where CairoSVG appears faster on filters/masks, it is because it silently **skips** rendering those effects.
 
-JairoSVG also produces the **smallest PNGs** overall — 8% smaller than CairoSVG, 11.5% smaller than JSVG, and 17.3% smaller than EchoSVG.
+JairoSVG also produces compact PNGs — 9% smaller than JSVG and 17.5% smaller than EchoSVG.
 
 See **[COMPARISON.md](COMPARISON.md)** for per-test-case benchmark times, file sizes, rendering settings analysis, and instructions to run the benchmark yourself.
 
@@ -309,8 +309,8 @@ See **[COMPARISON.md](COMPARISON.md)** for per-test-case benchmark times, file s
 | **Runtime dependencies** | 0 (PDFBox optional)                         | Many (css4j, …)           | 5 (cairocffi, tinycss2, cssselect2, defusedxml, Pillow) | 0                               |
 | **Disk footprint**       | **~130 KB** (PNG only), ~2.1 MB with PDFBox | ~5.7 MB (25 JARs)        | ~16.6 MB (Python pkgs + Pillow + Cairo C lib)           | ~350 KB                         |
 | **Artifact size**        | 1 JAR (~130 KB) + CLI shaded JAR             | Many modular JARs         | Single Python package                                   | 1 JAR                           |
-| **Source files**         | 20                                          | 20+ modules               | ~10 modules                                             | ~30K LOC                        |
-| **Lines of code**        | ~4,100                                      | ~200,000+                 | ~4,000                                                  | ~30,000                         |
+| **Source files**         | 31                                          | 20+ modules               | ~10 modules                                             | ~30K LOC                        |
+| **Lines of code**        | ~8,800                                      | ~200,000+                 | ~4,000                                                  | ~30,000                         |
 | **Platform req.**        | Java 25+ (`--enable-preview`)               | Java 8+                   | Python 3.6+ / Cairo C lib                               | Java 11+                        |
 | **Build system**         | Maven                                       | Gradle                    | pip / setuptools                                        | Gradle                          |
 | **Native dependency**    | None                                        | None                      | Cairo C library required                                | None                            |
@@ -354,9 +354,9 @@ See **[COMPARISON.md](COMPARISON.md)** for the complete gallery with browser-ren
 | **Best for**       | Fast Java SVG conversion                               | Full SVG toolkit (DOM, scripting, animation) | Python SVG conversion                          | SVG rendering in Swing/Java2D GUIs     |
 | **SVG spec**       | SVG 1.1 + [selective SVG 2](../LIMITATIONS.md#svg-2-behavioral-alignment) (static) | SVG 1.1 + partial SVG 2                      | SVG 1.1 (static)                               | SVG 1.1 + partial SVG 2               |
 | **CSS**            | Basic + structural pseudo selectors                    | Advanced (CSS Level 4, css4j)                | Basic (via tinycss2)                           | Good CSS support                       |
-| **Performance**    | 2–31× faster than EchoSVG; on par with JSVG; 1–2.5× faster than CairoSVG | Slowest (GVT overhead)                       | Fast (native C), but skips some filter effects | Fast (lightweight, designed for Swing) |
+| **Performance**    | 2–30× faster than EchoSVG; on par with JSVG; faster than CairoSVG | Slowest (GVT overhead)                       | Fast (native C), but skips some filter effects | Fast (lightweight, designed for Swing) |
 | **API simplicity** | One-liner / builder                                    | Transcoder pattern                           | One-liner functions                            | SVGLoader + render()                   |
-| **Codebase**       | ~4K LOC, 1 dep                                         | ~200K+ LOC, many modules                     | ~4K LOC, 5 deps                                | ~30K LOC, minimal deps                 |
+| **Codebase**       | ~8.8K LOC, 1 dep                                       | ~200K+ LOC, many modules                     | ~4K LOC, 5 deps                                | ~30K LOC, minimal deps                 |
 | **Animation**      | ❌                                                     | ✅                                           | ❌                                             | ❌                                     |
 | **Scripting**      | ❌                                                     | ✅                                           | ❌                                             | ❌                                     |
 | **GUI viewer**     | ❌                                                     | ✅                                           | ❌                                             | ✅ (Swing component)                   |
@@ -388,7 +388,6 @@ See **[COMPARISON.md](COMPARISON.md)** for the complete gallery with browser-ren
 **Choose CairoSVG when you need:**
 
 - SVG conversion **in Python**
-- The fastest raw conversion speed (native C backend)
 - A mature, widely-used library with a large community
 - Integration with Python web frameworks or data pipelines
 - No JVM dependency
@@ -421,7 +420,7 @@ JairoSVG adds features beyond CairoSVG (fluent builder API, `BufferedImage` outp
 
 ## What About ImageMagick?
 
-[ImageMagick](https://imagemagick.org/) is a popular command-line image processing toolkit that supports SVG as an input format. However, testing against the same 19 SVG test cases used in this comparison reveals that **ImageMagick is not a reliable SVG-to-PNG converter**. Out of 19 test cases, ImageMagick **failed on 11** (58%) — crashing, producing errors, or generating incorrect output.
+[ImageMagick](https://imagemagick.org/) is a popular command-line image processing toolkit that supports SVG as an input format. However, testing against 19 of the SVG test cases in this comparison revealed that **ImageMagick is not a reliable SVG-to-PNG converter**. Out of those 19 test cases, ImageMagick **failed on 11** (58%) — crashing, producing errors, or generating incorrect output.
 
 ### Failure Summary
 
