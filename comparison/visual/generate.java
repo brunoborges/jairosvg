@@ -349,10 +349,10 @@ public class generate {
               .append(sizeCell(sCairo, minSize)).append(" | ")
               .append(sizeCell(sJsvg, minSize)).append(" |\n");
 
-            // Benchmark time row (wrapped in markers for update_readme.java)
-            sb.append("<!-- BEGIN:TIME:").append(name).append(" -->\n");
-            sb.append(timeRow(name, benchData)).append("\n");
-            sb.append("<!-- END:TIME:").append(name).append(" -->\n");
+            // Benchmark time row (markers are inline so they don't break the table)
+            sb.append("<!-- BEGIN:TIME:").append(name).append(" -->")
+              .append(timeRow(name, benchData))
+              .append("<!-- END:TIME:").append(name).append(" -->\n");
         }
 
         // Aggregate sections wrapped in markers
