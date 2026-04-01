@@ -4,54 +4,54 @@ SVG → PNG conversion benchmarks across 42 SVG test files, median time per rend
 
 | Test Case | JairoSVG (Java) | EchoSVG (Java) | JSVG (Java) | CairoSVG (Python) |
 | --- | :---: | :---: | :---: | :---: |
-| [Basic shapes](../visual/README.md#01_basic_shapes) | 3.3224 ms | 15.4451 ms | **3.1553 ms** ✅ | 4.0982 ms |
-| [Gradients](../visual/README.md#02_gradients) | **4.1492 ms** ✅ | 127.9740 ms | 4.1983 ms | 10.5992 ms |
-| [Complex paths](../visual/README.md#03_complex_paths) | **4.0290 ms** ✅ | 21.7461 ms | 4.2354 ms | 4.3187 ms |
-| [Text rendering](../visual/README.md#04_text_rendering) | 4.6488 ms | 22.7574 ms | **4.6150 ms** ✅ | 6.0069 ms |
-| [Transforms](../visual/README.md#05_transforms) | 3.8863 ms | 13.9228 ms | 3.9663 ms | **3.7330 ms** ✅ |
-| [Stroke styles](../visual/README.md#06_stroke_styles) | 3.7028 ms | 12.1811 ms | 3.6614 ms | **3.3127 ms** ✅ |
-| [Opacity blend](../visual/README.md#07_opacity_blend) | 3.4613 ms | 17.9580 ms | 3.4066 ms | **3.1673 ms** ✅ |
-| [Viewbox aspect](../visual/README.md#08_viewbox_aspect) | **4.8629 ms** ✅ | 20.2394 ms | 4.8867 ms | 4.9917 ms |
-| [Css styling](../visual/README.md#09_css_styling) | **3.5098 ms** ✅ | 15.8148 ms | 3.9325 ms | 3.8613 ms |
-| [Use and defs](../visual/README.md#10_use_and_defs) | 4.1753 ms | 14.7024 ms | **3.6191 ms** ✅ | 4.1843 ms |
-| [Star polygon](../visual/README.md#11_star_polygon) | 3.1363 ms | 14.7665 ms | 3.1643 ms | **2.8726 ms** ✅ |
-| [Nested svg](../visual/README.md#12_nested_svg) | **4.3992 ms** ✅ | 18.8711 ms | 4.6450 ms | 4.7425 ms |
-| [Patterns](../visual/README.md#13_patterns) | 4.4608 ms | 16.2910 ms | **4.3360 ms** ✅ | 4.3478 ms |
-| [Clip paths](../visual/README.md#14_clip_paths) | **4.1520 ms** ✅ | 26.3523 ms | 4.2836 ms | 5.6643 ms |
-| [Masks](../visual/README.md#15_masks) ⚠️ | 4.4610 ms | 22.5966 ms | 4.5897 ms | **3.4835 ms** ✅ |
-| [Markers](../visual/README.md#16_markers) | 4.5350 ms | 17.7833 ms | **4.5235 ms** ✅ | 5.4295 ms |
-| [Filters](../visual/README.md#17_filters) ⚠️ | 7.0368 ms | 33.5862 ms | 8.0875 ms | **4.3053 ms** ✅ |
-| [Embedded image](../visual/README.md#18_embedded_image) | **4.2668 ms** ✅ | 15.5121 ms | 9.5429 ms | 6.8259 ms |
-| [Text advanced](../visual/README.md#19_text_advanced) | **5.0387 ms** ✅ | 25.8489 ms | 5.0668 ms | 8.4705 ms |
-| [Fe blend modes](../visual/README.md#20_fe_blend_modes) | **9.6381 ms** ✅ | 27.2628 ms | 20.3193 ms | 12.2996 ms |
-| [Fe tile](../visual/README.md#21_fe_tile) | 2.4961 ms | 6.4566 ms | 2.4466 ms | **2.4295 ms** ✅ |
-| [Feimage data uri](../visual/README.md#22_feimage_data_uri) | 1.5829 ms | 5.4897 ms | **1.5635 ms** ✅ | 1.8363 ms |
-| [Feimage inline ref](../visual/README.md#23_feimage_inline_ref) | **1.5585 ms** ✅ | 4.3672 ms | 2.9431 ms | 2.2383 ms |
-| [Localized masks](../visual/README.md#24_localized_masks) | **14.3141 ms** ✅ | 54.0010 ms | 14.3180 ms | 15.8612 ms |
-| [Svg fonts](../visual/README.md#25_svg_fonts) | 3.3620 ms | 16.1210 ms | **3.3583 ms** ✅ | 4.1727 ms |
-| [Symbol use](../visual/README.md#26_symbol_use) | 4.3219 ms | 23.5184 ms | **4.2348 ms** ✅ | 8.6190 ms |
-| [Switch features](../visual/README.md#27_switch_features) | 3.8951 ms | 19.5066 ms | **3.1255 ms** ✅ | 5.8029 ms |
-| [Css variables](../visual/README.md#28_css_variables) | 3.9022 ms | 18.9834 ms | **3.6660 ms** ✅ | — |
-| [Current color](../visual/README.md#29_current_color) | 3.8647 ms | 17.0837 ms | **3.6656 ms** ✅ | 5.6971 ms |
-| [Display visibility](../visual/README.md#30_display_visibility) | 4.2502 ms | 19.7640 ms | **4.0279 ms** ✅ | 7.1646 ms |
-| [Nested overflow](../visual/README.md#31_nested_overflow) | 4.0464 ms | 21.3446 ms | **3.9465 ms** ✅ | 5.6789 ms |
-| [Stroke advanced](../visual/README.md#32_stroke_advanced) | **3.6221 ms** ✅ | 17.9280 ms | 3.6605 ms | 5.6720 ms |
-| [Pattern transforms](../visual/README.md#33_pattern_transforms) | 4.0038 ms | 21.2433 ms | **3.9560 ms** ✅ | 6.1535 ms |
-| [Gradient advanced](../visual/README.md#34_gradient_advanced) | 7.0048 ms | 44.4804 ms | **6.4108 ms** ✅ | 12.0088 ms |
-| [Filter merge offset](../visual/README.md#35_filter_merge_offset) | **4.9186 ms** ✅ | 18.5218 ms | 8.4652 ms | 6.0389 ms |
-| [Fe color matrix](../visual/README.md#36_fe_color_matrix) | **3.3644 ms** ✅ | 16.8168 ms | 3.3788 ms | 5.3086 ms |
-| [Fe morphology](../visual/README.md#37_fe_morphology) | **3.6122 ms** ✅ | 17.1733 ms | 3.9805 ms | 5.2294 ms |
-| [Fe turbulence](../visual/README.md#38_fe_turbulence) ⚠️ | 8.7963 ms | 34.0668 ms | 7.7530 ms | **5.5963 ms** ✅ |
-| [Fe displacement map](../visual/README.md#39_fe_displacement_map) | 4.9033 ms | 19.0484 ms | 9.5448 ms | **4.0421 ms** ✅ |
-| [Fe lighting](../visual/README.md#40_fe_lighting) | 4.6776 ms | 21.2214 ms | **4.1237 ms** ✅ | 4.7658 ms |
-| [Fe convolve matrix](../visual/README.md#41_fe_convolve_matrix) | **3.8507 ms** ✅ | 9.6118 ms | 6.5445 ms | 4.7904 ms |
-| [Fe component transfer](../visual/README.md#42_fe_component_transfer) | 3.1299 ms | 16.0676 ms | **3.0983 ms** ✅ | 5.5329 ms |
+| [Basic shapes](../visual/README.md#01_basic_shapes) | 3.3020 ms | 15.9000 ms | **3.2819 ms** ✅ | 4.0525 ms |
+| [Gradients](../visual/README.md#02_gradients) | **4.2075 ms** ✅ | 130.8318 ms | 4.5218 ms | 10.6078 ms |
+| [Complex paths](../visual/README.md#03_complex_paths) | 4.1870 ms | 22.7806 ms | **4.0877 ms** ✅ | 4.4588 ms |
+| [Text rendering](../visual/README.md#04_text_rendering) | **4.6020 ms** ✅ | 22.2841 ms | 4.6204 ms | 6.0021 ms |
+| [Transforms](../visual/README.md#05_transforms) | 3.9760 ms | 14.0730 ms | **3.6525 ms** ✅ | 3.8172 ms |
+| [Stroke styles](../visual/README.md#06_stroke_styles) | 3.5003 ms | 11.3359 ms | **3.3691 ms** ✅ | 3.3959 ms |
+| [Opacity blend](../visual/README.md#07_opacity_blend) | **3.2588 ms** ✅ | 17.2748 ms | 3.2738 ms | 3.5310 ms |
+| [Viewbox aspect](../visual/README.md#08_viewbox_aspect) | 4.8102 ms | 18.9162 ms | **4.4387 ms** ✅ | 5.0514 ms |
+| [Css styling](../visual/README.md#09_css_styling) | 3.1855 ms | 14.2915 ms | **3.1450 ms** ✅ | 3.8781 ms |
+| [Use and defs](../visual/README.md#10_use_and_defs) | 3.7111 ms | 13.5740 ms | **3.5802 ms** ✅ | 4.2015 ms |
+| [Star polygon](../visual/README.md#11_star_polygon) | 3.1616 ms | 14.0556 ms | 3.0460 ms | **2.9650 ms** ✅ |
+| [Nested svg](../visual/README.md#12_nested_svg) | 4.3458 ms | 18.8395 ms | **4.3190 ms** ✅ | 4.7925 ms |
+| [Patterns](../visual/README.md#13_patterns) | 4.1837 ms | 15.5863 ms | **4.1214 ms** ✅ | 4.3571 ms |
+| [Clip paths](../visual/README.md#14_clip_paths) | **3.9708 ms** ✅ | 25.3485 ms | 4.0170 ms | 5.7170 ms |
+| [Masks](../visual/README.md#15_masks) ⚠️ | 4.2560 ms | 21.7920 ms | 4.3234 ms | **3.5022 ms** ✅ |
+| [Markers](../visual/README.md#16_markers) | 4.3914 ms | 16.9533 ms | **4.3148 ms** ✅ | 5.4704 ms |
+| [Filters](../visual/README.md#17_filters) ⚠️ | 6.7528 ms | 33.8967 ms | 8.3714 ms | **4.3954 ms** ✅ |
+| [Embedded image](../visual/README.md#18_embedded_image) | **4.3303 ms** ✅ | 15.8568 ms | 9.7263 ms | 6.8449 ms |
+| [Text advanced](../visual/README.md#19_text_advanced) | 5.0912 ms | 25.0366 ms | **5.0068 ms** ✅ | 8.5035 ms |
+| [Fe blend modes](../visual/README.md#20_fe_blend_modes) | **9.3229 ms** ✅ | 27.1358 ms | 20.1263 ms | 12.4450 ms |
+| [Fe tile](../visual/README.md#21_fe_tile) | **2.4576 ms** ✅ | 6.2278 ms | 2.4706 ms | 2.5238 ms |
+| [Feimage data uri](../visual/README.md#22_feimage_data_uri) | **1.5253 ms** ✅ | 5.5884 ms | 1.5755 ms | 1.7925 ms |
+| [Feimage inline ref](../visual/README.md#23_feimage_inline_ref) | **1.6000 ms** ✅ | 4.4405 ms | 2.4159 ms | 1.8843 ms |
+| [Localized masks](../visual/README.md#24_localized_masks) | 14.5860 ms | 55.0997 ms | **14.4908 ms** ✅ | 15.4633 ms |
+| [Svg fonts](../visual/README.md#25_svg_fonts) | 3.4250 ms | 16.3181 ms | **3.4214 ms** ✅ | 4.0428 ms |
+| [Symbol use](../visual/README.md#26_symbol_use) | 4.5183 ms | 23.8476 ms | **4.2745 ms** ✅ | 8.6599 ms |
+| [Switch features](../visual/README.md#27_switch_features) | 4.0125 ms | 19.8215 ms | **3.1684 ms** ✅ | 5.7063 ms |
+| [Css variables](../visual/README.md#28_css_variables) | 4.0297 ms | 19.4015 ms | **3.8380 ms** ✅ | — |
+| [Current color](../visual/README.md#29_current_color) | 3.8324 ms | 17.6653 ms | **3.7359 ms** ✅ | 5.6851 ms |
+| [Display visibility](../visual/README.md#30_display_visibility) | 4.4663 ms | 20.3664 ms | **4.1990 ms** ✅ | 7.1925 ms |
+| [Nested overflow](../visual/README.md#31_nested_overflow) | 4.2047 ms | 21.3876 ms | **4.0418 ms** ✅ | 5.8300 ms |
+| [Stroke advanced](../visual/README.md#32_stroke_advanced) | 3.7861 ms | 18.0488 ms | **3.5940 ms** ✅ | 5.7559 ms |
+| [Pattern transforms](../visual/README.md#33_pattern_transforms) | 3.9416 ms | 20.5304 ms | **3.8021 ms** ✅ | 6.2241 ms |
+| [Gradient advanced](../visual/README.md#34_gradient_advanced) | 7.1421 ms | 44.1618 ms | **6.6095 ms** ✅ | 12.2030 ms |
+| [Filter merge offset](../visual/README.md#35_filter_merge_offset) | **5.1012 ms** ✅ | 19.3139 ms | 8.8640 ms | 6.0862 ms |
+| [Fe color matrix](../visual/README.md#36_fe_color_matrix) | 3.4800 ms | 17.2865 ms | **3.4165 ms** ✅ | 5.4091 ms |
+| [Fe morphology](../visual/README.md#37_fe_morphology) | **3.6589 ms** ✅ | 17.6300 ms | 4.1782 ms | 5.3424 ms |
+| [Fe turbulence](../visual/README.md#38_fe_turbulence) ⚠️ | 9.3652 ms | 35.1670 ms | 7.9809 ms | **5.7504 ms** ✅ |
+| [Fe displacement map](../visual/README.md#39_fe_displacement_map) | 5.1926 ms | 19.7950 ms | 9.9547 ms | **4.1233 ms** ✅ |
+| [Fe lighting](../visual/README.md#40_fe_lighting) | 4.7453 ms | 21.7453 ms | **4.1956 ms** ✅ | 4.7932 ms |
+| [Fe convolve matrix](../visual/README.md#41_fe_convolve_matrix) | **3.9776 ms** ✅ | 9.4943 ms | 6.5525 ms | 4.8307 ms |
+| [Fe component transfer](../visual/README.md#42_fe_component_transfer) | 3.1900 ms | 16.0772 ms | **3.1525 ms** ✅ | 5.5574 ms |
 
-_JairoSVG is **2–30× faster** than EchoSVG, **on par with JSVG** in most scenarios, and **faster than CairoSVG** in most scenarios._
+_JairoSVG is **2–31× faster** than EchoSVG, **on par with JSVG** in most scenarios, and **faster than CairoSVG** in most scenarios._
 
 > **⚠️ Filters/Masks caveat:** CairoSVG does **not** correctly render masks (missing gradient and circle content) or `feGaussianBlur`/`feDropShadow` filters — it silently skips them. For those tests, CairoSVG appears faster because it skips rendering work. JairoSVG and JSVG perform the actual computation, so their speed reflects the true cost of correct rendering. Note: JairoSVG now **outperforms CairoSVG on both Masks and feBlend modes** despite rendering them correctly.
 
-> **Note:** Benchmarks were run with 20 warm-up iterations and 1000 measured iterations per SVG file. Median time reported. Results may vary by hardware and SVG complexity.
+> **Note:** Benchmarks were run with 50 warm-up iterations and 500 measured iterations per SVG file. Median time reported. Results may vary by hardware and SVG complexity.
 
 #### Default Rendering Settings: JairoSVG vs JSVG
 
