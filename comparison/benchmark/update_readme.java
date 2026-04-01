@@ -32,8 +32,6 @@ public class update_readme {
     static final Path PNG_DIR = Path.of("comparison", "visual", "png");
 
     static final List<String> ENGINES = List.of("jairosvg", "echosvg", "jsvg", "cairosvg");
-    static final List<String> ENGINE_HEADERS = List.of(
-            "JairoSVG (Java)", "EchoSVG (Java)", "JSVG (Java)", "CairoSVG (Python)");
     static final List<String> SIZE_ENGINES = List.of("jairosvg", "echosvg", "cairosvg", "jsvg");
     static final Set<String> WARN_CASES = Set.of("Masks", "Filters", "Fe turbulence");
 
@@ -83,50 +81,6 @@ public class update_readme {
                             obj.get("min").getAsDouble()));
         }
         return data;
-    }
-
-    static String generateBenchmarkTable(List<SvgCase> cases, Map<String, Map<String, BenchResult>> data) {
-        var lines = new ArrayList<String>();
-        lines.add("| Test Case | " + String.join(" | ", ENGINE_HEADERS) + " |");
-        lines.add("| --- | " + ENGINES.stream().map(_ -> ":---:").collect(Collectors.joining(" | ")) + " |");
-
-        for (var svgCase : cases) {
-            var caseData = data.get(svgCase.name());
-            if (caseData == null) continue;
-            if (ENGINES.stream().noneMatch(e -> caseData.containsKey(e))) continue;
-
-            Double[] vals = new Double[ENGINES.size()];
-            for (int i = 0; i < ENGINES.size(); i++) {
-                var result = caseData.get(ENGINES.get(i));
-                vals[i] = result != null ? result.median() : null;
-            }
-
-            double minVal = Arrays.stream(vals).filter(Objects::nonNull)
-                    .mapToDouble(Double::doubleValue).min().orElse(Double.MAX_VALUE);
-
-            var cells = new ArrayList<String>();
-            for (Double v : vals) {
-                if (v == null) {
-                    cells.add("—");
-                } else {
-                    String formatted = "%.4f ms".formatted(v);
-                    if (v == minVal) {
-                        formatted = "**%s** ✅".formatted(formatted);
-                    }
-                    cells.add(formatted);
-                }
-            }
-
-            String anchor = "%02d_%s".formatted(svgCase.num(), svgCase.slug());
-            String label = "[%s](#%s)".formatted(svgCase.name(), anchor);
-            if (WARN_CASES.contains(svgCase.name())) {
-                label += " ⚠️";
-            }
-
-            lines.add("| %s | %s |".formatted(label, String.join(" | ", cells)));
-        }
-
-        return String.join("\n", lines);
     }
 
     record PngTableResult(String table, String summary) {}
@@ -231,33 +185,6 @@ public class update_readme {
         return new PngTableResult(String.join("\n", lines), summary);
     }
 
-    static String computeSummary(Map<String, Map<String, BenchResult>> data, List<SvgCase> cases) {
-        var jairoVsEcho = new ArrayList<Double>();
-
-        for (var svgCase : cases) {
-            var caseData = data.get(svgCase.name());
-            if (caseData == null || !caseData.containsKey("jairosvg")) continue;
-            double j = caseData.get("jairosvg").median();
-
-            var echo = caseData.get("echosvg");
-            if (echo != null) {
-                jairoVsEcho.add(echo.median() / j);
-            }
-        }
-
-        String echoDesc;
-        if (!jairoVsEcho.isEmpty()) {
-            int minR = (int) jairoVsEcho.stream().mapToDouble(Double::doubleValue).min().orElse(1);
-            int maxR = (int) jairoVsEcho.stream().mapToDouble(Double::doubleValue).max().orElse(1);
-            echoDesc = "**%d–%d× faster** than EchoSVG".formatted(minR, maxR);
-        } else {
-            echoDesc = "comparable to EchoSVG";
-        }
-
-        return "_JairoSVG is %s, **on par with JSVG** in most scenarios, and **faster than CairoSVG** in most scenarios._"
-                .formatted(echoDesc);
-    }
-
     static String replaceSection(String content, String tag, String replacement) {
         String begin = "<!-- BEGIN:" + tag + " -->";
         String end = "<!-- END:" + tag + " -->";
@@ -267,20 +194,10 @@ public class update_readme {
         return content.substring(0, start) + begin + "\n" + replacement + "\n" + end + content.substring(finish + end.length());
     }
 
-    static void updateReadme(String benchmarkTable, String pngTable, String pngSummary,
-                             String summary, int warmup, int iterations,
+    static void updateReadme(String pngTable, String pngSummary,
+                             int warmup, int iterations,
                              Map<String, Map<String, BenchResult>> data, List<SvgCase> cases) throws IOException {
         String content = Files.readString(README_PATH);
-
-        int caseCount = (int) benchmarkTable.lines().count() - 2;
-
-        // Replace aggregate benchmark section
-        String benchSection = "## Benchmark\n\n"
-                + "SVG → PNG conversion benchmarks across %d SVG test files, median time per render (lower is better):\n\n"
-                        .formatted(caseCount)
-                + benchmarkTable + "\n\n"
-                + summary;
-        content = replaceSection(content, "BENCHMARK", benchSection);
 
         // Replace aggregate PNG sizes section
         String pngSection = "## PNG Output File Sizes\n\n"
@@ -359,16 +276,13 @@ public class update_readme {
             }
         }
 
-        String benchmarkTable = generateBenchmarkTable(cases, data);
         var pngResult = generatePngSizesTable(cases);
-        String summary = computeSummary(data, cases);
 
-        updateReadme(benchmarkTable, pngResult.table(), pngResult.summary(), summary,
+        updateReadme(pngResult.table(), pngResult.summary(),
                 warmup, iterations, data, cases);
 
-        int caseCount = (int) benchmarkTable.lines().count() - 2;
         System.out.println("✅ Updated " + README_PATH);
-        System.out.println("   Benchmark table: " + caseCount + " test cases");
+        System.out.println("   Per-case time rows: " + cases.size() + " test cases");
         System.out.println("   PNG sizes table: " + cases.size() + " test cases");
     }
 }

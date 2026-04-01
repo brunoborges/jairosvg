@@ -356,11 +356,6 @@ public class generate {
         // Aggregate sections wrapped in markers
         sb.append("\n---\n\n");
 
-        sb.append("<!-- BEGIN:BENCHMARK -->\n");
-        sb.append("## Benchmark\n\n");
-        sb.append("_No benchmark data available yet. Run `jbang comparison/benchmark/benchmark.java` to generate._\n");
-        sb.append("<!-- END:BENCHMARK -->\n\n");
-
         sb.append("""
                 > **⚠️ Filters/Masks caveat:** CairoSVG does **not** correctly render masks \
                 (missing gradient and circle content) or `feGaussianBlur`/`feDropShadow` filters \
