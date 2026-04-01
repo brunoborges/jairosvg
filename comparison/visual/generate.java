@@ -305,8 +305,8 @@ public class generate {
         var benchData = loadBenchData();
 
         var sb = new StringBuilder();
-        sb.append("# Visual Rendering Comparison\n\n");
-        sb.append("Side-by-side visual comparison of ").append(svgFiles.size())
+        sb.append("# SVG Rendering Comparison\n\n");
+        sb.append("Side-by-side rendering, file sizes, and benchmark times for ").append(svgFiles.size())
           .append(" SVG test cases across all four libraries.\n\n");
         sb.append("> **Note:** The **Input SVG** column is rendered live by your browser's built-in SVG engine.")
           .append(" Use it as a reference to compare each library's PNG output against what a modern browser produces.\n");
