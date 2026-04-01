@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <rect width="300" height="200" fill="#f7f9fb"/>
+
+  <text x="150" y="18" text-anchor="middle" font-size="13" fill="#555"
+        font-family="Arial, Helvetica, sans-serif">feConvolveMatrix — Convolution Effects</text>
+
+  <defs>
+    <!-- Emboss (directional) -->
+    <filter id="emboss">
+      <feConvolveMatrix order="3"
+        kernelMatrix="-2 -1 0
+                      -1  1 1
+                       0  1 2"
+        preserveAlpha="true"/>
+    </filter>
+
+    <!-- Edge detection (Laplacian) -->
+    <filter id="edges">
+      <feConvolveMatrix order="3"
+        kernelMatrix="0 -1  0
+                     -1  4 -1
+                      0 -1  0"
+        preserveAlpha="true"/>
+    </filter>
+
+    <!-- Sharpen -->
+    <filter id="sharpen">
+      <feConvolveMatrix order="3"
+        kernelMatrix=" 0 -1  0
+                      -1  5 -1
+                       0 -1  0"
+        preserveAlpha="true"/>
+    </filter>
+
+    <!-- Blur via convolution (box blur 3x3) -->
+    <filter id="boxblur">
+      <feConvolveMatrix order="3"
+        kernelMatrix="1 1 1
+                      1 1 1
+                      1 1 1"
+        divisor="9"
+        preserveAlpha="true"/>
+    </filter>
+  </defs>
+
+  <g font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#555" text-anchor="middle">
+    <!-- Original -->
+    <text x="45" y="38">Original</text>
+    <g transform="translate(10,42)">
+      <rect width="70" height="50" rx="6" fill="#3498db"/>
+      <text x="35" y="32" font-size="16" fill="white" font-weight="bold"
+            font-family="Arial, Helvetica, sans-serif">SVG</text>
+    </g>
+
+    <!-- Emboss -->
+    <text x="120" y="38">Emboss</text>
+    <g transform="translate(85,42)" filter="url(#emboss)">
+      <rect width="70" height="50" rx="6" fill="#3498db"/>
+      <text x="35" y="32" font-size="16" fill="white" font-weight="bold"
+            font-family="Arial, Helvetica, sans-serif">SVG</text>
+    </g>
+
+    <!-- Edge detection -->
+    <text x="195" y="38">Edges</text>
+    <g transform="translate(160,42)" filter="url(#edges)">
+      <rect width="70" height="50" rx="6" fill="#3498db"/>
+      <text x="35" y="32" font-size="16" fill="white" font-weight="bold"
+            font-family="Arial, Helvetica, sans-serif">SVG</text>
+    </g>
+
+    <!-- Sharpen -->
+    <text x="45" y="118">Sharpen</text>
+    <g transform="translate(10,122)" filter="url(#sharpen)">
+      <rect width="70" height="50" rx="6" fill="#e74c3c"/>
+      <text x="35" y="32" font-size="16" fill="white" font-weight="bold"
+            font-family="Arial, Helvetica, sans-serif">SVG</text>
+    </g>
+
+    <!-- Box blur -->
+    <text x="120" y="118">Box Blur</text>
+    <g transform="translate(85,122)" filter="url(#boxblur)">
+      <rect width="70" height="50" rx="6" fill="#e74c3c"/>
+      <text x="35" y="32" font-size="16" fill="white" font-weight="bold"
+            font-family="Arial, Helvetica, sans-serif">SVG</text>
+    </g>
+
+    <!-- No filter ref -->
+    <text x="195" y="118">Original</text>
+    <g transform="translate(160,122)">
+      <rect width="70" height="50" rx="6" fill="#e74c3c"/>
+      <text x="35" y="32" font-size="16" fill="white" font-weight="bold"
+            font-family="Arial, Helvetica, sans-serif">SVG</text>
+    </g>
+  </g>
+</svg>

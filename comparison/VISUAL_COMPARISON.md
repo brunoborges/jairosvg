@@ -1,6 +1,6 @@
 # Visual Rendering Comparison
 
-Side-by-side visual comparison of 35 SVG test cases across all four libraries.
+Side-by-side visual comparison of 42 SVG test cases across all four libraries.
 
 ### 01 — Basic Shapes
 
@@ -273,3 +273,45 @@ Gradient `spreadMethod` (reflect/repeat/pad), `fx`/`fy` focus, `href` inheritanc
 | Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
 | :-------: | :------: | :-----: | :------: | :--: |
 | [SVG](svg/33_filter_merge_offset.svg) | ![JairoSVG](png/jairosvg/33_filter_merge_offset.png) | ![EchoSVG](png/echosvg/33_filter_merge_offset.png) | ![CairoSVG](png/cairosvg/33_filter_merge_offset.png) | ![JSVG](png/jsvg/33_filter_merge_offset.png) |
+
+### 34_fe_color_matrix
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/34_fe_color_matrix.svg) | ![JairoSVG](png/jairosvg/34_fe_color_matrix.png) | ![EchoSVG](png/echosvg/34_fe_color_matrix.png) | ![CairoSVG](png/cairosvg/34_fe_color_matrix.png) | ![JSVG](png/jsvg/34_fe_color_matrix.png) |
+
+### 35_fe_morphology
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/35_fe_morphology.svg) | ![JairoSVG](png/jairosvg/35_fe_morphology.png) | ![EchoSVG](png/echosvg/35_fe_morphology.png) | ![CairoSVG](png/cairosvg/35_fe_morphology.png) | ![JSVG](png/jsvg/35_fe_morphology.png) |
+
+### 36_fe_turbulence
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/36_fe_turbulence.svg) | ![JairoSVG](png/jairosvg/36_fe_turbulence.png) | ![EchoSVG](png/echosvg/36_fe_turbulence.png) | ![CairoSVG](png/cairosvg/36_fe_turbulence.png) | ![JSVG](png/jsvg/36_fe_turbulence.png) |
+
+### 37_fe_displacement_map
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/37_fe_displacement_map.svg) | ![JairoSVG](png/jairosvg/37_fe_displacement_map.png) | ![EchoSVG](png/echosvg/37_fe_displacement_map.png) | ![CairoSVG](png/cairosvg/37_fe_displacement_map.png) | ![JSVG](png/jsvg/37_fe_displacement_map.png) |
+
+### 38_fe_lighting
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/38_fe_lighting.svg) | ![JairoSVG](png/jairosvg/38_fe_lighting.png) | ![EchoSVG](png/echosvg/38_fe_lighting.png) | ![CairoSVG](png/cairosvg/38_fe_lighting.png) | ![JSVG](png/jsvg/38_fe_lighting.png) |
+
+### 39_fe_convolve_matrix
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/39_fe_convolve_matrix.svg) | ![JairoSVG](png/jairosvg/39_fe_convolve_matrix.png) | ![EchoSVG](png/echosvg/39_fe_convolve_matrix.png) | ![CairoSVG](png/cairosvg/39_fe_convolve_matrix.png) | ![JSVG](png/jsvg/39_fe_convolve_matrix.png) |
+
+### 40_fe_component_transfer
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| [SVG](svg/40_fe_component_transfer.svg) | ![JairoSVG](png/jairosvg/40_fe_component_transfer.png) | ![EchoSVG](png/echosvg/40_fe_component_transfer.png) | ![CairoSVG](png/cairosvg/40_fe_component_transfer.png) | ![JSVG](png/jsvg/40_fe_component_transfer.png) |

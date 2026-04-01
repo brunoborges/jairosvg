@@ -26,12 +26,12 @@ No. JairoSVG is pure Java. Unlike CairoSVG (which depends on Cairo, a C library)
 - **Paths**: Full path commands — M, L, H, V, C, S, Q, T, A, Z (absolute and relative)
 - **Gradients**: Linear and radial with stop colors, opacity, spread methods, href inheritance
 - **Patterns**: Pattern fills with `patternUnits`, `patternTransform`, href chains
-- **Filters**: feGaussianBlur, feOffset, feFlood, feBlend, feMerge, feDropShadow, feImage, feTile, feColorMatrix, feComposite, feComponentTransfer, feMorphology
+- **Filters**: feGaussianBlur, feOffset, feFlood, feBlend, feMerge, feDropShadow, feImage, feTile, feColorMatrix, feComposite, feComponentTransfer, feMorphology, feConvolveMatrix, feDisplacementMap, feTurbulence, feDiffuseLighting, feSpecularLighting
 - **Masks**: Luminance-based masking with `<mask>` elements
 - **Clip paths**: `<clipPath>` with arbitrary clip shapes
 - **Markers**: `marker-start`, `marker-mid`, `marker-end` with orient auto/auto-start-reverse
 - **Text**: `<text>`, `<tspan>`, `<textPath>`, text-anchor, letter-spacing, text-decoration, font properties
-- **CSS**: Stylesheets (`<style>`), inline styles, selector matching (type, class, ID, attribute, pseudo-classes including `:nth-child`, `:not`, `:first-child`, `:last-child`), `!important`, custom properties (`var()`)
+- **CSS**: Stylesheets (`<style>`), `@import`, inline styles, selector matching (type, class, ID, attribute, pseudo-classes including `:nth-child`, `:not`, `:first-child`, `:last-child`), `!important`, custom properties (`var()`)
 - **Transforms**: translate, rotate, scale, skewX, skewY, matrix, transform-origin
 - **Structure**: `<use>`, `<defs>`, `<symbol>`, `<g>`, nested `<svg>`, `<switch>`
 - **ViewBox**: `viewBox` with full `preserveAspectRatio` support (all alignments, meet/slice)
@@ -46,7 +46,7 @@ No. JairoSVG is pure Java. Unlike CairoSVG (which depends on Cairo, a C library)
 - **Animations**: SMIL elements (`<animate>`, `<animateTransform>`, `<animateMotion>`, `<set>`) — JairoSVG is a static renderer
 - **Scripting**: `<script>` elements are intentionally ignored for security
 - **Foreign content**: `<foreignObject>` and embedded HTML/XHTML are skipped
-- **Some filters**: feTurbulence, feDisplacementMap, feConvolveMatrix, feDiffuseLighting, feSpecularLighting (parsed but produce no visual output)
+- **Some CSS features**: `calc()`, CSS nesting, and `@supports` rules are not supported in stylesheets
 
 See [LIMITATIONS.md](https://github.com/brunoborges/jairosvg/blob/main/LIMITATIONS.md) for full details.
 

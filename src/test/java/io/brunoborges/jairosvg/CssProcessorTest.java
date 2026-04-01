@@ -995,4 +995,161 @@ class CssProcessorTest {
         int[] second = RenderTestHelper.rgba(img, 75, 50);
         assertTrue(second[1] > 100, "Second child should be green, got g=" + second[1]);
     }
+
+    // ── @import URL extraction ────────────────────────────────────────────
+
+    @Test
+    void importUrlExtractionUrlDoubleQuotes() {
+        assertEquals("path/to/style.css", CssProcessor.extractImportUrl("@import url(\"path/to/style.css\");"));
+    }
+
+    @Test
+    void importUrlExtractionUrlSingleQuotes() {
+        assertEquals("path/to/style.css", CssProcessor.extractImportUrl("@import url('path/to/style.css');"));
+    }
+
+    @Test
+    void importUrlExtractionUrlNoQuotes() {
+        assertEquals("path/to/style.css", CssProcessor.extractImportUrl("@import url(path/to/style.css);"));
+    }
+
+    @Test
+    void importUrlExtractionBareDoubleQuotes() {
+        assertEquals("path/to/style.css", CssProcessor.extractImportUrl("@import \"path/to/style.css\";"));
+    }
+
+    @Test
+    void importUrlExtractionBareSingleQuotes() {
+        assertEquals("path/to/style.css", CssProcessor.extractImportUrl("@import 'path/to/style.css';"));
+    }
+
+    @Test
+    void importUrlExtractionHttpUrl() {
+        assertEquals("https://example.com/style.css",
+                CssProcessor.extractImportUrl("@import url(\"https://example.com/style.css\");"));
+    }
+
+    @Test
+    void importUrlExtractionReturnsNullForInvalid() {
+        assertNull(CssProcessor.extractImportUrl("@import ;"));
+        assertNull(CssProcessor.extractImportUrl("not an import"));
+    }
+
+    // ── @import resolution with mock fetcher ─────────────────────────────
+
+    @Test
+    void importResolvedWithFetcher() {
+        String importedCss = "rect { fill: blue; }";
+        var fetcher = mockFetcher(Map.of("http://example.com/imported.css", importedCss));
+
+        var rules = new ArrayList<CssProcessor.StyleRule>();
+        CssProcessor.parseStylesheet("""
+                @import url("http://example.com/imported.css");
+                circle { stroke: red; }
+                """, rules, fetcher, "http://example.com/base.css", new java.util.HashSet<>());
+
+        // Imported rule should come first (processed before local rules)
+        assertTrue(rules.stream().anyMatch(r -> "rect".equals(r.selector())
+                && r.declarations().stream().anyMatch(d -> "fill".equals(d.name()) && "blue".equals(d.value()))));
+        assertTrue(rules.stream().anyMatch(r -> "circle".equals(r.selector())
+                && r.declarations().stream().anyMatch(d -> "stroke".equals(d.name()) && "red".equals(d.value()))));
+    }
+
+    @Test
+    void nestedImportsResolved() {
+        String innerCss = "ellipse { opacity: 0.5; }";
+        String outerCss = """
+                @import url("http://example.com/inner.css");
+                rect { fill: green; }
+                """;
+        var fetcher = mockFetcher(
+                Map.of("http://example.com/outer.css", outerCss, "http://example.com/inner.css", innerCss));
+
+        var rules = new ArrayList<CssProcessor.StyleRule>();
+        CssProcessor.parseStylesheet("""
+                @import url("http://example.com/outer.css");
+                circle { stroke: red; }
+                """, rules, fetcher, "http://example.com/base.css", new java.util.HashSet<>());
+
+        assertTrue(rules.stream().anyMatch(r -> "ellipse".equals(r.selector())));
+        assertTrue(rules.stream().anyMatch(r -> "rect".equals(r.selector())));
+        assertTrue(rules.stream().anyMatch(r -> "circle".equals(r.selector())));
+    }
+
+    @Test
+    void circularImportDetection() {
+        // a.css imports b.css which imports a.css — should not loop
+        String aCss = """
+                @import url("http://example.com/b.css");
+                rect { fill: red; }
+                """;
+        String bCss = """
+                @import url("http://example.com/a.css");
+                circle { fill: blue; }
+                """;
+        var fetcher = mockFetcher(Map.of("http://example.com/a.css", aCss, "http://example.com/b.css", bCss));
+
+        var rules = new ArrayList<CssProcessor.StyleRule>();
+        var visited = new java.util.HashSet<String>();
+        visited.add("http://example.com/a.css"); // mark current as visited
+        CssProcessor.parseStylesheet(aCss, rules, fetcher, "http://example.com/a.css", visited);
+
+        // Both should be parsed, no infinite loop
+        assertTrue(rules.stream().anyMatch(r -> "rect".equals(r.selector())));
+        assertTrue(rules.stream().anyMatch(r -> "circle".equals(r.selector())));
+    }
+
+    @Test
+    void importSkippedGracefullyOnFetchError() {
+        // Fetcher always throws — import should be silently skipped
+        io.brunoborges.jairosvg.util.UrlHelper.UrlFetcher fetcher = (url, type) -> {
+            throw new IOException("Network error");
+        };
+
+        var rules = new ArrayList<CssProcessor.StyleRule>();
+        CssProcessor.parseStylesheet("""
+                @import url("http://unreachable.invalid/style.css");
+                rect { fill: green; }
+                """, rules, fetcher, "http://example.com/base.css", new java.util.HashSet<>());
+
+        assertEquals(1, rules.size());
+        assertEquals("rect", rules.get(0).selector());
+    }
+
+    @Test
+    void importSkippedGracefullyInRendering() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <style>
+                    @import url("http://nonexistent.invalid/style.css");
+                    rect { fill: green; }
+                  </style>
+                  <rect width="100" height="100"/>
+                </svg>
+                """;
+        BufferedImage img = RenderTestHelper.render(svg);
+        assertNotNull(img);
+        RenderTestHelper.assertPixelColor(img, 50, 50, 0, 128, 0);
+    }
+
+    @Test
+    void twoArgParseStylesheetStillStripsImports() {
+        var rules = new ArrayList<CssProcessor.StyleRule>();
+        CssProcessor.parseStylesheet("""
+                @import url("anything.css");
+                rect { fill: red; }
+                """, rules);
+        assertEquals(1, rules.size());
+        assertEquals("rect", rules.get(0).selector());
+    }
+
+    private static io.brunoborges.jairosvg.util.UrlHelper.UrlFetcher mockFetcher(Map<String, String> responses) {
+        return (url, type) -> {
+            String content = responses.get(url);
+            if (content == null) {
+                throw new IOException("Not found: " + url);
+            }
+            return content.getBytes(StandardCharsets.UTF_8);
+        };
+    }
 }

@@ -355,7 +355,7 @@ public class Node {
         }
 
         // Parse CSS stylesheets from <style> elements
-        styleRules.addAll(CssProcessor.parseStylesheets(tree));
+        styleRules.addAll(CssProcessor.parseStylesheets(tree, fetcher, url));
 
         // Apply CSS to the full tree
         tree.applyCss(styleRules);

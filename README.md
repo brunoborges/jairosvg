@@ -260,11 +260,18 @@ native-image -jar target/jairosvg-1.0.4-cli.jar
 
 - ✅ `<filter>` with `filterUnits` and sub-region optimization
 - ✅ `feGaussianBlur`, `feOffset`, `feFlood`, `feBlend` (normal, multiply, screen, darken, lighten)
-- ✅ `feMerge`, `feDropShadow`, `feImage` (data URI + inline references), `feTile`
+- ✅ `feMerge`, `feComposite` (over, in, out, atop, xor, arithmetic), `feDropShadow`
+- ✅ `feImage` (data URI + inline references), `feTile`
+- ✅ `feColorMatrix` (matrix, saturate, hueRotate, luminanceToAlpha)
+- ✅ `feComponentTransfer` (identity, linear, gamma, table, discrete)
+- ✅ `feMorphology` (erode, dilate), `feConvolveMatrix`
+- ✅ `feTurbulence` (turbulence, fractalNoise), `feDisplacementMap`
+- ✅ `feDiffuseLighting`, `feSpecularLighting` (distant, point, spot lights)
 
 ### Styling
 
 - ✅ CSS stylesheets (embedded `<style>`) and inline `style` attributes
+- ✅ CSS `@import` rules (URL resolution with circular import detection)
 - ✅ CSS selectors: class, id, element, descendant, `:first-child`, `:last-child`, `:nth-child()`, `:not()`
 - ✅ CSS custom properties / variables (`var(--name, fallback)`)
 - ✅ `currentColor`, `inherit`

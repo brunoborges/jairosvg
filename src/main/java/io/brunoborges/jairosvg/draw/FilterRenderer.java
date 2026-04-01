@@ -260,6 +260,26 @@ public final class FilterRenderer {
                             (int) parseDoubleOr(child.get("numOctaves"), 1), (int) parseDoubleOr(child.get("seed"), 0),
                             out);
                 }
+                case "feDiffuseLighting" -> {
+                    if (buf1 == null)
+                        buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null)
+                        buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null)
+                        buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
+                    yield diffuseLighting(input, child, out);
+                }
+                case "feSpecularLighting" -> {
+                    if (buf1 == null)
+                        buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null)
+                        buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null)
+                        buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
+                    yield specularLighting(input, child, out);
+                }
                 case "feImage" -> feImage(surface, child, w, h, offsetX, offsetY);
                 case "feTile" -> tile(input, filterRegion);
                 default -> input;
@@ -1180,6 +1200,10 @@ public final class FilterRenderer {
         int[] inData = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
         int[] outData = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
 
+        if (in2 == null) {
+            System.arraycopy(inData, 0, outData, 0, w * h);
+            return output;
+        }
         int w2 = in2.getWidth(), h2 = in2.getHeight();
         int[] mapData = ((DataBufferInt) in2.getRaster().getDataBuffer()).getData();
 
@@ -1347,15 +1371,222 @@ public final class FilterRenderer {
         idx = (latticeSelector[i + by0]) * 2;
         double u = rx0 * grad[channel][idx] + ry0 * grad[channel][idx + 1];
         idx = (latticeSelector[j + by0]) * 2;
-        double v = rx1 * grad[channel][idx] + ry1 * grad[channel][idx + 1];
+        double v = rx1 * grad[channel][idx] + ry0 * grad[channel][idx + 1];
         double a = u + sx * (v - u);
 
         idx = (latticeSelector[i + by1]) * 2;
-        u = rx0 * grad[channel][idx] + ry0 * grad[channel][idx + 1];
+        u = rx0 * grad[channel][idx] + ry1 * grad[channel][idx + 1];
         idx = (latticeSelector[j + by1]) * 2;
         v = rx1 * grad[channel][idx] + ry1 * grad[channel][idx + 1];
         double b = u + sx * (v - u);
 
         return a + sy * (b - a);
+    }
+
+    // ── Lighting infrastructure ──────────────────────────────────────────
+
+    private record LightSource(String type, double azimuth, double elevation, double x, double y, double z,
+            double pointsAtX, double pointsAtY, double pointsAtZ, double spotExponent, double limitingConeAngle) {
+    }
+
+    private static LightSource parseLightSource(Node lightingNode) {
+        for (Node child : lightingNode.children) {
+            switch (child.tag) {
+                case "feDistantLight" -> {
+                    return new LightSource("distant", parseDoubleOr(child.get("azimuth"), 0),
+                            parseDoubleOr(child.get("elevation"), 0), 0, 0, 0, 0, 0, 0, 1, -1);
+                }
+                case "fePointLight" -> {
+                    return new LightSource("point", 0, 0, parseDoubleOr(child.get("x"), 0),
+                            parseDoubleOr(child.get("y"), 0), parseDoubleOr(child.get("z"), 0), 0, 0, 0, 1, -1);
+                }
+                case "feSpotLight" -> {
+                    return new LightSource("spot", 0, 0, parseDoubleOr(child.get("x"), 0),
+                            parseDoubleOr(child.get("y"), 0), parseDoubleOr(child.get("z"), 0),
+                            parseDoubleOr(child.get("pointsAtX"), 0), parseDoubleOr(child.get("pointsAtY"), 0),
+                            parseDoubleOr(child.get("pointsAtZ"), 0), parseDoubleOr(child.get("specularExponent"), 1),
+                            parseDoubleOr(child.get("limitingConeAngle"), -1));
+                }
+                default -> {
+                }
+            }
+        }
+        return null;
+    }
+
+    private static double[] computeLightVector(LightSource light, int px, int py, double surfaceZ) {
+        return switch (light.type) {
+            case "distant" -> {
+                double az = Math.toRadians(light.azimuth);
+                double el = Math.toRadians(light.elevation);
+                yield new double[]{Math.cos(el) * Math.cos(az), Math.cos(el) * Math.sin(az), Math.sin(el)};
+            }
+            case "point", "spot" -> {
+                double dx = light.x - px;
+                double dy = light.y - py;
+                double dz = light.z - surfaceZ;
+                double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                if (len < 1e-10)
+                    yield new double[]{0, 0, 1};
+                yield new double[]{dx / len, dy / len, dz / len};
+            }
+            default -> new double[]{0, 0, 1};
+        };
+    }
+
+    private static double computeSpotIntensity(LightSource light, double[] L) {
+        if (!"spot".equals(light.type))
+            return 1.0;
+        double sdx = light.pointsAtX - light.x;
+        double sdy = light.pointsAtY - light.y;
+        double sdz = light.pointsAtZ - light.z;
+        double slen = Math.sqrt(sdx * sdx + sdy * sdy + sdz * sdz);
+        if (slen < 1e-10)
+            return 1.0;
+        sdx /= slen;
+        sdy /= slen;
+        sdz /= slen;
+        // dot(-L, spotDirection)
+        double cosAngle = -L[0] * sdx + -L[1] * sdy + -L[2] * sdz;
+        if (light.limitingConeAngle >= 0) {
+            double limitCos = Math.cos(Math.toRadians(light.limitingConeAngle));
+            if (cosAngle < limitCos)
+                return 0.0;
+        }
+        if (cosAngle <= 0)
+            return 0.0;
+        return Math.pow(cosAngle, light.spotExponent);
+    }
+
+    private static double[] surfaceNormal(int[] alphaData, int x, int y, int w, int h, double surfaceScale) {
+        // Sobel-like kernel using clamped coordinates for edges
+        int x0 = Math.max(x - 1, 0);
+        int x1 = Math.min(x + 1, w - 1);
+        int y0 = Math.max(y - 1, 0);
+        int y1 = Math.min(y + 1, h - 1);
+
+        double a00 = (alphaData[y0 * w + x0] >>> 24);
+        double a10 = (alphaData[y0 * w + x] >>> 24);
+        double a20 = (alphaData[y0 * w + x1] >>> 24);
+        double a01 = (alphaData[y * w + x0] >>> 24);
+        double a21 = (alphaData[y * w + x1] >>> 24);
+        double a02 = (alphaData[y1 * w + x0] >>> 24);
+        double a12 = (alphaData[y1 * w + x] >>> 24);
+        double a22 = (alphaData[y1 * w + x1] >>> 24);
+
+        double factorX = x > 0 && x < w - 1 ? 0.25 : 0.5;
+        double factorY = y > 0 && y < h - 1 ? 0.25 : 0.5;
+
+        double nx = -surfaceScale * factorX * ((a20 - a00) + 2.0 * (a21 - a01) + (a22 - a02));
+        double ny = -surfaceScale * factorY * ((a02 - a00) + 2.0 * (a12 - a10) + (a22 - a20));
+        double nz = 1.0;
+
+        double len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+        if (len < 1e-10)
+            return new double[]{0, 0, 1};
+        return new double[]{nx / len, ny / len, nz / len};
+    }
+
+    // ── feDiffuseLighting ────────────────────────────────────────────────
+
+    private static BufferedImage diffuseLighting(BufferedImage input, Node node, BufferedImage output) {
+        int w = input.getWidth();
+        int h = input.getHeight();
+        double surfaceScale = parseDoubleOr(node.get("surfaceScale"), 1);
+        double kd = parseDoubleOr(node.get("diffuseConstant"), 1);
+        Colors.RGBA lightColor = Colors.color(node.get("lighting-color", "white"), 1.0);
+        if (lightColor == null)
+            lightColor = new Colors.RGBA(1, 1, 1, 1);
+
+        LightSource light = parseLightSource(node);
+        if (light == null) {
+            clearBuffer(output);
+            return output;
+        }
+
+        int[] inData = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
+        int[] outData = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
+
+        double lr = lightColor.r();
+        double lg = lightColor.g();
+        double lb = lightColor.b();
+
+        for (int py = 0; py < h; py++) {
+            for (int px = 0; px < w; px++) {
+                double[] N = surfaceNormal(inData, px, py, w, h, surfaceScale);
+                double alpha = (inData[py * w + px] >>> 24);
+                double sz = surfaceScale * alpha / 255.0;
+                double[] L = computeLightVector(light, px, py, sz);
+                double spotIntensity = computeSpotIntensity(light, L);
+                double nDotL = Math.max(0, N[0] * L[0] + N[1] * L[1] + N[2] * L[2]);
+                double factor = kd * nDotL * spotIntensity;
+
+                int r = clamp255(factor * lr);
+                int g = clamp255(factor * lg);
+                int b = clamp255(factor * lb);
+                outData[py * w + px] = (255 << 24) | (r << 16) | (g << 8) | b;
+            }
+        }
+        return output;
+    }
+
+    // ── feSpecularLighting ───────────────────────────────────────────────
+
+    private static BufferedImage specularLighting(BufferedImage input, Node node, BufferedImage output) {
+        int w = input.getWidth();
+        int h = input.getHeight();
+        double surfaceScale = parseDoubleOr(node.get("surfaceScale"), 1);
+        double ks = parseDoubleOr(node.get("specularConstant"), 1);
+        double specExp = parseDoubleOr(node.get("specularExponent"), 1);
+        Colors.RGBA lightColor = Colors.color(node.get("lighting-color", "white"), 1.0);
+        if (lightColor == null)
+            lightColor = new Colors.RGBA(1, 1, 1, 1);
+
+        LightSource light = parseLightSource(node);
+        if (light == null) {
+            clearBuffer(output);
+            return output;
+        }
+
+        int[] inData = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
+        int[] outData = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
+
+        double lr = lightColor.r();
+        double lg = lightColor.g();
+        double lb = lightColor.b();
+
+        for (int py = 0; py < h; py++) {
+            for (int px = 0; px < w; px++) {
+                double[] N = surfaceNormal(inData, px, py, w, h, surfaceScale);
+                double alpha = (inData[py * w + px] >>> 24);
+                double sz = surfaceScale * alpha / 255.0;
+                double[] L = computeLightVector(light, px, py, sz);
+                double spotIntensity = computeSpotIntensity(light, L);
+
+                // Half-angle vector H = normalize(L + E), E = (0, 0, 1)
+                double hx = L[0];
+                double hy = L[1];
+                double hz = L[2] + 1.0;
+                double hlen = Math.sqrt(hx * hx + hy * hy + hz * hz);
+                if (hlen > 1e-10) {
+                    hx /= hlen;
+                    hy /= hlen;
+                    hz /= hlen;
+                }
+                double nDotH = Math.max(0, N[0] * hx + N[1] * hy + N[2] * hz);
+                double specular = ks * Math.pow(nDotH, specExp) * spotIntensity;
+
+                int r = clamp255(specular * lr);
+                int g = clamp255(specular * lg);
+                int b = clamp255(specular * lb);
+                int a = Math.max(r, Math.max(g, b));
+                outData[py * w + px] = (a << 24) | (r << 16) | (g << 8) | b;
+            }
+        }
+        return output;
+    }
+
+    private static int clamp255(double v) {
+        return Math.clamp((int) (v * 255 + 0.5), 0, 255);
     }
 }

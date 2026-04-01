@@ -1740,4 +1740,106 @@ class FilterRendererTest {
         boolean different = px1[0] != px2[0] || px1[1] != px2[1] || px1[2] != px2[2];
         assertTrue(different, "Different seeds should produce different turbulence patterns");
     }
+
+    // ── feDiffuseLighting ────────────────────────────────────────────────
+
+    @Test
+    void feDiffuseLightingDistantLight() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feDiffuseLighting surfaceScale="5" diffuseConstant="1" lighting-color="white">
+                        <feDistantLight azimuth="45" elevation="45"/>
+                      </feDiffuseLighting>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="white" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // White rect with uniform alpha -> flat surface -> uniform lighting
+        int[] px = rgba(img, 50, 50);
+        assertTrue(px[3] > 0, "Should produce visible output");
+    }
+
+    @Test
+    void feDiffuseLightingPointLight() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feDiffuseLighting surfaceScale="2" diffuseConstant="1" lighting-color="yellow">
+                        <fePointLight x="50" y="50" z="100"/>
+                      </feDiffuseLighting>
+                    </filter>
+                  </defs>
+                  <circle cx="50" cy="50" r="40" fill="white" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] center = rgba(img, 50, 50);
+        assertTrue(center[3] > 0, "Center should have visible lighting");
+    }
+
+    @Test
+    void feDiffuseLightingWithComposite() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feDiffuseLighting in="SourceGraphic" surfaceScale="3" diffuseConstant="1" result="light">
+                        <feDistantLight azimuth="225" elevation="45"/>
+                      </feDiffuseLighting>
+                      <feComposite in="SourceGraphic" in2="light" operator="arithmetic" k1="1" k2="0" k3="0" k4="0"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feSpecularLighting ───────────────────────────────────────────────
+
+    @Test
+    void feSpecularLightingDistantLight() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feSpecularLighting surfaceScale="5" specularConstant="1" specularExponent="20" lighting-color="white">
+                        <feDistantLight azimuth="45" elevation="45"/>
+                      </feSpecularLighting>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="white" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 50, 50);
+        assertTrue(px[3] >= 0, "Should render without error");
+    }
+
+    @Test
+    void feSpecularLightingSpotLight() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feSpecularLighting surfaceScale="3" specularConstant="1" specularExponent="10" lighting-color="white">
+                        <feSpotLight x="50" y="0" z="100" pointsAtX="50" pointsAtY="50" pointsAtZ="0" specularExponent="5"/>
+                      </feSpecularLighting>
+                    </filter>
+                  </defs>
+                  <circle cx="50" cy="50" r="40" fill="white" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
 }

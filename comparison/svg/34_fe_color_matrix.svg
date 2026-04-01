@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <rect width="300" height="200" fill="#f7f9fb"/>
+
+  <text x="150" y="20" text-anchor="middle" font-size="14" fill="#555"
+        font-family="Arial, Helvetica, sans-serif">feColorMatrix Types</text>
+
+  <defs>
+    <linearGradient id="rainbow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e74c3c"/>
+      <stop offset="25%" stop-color="#f1c40f"/>
+      <stop offset="50%" stop-color="#2ecc71"/>
+      <stop offset="75%" stop-color="#3498db"/>
+      <stop offset="100%" stop-color="#9b59b6"/>
+    </linearGradient>
+
+    <filter id="saturate0">
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+
+    <filter id="hueRotate90">
+      <feColorMatrix type="hueRotate" values="90"/>
+    </filter>
+
+    <filter id="lumToAlpha">
+      <feColorMatrix type="luminanceToAlpha"/>
+    </filter>
+  </defs>
+
+  <g font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#555" text-anchor="middle">
+    <!-- Original -->
+    <text x="45" y="42">Original</text>
+    <rect x="10" y="48" width="60" height="60" rx="6" fill="url(#rainbow)"/>
+    <circle cx="45" cy="78" r="15" fill="#e67e22" opacity="0.8"/>
+
+    <!-- Saturate=0 (grayscale) -->
+    <text x="120" y="42">saturate=0</text>
+    <g filter="url(#saturate0)">
+      <rect x="85" y="48" width="60" height="60" rx="6" fill="url(#rainbow)"/>
+      <circle cx="120" cy="78" r="15" fill="#e67e22" opacity="0.8"/>
+    </g>
+
+    <!-- hueRotate=90 -->
+    <text x="195" y="42">hueRotate=90</text>
+    <g filter="url(#hueRotate90)">
+      <rect x="160" y="48" width="60" height="60" rx="6" fill="url(#rainbow)"/>
+      <circle cx="195" cy="78" r="15" fill="#e67e22" opacity="0.8"/>
+    </g>
+
+    <!-- luminanceToAlpha -->
+    <text x="265" y="42">lumToAlpha</text>
+    <g filter="url(#lumToAlpha)">
+      <rect x="230" y="48" width="60" height="60" rx="6" fill="url(#rainbow)"/>
+      <circle cx="265" cy="78" r="15" fill="#e67e22" opacity="0.8"/>
+    </g>
+  </g>
+
+  <!-- Second row: matrix type with custom values -->
+  <text x="150" y="135" text-anchor="middle" font-size="10" fill="#555"
+        font-family="Arial, Helvetica, sans-serif">type=&quot;matrix&quot; — red channel only</text>
+
+  <defs>
+    <filter id="redOnly">
+      <feColorMatrix type="matrix"
+        values="1 0 0 0 0
+                0 0 0 0 0
+                0 0 0 0 0
+                0 0 0 1 0"/>
+    </filter>
+    <filter id="greenOnly">
+      <feColorMatrix type="matrix"
+        values="0 0 0 0 0
+                0 1 0 0 0
+                0 0 0 0 0
+                0 0 0 1 0"/>
+    </filter>
+  </defs>
+
+  <g font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#555" text-anchor="middle">
+    <text x="75" y="155">Red only</text>
+    <g filter="url(#redOnly)">
+      <rect x="30" y="160" width="90" height="30" rx="4" fill="url(#rainbow)"/>
+    </g>
+
+    <text x="225" y="155">Green only</text>
+    <g filter="url(#greenOnly)">
+      <rect x="180" y="160" width="90" height="30" rx="4" fill="url(#rainbow)"/>
+    </g>
+  </g>
+</svg>

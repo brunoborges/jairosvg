@@ -74,7 +74,9 @@ Surface.draw() — recursive element rendering
     ├── FilterRenderer → BlendCompositor, GaussianBlur
     │   (feGaussianBlur, feOffset, feFlood, feBlend, feMerge,
     │    feDropShadow, feImage, feTile, feColorMatrix,
-    │    feComposite, feComponentTransfer, feMorphology)
+    │    feComposite, feComponentTransfer, feMorphology,
+    │    feConvolveMatrix, feDisplacementMap, feTurbulence,
+    │    feDiffuseLighting, feSpecularLighting)
     ├── MaskPainter (luminance-based masks)
     ├── MarkerDrawer (marker-start/mid/end)
     └── Defs (clipPath, use, symbol)

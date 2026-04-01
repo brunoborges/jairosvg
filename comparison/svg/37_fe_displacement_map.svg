@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <rect width="300" height="200" fill="#f7f9fb"/>
+
+  <text x="150" y="20" text-anchor="middle" font-size="14" fill="#555"
+        font-family="Arial, Helvetica, sans-serif">feDisplacementMap</text>
+
+  <defs>
+    <!-- Displacement with turbulence -->
+    <filter id="displace1" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="turbulence" baseFrequency="0.05" numOctaves="3"
+                    seed="2" result="turbulence"/>
+      <feDisplacementMap in="SourceGraphic" in2="turbulence"
+                         scale="15" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+
+    <!-- Stronger displacement -->
+    <filter id="displace2" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="2"
+                    seed="5" result="turbulence"/>
+      <feDisplacementMap in="SourceGraphic" in2="turbulence"
+                         scale="30" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+
+    <!-- Fractal noise displacement -->
+    <filter id="displace3" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="2"
+                    seed="3" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise"
+                         scale="20" xChannelSelector="R" yChannelSelector="B"/>
+    </filter>
+  </defs>
+
+  <g font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#555" text-anchor="middle">
+    <!-- Original -->
+    <text x="75" y="42">Original</text>
+    <rect x="30" y="48" width="90" height="50" rx="8" fill="#3498db"/>
+    <text x="75" y="80" font-size="18" fill="white" font-weight="bold"
+          font-family="Arial, Helvetica, sans-serif">Hello</text>
+
+    <!-- Displaced (scale=15) -->
+    <text x="225" y="42">scale=15</text>
+    <g filter="url(#displace1)">
+      <rect x="180" y="48" width="90" height="50" rx="8" fill="#3498db"/>
+      <text x="225" y="80" font-size="18" fill="white" font-weight="bold"
+            font-family="Arial, Helvetica, sans-serif">Hello</text>
+    </g>
+
+    <!-- Stronger displacement -->
+    <text x="75" y="125">scale=30</text>
+    <g filter="url(#displace2)">
+      <rect x="30" y="130" width="90" height="50" rx="8" fill="#e74c3c"/>
+      <text x="75" y="162" font-size="18" fill="white" font-weight="bold"
+            font-family="Arial, Helvetica, sans-serif">Warp</text>
+    </g>
+
+    <!-- Fractal noise displacement -->
+    <text x="225" y="125">fractalNoise</text>
+    <g filter="url(#displace3)">
+      <rect x="180" y="130" width="90" height="50" rx="8" fill="#27ae60"/>
+      <text x="225" y="162" font-size="18" fill="white" font-weight="bold"
+            font-family="Arial, Helvetica, sans-serif">Wave</text>
+    </g>
+  </g>
+</svg>

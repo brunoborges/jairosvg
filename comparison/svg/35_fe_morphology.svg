@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <rect width="300" height="200" fill="#f7f9fb"/>
+
+  <text x="150" y="20" text-anchor="middle" font-size="14" fill="#555"
+        font-family="Arial, Helvetica, sans-serif">feMorphology — Erode &amp; Dilate</text>
+
+  <defs>
+    <filter id="erode2">
+      <feMorphology operator="erode" radius="2"/>
+    </filter>
+    <filter id="dilate2">
+      <feMorphology operator="dilate" radius="2"/>
+    </filter>
+    <filter id="erode1">
+      <feMorphology operator="erode" radius="1"/>
+    </filter>
+    <filter id="dilate3">
+      <feMorphology operator="dilate" radius="3"/>
+    </filter>
+  </defs>
+
+  <g font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#555" text-anchor="middle">
+    <!-- Row 1: Text morphology -->
+    <text x="50" y="42">Original</text>
+    <text x="50" y="70" font-size="24" fill="#2c7be5" font-weight="bold"
+          font-family="Arial, Helvetica, sans-serif">Abc</text>
+
+    <text x="150" y="42">erode r=2</text>
+    <text x="150" y="70" font-size="24" fill="#2c7be5" font-weight="bold"
+          font-family="Arial, Helvetica, sans-serif" filter="url(#erode2)">Abc</text>
+
+    <text x="250" y="42">dilate r=2</text>
+    <text x="250" y="70" font-size="24" fill="#2c7be5" font-weight="bold"
+          font-family="Arial, Helvetica, sans-serif" filter="url(#dilate2)">Abc</text>
+
+    <!-- Row 2: Shape morphology -->
+    <text x="50" y="102">Original</text>
+    <g transform="translate(50,130)">
+      <polygon points="0,-20 6,-8 19,-6 10,3 12,16 0,10 -12,16 -10,3 -19,-6 -6,-8"
+               fill="#e74c3c"/>
+    </g>
+
+    <text x="150" y="102">erode r=1</text>
+    <g transform="translate(150,130)" filter="url(#erode1)">
+      <polygon points="0,-20 6,-8 19,-6 10,3 12,16 0,10 -12,16 -10,3 -19,-6 -6,-8"
+               fill="#e74c3c"/>
+    </g>
+
+    <text x="250" y="102">dilate r=3</text>
+    <g transform="translate(250,130)" filter="url(#dilate3)">
+      <polygon points="0,-20 6,-8 19,-6 10,3 12,16 0,10 -12,16 -10,3 -19,-6 -6,-8"
+               fill="#e74c3c"/>
+    </g>
+  </g>
+
+  <!-- Row 3: Circles -->
+  <g font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#555" text-anchor="middle">
+    <text x="50" y="168">circle</text>
+    <circle cx="50" cy="183" r="10" fill="#27ae60" stroke="#2c3e50" stroke-width="2"/>
+
+    <text x="150" y="168">erode r=2</text>
+    <circle cx="150" cy="183" r="10" fill="#27ae60" stroke="#2c3e50" stroke-width="2"
+            filter="url(#erode2)"/>
+
+    <text x="250" y="168">dilate r=2</text>
+    <circle cx="250" cy="183" r="10" fill="#27ae60" stroke="#2c3e50" stroke-width="2"
+            filter="url(#dilate2)"/>
+  </g>
+</svg>

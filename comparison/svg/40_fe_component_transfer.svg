@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <rect width="300" height="200" fill="#f7f9fb"/>
+
+  <text x="150" y="18" text-anchor="middle" font-size="13" fill="#555"
+        font-family="Arial, Helvetica, sans-serif">feComponentTransfer</text>
+
+  <defs>
+    <linearGradient id="ctGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2c3e50"/>
+      <stop offset="50%" stop-color="#e74c3c"/>
+      <stop offset="100%" stop-color="#f1c40f"/>
+    </linearGradient>
+
+    <!-- Gamma correction (brighten) -->
+    <filter id="gamma">
+      <feComponentTransfer>
+        <feFuncR type="gamma" amplitude="1" exponent="0.5" offset="0"/>
+        <feFuncG type="gamma" amplitude="1" exponent="0.5" offset="0"/>
+        <feFuncB type="gamma" amplitude="1" exponent="0.5" offset="0"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- Posterize (discrete) — 4 levels -->
+    <filter id="posterize">
+      <feComponentTransfer>
+        <feFuncR type="discrete" tableValues="0 0.33 0.67 1"/>
+        <feFuncG type="discrete" tableValues="0 0.33 0.67 1"/>
+        <feFuncB type="discrete" tableValues="0 0.33 0.67 1"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- Contrast boost (linear) -->
+    <filter id="contrast">
+      <feComponentTransfer>
+        <feFuncR type="linear" slope="2" intercept="-0.5"/>
+        <feFuncG type="linear" slope="2" intercept="-0.5"/>
+        <feFuncB type="linear" slope="2" intercept="-0.5"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- Invert (table) -->
+    <filter id="invert">
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="1 0"/>
+        <feFuncG type="table" tableValues="1 0"/>
+        <feFuncB type="table" tableValues="1 0"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- Threshold (discrete 2-level) -->
+    <filter id="threshold">
+      <feComponentTransfer>
+        <feFuncR type="discrete" tableValues="0 1"/>
+        <feFuncG type="discrete" tableValues="0 1"/>
+        <feFuncB type="discrete" tableValues="0 1"/>
+      </feComponentTransfer>
+    </filter>
+  </defs>
+
+  <g font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#555" text-anchor="middle">
+    <!-- Row 1 -->
+    <text x="45" y="38">Original</text>
+    <rect x="10" y="42" width="70" height="40" rx="4" fill="url(#ctGrad)"/>
+    <circle cx="45" cy="62" r="12" fill="#2ecc71" opacity="0.8"/>
+
+    <text x="120" y="38">Gamma 0.5</text>
+    <g filter="url(#gamma)">
+      <rect x="85" y="42" width="70" height="40" rx="4" fill="url(#ctGrad)"/>
+      <circle cx="120" cy="62" r="12" fill="#2ecc71" opacity="0.8"/>
+    </g>
+
+    <text x="195" y="38">Posterize</text>
+    <g filter="url(#posterize)">
+      <rect x="160" y="42" width="70" height="40" rx="4" fill="url(#ctGrad)"/>
+      <circle cx="195" cy="62" r="12" fill="#2ecc71" opacity="0.8"/>
+    </g>
+
+    <text x="265" y="38">Contrast</text>
+    <g filter="url(#contrast)">
+      <rect x="230" y="42" width="65" height="40" rx="4" fill="url(#ctGrad)"/>
+      <circle cx="262" cy="62" r="12" fill="#2ecc71" opacity="0.8"/>
+    </g>
+
+    <!-- Row 2 -->
+    <text x="75" y="108">Invert (table)</text>
+    <g filter="url(#invert)">
+      <rect x="30" y="112" width="90" height="40" rx="4" fill="url(#ctGrad)"/>
+      <circle cx="75" cy="132" r="12" fill="#2ecc71" opacity="0.8"/>
+    </g>
+
+    <text x="225" y="108">Threshold</text>
+    <g filter="url(#threshold)">
+      <rect x="180" y="112" width="90" height="40" rx="4" fill="url(#ctGrad)"/>
+      <circle cx="225" cy="132" r="12" fill="#2ecc71" opacity="0.8"/>
+    </g>
+  </g>
+
+  <text x="150" y="185" text-anchor="middle" font-size="9" fill="#888"
+        font-family="Arial, Helvetica, sans-serif">
+    gamma · discrete · linear · table transfer functions
+  </text>
+</svg>

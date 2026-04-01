@@ -1,6 +1,7 @@
 package io.brunoborges.jairosvg.css;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -24,6 +25,8 @@ public final class CssProcessor {
 
     private static final Pattern COMMENT_PATTERN = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
     private static final Pattern IMPORT_PATTERN = Pattern.compile("@import[^;]*;");
+    private static final Pattern IMPORT_URL_PATTERN = Pattern
+            .compile("@import\\s+(?:url\\(\\s*[\"']?([^\"')]+)[\"']?\\s*\\)|[\"']([^\"']+)[\"'])\\s*;");
     private static final Pattern RULE_PATTERN = Pattern.compile("([^{}]+)\\{([^}]*)\\}");
     private static final Pattern WHITESPACE = Pattern.compile("\\s+");
     private static final Pattern PSEUDO_ELEMENT_PATTERN = Pattern.compile("::[\\w-]+");
@@ -85,7 +88,17 @@ public final class CssProcessor {
     /** Extract stylesheets from &lt;style&gt; elements in the Node tree. */
     public static List<StyleRule> parseStylesheets(Node root) {
         List<StyleRule> rules = new ArrayList<>();
-        extractStyleElements(root, rules);
+        extractStyleElements(root, rules, null, null, new HashSet<>());
+        return rules;
+    }
+
+    /**
+     * Extract stylesheets from &lt;style&gt; elements, resolving @import rules
+     * against the given base URL.
+     */
+    public static List<StyleRule> parseStylesheets(Node root, UrlHelper.UrlFetcher fetcher, String baseUrl) {
+        List<StyleRule> rules = new ArrayList<>();
+        extractStyleElements(root, rules, fetcher, baseUrl, new HashSet<>());
         return rules;
     }
 
@@ -114,7 +127,8 @@ public final class CssProcessor {
                     String resolvedUrl = resolveHref(href, baseUrl);
                     byte[] cssBytes = fetcher.fetch(resolvedUrl, "text/css");
                     if (cssBytes != null && cssBytes.length > 0) {
-                        parseStylesheet(new String(cssBytes, java.nio.charset.StandardCharsets.UTF_8), rules);
+                        parseStylesheet(new String(cssBytes, StandardCharsets.UTF_8), rules, fetcher, resolvedUrl,
+                                new HashSet<>());
                     }
                 } catch (IOException e) {
                     // Skip stylesheets that cannot be loaded
@@ -148,14 +162,19 @@ public final class CssProcessor {
     public record StyleRule(String selector, List<Declaration> declarations, boolean important) {
     }
 
-    private static void extractStyleElements(Node node, List<StyleRule> rules) {
+    private static void extractStyleElements(Node node, List<StyleRule> rules, UrlHelper.UrlFetcher fetcher,
+            String baseUrl, Set<String> visited) {
         for (Node child : node.children) {
             if ("style".equals(child.tag)) {
                 if (child.text != null) {
-                    parseStylesheet(child.text, rules);
+                    if (fetcher != null) {
+                        parseStylesheet(child.text, rules, fetcher, baseUrl, visited);
+                    } else {
+                        parseStylesheet(child.text, rules);
+                    }
                 }
             }
-            extractStyleElements(child, rules);
+            extractStyleElements(child, rules, fetcher, baseUrl, visited);
         }
     }
 
@@ -163,9 +182,71 @@ public final class CssProcessor {
     public static void parseStylesheet(String cssText, List<StyleRule> rules) {
         // Remove comments
         cssText = COMMENT_PATTERN.matcher(cssText).replaceAll("");
-        // Handle @import (basic - skip for now)
+        // Strip @import rules (no fetcher context available)
         cssText = IMPORT_PATTERN.matcher(cssText).replaceAll("");
 
+        parseRules(cssText, rules);
+    }
+
+    /**
+     * Parse a CSS stylesheet string into rules, resolving @import rules against the
+     * given base URL. Imported stylesheets are recursively processed. Circular
+     * imports are detected via the visited set.
+     */
+    public static void parseStylesheet(String cssText, List<StyleRule> rules, UrlHelper.UrlFetcher fetcher,
+            String baseUrl, Set<String> visited) {
+        cssText = COMMENT_PATTERN.matcher(cssText).replaceAll("");
+
+        // Process @import rules before other rules
+        Matcher importMatcher = IMPORT_URL_PATTERN.matcher(cssText);
+        while (importMatcher.find()) {
+            String url = extractImportUrl(importMatcher);
+            if (url != null && !url.isEmpty()) {
+                String resolvedUrl = resolveHref(url, baseUrl);
+                if (visited.add(resolvedUrl)) {
+                    try {
+                        byte[] bytes = fetcher.fetch(resolvedUrl, "text/css");
+                        if (bytes != null && bytes.length > 0) {
+                            String importedCss = new String(bytes, StandardCharsets.UTF_8);
+                            parseStylesheet(importedCss, rules, fetcher, resolvedUrl, visited);
+                        }
+                    } catch (IOException e) {
+                        // Skip imports that can't be loaded
+                    }
+                }
+            }
+        }
+        cssText = IMPORT_PATTERN.matcher(cssText).replaceAll("");
+
+        parseRules(cssText, rules);
+    }
+
+    /**
+     * Extract the URL from an @import matcher result. Supports both
+     * {@code @import url("...")} and {@code @import "..."} forms.
+     */
+    static String extractImportUrl(Matcher importMatcher) {
+        // Group 1: url() form, Group 2: bare string form
+        String url = importMatcher.group(1);
+        if (url == null) {
+            url = importMatcher.group(2);
+        }
+        return url != null ? url.strip() : null;
+    }
+
+    /**
+     * Extract the URL from an @import rule string. Supports both
+     * {@code @import url("...")} and {@code @import "..."} forms.
+     */
+    public static String extractImportUrl(String importRule) {
+        Matcher m = IMPORT_URL_PATTERN.matcher(importRule);
+        if (m.find()) {
+            return extractImportUrl(m);
+        }
+        return null;
+    }
+
+    private static void parseRules(String cssText, List<StyleRule> rules) {
         Matcher m = RULE_PATTERN.matcher(cssText);
         while (m.find()) {
             String selectors = m.group(1).strip();
