@@ -7,10 +7,13 @@
 //DEPS io.brunoborges:jairosvg:1.0.6-SNAPSHOT
 //DEPS io.sf.carte:echosvg-transcoder:2.4
 //DEPS com.github.weisj:jsvg:2.0.0
+//DEPS com.google.code.gson:gson:2.13.1
 
 import com.github.weisj.jsvg.SVGDocument;
 import com.github.weisj.jsvg.parser.LoaderContext;
 import com.github.weisj.jsvg.parser.SVGLoader;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import io.brunoborges.jairosvg.JairoSVG;
 import io.sf.carte.echosvg.transcoder.TranscoderInput;
 import io.sf.carte.echosvg.transcoder.TranscoderOutput;
@@ -245,10 +248,62 @@ public class generate {
             Map.entry("42_fe_component_transfer", "`feComponentTransfer` with gamma, discrete, linear, and table transfer functions.")
     );
 
-    static void generateReadme(List<Path> svgFiles, Map<String, boolean[]> results) throws Exception {
-        Path visualPath = BASE_DIR.resolve("README.md");
+    static final Path COMPARISON_PATH = Path.of("comparison", "COMPARISON.md");
+    static final Path JSONL_PATH = Path.of("comparison", "benchmark", "benchmark-results.jsonl");
+    static final List<String> BENCH_ENGINES = List.of("jairosvg", "echosvg", "jsvg", "cairosvg");
 
-        // Build the visual comparison file content
+    record BenchResult(double median) {}
+
+    static Map<String, Map<String, BenchResult>> loadBenchData() {
+        var data = new LinkedHashMap<String, Map<String, BenchResult>>();
+        if (!Files.exists(JSONL_PATH)) return data;
+        try {
+            var gson = new Gson();
+            for (String line : Files.readAllLines(JSONL_PATH)) {
+                line = line.strip();
+                if (line.isEmpty()) continue;
+                JsonObject obj = gson.fromJson(line, JsonObject.class);
+                String engine = obj.has("engine") ? obj.get("engine").getAsString() : null;
+                if (engine == null || !BENCH_ENGINES.contains(engine)) continue;
+                String caseName = obj.has("case") ? obj.get("case").getAsString() : null;
+                if (caseName == null || !obj.has("median")) continue;
+                data.computeIfAbsent(caseName, _ -> new LinkedHashMap<>())
+                        .put(engine, new BenchResult(obj.get("median").getAsDouble()));
+            }
+        } catch (IOException e) {
+            System.err.println("Warning: could not read " + JSONL_PATH + ": " + e.getMessage());
+        }
+        return data;
+    }
+
+    static String benchCell(Double val, double minVal) {
+        if (val == null) return "—";
+        String formatted = "%.4f ms".formatted(val);
+        return val == minVal ? "**%s** ✅".formatted(formatted) : formatted;
+    }
+
+    static String timeRow(String name, Map<String, Map<String, BenchResult>> benchData) {
+        String label = name.replaceFirst("^\\d+_", "").replace('_', ' ');
+        label = Character.toUpperCase(label.charAt(0)) + label.substring(1);
+        var caseData = benchData.get(label);
+        Double[] vals = new Double[4];
+        if (caseData != null) {
+            String[] keys = {"jairosvg", "echosvg", "cairosvg", "jsvg"};
+            for (int i = 0; i < 4; i++) {
+                var r = caseData.get(keys[i]);
+                vals[i] = r != null ? r.median() : null;
+            }
+        }
+        double minVal = Arrays.stream(vals).filter(Objects::nonNull)
+                .mapToDouble(Double::doubleValue).min().orElse(Double.MAX_VALUE);
+        return "| **Time** | %s | %s | %s | %s |".formatted(
+                benchCell(vals[0], minVal), benchCell(vals[1], minVal),
+                benchCell(vals[2], minVal), benchCell(vals[3], minVal));
+    }
+
+    static void generateReadme(List<Path> svgFiles, Map<String, boolean[]> results) throws Exception {
+        var benchData = loadBenchData();
+
         var sb = new StringBuilder();
         sb.append("# Visual Rendering Comparison\n\n");
         sb.append("Side-by-side visual comparison of ").append(svgFiles.size())
@@ -267,15 +322,15 @@ public class generate {
             sb.append("| :-------: | :------: | :-----: | :------: | :--: |\n");
 
             String jairo = Files.exists(PNG_JAIRO_DIR.resolve(name + ".png"))
-                    ? "![JairoSVG](png/jairosvg/" + name + ".png)" : "—";
+                    ? "![JairoSVG](visual/png/jairosvg/" + name + ".png)" : "—";
             String echo  = Files.exists(PNG_ECHO_DIR.resolve(name + ".png"))
-                    ? "![EchoSVG](png/echosvg/" + name + ".png)" : "—";
+                    ? "![EchoSVG](visual/png/echosvg/" + name + ".png)" : "—";
             String cairo = Files.exists(PNG_CAIRO_DIR.resolve(name + ".png"))
-                    ? "![CairoSVG](png/cairosvg/" + name + ".png)" : "—";
+                    ? "![CairoSVG](visual/png/cairosvg/" + name + ".png)" : "—";
             String jsvg  = Files.exists(PNG_JSVG_DIR.resolve(name + ".png"))
-                    ? "![JSVG](png/jsvg/" + name + ".png)" : "—";
+                    ? "![JSVG](visual/png/jsvg/" + name + ".png)" : "—";
 
-            sb.append("| ![SVG](../svg/").append(name).append(".svg) | ")
+            sb.append("| ![SVG](svg/").append(name).append(".svg) | ")
               .append(jairo).append(" | ")
               .append(echo).append(" | ")
               .append(cairo).append(" | ")
@@ -288,15 +343,112 @@ public class generate {
             long sJsvg  = fileSize(PNG_JSVG_DIR.resolve(name + ".png"));
             long minSize = LongStream.of(sJairo, sEcho, sCairo, sJsvg)
                     .filter(s -> s > 0).min().orElse(0);
-            sb.append("| | ")
+            sb.append("| **Size** | ")
               .append(sizeCell(sJairo, minSize)).append(" | ")
               .append(sizeCell(sEcho, minSize)).append(" | ")
               .append(sizeCell(sCairo, minSize)).append(" | ")
               .append(sizeCell(sJsvg, minSize)).append(" |\n");
+
+            // Benchmark time row (wrapped in markers for update_readme.java)
+            sb.append("<!-- BEGIN:TIME:").append(name).append(" -->\n");
+            sb.append(timeRow(name, benchData)).append("\n");
+            sb.append("<!-- END:TIME:").append(name).append(" -->\n");
         }
 
-        Files.writeString(visualPath, sb.toString(), StandardCharsets.UTF_8);
-        System.out.println("\nVisual comparison regenerated → " + visualPath);
+        // Aggregate sections wrapped in markers
+        sb.append("\n---\n\n");
+
+        sb.append("<!-- BEGIN:BENCHMARK -->\n");
+        sb.append("## Benchmark\n\n");
+        sb.append("_No benchmark data available yet. Run `jbang comparison/benchmark/benchmark.java` to generate._\n");
+        sb.append("<!-- END:BENCHMARK -->\n\n");
+
+        sb.append("""
+                > **⚠️ Filters/Masks caveat:** CairoSVG does **not** correctly render masks \
+                (missing gradient and circle content) or `feGaussianBlur`/`feDropShadow` filters \
+                — it silently skips them. For those tests, CairoSVG appears faster because it \
+                skips rendering work. JairoSVG and JSVG perform the actual computation, so their \
+                speed reflects the true cost of correct rendering. Note: JairoSVG now \
+                **outperforms CairoSVG on both Masks and feBlend modes** despite rendering them correctly.
+
+                """);
+
+        sb.append("<!-- BEGIN:BENCHMARK_NOTE -->\n");
+        sb.append("> **Note:** Benchmarks were run with 50 warm-up iterations and 500 measured iterations");
+        sb.append(" per SVG file. Median time reported. Results may vary by hardware and SVG complexity.\n");
+        sb.append("<!-- END:BENCHMARK_NOTE -->\n\n");
+
+        sb.append("""
+                #### Default Rendering Settings: JairoSVG vs JSVG
+
+                Both JairoSVG and JSVG use Java2D as their rendering backend, but they ship with **different default quality settings**, which directly affects benchmark performance:
+
+                | Setting                       | JairoSVG default             | JSVG default (out-of-the-box)          | Performance impact |
+                | ----------------------------- | ---------------------------- | -------------------------------------- | :----------------: |
+                | `KEY_ANTIALIASING`            | `VALUE_ANTIALIAS_ON`         | `VALUE_ANTIALIAS_ON` (auto-set)        |        Low         |
+                | `KEY_TEXT_ANTIALIASING`       | Not set (platform default)   | Not set (platform default)             |        Low         |
+                | `KEY_RENDERING`               | Not set (defaults to speed)  | Not set (defaults to speed)            |      **High**      |
+                | `KEY_STROKE_CONTROL`          | `VALUE_STROKE_PURE`          | `VALUE_STROKE_PURE` (auto-set)         |       Equal        |
+                | `KEY_FRACTIONALMETRICS`       | Not set (defaults to `OFF`)  | Not set (defaults to `OFF`)            |       Medium       |
+                | **PNG compression level**     | 6 (matches CairoSVG/libpng) | N/A (no built-in PNG; user uses `ImageIO`) |       Medium       |
+
+                JSVG automatically sets `KEY_ANTIALIASING` and `KEY_STROKE_CONTROL` to the values above when they are at their defaults. JairoSVG now uses the same defaults as JSVG, so both renderers operate with identical quality settings out of the box. Users can customize any hint via `JairoSVG.builder().renderingHint(key, value)`.
+
+                **In the benchmark**, both JairoSVG and JSVG use identical rendering hints, so the comparison measures SVG engine efficiency directly.
+
+                """);
+
+        sb.append("<!-- BEGIN:PNG_SIZES -->\n");
+        sb.append("## PNG Output File Sizes\n\n");
+        sb.append("_No PNG size data computed yet._\n");
+        sb.append("<!-- END:PNG_SIZES -->\n\n");
+
+        sb.append("""
+                > **⚠️ Filters/Masks:** Where CairoSVG produces much smaller output, it is because CairoSVG \
+                **does not render** certain features correctly — filter effects (blur, drop-shadow) are silently \
+                skipped, and masks are rendered without gradient/circle content. This results in simpler images \
+                that compress better. JairoSVG and JSVG render these effects correctly, producing visually \
+                accurate but larger PNGs.
+
+                ## Running the Benchmark
+
+                Prerequisites: [JBang], Java 25+, Python 3 with CairoSVG (`pip install cairosvg`), \
+                JairoSVG installed in local Maven repo.
+
+                ```bash
+                ./mvnw install -DskipTests
+                jbang comparison/benchmark/benchmark.java
+                ```
+
+                Options:
+
+                ```bash
+                # Run specific SVG categories only
+                jbang comparison/benchmark/benchmark.java filters embedded
+
+                # Skip engines
+                jbang comparison/benchmark/benchmark.java --no-cairosvg
+                jbang comparison/benchmark/benchmark.java --no-echosvg
+                jbang comparison/benchmark/benchmark.java --no-jsvg
+
+                # Disable progress bar output (useful for CI logs)
+                jbang comparison/benchmark/benchmark.java --no-progress
+
+                # Adjust warmup and measurement iterations (defaults: 50 and 500)
+                jbang comparison/benchmark/benchmark.java --warmup=5 --iterations=100
+                ```
+
+                The benchmark writes results to `benchmark/benchmark-results.jsonl` (JSON lines) and logs \
+                to a timestamped file. The `update_readme.java` script reads the JSONL and PNG files to \
+                regenerate both the timing table and PNG file sizes table in this document.
+
+                <!-- Link references -->
+
+                [JBang]: https://www.jbang.dev/
+                """);
+
+        Files.writeString(COMPARISON_PATH, sb.toString(), StandardCharsets.UTF_8);
+        System.out.println("\nComparison document regenerated → " + COMPARISON_PATH);
     }
 
     static void generateSizeComparison(List<Path> svgFiles) throws Exception {

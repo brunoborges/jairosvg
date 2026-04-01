@@ -65,7 +65,7 @@ Run the benchmark yourself: `jbang comparison/benchmark/benchmark.java`.
 
 See **[comparison/README.md](comparison/README.md)** for full benchmark results, PNG file size comparisons, and feature matrices across JairoSVG, EchoSVG, CairoSVG, and JSVG.
 
-See **[comparison/visual/](comparison/visual/)** for side-by-side rendered PNG comparisons of 42 SVG test cases.
+See **[comparison/COMPARISON.md](comparison/COMPARISON.md)** for side-by-side rendered PNG comparisons, benchmark times, and file sizes across 42 SVG test cases.
 
 ## Installation
 

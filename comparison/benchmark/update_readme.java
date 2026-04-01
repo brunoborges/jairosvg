@@ -5,7 +5,7 @@
 //DEPS com.google.code.gson:gson:2.13.1
 
 /**
- * Regenerate the benchmark and PNG file-size tables in comparison/benchmark/README.md
+ * Regenerate the benchmark and PNG file-size tables in comparison/COMPARISON.md
  * from benchmark-results.jsonl and the rendered PNG files.
  *
  * Usage:
@@ -20,13 +20,13 @@ import java.io.*;
 import java.nio.file.*;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.regex.*;
+import java.util.regex.Pattern;
 import java.util.stream.*;
 
 public class update_readme {
 
     static final Path BASE_DIR = Path.of("comparison", "benchmark");
-    static final Path README_PATH = BASE_DIR.resolve("README.md");
+    static final Path README_PATH = Path.of("comparison", "COMPARISON.md");
     static final Path JSONL_PATH = BASE_DIR.resolve("benchmark-results.jsonl");
     static final Path SVG_DIR = Path.of("comparison", "svg");
     static final Path PNG_DIR = Path.of("comparison", "visual", "png");
@@ -118,7 +118,7 @@ public class update_readme {
             }
 
             String anchor = "%02d_%s".formatted(svgCase.num(), svgCase.slug());
-            String label = "[%s](../visual/README.md#%s)".formatted(svgCase.name(), anchor);
+            String label = "[%s](#%s)".formatted(svgCase.name(), anchor);
             if (WARN_CASES.contains(svgCase.name())) {
                 label += " ⚠️";
             }
@@ -258,36 +258,71 @@ public class update_readme {
                 .formatted(echoDesc);
     }
 
+    static String replaceSection(String content, String tag, String replacement) {
+        String begin = "<!-- BEGIN:" + tag + " -->";
+        String end = "<!-- END:" + tag + " -->";
+        int start = content.indexOf(begin);
+        int finish = content.indexOf(end);
+        if (start < 0 || finish < 0) return content;
+        return content.substring(0, start) + begin + "\n" + replacement + "\n" + end + content.substring(finish + end.length());
+    }
+
     static void updateReadme(String benchmarkTable, String pngTable, String pngSummary,
-                             String summary, int warmup, int iterations) throws IOException {
+                             String summary, int warmup, int iterations,
+                             Map<String, Map<String, BenchResult>> data, List<SvgCase> cases) throws IOException {
         String content = Files.readString(README_PATH);
 
-        int caseCount = (int) benchmarkTable.lines().count() - 2; // subtract header + separator
+        int caseCount = (int) benchmarkTable.lines().count() - 2;
 
-        // Replace benchmark table
-        content = Pattern.compile(
-                "(# Benchmark\n\n)SVG → PNG.*?\n\n\\|.*?\n\n_JairoSVG.*?_", Pattern.DOTALL)
-                .matcher(content)
-                .replaceFirst("$1SVG → PNG conversion benchmarks across %d SVG test files, median time per render (lower is better):\n\n%s\n\n%s"
-                        .formatted(caseCount, Matcher.quoteReplacement(benchmarkTable), Matcher.quoteReplacement(summary)));
+        // Replace aggregate benchmark section
+        String benchSection = "## Benchmark\n\n"
+                + "SVG → PNG conversion benchmarks across %d SVG test files, median time per render (lower is better):\n\n"
+                        .formatted(caseCount)
+                + benchmarkTable + "\n\n"
+                + summary;
+        content = replaceSection(content, "BENCHMARK", benchSection);
 
-        // Replace PNG sizes summary line and table
-        content = Pattern.compile(
-                "JairoSVG produces the smallest PNGs overall.*?:\n\n\\| Test Case.*?\\| \\*\\*Total\\*\\*[^\n]*"
-                        + "|JairoSVG produces compact PNGs.*?:\n\n\\| Test Case.*?\\| \\*\\*Total\\*\\*[^\n]*",
-                Pattern.DOTALL)
-                .matcher(content)
-                .replaceFirst(Matcher.quoteReplacement(pngSummary + "\n\n" + pngTable));
+        // Replace aggregate PNG sizes section
+        String pngSection = "## PNG Output File Sizes\n\n"
+                + pngSummary + "\n\n"
+                + pngTable;
+        content = replaceSection(content, "PNG_SIZES", pngSection);
 
-        // Update iteration note
-        content = Pattern.compile(
-                "> \\*\\*Note:\\*\\* Benchmarks were run with \\d+ warm-up iterations and \\d+ measured iterations")
-                .matcher(content)
-                .replaceFirst(Matcher.quoteReplacement(
-                        "> **Note:** Benchmarks were run with %d warm-up iterations and %d measured iterations"
-                                .formatted(warmup, iterations)));
+        // Replace iteration note
+        String note = "> **Note:** Benchmarks were run with %d warm-up iterations and %d measured iterations"
+                .formatted(warmup, iterations)
+                + " per SVG file. Median time reported. Results may vary by hardware and SVG complexity.";
+        content = replaceSection(content, "BENCHMARK_NOTE", note);
+
+        // Update per-test-case **Time** rows
+        for (var svgCase : cases) {
+            var caseData = data.get(svgCase.name());
+            String[] keys = {"jairosvg", "echosvg", "cairosvg", "jsvg"};
+            Double[] vals = new Double[4];
+            if (caseData != null) {
+                for (int i = 0; i < 4; i++) {
+                    var r = caseData.get(keys[i]);
+                    vals[i] = r != null ? r.median() : null;
+                }
+            }
+            double minVal = Arrays.stream(vals).filter(Objects::nonNull)
+                    .mapToDouble(Double::doubleValue).min().orElse(Double.MAX_VALUE);
+
+            String timeRow = "| **Time** | %s | %s | %s | %s |".formatted(
+                    benchTimeCell(vals[0], minVal), benchTimeCell(vals[1], minVal),
+                    benchTimeCell(vals[2], minVal), benchTimeCell(vals[3], minVal));
+
+            String tag = "TIME:%02d_%s".formatted(svgCase.num(), svgCase.slug());
+            content = replaceSection(content, tag, timeRow);
+        }
 
         Files.writeString(README_PATH, content);
+    }
+
+    static String benchTimeCell(Double val, double minVal) {
+        if (val == null) return "—";
+        String formatted = "%.4f ms".formatted(val);
+        return val == minVal ? "**%s** ✅".formatted(formatted) : formatted;
     }
 
     static String toTitleCase(String s) {
@@ -321,7 +356,8 @@ public class update_readme {
         var pngResult = generatePngSizesTable(cases);
         String summary = computeSummary(data, cases);
 
-        updateReadme(benchmarkTable, pngResult.table(), pngResult.summary(), summary, warmup, iterations);
+        updateReadme(benchmarkTable, pngResult.table(), pngResult.summary(), summary,
+                warmup, iterations, data, cases);
 
         int caseCount = (int) benchmarkTable.lines().count() - 2;
         System.out.println("✅ Updated " + README_PATH);
