@@ -196,72 +196,49 @@ public class generate {
         generateReadme(svgFiles, results);
     }
 
-    static final Map<String, String> SVG_TITLES = Map.ofEntries(
-            Map.entry("01_basic_shapes",    "01 — Basic Shapes"),
-            Map.entry("02_gradients",       "02 — Gradients"),
-            Map.entry("03_complex_paths",   "03 — Complex Paths"),
-            Map.entry("04_text_rendering",  "04 — Text Rendering"),
-            Map.entry("05_transforms",      "05 — Transforms"),
-            Map.entry("06_stroke_styles",   "06 — Stroke Styles"),
-            Map.entry("07_opacity_blend",   "07 — Opacity & Blending"),
-            Map.entry("08_viewbox_aspect",  "08 — ViewBox & Aspect Ratio"),
-            Map.entry("09_css_styling",     "09 — CSS Styling"),
-            Map.entry("10_use_and_defs",    "10 — Use & Defs"),
-            Map.entry("11_star_polygon",    "11 — Star Polygon"),
-            Map.entry("12_nested_svg",      "12 — Nested SVG"),
-            Map.entry("13_patterns",        "13 — Patterns"),
-            Map.entry("14_clip_paths",      "14 — Clip Paths"),
-            Map.entry("15_masks",           "15 — Masks"),
-            Map.entry("16_markers",         "16 — Markers"),
-            Map.entry("17_filters",         "17 — Filters"),
-            Map.entry("18_embedded_image",  "18 — Embedded Images"),
-            Map.entry("19_text_advanced",   "19 — Advanced Text"),
-            Map.entry("20_fe_blend_modes",  "20 — feBlend Modes"),
-            Map.entry("23_svg_fonts",       "23 — SVG Fonts"),
-            Map.entry("24_symbol_use",      "24 — Symbol + Use"),
-            Map.entry("25_switch_features", "25 — Switch & requiredFeatures"),
-            Map.entry("26_css_variables",   "26 — CSS Custom Properties"),
-            Map.entry("27_current_color",   "27 — currentColor"),
-            Map.entry("28_display_visibility", "28 — Display & Visibility"),
-            Map.entry("29_nested_overflow", "29 — Nested SVG Overflow"),
-            Map.entry("30_stroke_advanced", "30 — Advanced Strokes"),
-            Map.entry("31_pattern_transforms", "31 — Pattern Transforms"),
-            Map.entry("32_gradient_advanced", "32 — Advanced Gradients"),
-            Map.entry("33_filter_merge_offset", "33 — feMerge & feOffset")
-    );
-
     static final Map<String, String> SVG_DESCRIPTIONS = Map.ofEntries(
-            Map.entry("01_basic_shapes",    "Rectangles, circles, ellipses, and lines with solid fills and strokes."),
-            Map.entry("02_gradients",       "Linear and radial gradients with color stops and spread methods."),
-            Map.entry("03_complex_paths",   "Cubic/quadratic Bézier curves, arcs, and complex path commands."),
-            Map.entry("04_text_rendering",  "Text rendering with different fonts, sizes, weights, and tspan."),
-            Map.entry("05_transforms",      "Translate, rotate, scale, skewX, and nested group transforms."),
-            Map.entry("06_stroke_styles",   "Dash arrays, line caps (butt/round/square), and line joins."),
-            Map.entry("07_opacity_blend",   "Fill opacity, stroke opacity, and layered element opacity."),
-            Map.entry("08_viewbox_aspect",  "viewBox scaling with different preserveAspectRatio values."),
-            Map.entry("09_css_styling",     "CSS `<style>` block with class and ID selectors."),
-            Map.entry("10_use_and_defs",    "`<use>` element references, `<clipPath>`, and `<defs>` reuse."),
-            Map.entry("11_star_polygon",    "Complex star polygon with fill-rule evenodd."),
-            Map.entry("12_nested_svg",      "Nested `<svg>` elements with independent viewports."),
-            Map.entry("13_patterns",        "Tiled pattern fills: dots, cross-hatch stripes, and grid lines."),
-            Map.entry("14_clip_paths",      "Star and text clip paths applied to gradient fills."),
-            Map.entry("15_masks",           "Horizontal, vertical, and circular gradient masks with luminance blending."),
-            Map.entry("16_markers",         "Arrow, dot, and square markers on lines, polylines, and curves."),
-            Map.entry("17_filters",         "Gaussian blur and drop-shadow filters on shapes and text."),
-            Map.entry("18_embedded_image",  "Base64-encoded PNG images with clipping, transforms, and opacity."),
-            Map.entry("19_text_advanced",   "Multi-span text (tspan), text-decoration, textPath on curves, and rotated text."),
-            Map.entry("20_fe_blend_modes",  "feBlend modes: normal, multiply, screen, darken, and lighten."),
-            Map.entry("23_svg_fonts",       "Custom SVG font with glyph paths and missing-glyph fallback."),
-            Map.entry("24_symbol_use",      "Reusable `<symbol>` elements instantiated with `<use>` at different sizes and positions."),
-            Map.entry("25_switch_features", "`<switch>` element with requiredFeatures and systemLanguage conditional rendering."),
-            Map.entry("26_css_variables",   "CSS custom properties with `var()` function and fallback values."),
-            Map.entry("27_current_color",   "`currentColor` keyword for fill, stroke, and gradient stops with nested inheritance."),
-            Map.entry("28_display_visibility", "`display:none` vs `visibility:hidden` behavior, group suppression, and child override."),
-            Map.entry("29_nested_overflow", "Nested `<svg>` elements with `overflow` values: hidden, scroll, visible, and auto."),
-            Map.entry("30_stroke_advanced", "`stroke-dashoffset` phase shifting and `stroke-miterlimit` miter-to-bevel fallback."),
-            Map.entry("31_pattern_transforms", "`patternTransform` with scale, rotate, translate, and combined transforms."),
-            Map.entry("32_gradient_advanced", "Gradient `spreadMethod` (reflect/repeat/pad), `fx`/`fy` focus, `href` inheritance, and `userSpaceOnUse`."),
-            Map.entry("33_filter_merge_offset", "`feMerge` for compositing layers and `feOffset` for position shifting with shadow effects.")
+            Map.entry("01_basic_shapes",       "Rectangles, circles, ellipses, and lines with solid fills and strokes."),
+            Map.entry("02_gradients",          "Linear and radial gradients with color stops and spread methods."),
+            Map.entry("03_complex_paths",      "Cubic/quadratic Bézier curves, arcs, and complex path commands."),
+            Map.entry("04_text_rendering",     "Text rendering with different fonts, sizes, weights, and tspan."),
+            Map.entry("05_transforms",         "Translate, rotate, scale, skewX, and nested group transforms."),
+            Map.entry("06_stroke_styles",      "Dash arrays, line caps (butt/round/square), and line joins."),
+            Map.entry("07_opacity_blend",      "Fill opacity, stroke opacity, and layered element opacity."),
+            Map.entry("08_viewbox_aspect",     "viewBox scaling with different preserveAspectRatio values."),
+            Map.entry("09_css_styling",        "CSS `<style>` block with class and ID selectors."),
+            Map.entry("10_use_and_defs",       "`<use>` element references, `<clipPath>`, and `<defs>` reuse."),
+            Map.entry("11_star_polygon",       "Complex star polygon with fill-rule evenodd."),
+            Map.entry("12_nested_svg",         "Nested `<svg>` elements with independent viewports."),
+            Map.entry("13_patterns",           "Tiled pattern fills: dots, cross-hatch stripes, and grid lines."),
+            Map.entry("14_clip_paths",         "Star and text clip paths applied to gradient fills."),
+            Map.entry("15_masks",              "Horizontal, vertical, and circular gradient masks with luminance blending."),
+            Map.entry("16_markers",            "Arrow, dot, and square markers on lines, polylines, and curves."),
+            Map.entry("17_filters",            "Gaussian blur and drop-shadow filters on shapes and text."),
+            Map.entry("18_embedded_image",     "Base64-encoded PNG images with clipping, transforms, and opacity."),
+            Map.entry("19_text_advanced",      "Multi-span text (tspan), text-decoration, textPath on curves, and rotated text."),
+            Map.entry("20_fe_blend_modes",     "feBlend modes: normal, multiply, screen, darken, and lighten."),
+            Map.entry("21_fe_tile",            "`feTile` filter primitive: repeating input across the filter region."),
+            Map.entry("22_feimage_data_uri",   "`feImage` with data-URI PNG source."),
+            Map.entry("23_feimage_inline_ref", "`feImage` referencing an inline SVG element by fragment ID."),
+            Map.entry("24_localized_masks",    "Masks with localized coordinate systems and gradient fills."),
+            Map.entry("25_svg_fonts",          "Custom SVG font with glyph paths and missing-glyph fallback."),
+            Map.entry("26_symbol_use",         "Reusable `<symbol>` elements instantiated with `<use>` at different sizes and positions."),
+            Map.entry("27_switch_features",    "`<switch>` element with requiredFeatures and systemLanguage conditional rendering."),
+            Map.entry("28_css_variables",      "CSS custom properties with `var()` function and fallback values."),
+            Map.entry("29_current_color",      "`currentColor` keyword for fill, stroke, and gradient stops with nested inheritance."),
+            Map.entry("30_display_visibility", "`display:none` vs `visibility:hidden` behavior, group suppression, and child override."),
+            Map.entry("31_nested_overflow",    "Nested `<svg>` elements with `overflow` values: hidden, scroll, visible, and auto."),
+            Map.entry("32_stroke_advanced",    "`stroke-dashoffset` phase shifting and `stroke-miterlimit` miter-to-bevel fallback."),
+            Map.entry("33_pattern_transforms", "`patternTransform` with scale, rotate, translate, and combined transforms."),
+            Map.entry("34_gradient_advanced",  "Gradient `spreadMethod` (reflect/repeat/pad), `fx`/`fy` focus, `href` inheritance, and `userSpaceOnUse`."),
+            Map.entry("35_filter_merge_offset", "`feMerge` for compositing layers and `feOffset` for position shifting with shadow effects."),
+            Map.entry("36_fe_color_matrix",    "`feColorMatrix` with type matrix, saturate, hueRotate, and luminanceToAlpha."),
+            Map.entry("37_fe_morphology",      "`feMorphology` erode and dilate operators on text, shapes, and circles."),
+            Map.entry("38_fe_turbulence",      "`feTurbulence` fractalNoise and turbulence types with varying frequency and octaves."),
+            Map.entry("39_fe_displacement_map", "`feDisplacementMap` distortion using a turbulence displacement source."),
+            Map.entry("40_fe_lighting",        "`feDiffuseLighting` and `feSpecularLighting` with distant and point light sources."),
+            Map.entry("41_fe_convolve_matrix", "`feConvolveMatrix` convolution effects: emboss, edge detection, sharpen, and box blur."),
+            Map.entry("42_fe_component_transfer", "`feComponentTransfer` with gamma, discrete, linear, and table transfer functions.")
     );
 
     static void generateReadme(List<Path> svgFiles, Map<String, boolean[]> results) throws Exception {
@@ -277,10 +254,9 @@ public class generate {
 
         for (var svgPath : svgFiles) {
             String name = svgPath.getFileName().toString().replace(".svg", "");
-            String title = SVG_TITLES.getOrDefault(name, name);
             String desc  = SVG_DESCRIPTIONS.getOrDefault(name, "");
 
-            sb.append("\n### ").append(title).append("\n\n");
+            sb.append("\n### ").append(name).append("\n\n");
             if (!desc.isEmpty()) sb.append(desc).append("\n\n");
 
             sb.append("| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |\n");
