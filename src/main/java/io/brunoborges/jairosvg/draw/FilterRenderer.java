@@ -90,6 +90,9 @@ public final class FilterRenderer {
         results.put("SourceGraphic", workSource);
         BufferedImage last = workSource;
 
+        // Lazily create SourceAlpha if referenced
+        BufferedImage sourceAlpha = null;
+
         // Pre-scan which named results are actually referenced by later primitives
         Set<String> referencedResults = new java.util.HashSet<>();
         for (Node child : filterNode.children) {
@@ -107,7 +110,18 @@ public final class FilterRenderer {
         }
 
         for (Node child : filterNode.children) {
-            BufferedImage input = resolveInput(results, child.get("in"), last, workSource);
+            // Resolve "SourceAlpha" lazily
+            String inRef = child.get("in");
+            if ("SourceAlpha".equals(inRef) && sourceAlpha == null) {
+                sourceAlpha = createSourceAlpha(workSource);
+                results.put("SourceAlpha", sourceAlpha);
+            }
+            String in2Ref = child.get("in2");
+            if ("SourceAlpha".equals(in2Ref) && sourceAlpha == null) {
+                sourceAlpha = createSourceAlpha(workSource);
+                results.put("SourceAlpha", sourceAlpha);
+            }
+            BufferedImage input = resolveInput(results, inRef, last, workSource);
             BufferedImage output = switch (child.tag) {
                 case "feGaussianBlur" -> {
                     if (buf1 == null)
@@ -529,8 +543,21 @@ public final class FilterRenderer {
         }
         return switch (in) {
             case "SourceGraphic" -> sourceGraphic;
+            case "SourceAlpha" -> results.getOrDefault("SourceAlpha", sourceGraphic);
             default -> results.getOrDefault(in, last);
         };
+    }
+
+    /** Create a SourceAlpha image: same alpha channel, RGB set to 0. */
+    private static BufferedImage createSourceAlpha(BufferedImage source) {
+        int w = source.getWidth(), h = source.getHeight();
+        BufferedImage alpha = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        int[] srcData = ((DataBufferInt) source.getRaster().getDataBuffer()).getData();
+        int[] dstData = ((DataBufferInt) alpha.getRaster().getDataBuffer()).getData();
+        for (int i = 0; i < srcData.length; i++) {
+            dstData[i] = srcData[i] & 0xFF000000; // keep only alpha
+        }
+        return alpha;
     }
 
     // ── Filter primitives ────────────────────────────────────────────────
@@ -1136,16 +1163,18 @@ public final class FilterRenderer {
                         int pixel = sampleEdge(inData, w, h, sx, sy, edgeMode);
                         double kVal = kernel[ky * orderX + kx];
                         int pa = (pixel >> 24) & 0xFF;
-                        // SVG spec: convolution operates on premultiplied color values
                         int pr = (pixel >> 16) & 0xFF;
                         int pg = (pixel >> 8) & 0xFF;
                         int pb = pixel & 0xFF;
-                        if (pa > 0 && pa < 255) {
-                            pr = pr * pa / 255;
-                            pg = pg * pa / 255;
-                            pb = pb * pa / 255;
-                        } else if (pa == 0) {
-                            pr = pg = pb = 0;
+                        if (!preserveAlpha) {
+                            // SVG spec: default — kernel operates on premultiplied values
+                            if (pa > 0 && pa < 255) {
+                                pr = pr * pa / 255;
+                                pg = pg * pa / 255;
+                                pb = pb * pa / 255;
+                            } else if (pa == 0) {
+                                pr = pg = pb = 0;
+                            }
                         }
                         sumA += kVal * pa;
                         sumR += kVal * pr;
@@ -1159,20 +1188,24 @@ public final class FilterRenderer {
                 int pB = clamp((int) Math.round(sumB / divisor + bias * 255));
                 if (preserveAlpha) {
                     a = (inData[y * w + x] >> 24) & 0xFF;
-                } else {
-                    a = clamp((int) Math.round(sumA / divisor + bias * 255));
-                }
-                // Un-premultiply for storage in TYPE_INT_ARGB
-                if (a > 0 && a < 255) {
-                    r = Math.min(255, pR * 255 / a);
-                    g = Math.min(255, pG * 255 / a);
-                    b = Math.min(255, pB * 255 / a);
-                } else if (a == 0) {
-                    r = g = b = 0;
-                } else {
+                    // preserveAlpha: no premultiply was applied, store directly
                     r = pR;
                     g = pG;
                     b = pB;
+                } else {
+                    a = clamp((int) Math.round(sumA / divisor + bias * 255));
+                    // Un-premultiply for storage in TYPE_INT_ARGB
+                    if (a > 0 && a < 255) {
+                        r = Math.min(255, pR * 255 / a);
+                        g = Math.min(255, pG * 255 / a);
+                        b = Math.min(255, pB * 255 / a);
+                    } else if (a == 0) {
+                        r = g = b = 0;
+                    } else {
+                        r = pR;
+                        g = pG;
+                        b = pB;
+                    }
                 }
                 outData[y * w + x] = (a << 24) | (r << 16) | (g << 8) | b;
             }
@@ -1471,14 +1504,15 @@ public final class FilterRenderer {
         int y0 = Math.max(y - 1, 0);
         int y1 = Math.min(y + 1, h - 1);
 
-        double a00 = (alphaData[y0 * w + x0] >>> 24);
-        double a10 = (alphaData[y0 * w + x] >>> 24);
-        double a20 = (alphaData[y0 * w + x1] >>> 24);
-        double a01 = (alphaData[y * w + x0] >>> 24);
-        double a21 = (alphaData[y * w + x1] >>> 24);
-        double a02 = (alphaData[y1 * w + x0] >>> 24);
-        double a12 = (alphaData[y1 * w + x] >>> 24);
-        double a22 = (alphaData[y1 * w + x1] >>> 24);
+        // SVG spec: I(x,y) is alpha in [0,1], so divide by 255.0
+        double a00 = (alphaData[y0 * w + x0] >>> 24) / 255.0;
+        double a10 = (alphaData[y0 * w + x] >>> 24) / 255.0;
+        double a20 = (alphaData[y0 * w + x1] >>> 24) / 255.0;
+        double a01 = (alphaData[y * w + x0] >>> 24) / 255.0;
+        double a21 = (alphaData[y * w + x1] >>> 24) / 255.0;
+        double a02 = (alphaData[y1 * w + x0] >>> 24) / 255.0;
+        double a12 = (alphaData[y1 * w + x] >>> 24) / 255.0;
+        double a22 = (alphaData[y1 * w + x1] >>> 24) / 255.0;
 
         double factorX = x > 0 && x < w - 1 ? 0.25 : 0.5;
         double factorY = y > 0 && y < h - 1 ? 0.25 : 0.5;

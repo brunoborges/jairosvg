@@ -534,6 +534,11 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         context.setStroke(savedStroke);
 
         if (effectContext != null) {
+            // Save pre-node transform in a local variable before mask/filter
+            // processing can clobber transformStack[savedDepth] via recursive
+            // draw() calls (mask children, feImage, etc.).
+            AffineTransform preNodeTransform = new AffineTransform(transformStack[savedDepth]);
+
             BufferedImage renderedImage = effectSourceImage;
             java.awt.Rectangle filterClip = null;
             if (filterName != null) {
@@ -554,7 +559,6 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
             // Full-size effect buffers already contain content at device
             // coordinates (the node's transform was applied during rendering).
             // Composite with identity transform to avoid double-applying it.
-            transformStack[transformDepth].setTransform(effectBaseContext.getTransform());
             effectBaseContext.setTransform(IDENTITY_TRANSFORM);
             if (subRegionEffect) {
                 effectBaseContext.drawImage(renderedImage, ebX, ebY, null);
@@ -568,7 +572,9 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                     effectBaseContext.drawImage(renderedImage, 0, 0, null);
                 }
             }
-            effectBaseContext.setTransform(transformStack[transformDepth]);
+            // Restore to pre-node transform (not the node-transformed state),
+            // preventing the node's transform from leaking to subsequent siblings.
+            effectBaseContext.setTransform(preNodeTransform);
             if (groupOpacity) {
                 effectBaseContext.setComposite(savedComposite);
             }
