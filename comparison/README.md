@@ -30,7 +30,7 @@ A comprehensive comparison of four SVG libraries — **JairoSVG** (Java), **Echo
 | **Origin**            | Independent project, API inspired by [CairoSVG]               | Fork of [Apache Batik]                                     | Original project                       | Independent project                               |
 | **Maintainer**        | Bruno Borges                                                   | css4j project                                              | CourtBouillon / Kozea                  | Jannis Weis                                       |
 | **Primary goal**      | Fast, lightweight SVG → raster/vector conversion               | Full-featured SVG toolkit: render, manipulate, and convert | SVG → PNG/PDF/PS conversion            | Lightweight SVG renderer for Swing / Java2D       |
-| **License**           | LGPL-3.0                                                       | Apache-2.0                                                 | LGPL-3.0                               | MIT                                               |
+| **License**           | MIT                                                            | Apache-2.0                                                 | LGPL-3.0                               | MIT                                               |
 | **Repository**        | [brunoborges/jairosvg]                                         | [css4j/echosvg]                                            | [Kozea/CairoSVG]                       | [weisJ/jsvg]                                      |
 | **Current version**   | 1.0.4                                                          | 2.4                                                        | 2.7+                                   | 2.0.0                                             |
 | **SVG spec target**   | SVG 1.1 + [selective SVG 2](../LIMITATIONS.md#svg-2-behavioral-alignment) | SVG 1.1 + partial SVG 2                                    | SVG 1.1                                | SVG 1.1 + partial SVG 2                           |
@@ -360,7 +360,7 @@ See **[visual/](visual/)** for the complete gallery with browser-rendered SVG al
 | **Animation**      | ❌                                                     | ✅                                           | ❌                                             | ❌                                     |
 | **Scripting**      | ❌                                                     | ✅                                           | ❌                                             | ❌                                     |
 | **GUI viewer**     | ❌                                                     | ✅                                           | ❌                                             | ✅ (Swing component)                   |
-| **License**        | LGPL-3.0                                               | Apache-2.0                                   | LGPL-3.0                                       | MIT                                    |
+| **License**        | MIT                                                    | Apache-2.0                                   | LGPL-3.0                                       | MIT                                    |
 
 ---
 

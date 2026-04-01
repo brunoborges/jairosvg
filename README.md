@@ -6,7 +6,7 @@
 [![Coverage](https://codecov.io/gh/brunoborges/jairosvg/graph/badge.svg)](https://codecov.io/gh/brunoborges/jairosvg)
 [![Maven Central](https://img.shields.io/maven-central/v/io.brunoborges/jairosvg)](https://central.sonatype.com/artifact/io.brunoborges/jairosvg)
 [![Javadoc](https://javadoc.io/badge2/io.brunoborges/jairosvg/javadoc.svg)](https://javadoc.io/doc/io.brunoborges/jairosvg)
-[![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Java 25+](https://img.shields.io/badge/Java-25%2B-orange)](https://openjdk.org/)
 
 A high-performance SVG 1.1 to PNG, JPEG, TIFF, PDF, and PS/EPS converter powered by Java2D. API inspired by [CairoSVG](https://cairosvg.org).
@@ -346,4 +346,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on building, testing, and 
 
 ## License
 
-JairoSVG is licensed under the [GNU Lesser General Public License v3.0](LICENSE).
+JairoSVG is licensed under the [MIT License](LICENSE).

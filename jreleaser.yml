@@ -9,7 +9,7 @@ project:
   website: https://github.com/brunoborges/jairosvg
   authors:
     - Bruno Borges
-  license: LGPL-3.0
+  license: MIT
   inceptionYear: "2024"
   tags:
     - java
