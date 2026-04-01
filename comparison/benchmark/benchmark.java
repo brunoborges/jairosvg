@@ -57,8 +57,29 @@ public class benchmark {
     static int ITERATIONS = 500;
 
     static final Path SVG_DIR = Path.of("comparison", "svg");
+    static final Path JSONL_FILE = Path.of("comparison", "benchmark", "benchmark-results.jsonl");
 
     record SvgCase(String name, String content, byte[] contentBytes) {}
+
+    /** Append a JSON line to the results file. */
+    static void emitJson(String engine, String caseName, double[] times) throws IOException {
+        double avg = Arrays.stream(times).average().orElse(0);
+        double median = times[times.length / 2];
+        double p95 = times[(int) (times.length * 0.95)];
+        double min = times[0];
+        String json = "{\"engine\":\"%s\",\"case\":\"%s\",\"avg\":%.4f,\"median\":%.4f,\"p95\":%.4f,\"min\":%.4f}"
+                .formatted(engine, caseName, avg, median, p95, min);
+        Files.writeString(JSONL_FILE, json + "\n",
+                StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    }
+
+    /** Append an error JSON line to the results file. */
+    static void emitJsonError(String engine, String caseName, String error) throws IOException {
+        String json = "{\"engine\":\"%s\",\"case\":\"%s\",\"error\":\"%s\"}"
+                .formatted(engine, caseName, error.replace("\"", "\\\"").replace("\n", " "));
+        Files.writeString(JSONL_FILE, json + "\n",
+                StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    }
 
     static List<SvgCase> loadSvgCases() throws IOException {
         return Files.list(SVG_DIR)
@@ -231,6 +252,9 @@ public class benchmark {
         System.setOut(new PrintStream(new TeeOutputStream(System.out, fileOut), true));
         System.out.println("Logging to: " + logFile.toAbsolutePath());
 
+        // Truncate JSONL results file at start of run
+        Files.writeString(JSONL_FILE, "", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
         List<SvgCase> allCases = loadSvgCases();
 
         // Parse args: filter by name substring, --no-cairosvg, --no-echosvg, --no-jsvg,
@@ -362,24 +386,30 @@ public class benchmark {
 
             // Print results after progress bar is done
             printStats("JairoSVG  (Java/Java2D)", jTimes);
+            emitJson("jairosvg", c.name(), jTimes);
             double jAvg = Arrays.stream(jTimes).average().orElse(0);
 
             double eAvg = 0;
             if (eTimes != null) {
                 printStats("EchoSVG   (Java/Batik)", eTimes);
+                emitJson("echosvg", c.name(), eTimes);
                 eAvg = Arrays.stream(eTimes).average().orElse(0);
             }
 
             double sAvg = 0;
             if (sTimes != null) {
                 printStats("JSVG      (Java/Java2D)", sTimes);
+                emitJson("jsvg", c.name(), sTimes);
                 sAvg = Arrays.stream(sTimes).average().orElse(0);
             }
 
             double cAvg = 0;
             if (cTimes != null) {
                 printStats("CairoSVG  (Python/Cairo)", cTimes);
+                emitJson("cairosvg", c.name(), cTimes);
                 cAvg = Arrays.stream(cTimes).average().orElse(0);
+            } else if (runCairo) {
+                emitJsonError("cairosvg", c.name(), "CairoSVG returned null");
             }
 
             System.out.println();

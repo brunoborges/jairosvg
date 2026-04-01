@@ -31,6 +31,7 @@ SVG → PNG conversion benchmarks across 42 SVG test files, median time per rend
 | [Svg fonts](README.md#25--svg-fonts) | 3.3620 ms | 16.1210 ms | **3.3583 ms** ✅ | 4.1727 ms |
 | [Symbol use](README.md#26--symbol-use) | 4.3219 ms | 23.5184 ms | **4.2348 ms** ✅ | 8.6190 ms |
 | [Switch features](README.md#27--switch-features) | 3.8951 ms | 19.5066 ms | **3.1255 ms** ✅ | 5.8029 ms |
+| [Css variables](README.md#28--css-variables) | 3.9022 ms | 18.9834 ms | **3.6660 ms** ✅ | — |
 | [Current color](README.md#29--current-color) | 3.8647 ms | 17.0837 ms | **3.6656 ms** ✅ | 5.6971 ms |
 | [Display visibility](README.md#30--display-visibility) | 4.2502 ms | 19.7640 ms | **4.0279 ms** ✅ | 7.1646 ms |
 | [Nested overflow](README.md#31--nested-overflow) | 4.0464 ms | 21.3446 ms | **3.9465 ms** ✅ | 5.6789 ms |
@@ -40,13 +41,13 @@ SVG → PNG conversion benchmarks across 42 SVG test files, median time per rend
 | [Filter merge offset](README.md#35--filter-merge-offset) | **4.9186 ms** ✅ | 18.5218 ms | 8.4652 ms | 6.0389 ms |
 | [Fe color matrix](README.md#36--fe-color-matrix) | **3.3644 ms** ✅ | 16.8168 ms | 3.3788 ms | 5.3086 ms |
 | [Fe morphology](README.md#37--fe-morphology) | **3.6122 ms** ✅ | 17.1733 ms | 3.9805 ms | 5.2294 ms |
-| [Fe turbulence](README.md#38--fe-turbulence) | 8.7963 ms | 34.0668 ms | 7.7530 ms | **5.5963 ms** ✅ |
+| [Fe turbulence](README.md#38--fe-turbulence) ⚠️ | 8.7963 ms | 34.0668 ms | 7.7530 ms | **5.5963 ms** ✅ |
 | [Fe displacement map](README.md#39--fe-displacement-map) | 4.9033 ms | 19.0484 ms | 9.5448 ms | **4.0421 ms** ✅ |
 | [Fe lighting](README.md#40--fe-lighting) | 4.6776 ms | 21.2214 ms | **4.1237 ms** ✅ | 4.7658 ms |
 | [Fe convolve matrix](README.md#41--fe-convolve-matrix) | **3.8507 ms** ✅ | 9.6118 ms | 6.5445 ms | 4.7904 ms |
 | [Fe component transfer](README.md#42--fe-component-transfer) | 3.1299 ms | 16.0676 ms | **3.0983 ms** ✅ | 5.5329 ms |
 
-_JairoSVG is **3–31× faster** than EchoSVG, **on par with JSVG** in most scenarios, and **faster than CairoSVG** in most scenarios._
+_JairoSVG is **2–30× faster** than EchoSVG, **on par with JSVG** in most scenarios, and **faster than CairoSVG** in most scenarios._
 
 > **⚠️ Filters/Masks caveat:** CairoSVG does **not** correctly render masks (missing gradient and circle content) or `feGaussianBlur`/`feDropShadow` filters — it silently skips them. For those tests, CairoSVG appears faster because it skips rendering work. JairoSVG and JSVG perform the actual computation, so their speed reflects the true cost of correct rendering. Note: JairoSVG now **outperforms CairoSVG on both Masks and feBlend modes** despite rendering them correctly.
 
@@ -71,53 +72,53 @@ JSVG automatically sets `KEY_ANTIALIASING` and `KEY_STROKE_CONTROL` to the value
 
 ## PNG Output File Sizes
 
-JairoSVG produces the smallest PNGs overall — **7.3% smaller** than CairoSVG, **9.0% smaller** than JSVG, and **17.5% smaller** than EchoSVG (all using zlib compression level 6 — see [default rendering settings](#default-rendering-settings-jairosvg-vs-jsvg)):
+JairoSVG produces compact PNGs — **9.0% smaller** than JSVG, and **17.5% smaller** than EchoSVG (all using zlib compression level 6 — see [default rendering settings](#default-rendering-settings-jairosvg-vs-jsvg)):
 
-| Test Case      |    JairoSVG |     EchoSVG |    CairoSVG |        JSVG |
-| -------------- | ----------: | ----------: | ----------: | ----------: |
-| Basic Shapes   |       6,718 |       8,159 |       8,920 |       7,031 |
-| Gradients      |      25,554 |      25,018 |      23,637 |      26,410 |
-| Complex Paths  |      12,657 |      16,936 |      15,633 |      12,730 |
-| Text Rendering |      13,276 |      19,125 |      16,317 |      15,626 |
-| Transforms     |       5,461 |       5,261 |       6,001 |       5,827 |
-| Stroke Styles  |       3,363 |       5,038 |       4,478 |       4,074 |
-| Opacity Blend  |       8,409 |      10,201 |       9,853 |       8,788 |
-| Viewbox Aspect |      10,492 |      12,769 |      11,444 |      12,147 |
-| Css Styling    |       7,755 |      11,144 |      10,816 |       8,653 |
-| Use And Defs   |       5,448 |       6,122 |       9,712 |       6,144 |
-| Star Polygon   |       6,228 |       8,862 |       8,911 |       6,455 |
-| Nested Svg     |      10,926 |      12,522 |      11,880 |      12,101 |
-| Patterns       |       9,532 |      11,832 |      11,095 |      11,043 |
-| Clip Paths     |       9,342 |      10,558 |      13,552 |      10,253 |
-| Masks ⚠️       |       5,692 |       5,566 |       1,161 |       6,209 |
-| Markers        |       9,796 |      12,642 |      12,655 |      10,041 |
-| Filters ⚠️     |      28,934 |      24,063 |       8,520 |      32,346 |
-| Embedded Image |       9,432 |      11,994 |      21,228 |      11,642 |
-| Text Advanced  |      18,801 |      26,256 |      23,864 |      19,756 |
-| Fe Blend Modes |      12,005 |      16,216 |      12,505 |      15,773 |
-| Fe Tile        |       1,456 |       2,009 |       1,768 |       1,489 |
-| Feimage Data Uri |     2,633 |       4,406 |       3,206 |       3,639 |
-| Feimage Inline Ref |   2,702 |       3,642 |       4,903 |       4,380 |
-| Localized Masks |     18,389 |      17,868 |      13,218 |      20,239 |
-| Svg Fonts      |      10,331 |      14,274 |      15,233 |      12,607 |
-| Symbol Use     |      15,665 |      24,513 |      21,625 |      18,260 |
-| Switch Features |     11,535 |      18,040 |      14,493 |       8,503 |
-| Css Variables  |      11,574 |      17,016 |           — |      12,509 |
-| Current Color  |      10,037 |      14,642 |      11,006 |      13,030 |
-| Display Visibility |  11,009 |      17,473 |      13,218 |      14,263 |
-| Nested Overflow |     11,273 |      16,322 |      13,738 |      13,737 |
-| Stroke Advanced |      9,287 |      14,507 |      12,246 |      11,702 |
-| Pattern Transforms |   9,052 |      16,101 |      13,061 |      16,273 |
-| Gradient Advanced |   31,339 |      35,647 |      30,960 |      35,070 |
-| Filter Merge Offset |  9,348 |      14,868 |      14,168 |      12,184 |
-| Fe Color Matrix |     13,131 |      15,605 |      10,152 |      14,503 |
-| Fe Morphology  |       9,850 |      13,914 |      10,313 |       9,544 |
-| Fe Turbulence ⚠️ |   77,590 |      64,097 |       9,371 |      76,437 |
-| Fe Displacement Map |  9,151 |      17,633 |       9,684 |      10,208 |
-| Fe Lighting    |      12,213 |      18,277 |       9,006 |      10,269 |
-| Fe Convolve Matrix |  12,104 |       6,858 |       9,045 |       8,834 |
-| Fe Component Transfer | 9,118 |     12,543 |       9,950 |      10,463 |
-| **Total**      | **528,608** | **640,539** | **492,546** | **581,192** |
+| Test Case             |    JairoSVG |     EchoSVG |    CairoSVG |        JSVG |
+| --------------------- | ----------: | ----------: | ----------: | ----------: |
+| Basic Shapes          |       6,718 |       8,159 |       8,920 |       7,031 |
+| Gradients             |      25,554 |      25,018 |      23,637 |      26,410 |
+| Complex Paths         |      12,657 |      16,936 |      15,633 |      12,730 |
+| Text Rendering        |      13,276 |      19,125 |      16,317 |      15,626 |
+| Transforms            |       5,461 |       5,261 |       6,001 |       5,827 |
+| Stroke Styles         |       3,363 |       5,038 |       4,478 |       4,074 |
+| Opacity Blend         |       8,409 |      10,201 |       9,853 |       8,788 |
+| Viewbox Aspect        |      10,492 |      12,769 |      11,444 |      12,147 |
+| Css Styling           |       7,755 |      11,144 |      10,816 |       8,653 |
+| Use And Defs          |       5,448 |       6,122 |       9,712 |       6,144 |
+| Star Polygon          |       6,228 |       8,862 |       8,911 |       6,455 |
+| Nested Svg            |      10,926 |      12,522 |      11,880 |      12,101 |
+| Patterns              |       9,532 |      11,832 |      11,095 |      11,043 |
+| Clip Paths            |       9,342 |      10,558 |      13,552 |      10,253 |
+| Masks ⚠️              |       5,692 |       5,566 |       1,161 |       6,209 |
+| Markers               |       9,796 |      12,642 |      12,655 |      10,041 |
+| Filters ⚠️            |      28,934 |      24,063 |       8,520 |      32,346 |
+| Embedded Image        |       9,432 |      11,994 |      21,228 |      11,642 |
+| Text Advanced         |      18,801 |      26,256 |      23,864 |      19,756 |
+| Fe Blend Modes        |      12,005 |      16,216 |      12,505 |      15,773 |
+| Fe Tile               |       1,456 |       2,009 |       1,768 |       1,489 |
+| Feimage Data Uri      |       2,633 |       4,406 |       3,206 |       3,639 |
+| Feimage Inline Ref    |       2,702 |       3,642 |       4,903 |       4,380 |
+| Localized Masks       |      18,389 |      17,868 |      13,218 |      20,239 |
+| Svg Fonts             |      10,331 |      14,274 |      15,233 |      12,607 |
+| Symbol Use            |      15,665 |      24,513 |      21,625 |      18,260 |
+| Switch Features       |      11,535 |      18,040 |      14,493 |       8,503 |
+| Css Variables         |      11,574 |      17,016 |           — |      12,509 |
+| Current Color         |      10,037 |      14,642 |      11,006 |      13,030 |
+| Display Visibility    |      11,009 |      17,473 |      13,218 |      14,263 |
+| Nested Overflow       |      11,273 |      16,322 |      13,738 |      13,737 |
+| Stroke Advanced       |       9,287 |      14,507 |      12,246 |      11,702 |
+| Pattern Transforms    |       9,052 |      16,101 |      13,061 |      16,273 |
+| Gradient Advanced     |      31,339 |      35,647 |      30,960 |      35,070 |
+| Filter Merge Offset   |       9,348 |      14,868 |      14,168 |      12,184 |
+| Fe Color Matrix       |      13,131 |      15,605 |      10,152 |      14,503 |
+| Fe Morphology         |       9,850 |      13,914 |      10,313 |       9,544 |
+| Fe Turbulence ⚠️      |      77,590 |      64,097 |       9,371 |      76,437 |
+| Fe Displacement Map   |       9,151 |      17,633 |       9,684 |      10,208 |
+| Fe Lighting           |      12,213 |      18,277 |       9,006 |      10,269 |
+| Fe Convolve Matrix    |      12,104 |       6,858 |       9,045 |       8,834 |
+| Fe Component Transfer |       9,118 |      12,543 |       9,950 |      10,463 |
+| **Total**             | **528,608** | **640,539** | **492,546** | **581,192** |
 
 > **⚠️ Filters/Masks:** Where CairoSVG produces much smaller output, it is because CairoSVG **does not render** certain features correctly — filter effects (blur, drop-shadow) are silently skipped, and masks are rendered without gradient/circle content. This results in simpler images that compress better. JairoSVG and JSVG render these effects correctly, producing visually accurate but larger PNGs.
 
