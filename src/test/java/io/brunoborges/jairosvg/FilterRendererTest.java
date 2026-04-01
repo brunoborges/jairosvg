@@ -1296,4 +1296,448 @@ class FilterRendererTest {
         BufferedImage img = render(svg);
         assertNotNull(img);
     }
+
+    // ---- feColorMatrix tests ----
+
+    @Test
+    void feColorMatrixSaturate() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feColorMatrix type="saturate" values="0"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 50, 50);
+        // saturate=0 on red should produce grayscale: R=G=B
+        assertTrue(Math.abs(px[0] - px[1]) < 5, "R and G should be close for grayscale, R=" + px[0] + " G=" + px[1]);
+        assertTrue(Math.abs(px[0] - px[2]) < 5, "R and B should be close for grayscale, R=" + px[0] + " B=" + px[2]);
+    }
+
+    @Test
+    void feColorMatrixHueRotate() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feColorMatrix type="hueRotate" values="90"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 50, 50);
+        // hueRotate 90 on pure red should shift color away from pure red
+        assertTrue(px[1] > 0 || px[2] > 0, "Hue rotation should shift red to other channels");
+    }
+
+    @Test
+    void feColorMatrixLuminanceToAlpha() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feColorMatrix type="luminanceToAlpha"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="white" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 50, 50);
+        // luminanceToAlpha on white: alpha should be full (255), RGB should be 0
+        assertTrue(px[3] > 200, "Alpha should be high for white input, got A=" + px[3]);
+    }
+
+    @Test
+    void feColorMatrixIdentity() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feColorMatrix type="matrix"
+                        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        assertPixelColor(img, 50, 50, 255, 0, 0);
+    }
+
+    // ---- feComponentTransfer tests ----
+
+    @Test
+    void feComponentTransferLinear() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feComponentTransfer>
+                        <feFuncR type="linear" slope="0.5" intercept="0"/>
+                        <feFuncG type="identity"/>
+                        <feFuncB type="identity"/>
+                      </feComponentTransfer>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 50, 50);
+        // slope=0.5 on red channel: R should be ~128
+        assertTrue(px[0] >= 120 && px[0] <= 136, "Red channel should be ~128 with slope=0.5, got R=" + px[0]);
+    }
+
+    @Test
+    void feComponentTransferGamma() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feComponentTransfer>
+                        <feFuncR type="gamma" amplitude="1" exponent="2" offset="0"/>
+                        <feFuncG type="identity"/>
+                        <feFuncB type="identity"/>
+                      </feComponentTransfer>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="rgb(128,0,0)" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 50, 50);
+        // gamma exponent=2 on ~0.5 input: output ~ 0.25 * 255 ~ 64
+        assertTrue(px[0] < 100, "Gamma exponent=2 should reduce mid-red, got R=" + px[0]);
+    }
+
+    @Test
+    void feComponentTransferTable() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feComponentTransfer>
+                        <feFuncR type="table" tableValues="1 0"/>
+                        <feFuncG type="identity"/>
+                        <feFuncB type="identity"/>
+                      </feComponentTransfer>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 50, 50);
+        // table "1 0" inverts the red channel: 255 -> 0
+        assertTrue(px[0] < 5, "Table 1,0 should invert red to ~0, got R=" + px[0]);
+    }
+
+    @Test
+    void feComponentTransferDiscrete() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feComponentTransfer>
+                        <feFuncR type="discrete" tableValues="0 0.5 1"/>
+                        <feFuncG type="identity"/>
+                        <feFuncB type="identity"/>
+                      </feComponentTransfer>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="rgb(200,0,0)" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 50, 50);
+        // input R=200/255~0.784, with 3 steps: step index = min(floor(0.784*3),2) = 2,
+        // value = 1.0 -> 255
+        assertTrue(px[0] > 240, "Discrete step should map high red to 255, got R=" + px[0]);
+    }
+
+    @Test
+    void feComponentTransferIdentity() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feComponentTransfer>
+                        <feFuncR type="identity"/>
+                        <feFuncG type="identity"/>
+                        <feFuncB type="identity"/>
+                        <feFuncA type="identity"/>
+                      </feComponentTransfer>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        assertPixelColor(img, 50, 50, 255, 0, 0);
+    }
+
+    // ---- feMorphology tests ----
+
+    @Test
+    void feMorphologyDilate() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f" filterUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+                      <feMorphology operator="dilate" radius="5"/>
+                    </filter>
+                  </defs>
+                  <rect x="40" y="40" width="20" height="20" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // Original rect is 40-60. Dilate by 5 should extend it. Pixel at (36,50) should
+        // now be red.
+        int[] px = rgba(img, 36, 50);
+        assertTrue(px[0] > 200, "Dilate should expand red region, got R=" + px[0] + " at (36,50)");
+    }
+
+    @Test
+    void feMorphologyErode() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f" filterUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+                      <feMorphology operator="erode" radius="5"/>
+                    </filter>
+                  </defs>
+                  <rect x="10" y="10" width="80" height="80" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // Erode by 5: edge pixel at (11,50) should be eroded to transparent
+        int[] edge = rgba(img, 11, 50);
+        assertTrue(edge[0] < 50 || edge[3] < 50,
+                "Erode should shrink red region at edges, got R=" + edge[0] + " A=" + edge[3]);
+        // Center should still be red
+        int[] center = rgba(img, 50, 50);
+        assertTrue(center[0] > 200, "Center should remain red after erode, got R=" + center[0]);
+    }
+
+    @Test
+    void feMorphologyZeroRadius() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feMorphology operator="erode" radius="0"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        assertPixelColor(img, 50, 50, 255, 0, 0);
+    }
+
+    // ── feConvolveMatrix ─────────────────────────────────────────────────
+
+    @Test
+    void feConvolveMatrixIdentity() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs><filter id="f">
+                    <feConvolveMatrix order="3" kernelMatrix="0 0 0 0 1 0 0 0 0"/>
+                  </filter></defs>
+                  <rect width="100" height="100" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        assertPixelColor(img, 50, 50, 255, 0, 0);
+    }
+
+    @Test
+    void feConvolveMatrixBlur() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs><filter id="f">
+                    <feConvolveMatrix order="3" kernelMatrix="1 1 1 1 1 1 1 1 1"/>
+                  </filter></defs>
+                  <rect x="25" y="25" width="50" height="50" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // Center should still be red (all neighbors are red)
+        int[] center = rgba(img, 50, 50);
+        assertTrue(center[0] > 200, "Center should remain red after box blur, got R=" + center[0]);
+    }
+
+    @Test
+    void feConvolveMatrixEdgeModes() throws Exception {
+        for (String mode : new String[]{"duplicate", "wrap", "none"}) {
+            var svg = """
+                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                      <defs><filter id="f">
+                        <feConvolveMatrix order="3" kernelMatrix="1 1 1 1 1 1 1 1 1"
+                          edgeMode="%s"/>
+                      </filter></defs>
+                      <rect width="50" height="50" fill="blue" filter="url(#f)"/>
+                    </svg>
+                    """.formatted(mode);
+            BufferedImage img = render(svg);
+            assertNotNull(img);
+        }
+    }
+
+    // ── feDisplacementMap ────────────────────────────────────────────────
+
+    @Test
+    void feDisplacementMapBasic() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs><filter id="f">
+                    <feFlood flood-color="rgb(128,128,128)" result="map"/>
+                    <feDisplacementMap in="SourceGraphic" in2="map" scale="10"
+                      xChannelSelector="R" yChannelSelector="G"/>
+                  </filter></defs>
+                  <rect width="100" height="100" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // With mid-gray map (128), displacement ~0 → image mostly unchanged
+        int[] px = rgba(img, 50, 50);
+        assertTrue(px[0] > 200, "Expected red with near-zero displacement, got R=" + px[0]);
+    }
+
+    @Test
+    void feDisplacementMapZeroScale() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs><filter id="f">
+                    <feFlood flood-color="white" result="map"/>
+                    <feDisplacementMap in="SourceGraphic" in2="map" scale="0"
+                      xChannelSelector="R" yChannelSelector="G"/>
+                  </filter></defs>
+                  <rect width="100" height="100" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        assertPixelColor(img, 50, 50, 255, 0, 0);
+    }
+
+    @Test
+    void feDisplacementMapChannelSelect() throws Exception {
+        // Verify R vs G channel selector doesn't crash and produces output
+        for (String ch : new String[]{"R", "G", "B", "A"}) {
+            var svg = """
+                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                      <defs><filter id="f">
+                        <feFlood flood-color="red" result="map"/>
+                        <feDisplacementMap in="SourceGraphic" in2="map" scale="5"
+                          xChannelSelector="%s" yChannelSelector="%s"/>
+                      </filter></defs>
+                      <rect width="50" height="50" fill="blue" filter="url(#f)"/>
+                    </svg>
+                    """.formatted(ch, ch);
+            BufferedImage img = render(svg);
+            assertNotNull(img);
+        }
+    }
+
+    // ── feTurbulence ─────────────────────────────────────────────────────
+
+    @Test
+    void feTurbulenceBasic() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs><filter id="f">
+                    <feTurbulence baseFrequency="0.05" numOctaves="2" seed="42"/>
+                  </filter></defs>
+                  <rect width="100" height="100" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // Should produce non-uniform pixels
+        int[] px1 = rgba(img, 10, 10);
+        int[] px2 = rgba(img, 50, 50);
+        boolean different = px1[0] != px2[0] || px1[1] != px2[1] || px1[2] != px2[2];
+        assertTrue(different, "Turbulence should produce non-uniform pixels");
+    }
+
+    @Test
+    void feTurbulenceFractalNoise() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs><filter id="f">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.1" numOctaves="3" seed="7"/>
+                  </filter></defs>
+                  <rect width="100" height="100" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 50, 50);
+        // fractalNoise should produce visible pattern — not all zeros
+        assertTrue(px[3] > 0, "fractalNoise should produce non-transparent output");
+    }
+
+    @Test
+    void feTurbulenceZeroFrequency() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs><filter id="f">
+                    <feTurbulence baseFrequency="0" numOctaves="1"/>
+                  </filter></defs>
+                  <rect width="50" height="50" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // Zero frequency → uniform output; all pixels same
+        int[] px1 = rgba(img, 0, 0);
+        int[] px2 = rgba(img, 25, 25);
+        assertTrue(px1[0] == px2[0] && px1[1] == px2[1] && px1[2] == px2[2] && px1[3] == px2[3],
+                "Zero frequency should produce uniform output");
+    }
+
+    @Test
+    void feTurbulenceSeed() throws Exception {
+        BufferedImage[] imgs = new BufferedImage[2];
+        int seedIdx = 0;
+        for (int seed : new int[]{1, 999}) {
+            var svg = """
+                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                      <defs><filter id="f">
+                        <feTurbulence baseFrequency="0.1" numOctaves="2" seed="%d"/>
+                      </filter></defs>
+                      <rect width="50" height="50" filter="url(#f)"/>
+                    </svg>
+                    """.formatted(seed);
+            imgs[seedIdx++] = render(svg);
+        }
+        // Different seeds should produce different outputs
+        int[] px1 = rgba(imgs[0], 25, 25);
+        int[] px2 = rgba(imgs[1], 25, 25);
+        boolean different = px1[0] != px2[0] || px1[1] != px2[1] || px1[2] != px2[2];
+        assertTrue(different, "Different seeds should produce different turbulence patterns");
+    }
 }

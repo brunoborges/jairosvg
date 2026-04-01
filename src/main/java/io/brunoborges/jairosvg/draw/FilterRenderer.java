@@ -188,6 +188,78 @@ public final class FilterRenderer {
                     }
                     yield dropShadowBuffered(surface, input, child, buf1, buf2, buf3);
                 }
+                case "feColorMatrix" -> {
+                    if (buf1 == null)
+                        buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null)
+                        buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null)
+                        buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
+                    yield colorMatrix(input, child.get("type", "matrix"), child.get("values", ""), out);
+                }
+                case "feComponentTransfer" -> {
+                    if (buf1 == null)
+                        buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null)
+                        buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null)
+                        buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
+                    yield componentTransfer(input, child, out);
+                }
+                case "feMorphology" -> {
+                    if (buf1 == null)
+                        buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null)
+                        buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null)
+                        buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    String radiusStr = child.get("radius", "0");
+                    String[] parts = radiusStr.strip().split("[\\s,]+");
+                    double rx = parseDoubleOr(parts[0], 0);
+                    double ry = parts.length > 1 ? parseDoubleOr(parts[1], 0) : rx;
+                    BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
+                    yield morphology(input, child.get("operator", "erode"), rx, ry, out);
+                }
+                case "feConvolveMatrix" -> {
+                    if (buf1 == null)
+                        buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null)
+                        buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null)
+                        buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
+                    yield convolveMatrix(input, child, out);
+                }
+                case "feDisplacementMap" -> {
+                    if (buf1 == null)
+                        buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null)
+                        buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null)
+                        buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    BufferedImage in2 = resolveInput(results, child.get("in2"), last, workSource);
+                    BufferedImage out = pickBuffer(input, in2, buf1, buf2, buf3);
+                    yield displacementMap(input, in2, parseDoubleOr(child.get("scale"), 0),
+                            child.get("xChannelSelector", "A"), child.get("yChannelSelector", "A"), out);
+                }
+                case "feTurbulence" -> {
+                    if (buf1 == null)
+                        buf1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf2 == null)
+                        buf2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    if (buf3 == null)
+                        buf3 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    BufferedImage out = pickBuffer(input, null, buf1, buf2, buf3);
+                    String freqStr = child.get("baseFrequency", "0");
+                    String[] freqParts = freqStr.strip().split("[\\s,]+");
+                    double freqX = parseDoubleOr(freqParts[0], 0);
+                    double freqY = freqParts.length > 1 ? parseDoubleOr(freqParts[1], 0) : freqX;
+                    yield turbulence(w, h, child.get("type", "turbulence"), freqX, freqY,
+                            (int) parseDoubleOr(child.get("numOctaves"), 1), (int) parseDoubleOr(child.get("seed"), 0),
+                            out);
+                }
                 case "feImage" -> feImage(surface, child, w, h, offsetX, offsetY);
                 case "feTile" -> tile(input, filterRegion);
                 default -> input;
@@ -765,5 +837,525 @@ public final class FilterRenderer {
         BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         output.getRaster().setDataElements(0, 0, width, height, outPixels);
         return output;
+    }
+
+    private static BufferedImage colorMatrix(BufferedImage input, String type, String values, BufferedImage output) {
+        int w = input.getWidth(), h = input.getHeight();
+        double[] m = new double[20];
+        switch (type) {
+            case "saturate" -> {
+                double s = parseDoubleOr(values.strip(), 1);
+                m[0] = 0.2126 + 0.7874 * s;
+                m[1] = 0.7152 - 0.7152 * s;
+                m[2] = 0.0722 - 0.0722 * s;
+                m[5] = 0.2126 - 0.2126 * s;
+                m[6] = 0.7152 + 0.2848 * s;
+                m[7] = 0.0722 - 0.0722 * s;
+                m[10] = 0.2126 - 0.2126 * s;
+                m[11] = 0.7152 - 0.7152 * s;
+                m[12] = 0.0722 + 0.9278 * s;
+                m[18] = 1;
+            }
+            case "hueRotate" -> {
+                double deg = parseDoubleOr(values.strip(), 0);
+                double rad = Math.toRadians(deg);
+                double cos = Math.cos(rad), sin = Math.sin(rad);
+                m[0] = 0.2126 + 0.7874 * cos + -0.2126 * sin;
+                m[1] = 0.7152 - 0.7152 * cos + -0.7152 * sin;
+                m[2] = 0.0722 - 0.0722 * cos + 0.9278 * sin;
+                m[5] = 0.2126 - 0.2126 * cos + 0.1430 * sin;
+                m[6] = 0.7152 + 0.2848 * cos + 0.1400 * sin;
+                m[7] = 0.0722 - 0.0722 * cos + -0.2830 * sin;
+                m[10] = 0.2126 - 0.2126 * cos + -0.7874 * sin;
+                m[11] = 0.7152 - 0.7152 * cos + 0.7152 * sin;
+                m[12] = 0.0722 + 0.9278 * cos + 0.0722 * sin;
+                m[18] = 1;
+            }
+            case "luminanceToAlpha" -> {
+                m[15] = 0.2126;
+                m[16] = 0.7152;
+                m[17] = 0.0722;
+            }
+            default -> { // "matrix"
+                String[] parts = values.strip().split("[\\s,]+");
+                for (int i = 0; i < Math.min(parts.length, 20); i++) {
+                    m[i] = parseDoubleOr(parts[i], 0);
+                }
+            }
+        }
+
+        int[] inData = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
+        int[] outData = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
+        for (int i = 0; i < w * h; i++) {
+            int p = inData[i];
+            int a = (p >> 24) & 0xFF;
+            int r = (p >> 16) & 0xFF;
+            int g = (p >> 8) & 0xFF;
+            int b = p & 0xFF;
+            // Un-premultiply
+            if (a > 0 && a < 255) {
+                r = Math.min(255, r * 255 / a);
+                g = Math.min(255, g * 255 / a);
+                b = Math.min(255, b * 255 / a);
+            }
+            int nr = clamp((int) Math.round(m[0] * r + m[1] * g + m[2] * b + m[3] * a + m[4] * 255));
+            int ng = clamp((int) Math.round(m[5] * r + m[6] * g + m[7] * b + m[8] * a + m[9] * 255));
+            int nb = clamp((int) Math.round(m[10] * r + m[11] * g + m[12] * b + m[13] * a + m[14] * 255));
+            int na = clamp((int) Math.round(m[15] * r + m[16] * g + m[17] * b + m[18] * a + m[19] * 255));
+            // Re-premultiply
+            if (na > 0 && na < 255) {
+                nr = nr * na / 255;
+                ng = ng * na / 255;
+                nb = nb * na / 255;
+            } else if (na == 0) {
+                nr = ng = nb = 0;
+            }
+            outData[i] = (na << 24) | (nr << 16) | (ng << 8) | nb;
+        }
+        return output;
+    }
+
+    private static BufferedImage componentTransfer(BufferedImage input, Node node, BufferedImage output) {
+        int w = input.getWidth(), h = input.getHeight();
+        int[] lutR = identityLut(), lutG = identityLut(), lutB = identityLut(), lutA = identityLut();
+        for (Node child : node.children) {
+            switch (child.tag) {
+                case "feFuncR" -> lutR = buildTransferLut(child);
+                case "feFuncG" -> lutG = buildTransferLut(child);
+                case "feFuncB" -> lutB = buildTransferLut(child);
+                case "feFuncA" -> lutA = buildTransferLut(child);
+                default -> {
+                }
+            }
+        }
+
+        int[] inData = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
+        int[] outData = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
+        for (int i = 0; i < w * h; i++) {
+            int p = inData[i];
+            int a = (p >> 24) & 0xFF;
+            int r = (p >> 16) & 0xFF;
+            int g = (p >> 8) & 0xFF;
+            int b = p & 0xFF;
+            // Un-premultiply
+            if (a > 0 && a < 255) {
+                r = Math.min(255, r * 255 / a);
+                g = Math.min(255, g * 255 / a);
+                b = Math.min(255, b * 255 / a);
+            }
+            int nr = lutR[r], ng = lutG[g], nb = lutB[b], na = lutA[a];
+            // Re-premultiply
+            if (na > 0 && na < 255) {
+                nr = nr * na / 255;
+                ng = ng * na / 255;
+                nb = nb * na / 255;
+            } else if (na == 0) {
+                nr = ng = nb = 0;
+            }
+            outData[i] = (na << 24) | (nr << 16) | (ng << 8) | nb;
+        }
+        return output;
+    }
+
+    private static int[] identityLut() {
+        int[] lut = new int[256];
+        for (int i = 0; i < 256; i++)
+            lut[i] = i;
+        return lut;
+    }
+
+    private static int[] buildTransferLut(Node func) {
+        String type = func.get("type", "identity");
+        int[] lut = new int[256];
+        switch (type) {
+            case "linear" -> {
+                double slope = parseDoubleOr(func.get("slope"), 1);
+                double intercept = parseDoubleOr(func.get("intercept"), 0);
+                for (int i = 0; i < 256; i++) {
+                    lut[i] = clamp((int) Math.round((slope * (i / 255.0) + intercept) * 255));
+                }
+            }
+            case "gamma" -> {
+                double amplitude = parseDoubleOr(func.get("amplitude"), 1);
+                double exponent = parseDoubleOr(func.get("exponent"), 1);
+                double offset = parseDoubleOr(func.get("offset"), 0);
+                for (int i = 0; i < 256; i++) {
+                    double c = i / 255.0;
+                    lut[i] = clamp((int) Math.round((amplitude * Math.pow(c, exponent) + offset) * 255));
+                }
+            }
+            case "table" -> {
+                String vals = func.get("tableValues", "");
+                double[] table = parseDoubleArray(vals);
+                if (table.length < 2) {
+                    return identityLut();
+                }
+                int n = table.length - 1;
+                for (int i = 0; i < 256; i++) {
+                    double c = i / 255.0;
+                    double pos = c * n;
+                    int k = Math.min((int) pos, n - 1);
+                    double frac = pos - k;
+                    lut[i] = clamp((int) Math.round((table[k] + frac * (table[k + 1] - table[k])) * 255));
+                }
+            }
+            case "discrete" -> {
+                String vals = func.get("tableValues", "");
+                double[] table = parseDoubleArray(vals);
+                if (table.length == 0) {
+                    return identityLut();
+                }
+                int n = table.length;
+                for (int i = 0; i < 256; i++) {
+                    double c = i / 255.0;
+                    int k = Math.min((int) (c * n), n - 1);
+                    lut[i] = clamp((int) Math.round(table[k] * 255));
+                }
+            }
+            default -> { // "identity"
+                return identityLut();
+            }
+        }
+        return lut;
+    }
+
+    private static double[] parseDoubleArray(String s) {
+        if (s == null || s.isBlank())
+            return new double[0];
+        String[] parts = s.strip().split("[\\s,]+");
+        double[] result = new double[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            result[i] = parseDoubleOr(parts[i], 0);
+        }
+        return result;
+    }
+
+    private static BufferedImage morphology(BufferedImage input, String operator, double radiusX, double radiusY,
+            BufferedImage output) {
+        int w = input.getWidth(), h = input.getHeight();
+        int[] inData = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
+        int[] outData = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
+        int rx = (int) Math.round(radiusX), ry = (int) Math.round(radiusY);
+        boolean erode = !"dilate".equals(operator);
+
+        if (rx <= 0 && ry <= 0) {
+            System.arraycopy(inData, 0, outData, 0, w * h);
+            return output;
+        }
+
+        for (int y = 0; y < h; y++) {
+            int ky0 = Math.max(0, y - ry);
+            int ky1 = Math.min(h - 1, y + ry);
+            for (int x = 0; x < w; x++) {
+                int kx0 = Math.max(0, x - rx);
+                int kx1 = Math.min(w - 1, x + rx);
+                int minR = 255, minG = 255, minB = 255, minA = 255;
+                int maxR = 0, maxG = 0, maxB = 0, maxA = 0;
+                for (int ky = ky0; ky <= ky1; ky++) {
+                    int rowOff = ky * w;
+                    for (int kx = kx0; kx <= kx1; kx++) {
+                        int p = inData[rowOff + kx];
+                        int pa = (p >> 24) & 0xFF;
+                        int pr = (p >> 16) & 0xFF;
+                        int pg = (p >> 8) & 0xFF;
+                        int pb = p & 0xFF;
+                        if (pa < minA)
+                            minA = pa;
+                        if (pr < minR)
+                            minR = pr;
+                        if (pg < minG)
+                            minG = pg;
+                        if (pb < minB)
+                            minB = pb;
+                        if (pa > maxA)
+                            maxA = pa;
+                        if (pr > maxR)
+                            maxR = pr;
+                        if (pg > maxG)
+                            maxG = pg;
+                        if (pb > maxB)
+                            maxB = pb;
+                    }
+                }
+                if (erode) {
+                    outData[y * w + x] = (minA << 24) | (minR << 16) | (minG << 8) | minB;
+                } else {
+                    outData[y * w + x] = (maxA << 24) | (maxR << 16) | (maxG << 8) | maxB;
+                }
+            }
+        }
+        return output;
+    }
+
+    private static int clamp(int v) {
+        return Math.max(0, Math.min(255, v));
+    }
+
+    // ── feConvolveMatrix ─────────────────────────────────────────────────
+
+    private static BufferedImage convolveMatrix(BufferedImage input, Node child, BufferedImage output) {
+        int w = input.getWidth(), h = input.getHeight();
+        String orderStr = child.get("order", "3");
+        String[] orderParts = orderStr.strip().split("[\\s,]+");
+        int orderX = (int) parseDoubleOr(orderParts[0], 3);
+        int orderY = orderParts.length > 1 ? (int) parseDoubleOr(orderParts[1], 3) : orderX;
+
+        double[] kernel = parseDoubleArray(child.get("kernelMatrix", ""));
+        if (kernel.length < orderX * orderY) {
+            // Invalid kernel — copy input to output
+            int[] inData = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
+            int[] outData = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
+            System.arraycopy(inData, 0, outData, 0, w * h);
+            return output;
+        }
+
+        double kernelSum = 0;
+        for (double v : kernel)
+            kernelSum += v;
+        double divisor = parseDoubleOr(child.get("divisor"), kernelSum == 0 ? 1 : kernelSum);
+        if (divisor == 0)
+            divisor = 1;
+        double bias = parseDoubleOr(child.get("bias"), 0);
+        int targetX = (int) parseDoubleOr(child.get("targetX"), Math.floor(orderX / 2.0));
+        int targetY = (int) parseDoubleOr(child.get("targetY"), Math.floor(orderY / 2.0));
+        String edgeMode = child.get("edgeMode", "duplicate");
+        boolean preserveAlpha = "true".equals(child.get("preserveAlpha"));
+
+        int[] inData = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
+        int[] outData = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
+
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                double sumR = 0, sumG = 0, sumB = 0, sumA = 0;
+                for (int ky = 0; ky < orderY; ky++) {
+                    for (int kx = 0; kx < orderX; kx++) {
+                        int sx = x + kx - targetX;
+                        int sy = y + ky - targetY;
+                        int pixel = sampleEdge(inData, w, h, sx, sy, edgeMode);
+                        double kVal = kernel[ky * orderX + kx];
+                        sumA += kVal * ((pixel >> 24) & 0xFF);
+                        sumR += kVal * ((pixel >> 16) & 0xFF);
+                        sumG += kVal * ((pixel >> 8) & 0xFF);
+                        sumB += kVal * (pixel & 0xFF);
+                    }
+                }
+                int a, r, g, b;
+                r = clamp((int) Math.round(sumR / divisor + bias * 255));
+                g = clamp((int) Math.round(sumG / divisor + bias * 255));
+                b = clamp((int) Math.round(sumB / divisor + bias * 255));
+                if (preserveAlpha) {
+                    a = (inData[y * w + x] >> 24) & 0xFF;
+                } else {
+                    a = clamp((int) Math.round(sumA / divisor + bias * 255));
+                }
+                outData[y * w + x] = (a << 24) | (r << 16) | (g << 8) | b;
+            }
+        }
+        return output;
+    }
+
+    private static int sampleEdge(int[] data, int w, int h, int x, int y, String edgeMode) {
+        if (x >= 0 && x < w && y >= 0 && y < h)
+            return data[y * w + x];
+        return switch (edgeMode) {
+            case "wrap" -> {
+                int wx = ((x % w) + w) % w;
+                int wy = ((y % h) + h) % h;
+                yield data[wy * w + wx];
+            }
+            case "none" -> 0; // transparent black
+            default -> { // "duplicate"
+                int cx = Math.max(0, Math.min(w - 1, x));
+                int cy = Math.max(0, Math.min(h - 1, y));
+                yield data[cy * w + cx];
+            }
+        };
+    }
+
+    // ── feDisplacementMap ────────────────────────────────────────────────
+
+    private static BufferedImage displacementMap(BufferedImage input, BufferedImage in2, double scale,
+            String xChannelSelector, String yChannelSelector, BufferedImage output) {
+        int w = input.getWidth(), h = input.getHeight();
+        int[] inData = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
+        int[] outData = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
+
+        int w2 = in2.getWidth(), h2 = in2.getHeight();
+        int[] mapData = ((DataBufferInt) in2.getRaster().getDataBuffer()).getData();
+
+        int xShift = channelShift(xChannelSelector);
+        int yShift = channelShift(yChannelSelector);
+
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int mapPixel;
+                if (x < w2 && y < h2)
+                    mapPixel = mapData[y * w2 + x];
+                else
+                    mapPixel = 0;
+
+                int xChannel = (mapPixel >> xShift) & 0xFF;
+                int yChannel = (mapPixel >> yShift) & 0xFF;
+                double dx = scale * (xChannel / 255.0 - 0.5);
+                double dy = scale * (yChannel / 255.0 - 0.5);
+                int srcX = (int) Math.round(x + dx);
+                int srcY = (int) Math.round(y + dy);
+                if (srcX >= 0 && srcX < w && srcY >= 0 && srcY < h) {
+                    outData[y * w + x] = inData[srcY * w + srcX];
+                } else {
+                    outData[y * w + x] = 0; // transparent
+                }
+            }
+        }
+        return output;
+    }
+
+    private static int channelShift(String selector) {
+        return switch (selector) {
+            case "R" -> 16;
+            case "G" -> 8;
+            case "B" -> 0;
+            default -> 24; // "A"
+        };
+    }
+
+    // ── feTurbulence ─────────────────────────────────────────────────────
+
+    private static final int PERLIN_B = 0x100;
+    private static final int PERLIN_BM = 0xFF;
+
+    private static BufferedImage turbulence(int width, int height, String type, double baseFreqX, double baseFreqY,
+            int numOctaves, int seed, BufferedImage output) {
+        clearBuffer(output);
+        if (baseFreqX == 0 && baseFreqY == 0) {
+            // Zero frequency: fractalNoise produces mid-gray, turbulence produces black
+            if ("fractalNoise".equals(type)) {
+                int[] outData = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
+                int gray = (128 << 24) | (128 << 16) | (128 << 8) | 128;
+                java.util.Arrays.fill(outData, gray);
+            }
+            return output;
+        }
+
+        boolean fractalNoise = "fractalNoise".equals(type);
+        if (numOctaves < 1)
+            numOctaves = 1;
+
+        // Initialize permutation and gradient tables
+        int[] latticeSelector = new int[PERLIN_B + PERLIN_B + 2];
+        double[][] gradient = new double[4][(PERLIN_B + PERLIN_B + 2) * 2];
+        initTurbulence(seed, latticeSelector, gradient);
+
+        int[] outData = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                double[] rgba = computeTurbulence(x, y, baseFreqX, baseFreqY, numOctaves, fractalNoise, latticeSelector,
+                        gradient);
+                int r = clamp((int) Math.round(rgba[0] * 255));
+                int g = clamp((int) Math.round(rgba[1] * 255));
+                int b = clamp((int) Math.round(rgba[2] * 255));
+                int a = clamp((int) Math.round(rgba[3] * 255));
+                outData[y * width + x] = (a << 24) | (r << 16) | (g << 8) | b;
+            }
+        }
+        return output;
+    }
+
+    private static void initTurbulence(int seed, int[] latticeSelector, double[][] gradient) {
+        java.util.Random rng = new java.util.Random(seed);
+        for (int k = 0; k < PERLIN_B; k++) {
+            latticeSelector[k] = k;
+            for (int ch = 0; ch < 4; ch++) {
+                gradient[ch][k * 2] = (rng.nextInt(PERLIN_B + PERLIN_B) - PERLIN_B) / (double) PERLIN_B;
+                gradient[ch][k * 2 + 1] = (rng.nextInt(PERLIN_B + PERLIN_B) - PERLIN_B) / (double) PERLIN_B;
+                double len = Math.sqrt(
+                        gradient[ch][k * 2] * gradient[ch][k * 2] + gradient[ch][k * 2 + 1] * gradient[ch][k * 2 + 1]);
+                if (len > 0) {
+                    gradient[ch][k * 2] /= len;
+                    gradient[ch][k * 2 + 1] /= len;
+                }
+            }
+        }
+        // Shuffle permutation table
+        for (int i = PERLIN_B - 1; i > 0; i--) {
+            int j = rng.nextInt(i + 1);
+            int tmp = latticeSelector[i];
+            latticeSelector[i] = latticeSelector[j];
+            latticeSelector[j] = tmp;
+        }
+        // Duplicate for wrapping
+        for (int i = 0; i < PERLIN_B + 2; i++) {
+            latticeSelector[PERLIN_B + i] = latticeSelector[i];
+            for (int ch = 0; ch < 4; ch++) {
+                gradient[ch][(PERLIN_B + i) * 2] = gradient[ch][i * 2];
+                gradient[ch][(PERLIN_B + i) * 2 + 1] = gradient[ch][i * 2 + 1];
+            }
+        }
+    }
+
+    private static double[] computeTurbulence(double x, double y, double baseFreqX, double baseFreqY, int numOctaves,
+            boolean fractalNoise, int[] latticeSelector, double[][] gradient) {
+        double[] result = new double[4];
+        for (int ch = 0; ch < 4; ch++) {
+            double freq_x = baseFreqX;
+            double freq_y = baseFreqY;
+            double amplitude = 1.0;
+            double total = 0;
+            for (int oct = 0; oct < numOctaves; oct++) {
+                double n = noise2(x * freq_x, y * freq_y, ch, latticeSelector, gradient);
+                if (fractalNoise) {
+                    total += n * amplitude;
+                } else {
+                    total += Math.abs(n) * amplitude;
+                }
+                freq_x *= 2;
+                freq_y *= 2;
+                amplitude *= 0.5;
+            }
+            if (fractalNoise) {
+                result[ch] = (total + 1) / 2.0;
+            } else {
+                result[ch] = total;
+            }
+        }
+        return result;
+    }
+
+    private static double noise2(double x, double y, int channel, int[] latticeSelector, double[][] grad) {
+        double t = x + 10000; // offset to avoid negative issues
+        int bx0 = ((int) Math.floor(t)) & PERLIN_BM;
+        int bx1 = (bx0 + 1) & PERLIN_BM;
+        double rx0 = t - Math.floor(t);
+        double rx1 = rx0 - 1.0;
+
+        t = y + 10000;
+        int by0 = ((int) Math.floor(t)) & PERLIN_BM;
+        int by1 = (by0 + 1) & PERLIN_BM;
+        double ry0 = t - Math.floor(t);
+        double ry1 = ry0 - 1.0;
+
+        int i = latticeSelector[bx0];
+        int j = latticeSelector[bx1];
+
+        // Fade curves
+        double sx = rx0 * rx0 * (3.0 - 2.0 * rx0);
+        double sy = ry0 * ry0 * (3.0 - 2.0 * ry0);
+
+        // Corners
+        int idx;
+        idx = (latticeSelector[i + by0]) * 2;
+        double u = rx0 * grad[channel][idx] + ry0 * grad[channel][idx + 1];
+        idx = (latticeSelector[j + by0]) * 2;
+        double v = rx1 * grad[channel][idx] + ry1 * grad[channel][idx + 1];
+        double a = u + sx * (v - u);
+
+        idx = (latticeSelector[i + by1]) * 2;
+        u = rx0 * grad[channel][idx] + ry0 * grad[channel][idx + 1];
+        idx = (latticeSelector[j + by1]) * 2;
+        v = rx1 * grad[channel][idx] + ry1 * grad[channel][idx + 1];
+        double b = u + sx * (v - u);
+
+        return a + sy * (b - a);
     }
 }
