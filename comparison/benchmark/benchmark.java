@@ -9,6 +9,7 @@
 //DEPS com.github.weisj:jsvg:2.0.0
 //DEPS me.tongfei:progressbar:0.10.2
 //DEPS com.google.code.gson:gson:2.13.1
+//SOURCES update_readme.java
 
 import com.github.weisj.jsvg.SVGDocument;
 import com.github.weisj.jsvg.parser.LoaderContext;
@@ -444,5 +445,12 @@ public class benchmark {
         System.out.println("\n" + "=".repeat(98));
         System.out.flush();
         fileOut.close();
+
+        // Update README tables from the JSONL results
+        System.out.println("\nUpdating README tables...");
+        update_readme.main(new String[]{
+                "--warmup=" + WARMUP,
+                "--iterations=" + ITERATIONS
+        });
     }
 }
