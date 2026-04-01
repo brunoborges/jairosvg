@@ -279,7 +279,7 @@ ImageIO.write(image, "PNG", new File("output.png"));
 
 ## Benchmark
 
-SVG → PNG conversion benchmarks comparing all four libraries across 42 SVG test files. Full results in **[benchmark/](benchmark/)**.
+SVG → PNG conversion benchmarks comparing all four libraries across 42 SVG test files. Full results in **[COMPARISON.md](COMPARISON.md)**.
 
 **Highlights** (lower is better):
 
@@ -298,7 +298,7 @@ _JairoSVG is **2–26× faster** than EchoSVG, **on par with JSVG** in most scen
 
 JairoSVG also produces the **smallest PNGs** overall — 8% smaller than CairoSVG, 11.5% smaller than JSVG, and 17.3% smaller than EchoSVG.
 
-See **[benchmark/](benchmark/)** for the full timing table, file size comparison, rendering settings analysis, and instructions to run the benchmark yourself.
+See **[COMPARISON.md](COMPARISON.md)** for per-test-case benchmark times, file sizes, rendering settings analysis, and instructions to run the benchmark yourself.
 
 ---
 
@@ -333,7 +333,7 @@ JairoSVG, CairoSVG, and JSVG share a similar security posture: no scripting supp
 
 ## Visual Rendering Comparison
 
-Side-by-side PNG rendering of 42 SVG test cases across all four libraries. Full gallery in **[visual/](visual/)**.
+Side-by-side PNG rendering of 42 SVG test cases across all four libraries. Full gallery in **[COMPARISON.md](COMPARISON.md)**.
 
 **Sample** — `20_fe_blend_modes`:
 
@@ -343,7 +343,7 @@ Side-by-side PNG rendering of 42 SVG test cases across all four libraries. Full 
 
 The test suite covers basic shapes, gradients, paths, text, transforms, strokes, opacity, viewBox, CSS styling, patterns, clip paths, masks, markers, filters (blur, blend, tile, image, color matrix, morphology, turbulence, displacement, lighting, convolve matrix, component transfer), embedded images, SVG fonts, symbols, and more.
 
-See **[visual/](visual/)** for the complete gallery with browser-rendered SVG alongside each library's PNG output.
+See **[COMPARISON.md](COMPARISON.md)** for the complete gallery with browser-rendered SVG alongside each library's PNG output.
 
 ---
 
@@ -463,7 +463,7 @@ Prerequisites: [JBang], Java 25+, Python 3 with CairoSVG (`python3 -m pip instal
 jbang comparison/visual/generate.java
 ```
 
-**Benchmark data** — the timing tables and file size table in [COMPARISON.md](COMPARISON.md) are updated automatically after running:
+**Benchmark data** — the per-test-case timing rows in [COMPARISON.md](COMPARISON.md) are updated automatically after running:
 
 ```bash
 jbang comparison/benchmark/benchmark.java
