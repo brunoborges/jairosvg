@@ -5,8 +5,8 @@
 //DEPS com.google.code.gson:gson:2.13.1
 
 /**
- * Regenerate the benchmark and PNG file-size tables in comparison/COMPARISON.md
- * from benchmark-results.jsonl and the rendered PNG files.
+ * Update per-test-case benchmark time rows and iteration note in
+ * comparison/COMPARISON.md from benchmark-results.jsonl.
  *
  * Usage:
  *   jbang comparison/benchmark/update_readme.java
@@ -18,22 +18,17 @@ import com.google.gson.JsonObject;
 
 import java.io.*;
 import java.nio.file.*;
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.*;
 
 public class update_readme {
 
-    static final Path BASE_DIR = Path.of("comparison", "benchmark");
+    static final Path JSONL_PATH = Path.of("comparison", "benchmark", "benchmark-results.jsonl");
     static final Path README_PATH = Path.of("comparison", "COMPARISON.md");
-    static final Path JSONL_PATH = BASE_DIR.resolve("benchmark-results.jsonl");
     static final Path SVG_DIR = Path.of("comparison", "svg");
-    static final Path PNG_DIR = Path.of("comparison", "visual", "png");
 
     static final List<String> ENGINES = List.of("jairosvg", "echosvg", "jsvg", "cairosvg");
-    static final List<String> SIZE_ENGINES = List.of("jairosvg", "echosvg", "cairosvg", "jsvg");
-    static final Set<String> WARN_CASES = Set.of("Masks", "Filters", "Fe turbulence");
 
     record SvgCase(String name, int num, String slug) {}
     record BenchResult(String engine, String caseName, double avg, double median, double p95, double min) {}
@@ -56,7 +51,6 @@ public class update_readme {
                 .toList();
     }
 
-    // Map<caseName, Map<engine, BenchResult>>
     static Map<String, Map<String, BenchResult>> loadJsonl() throws IOException {
         var data = new LinkedHashMap<String, Map<String, BenchResult>>();
         if (!Files.exists(JSONL_PATH)) {
@@ -72,7 +66,7 @@ public class update_readme {
             if (engine == null || !ENGINES.contains(engine)) continue;
             String caseName = obj.has("case") ? obj.get("case").getAsString() : null;
             if (caseName == null) continue;
-            if (!obj.has("median")) continue; // skip error entries
+            if (!obj.has("median")) continue;
             data.computeIfAbsent(caseName, _ -> new LinkedHashMap<>())
                     .put(engine, new BenchResult(engine, caseName,
                             obj.get("avg").getAsDouble(),
@@ -81,108 +75,6 @@ public class update_readme {
                             obj.get("min").getAsDouble()));
         }
         return data;
-    }
-
-    record PngTableResult(String table, String summary) {}
-
-    static PngTableResult generatePngSizesTable(List<SvgCase> cases) {
-        record Row(String display, Map<String, Long> sizes) {}
-
-        var rows = new ArrayList<Row>();
-        var totals = new LinkedHashMap<String, Long>();
-        var hasData = new LinkedHashMap<String, Boolean>();
-        SIZE_ENGINES.forEach(e -> { totals.put(e, 0L); hasData.put(e, false); });
-
-        var fmt = NumberFormat.getIntegerInstance(Locale.US);
-
-        for (var svgCase : cases) {
-            String pngName = "%02d_%s.png".formatted(svgCase.num(), svgCase.slug());
-            var sizes = new LinkedHashMap<String, Long>();
-            for (String e : SIZE_ENGINES) {
-                Path path = PNG_DIR.resolve(e).resolve(pngName);
-                if (Files.exists(path)) {
-                    try {
-                        long size = Files.size(path);
-                        sizes.put(e, size);
-                        totals.merge(e, size, Long::sum);
-                        hasData.put(e, true);
-                    } catch (IOException ex) {
-                        sizes.put(e, null);
-                    }
-                } else {
-                    sizes.put(e, null);
-                }
-            }
-
-            String warn = WARN_CASES.contains(svgCase.name()) ? " ⚠️" : "";
-            String display = toTitleCase(svgCase.name()) + warn;
-            rows.add(new Row(display, sizes));
-        }
-
-        int maxLabel = rows.stream().mapToInt(r -> r.display().length()).max().orElse(14);
-        maxLabel = Math.max(maxLabel, 14);
-
-        var lines = new ArrayList<String>();
-        lines.add("| %-${w}s | %11s | %11s | %11s | %11s |"
-                .replace("${w}", String.valueOf(maxLabel))
-                .formatted("Test Case", "JairoSVG", "EchoSVG", "CairoSVG", "JSVG"));
-        lines.add("| %s | ----------: | ----------: | ----------: | ----------: |"
-                .formatted("-".repeat(maxLabel)));
-
-        for (var row : rows) {
-            var cells = new ArrayList<String>();
-            for (String e : SIZE_ENGINES) {
-                Long size = row.sizes().get(e);
-                cells.add(size != null ? "%11s".formatted(fmt.format(size)) : "%11s".formatted("—"));
-            }
-            lines.add("| %-${w}s | %s |"
-                    .replace("${w}", String.valueOf(maxLabel))
-                    .formatted(row.display(), String.join(" | ", cells)));
-        }
-
-        var totalCells = new ArrayList<String>();
-        for (String e : SIZE_ENGINES) {
-            if (hasData.get(e)) {
-                String val = "**%s**".formatted(fmt.format(totals.get(e)));
-                totalCells.add("%11s".formatted(val));
-            } else {
-                totalCells.add("%11s".formatted("—"));
-            }
-        }
-        lines.add("| %-${w}s | %s |"
-                .replace("${w}", String.valueOf(maxLabel))
-                .formatted("**Total**", String.join(" | ", totalCells)));
-
-        // Compute summary percentages
-        long jTotal = totals.get("jairosvg");
-        var comparisons = new ArrayList<String>();
-        for (var entry : List.of(
-                Map.entry("CairoSVG", "cairosvg"),
-                Map.entry("JSVG", "jsvg"),
-                Map.entry("EchoSVG", "echosvg"))) {
-            long other = totals.get(entry.getValue());
-            if (other > 0) {
-                double pct = (other - jTotal) / (double) other * 100;
-                if (pct > 0) {
-                    comparisons.add("**%.1f%% smaller** than %s".formatted(pct, entry.getKey()));
-                }
-            }
-        }
-
-        String summary;
-        if (comparisons.size() > 1) {
-            summary = "JairoSVG produces compact PNGs — "
-                    + String.join(", ", comparisons.subList(0, comparisons.size() - 1))
-                    + ", and " + comparisons.getLast();
-        } else if (comparisons.size() == 1) {
-            summary = "JairoSVG produces compact PNGs — " + comparisons.getFirst();
-        } else {
-            summary = "JairoSVG produces compact PNGs — comparable in size to other engines";
-        }
-        summary += " (all using zlib compression level 6 — see "
-                + "[default rendering settings](#default-rendering-settings-jairosvg-vs-jsvg)):";
-
-        return new PngTableResult(String.join("\n", lines), summary);
     }
 
     static String replaceSection(String content, String tag, String replacement) {
@@ -194,16 +86,9 @@ public class update_readme {
         return content.substring(0, start) + begin + "\n" + replacement + "\n" + end + content.substring(finish + end.length());
     }
 
-    static void updateReadme(String pngTable, String pngSummary,
-                             int warmup, int iterations,
+    static void updateReadme(int warmup, int iterations,
                              Map<String, Map<String, BenchResult>> data, List<SvgCase> cases) throws IOException {
         String content = Files.readString(README_PATH);
-
-        // Replace aggregate PNG sizes section
-        String pngSection = "## PNG Output File Sizes\n\n"
-                + pngSummary + "\n\n"
-                + pngTable;
-        content = replaceSection(content, "PNG_SIZES", pngSection);
 
         // Replace iteration note
         String note = "> **Note:** Benchmarks were run with %d warm-up iterations and %d measured iterations"
@@ -229,7 +114,6 @@ public class update_readme {
                     benchTimeCell(vals[0], minVal), benchTimeCell(vals[1], minVal),
                     benchTimeCell(vals[2], minVal), benchTimeCell(vals[3], minVal));
 
-            // Find the | **Time** | row in this test case's section
             String anchor = "### %02d_%s".formatted(svgCase.num(), svgCase.slug());
             int sectionStart = content.indexOf(anchor);
             if (sectionStart < 0) continue;
@@ -247,12 +131,6 @@ public class update_readme {
         if (val == null) return "—";
         String formatted = "%.4f ms".formatted(val);
         return val == minVal ? "**%s** ✅".formatted(formatted) : formatted;
-    }
-
-    static String toTitleCase(String s) {
-        return Arrays.stream(s.split(" "))
-                .map(w -> w.isEmpty() ? w : Character.toUpperCase(w.charAt(0)) + w.substring(1))
-                .collect(Collectors.joining(" "));
     }
 
     public static void main(String[] args) throws Exception {
@@ -276,13 +154,9 @@ public class update_readme {
             }
         }
 
-        var pngResult = generatePngSizesTable(cases);
-
-        updateReadme(pngResult.table(), pngResult.summary(),
-                warmup, iterations, data, cases);
+        updateReadme(warmup, iterations, data, cases);
 
         System.out.println("✅ Updated " + README_PATH);
         System.out.println("   Per-case time rows: " + cases.size() + " test cases");
-        System.out.println("   PNG sizes table: " + cases.size() + " test cases");
     }
 }

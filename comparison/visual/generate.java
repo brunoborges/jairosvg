@@ -391,11 +391,6 @@ public class generate {
 
                 """);
 
-        sb.append("<!-- BEGIN:PNG_SIZES -->\n");
-        sb.append("## PNG Output File Sizes\n\n");
-        sb.append("_No PNG size data computed yet._\n");
-        sb.append("<!-- END:PNG_SIZES -->\n\n");
-
         sb.append("""
                 > **⚠️ Filters/Masks:** Where CairoSVG produces much smaller output, it is because CairoSVG \
                 **does not render** certain features correctly — filter effects (blur, drop-shadow) are silently \

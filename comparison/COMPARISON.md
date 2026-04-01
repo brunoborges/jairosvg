@@ -449,58 +449,6 @@ JSVG automatically sets `KEY_ANTIALIASING` and `KEY_STROKE_CONTROL` to the value
 
 **In the benchmark**, both JairoSVG and JSVG use identical rendering hints, so the comparison measures SVG engine efficiency directly.
 
-<!-- BEGIN:PNG_SIZES -->
-## PNG Output File Sizes
-
-JairoSVG produces compact PNGs — **9.0% smaller** than JSVG, and **17.5% smaller** than EchoSVG (all using zlib compression level 6 — see [default rendering settings](#default-rendering-settings-jairosvg-vs-jsvg)):
-
-| Test Case             |    JairoSVG |     EchoSVG |    CairoSVG |        JSVG |
-| --------------------- | ----------: | ----------: | ----------: | ----------: |
-| Basic Shapes          |       6,718 |       8,159 |       8,920 |       7,031 |
-| Gradients             |      25,554 |      25,018 |      23,637 |      26,410 |
-| Complex Paths         |      12,657 |      16,936 |      15,633 |      12,730 |
-| Text Rendering        |      13,276 |      19,125 |      16,317 |      15,626 |
-| Transforms            |       5,461 |       5,261 |       6,001 |       5,827 |
-| Stroke Styles         |       3,363 |       5,038 |       4,478 |       4,074 |
-| Opacity Blend         |       8,409 |      10,201 |       9,853 |       8,788 |
-| Viewbox Aspect        |      10,492 |      12,769 |      11,444 |      12,147 |
-| Css Styling           |       7,755 |      11,144 |      10,816 |       8,653 |
-| Use And Defs          |       5,448 |       6,122 |       9,712 |       6,144 |
-| Star Polygon          |       6,228 |       8,862 |       8,911 |       6,455 |
-| Nested Svg            |      10,926 |      12,522 |      11,880 |      12,101 |
-| Patterns              |       9,532 |      11,832 |      11,095 |      11,043 |
-| Clip Paths            |       9,342 |      10,558 |      13,552 |      10,253 |
-| Masks ⚠️              |       5,692 |       5,566 |       1,161 |       6,209 |
-| Markers               |       9,796 |      12,642 |      12,655 |      10,041 |
-| Filters ⚠️            |      28,934 |      24,063 |       8,520 |      32,346 |
-| Embedded Image        |       9,432 |      11,994 |      21,228 |      11,642 |
-| Text Advanced         |      18,801 |      26,256 |      23,864 |      19,756 |
-| Fe Blend Modes        |      12,005 |      16,216 |      12,505 |      15,773 |
-| Fe Tile               |       1,456 |       2,009 |       1,768 |       1,489 |
-| Feimage Data Uri      |       2,633 |       4,406 |       3,206 |       3,639 |
-| Feimage Inline Ref    |       2,702 |       3,642 |       4,903 |       4,380 |
-| Localized Masks       |      18,389 |      17,868 |      13,218 |      20,239 |
-| Svg Fonts             |      10,331 |      14,274 |      15,233 |      12,607 |
-| Symbol Use            |      15,665 |      24,513 |      21,625 |      18,260 |
-| Switch Features       |      11,535 |      18,040 |      14,493 |       8,503 |
-| Css Variables         |      11,574 |      17,016 |           — |      12,509 |
-| Current Color         |      10,037 |      14,642 |      11,006 |      13,030 |
-| Display Visibility    |      11,009 |      17,473 |      13,218 |      14,263 |
-| Nested Overflow       |      11,273 |      16,322 |      13,738 |      13,737 |
-| Stroke Advanced       |       9,287 |      14,507 |      12,246 |      11,702 |
-| Pattern Transforms    |       9,052 |      16,101 |      13,061 |      16,273 |
-| Gradient Advanced     |      31,339 |      35,647 |      30,960 |      35,070 |
-| Filter Merge Offset   |       9,348 |      14,868 |      14,168 |      12,184 |
-| Fe Color Matrix       |      13,131 |      15,605 |      10,152 |      14,503 |
-| Fe Morphology         |       9,850 |      13,914 |      10,313 |       9,544 |
-| Fe Turbulence ⚠️      |      77,590 |      64,097 |       9,371 |      76,437 |
-| Fe Displacement Map   |       9,151 |      17,633 |       9,684 |      10,208 |
-| Fe Lighting           |      12,213 |      18,277 |       9,006 |      10,269 |
-| Fe Convolve Matrix    |      12,104 |       6,858 |       9,045 |       8,834 |
-| Fe Component Transfer |       9,118 |      12,543 |       9,950 |      10,463 |
-| **Total**             | **528,608** | **640,539** | **492,546** | **581,192** |
-<!-- END:PNG_SIZES -->
-
 > **⚠️ Filters/Masks:** Where CairoSVG produces much smaller output, it is because CairoSVG **does not render** certain features correctly — filter effects (blur, drop-shadow) are silently skipped, and masks are rendered without gradient/circle content. This results in simpler images that compress better. JairoSVG and JSVG render these effects correctly, producing visually accurate but larger PNGs.
 
 ## Running the Benchmark
