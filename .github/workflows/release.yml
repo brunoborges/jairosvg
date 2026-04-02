@@ -85,9 +85,8 @@ jobs:
           - os: ubuntu-24.04-arm
             platform: linux
             arch: arm64
-          - os: macos-latest
-            platform: macos
-            arch: arm64
+          # macOS disabled — AWT not supported in native-image on Darwin
+          # See https://github.com/oracle/graal/issues/13272
           - os: windows-latest
             platform: windows
             arch: x64
