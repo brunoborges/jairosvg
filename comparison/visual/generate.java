@@ -4,7 +4,7 @@
 //RUNTIME_OPTIONS --enable-preview
 //REPOS mavenCentral,mavenLocal
 //REPOS css4j=https://css4j.github.io/maven/
-//DEPS io.brunoborges:jairosvg:1.0.6-SNAPSHOT
+//DEPS io.brunoborges:jairosvg:1.0.7-SNAPSHOT
 //DEPS io.sf.carte:echosvg-transcoder:2.4
 //DEPS com.github.weisj:jsvg:2.0.0
 //DEPS com.google.code.gson:gson:2.13.1
