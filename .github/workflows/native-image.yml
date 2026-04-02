@@ -51,7 +51,6 @@ jobs:
           distribution: graalvm
           java-version: '25'
           cache: maven
-          components: native-image
       - name: Determine version
         id: version
         shell: bash

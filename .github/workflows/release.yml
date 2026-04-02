@@ -102,7 +102,6 @@ jobs:
           distribution: graalvm
           java-version: '25'
           cache: maven
-          components: native-image
 
       - name: Build shaded CLI JAR
         env:
