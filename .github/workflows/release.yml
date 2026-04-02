@@ -45,8 +45,8 @@ jobs:
       - name: Set release version
         run: |
           VERSION="${{ steps.version.outputs.release }}"
-          ./mvnw versions:set -DnewVersion=${VERSION} -DgenerateBackupPoms=false
           ./.github/workflows/scripts/bump-version.sh release ${VERSION}
+          ./mvnw versions:set -DnewVersion=${VERSION} -DgenerateBackupPoms=false
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git diff --quiet || git commit -am "Release v${VERSION}"
@@ -232,8 +232,8 @@ jobs:
           VERSION="${{ needs.build-jars.outputs.version }}"
           IFS='.' read -r major minor patch <<< "${VERSION}"
           NEXT_VERSION="${major}.${minor}.$((patch + 1))"
-          ./mvnw versions:set -DnewVersion=${NEXT_VERSION}-SNAPSHOT -DgenerateBackupPoms=false --no-transfer-progress
           ./.github/workflows/scripts/bump-version.sh snapshot ${NEXT_VERSION}
+          ./mvnw versions:set -DnewVersion=${NEXT_VERSION}-SNAPSHOT -DgenerateBackupPoms=false --no-transfer-progress
           git commit -am "Bump version to ${NEXT_VERSION}-SNAPSHOT"
           git push origin main
 
