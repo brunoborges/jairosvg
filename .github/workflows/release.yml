@@ -163,6 +163,7 @@ jobs:
 
   release:
     needs: [build-jars, build-natives]
+    if: always() && needs.build-jars.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -193,6 +194,7 @@ jobs:
           path: target/
 
       - name: Download native binaries
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           pattern: native-*
