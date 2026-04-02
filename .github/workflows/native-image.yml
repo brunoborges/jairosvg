@@ -13,17 +13,36 @@ on:
       - 'src/**'
       - 'pom.xml'
       - '.github/workflows/native-image.yml'
+  workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   native-image:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+          - os: ubuntu-24.04-arm
+            platform: linux
+            arch: arm64
+          - os: macos-latest
+            platform: macos
+            arch: arm64
+          - os: macos-13
+            platform: macos
+            arch: x64
+          - os: windows-latest
+            platform: windows
+            arch: x64
     steps:
       - uses: actions/checkout@v6
       - name: Set up GraalVM JDK 25
@@ -33,11 +52,19 @@ jobs:
           java-version: '25'
           cache: maven
           components: native-image
+      - name: Determine version
+        id: version
+        shell: bash
+        run: |
+          POM_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout --no-transfer-progress)
+          echo "version=${POM_VERSION}" >> "$GITHUB_OUTPUT"
       - name: Build shaded CLI JAR
         env:
           MAVEN_OPTS: --enable-preview
         run: ./mvnw -DskipTests package --no-transfer-progress
-      - name: Build native image
+      - name: Build native image (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
         run: |
           shopt -s nullglob
           cli_jars=(target/*-cli.jar)
@@ -45,6 +72,37 @@ jobs:
             echo "No shaded CLI jar found in target/"
             exit 1
           fi
-          native-image --enable-preview -o jairosvg -jar "${cli_jars[0]}"
-      - name: Smoke test native executable
-        run: ./jairosvg --help
+          VERSION="${{ steps.version.outputs.version }}"
+          native-image --enable-preview \
+            -o "jairosvg-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}" \
+            -jar "${cli_jars[0]}"
+      - name: Build native image (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $cliJars = Get-ChildItem target\*-cli.jar
+          if ($cliJars.Count -eq 0) {
+            Write-Error "No shaded CLI jar found in target\"
+            exit 1
+          }
+          $version = "${{ steps.version.outputs.version }}"
+          native-image --enable-preview `
+            -o "jairosvg-${version}-${{ matrix.platform }}-${{ matrix.arch }}" `
+            -jar $cliJars[0].FullName
+      - name: Smoke test (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          ./"jairosvg-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}" --help
+      - name: Smoke test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          & ".\jairosvg-${version}-${{ matrix.platform }}-${{ matrix.arch }}.exe" --help
+      - name: Upload native binary
+        uses: actions/upload-artifact@v7
+        with:
+          name: native-${{ matrix.platform }}-${{ matrix.arch }}
+          path: jairosvg-${{ steps.version.outputs.version }}-${{ matrix.platform }}-${{ matrix.arch }}*

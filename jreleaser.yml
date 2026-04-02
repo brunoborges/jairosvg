@@ -67,3 +67,16 @@ distributions:
     type: SINGLE_JAR
     artifacts:
       - path: target/jairosvg-{{projectVersion}}-cli.jar
+  jairosvg-native:
+    type: NATIVE_IMAGE
+    artifacts:
+      - path: target/native/jairosvg-{{projectVersion}}-linux-x64
+        platform: linux-x86_64
+      - path: target/native/jairosvg-{{projectVersion}}-linux-arm64
+        platform: linux-aarch_64
+      - path: target/native/jairosvg-{{projectVersion}}-macos-x64
+        platform: osx-x86_64
+      - path: target/native/jairosvg-{{projectVersion}}-macos-arm64
+        platform: osx-aarch_64
+      - path: target/native/jairosvg-{{projectVersion}}-windows-x64.exe
+        platform: windows-x86_64
