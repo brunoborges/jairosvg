@@ -74,6 +74,8 @@ distributions:
         platform: linux-x86_64
       - path: target/native/jairosvg-{{projectVersion}}-linux-arm64
         platform: linux-aarch_64
+      - path: target/native/jairosvg-{{projectVersion}}-macos-x64
+        platform: osx-x86_64
       - path: target/native/jairosvg-{{projectVersion}}-macos-arm64
         platform: osx-aarch_64
       - path: target/native/jairosvg-{{projectVersion}}-windows-x64.exe
