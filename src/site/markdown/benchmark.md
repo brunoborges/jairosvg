@@ -11,23 +11,23 @@ Benchmark comparing SVG → PNG conversion across four libraries:
 
 ### Results
 
-Each test case was run with 20 warmup iterations and 1000 measurement iterations.
+Each test case was run with 50 warmup iterations and 500 measurement iterations.
 
 | Test Case | JairoSVG | JSVG | EchoSVG | CairoSVG | JairoSVG vs EchoSVG |
 |-----------|:--------:|:----:|:-------:|:--------:|:-------------------:|
-| Simple shapes | 3.2 ms | **3.2 ms** | 15.7 ms | 4.1 ms | **4.9x faster** |
-| Gradients + transforms | **4.1 ms** | 4.1 ms | 128.8 ms | 10.4 ms | **31x faster** |
-| Complex paths + text | **4.0 ms** | 4.1 ms | 21.9 ms | 4.3 ms | **5.5x faster** |
-| Defs + use + clipPath | 3.8 ms | **3.6 ms** | 13.6 ms | 4.2 ms | **3.6x faster** |
-| Markers + dashed strokes | 3.6 ms | **3.5 ms** | 12.5 ms | 4.5 ms | **3.5x faster** |
+| Simple shapes | 4.3 ms | **4.3 ms** | 20.9 ms | 5.7 ms | **4.8x faster** |
+| Gradients + transforms | **5.8 ms** | 5.8 ms | 169.5 ms | 12.7 ms | **29x faster** |
+| Complex paths + text | **5.4 ms** | 5.4 ms | 29.7 ms | 6.1 ms | **5.5x faster** |
+| Defs + use + clipPath | 4.8 ms | **4.7 ms** | 18.0 ms | 6.3 ms | **3.7x faster** |
+| Markers + dashed strokes | 5.9 ms | **5.8 ms** | 22.8 ms | 8.5 ms | **3.9x faster** |
 
 <a href="images/benchmark.png" target="_blank"><img src="images/benchmark.png" alt="Benchmark chart" width="560"/></a>
 
 ### Analysis
 
-- **JairoSVG is 2.5–31× faster than EchoSVG** across all test cases
+- **JairoSVG is 3–29× faster than EchoSVG** across all test cases
 - **JairoSVG is on par with JSVG** — both use Java2D for rendering
-- **JairoSVG is 1–2.4× faster than CairoSVG** despite CairoSVG using a native C rendering backend
+- **JairoSVG is 1–2.6× faster than CairoSVG** despite CairoSVG using a native C rendering backend
 - JairoSVG achieves competitive performance through:
   - Pre-compiled regex patterns
   - Cached SAX parser factories

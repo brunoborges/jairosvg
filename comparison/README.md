@@ -285,14 +285,14 @@ SVG → PNG conversion benchmarks comparing all four libraries across 42 SVG tes
 
 | Test Case              | JairoSVG (Java) | EchoSVG (Java) | JSVG (Java)  | CairoSVG (Python) |
 | ---------------------- | :-------------: | :------------: | :----------: | :---------------: |
-| Basic shapes           |     3.2 ms      |    15.7 ms     | **3.2 ms**   |      4.1 ms       |
-| Gradients              |   **4.1 ms**    |    128.8 ms    |   4.1 ms     |     10.4 ms       |
-| Filters                |   **7.1 ms**    |    33.7 ms     |   7.9 ms     |     4.3 ms ⚠️     |
-| Fe blend modes         |  **10.1 ms**    |    27.2 ms     |  20.0 ms     |     12.4 ms       |
-| Embedded image         |   **4.3 ms**    |    15.7 ms     |  10.8 ms     |      6.9 ms       |
-| Localized masks        |  **14.3 ms**    |    55.0 ms     |  14.3 ms     |     15.3 ms       |
+| Basic shapes           |     4.3 ms      |    20.9 ms     | **4.3 ms**   |      5.7 ms       |
+| Gradients              |   **5.8 ms**    |    169.5 ms    |   5.8 ms     |     12.7 ms       |
+| Filters                |   **9.8 ms**    |    45.3 ms     |  11.2 ms     |     6.3 ms ⚠️     |
+| Fe blend modes         |  **13.6 ms**    |    37.8 ms     |  28.5 ms     |     24.2 ms       |
+| Embedded image         |   **5.8 ms**    |    22.3 ms     |   7.7 ms     |     10.8 ms       |
+| Localized masks        |  **19.4 ms**    |    66.3 ms     |  19.7 ms     |     25.9 ms       |
 
-_JairoSVG is **2–30× faster** than EchoSVG, **on par with JSVG** in most scenarios, and **faster than CairoSVG** in most scenarios._
+_JairoSVG is **3–29× faster** than EchoSVG, **on par with JSVG** in most scenarios, and **faster than CairoSVG** in most scenarios._
 
 > ⚠️ Where CairoSVG appears faster on filters/masks, it is because it silently **skips** rendering those effects.
 

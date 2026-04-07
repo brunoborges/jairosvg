@@ -35,7 +35,7 @@ A high-performance SVG 1.1 to PNG, JPEG, TIFF, PDF, and PS/EPS converter powered
 - 🔤 **SVG Fonts**: `<font>` and `<glyph>` with system font fallback for undefined characters
 - 🎨 **CSS**: stylesheets, inline styles, CSS variables (`var()`), `currentColor`, `inherit`
 - 🔀 **Conditional processing**: `<switch>`, `systemLanguage`, `requiredExtensions`
-- ⚡ **Fast**: 3-30× faster than EchoSVG (Batik fork), on par with JSVG, 1-2× faster than CairoSVG's native C backend
+- ⚡ **Fast**: 3-29× faster than EchoSVG (Batik fork), on par with JSVG, 1-2.6× faster than CairoSVG's native C backend
 - 🛡️ **Secure**: XML external entity (XXE) protection by default
 - 🧰 **Flexible API**: Static methods, fluent builder, CLI
 
@@ -43,14 +43,14 @@ A high-performance SVG 1.1 to PNG, JPEG, TIFF, PDF, and PS/EPS converter powered
 
 | Test Case                | JairoSVG (Java) | EchoSVG (Java) | JSVG (Java) | CairoSVG (Python) |
 | ------------------------ | :-------------: | :------------: | :---------: | :---------------: |
-| Simple shapes            |     3.4 ms      |    16.7 ms     | **3.3 ms**  |      4.1 ms       |
-| Gradients                |   **4.3 ms**    |    131.3 ms    |   4.2 ms    |      10.4 ms      |
-| Filters                  |   **6.8 ms**    |    34.2 ms     |   8.2 ms    |       N/A         |
-| Fe blend modes           |   **9.5 ms**    |    27.7 ms     |  20.0 ms    |       N/A         |
-| Embedded image           |   **4.4 ms**    |    16.8 ms     |  11.0 ms    |      6.2 ms       |
-| Localized masks          |  **14.5 ms**    |    56.0 ms     |  15.6 ms    |       N/A         |
+| Simple shapes            |     4.3 ms      |    20.9 ms     | **4.3 ms**  |      5.7 ms       |
+| Gradients                |   **5.8 ms**    |    169.5 ms    |   5.8 ms    |      12.7 ms      |
+| Filters                  |   **9.8 ms**    |    45.3 ms     |  11.2 ms    |      6.3 ms       |
+| Fe blend modes           |  **13.6 ms**    |    37.8 ms     |  28.5 ms    |      24.2 ms      |
+| Embedded image           |   **5.8 ms**    |    22.3 ms     |   7.7 ms    |      10.8 ms      |
+| Localized masks          |  **19.4 ms**    |    66.3 ms     |  19.7 ms    |      25.9 ms      |
 
-_JairoSVG is 3–30× faster than EchoSVG, on par with JSVG for simple SVGs, and significantly faster on filters, blends, masks, and images._
+_JairoSVG is 3–29× faster than EchoSVG, on par with JSVG for simple SVGs, and significantly faster on filters, blends, masks, and images._
 
 Run the benchmark yourself: `jbang comparison/benchmark/benchmark.java`.
 

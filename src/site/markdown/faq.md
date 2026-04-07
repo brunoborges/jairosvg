@@ -73,7 +73,7 @@ The `unsafe` flag allows DOCTYPE declarations in SVG files. Only use it with tru
 
 ### How fast is it?
 
-JairoSVG is 2–26x faster than EchoSVG (a Batik fork), on par with JSVG, and 1–2.4x faster than CairoSVG's native C backend. See the [benchmark page](benchmark.html) for details.
+JairoSVG is 3–29x faster than EchoSVG (a Batik fork), on par with JSVG, and 1–2.6x faster than CairoSVG's native C backend. See the [benchmark page](benchmark.html) for details.
 
 ### How can I improve performance?
 
