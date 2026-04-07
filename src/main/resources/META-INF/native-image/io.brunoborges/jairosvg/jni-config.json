@@ -1,0 +1,139 @@
+[
+  {
+    "name": "sun.font.TrueTypeFont",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "sun.font.Type1Font",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "sun.font.Font2D",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "sun.font.CharToGlyphMapper",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "sun.font.PhysicalStrike",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "sun.font.FileFontStrike",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "sun.font.FontStrike",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "sun.font.GlyphList",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "sun.font.StrikeMetrics",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true,
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["float", "float", "float", "float", "float", "float", "float", "float", "float", "float"] }
+    ]
+  },
+  {
+    "name": "sun.font.GlyphLayout$GVData",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "sun.font.SunFontManager",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "sun.font.SunLayoutEngine",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "sun.font.FontConfigManager",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "sun.font.FontConfigManager$FcCompFont",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "sun.font.FontConfigManager$FontConfigFont",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "sun.font.StrikeCache",
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "sun.font.PhysicalFont",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "sun.font.CompositeFont",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "sun.font.FontDesignMetrics",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "java.awt.geom.Point2D$Float",
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true,
+    "methods": [
+      { "name": "<init>", "parameterTypes": ["float", "float"] }
+    ]
+  },
+  {
+    "name": "java.awt.geom.Rectangle2D$Float",
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true,
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["float", "float", "float", "float"] }
+    ]
+  },
+  {
+    "name": "java.awt.geom.GeneralPath",
+    "allDeclaredMethods": true,
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "<init>", "parameterTypes": ["int", "byte[]", "int", "float[]", "int"] }
+    ]
+  }
+]

@@ -16,6 +16,8 @@ public final class Main {
             "tiff", "TIFF", "tif", "TIFF", "pdf", "PDF", "ps", "PS", "eps", "EPS");
 
     public static void main(String[] args) throws Exception {
+        ensureJavaHome();
+
         if (args.length == 0 || "--help".equals(args[0]) || "-h".equals(args[0])) {
             printUsage();
             return;
@@ -145,6 +147,20 @@ public final class Main {
                 out.write(data);
             }
             default -> builder.toPng(out);
+        }
+    }
+
+    /**
+     * Ensure java.home is set for font configuration (required in GraalVM native
+     * images).
+     */
+    private static void ensureJavaHome() {
+        if (System.getProperty("java.home") == null) {
+            String javaHome = System.getenv("JAVA_HOME");
+            if (javaHome == null) {
+                javaHome = "/usr";
+            }
+            System.setProperty("java.home", javaHome);
         }
     }
 }

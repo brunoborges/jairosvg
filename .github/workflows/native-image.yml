@@ -100,7 +100,6 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           native-image --enable-preview \
             -Djava.awt.headless=true \
-            -Djava.home="$JAVA_HOME" \
             -H:ConfigurationFileDirectories=native-config \
             -o "jairosvg-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}" \
             -jar "${cli_jars[0]}"
@@ -116,7 +115,6 @@ jobs:
           $version = "${{ steps.version.outputs.version }}"
           native-image --enable-preview `
             "-Djava.awt.headless=true" `
-            "-Djava.home=$env:JAVA_HOME" `
             "-H:ConfigurationFileDirectories=native-config" `
             -o "jairosvg-${version}-${{ matrix.platform }}-${{ matrix.arch }}" `
             -jar $cliJars[0].FullName
