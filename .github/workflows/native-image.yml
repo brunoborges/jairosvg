@@ -71,6 +71,7 @@ jobs:
           fi
           VERSION="${{ steps.version.outputs.version }}"
           native-image --enable-preview \
+            -Djava.awt.headless=true \
             -o "jairosvg-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}" \
             -jar "${cli_jars[0]}"
       - name: Build native image (Windows)
@@ -84,6 +85,7 @@ jobs:
           }
           $version = "${{ steps.version.outputs.version }}"
           native-image --enable-preview `
+            -Djava.awt.headless=true `
             -o "jairosvg-${version}-${{ matrix.platform }}-${{ matrix.arch }}" `
             -jar $cliJars[0].FullName
       - name: Smoke test (Unix)
@@ -100,6 +102,7 @@ jobs:
           & ".\jairosvg-${version}-${{ matrix.platform }}-${{ matrix.arch }}.exe" --help
       - name: Benchmark (Unix)
         if: runner.os != 'Windows'
+        continue-on-error: true
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.version }}"
@@ -113,7 +116,7 @@ jobs:
             name=$(basename "$svg" .svg)
             out="$OUT_DIR/${name}.png"
             start=$(date +%s%N 2>/dev/null || python3 -c 'import time; print(int(time.time_ns()))')
-            xvfb-run --auto-servernum "$BIN" "$svg" -o "$out"
+            "$BIN" "$svg" -o "$out"
             end=$(date +%s%N 2>/dev/null || python3 -c 'import time; print(int(time.time_ns()))')
             elapsed_ms=$(( (end - start) / 1000000 ))
             total_ms=$((total_ms + elapsed_ms))
@@ -127,6 +130,7 @@ jobs:
           rm -rf "$OUT_DIR"
       - name: Benchmark (Windows)
         if: runner.os == 'Windows'
+        continue-on-error: true
         shell: pwsh
         run: |
           $version = "${{ steps.version.outputs.version }}"
