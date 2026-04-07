@@ -73,7 +73,7 @@ Download pre-built native binaries (no JVM required) from the [GitHub Releases p
 | Windows x64 | `jairosvg-{version}-windows-x64.exe`         |
 
 ```bash
-# Linux / macOS: make executable and run
+# Linux: make executable and run
 chmod +x jairosvg-{version}-linux-x64
 ./jairosvg-{version}-linux-x64 input.svg -o output.png
 
