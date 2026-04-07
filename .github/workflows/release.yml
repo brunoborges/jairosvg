@@ -178,20 +178,20 @@ jobs:
           cache: maven
 
       - name: Download staged artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: staged-artifacts
           path: target/staging-deploy/
 
       - name: Download release JARs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-jars
           path: target/
 
       - name: Download native binaries
         continue-on-error: true
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: native-*
           merge-multiple: true
