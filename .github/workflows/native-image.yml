@@ -25,22 +25,7 @@ permissions:
 
 jobs:
   native-image:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            platform: linux
-            arch: x64
-          - os: ubuntu-24.04-arm
-            platform: linux
-            arch: arm64
-          # macOS disabled — AWT not supported in native-image on Darwin
-          # See https://github.com/oracle/graal/issues/13272
-          - os: windows-latest
-            platform: windows
-            arch: x64
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - name: Set up GraalVM JDK 25
@@ -51,7 +36,6 @@ jobs:
           cache: maven
       - name: Determine version
         id: version
-        shell: bash
         run: |
           POM_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout --no-transfer-progress)
           echo "version=${POM_VERSION}" >> "$GITHUB_OUTPUT"
@@ -59,14 +43,11 @@ jobs:
         env:
           MAVEN_OPTS: --enable-preview
         run: ./mvnw -DskipTests package --no-transfer-progress
-      - name: Collect native-image metadata with tracing agent (Unix)
-        if: runner.os != 'Windows'
-        shell: bash
+      - name: Collect native-image metadata with tracing agent
         run: |
           shopt -s nullglob
           cli_jars=(target/*-cli.jar)
           mkdir -p native-config
-          # Run all SVGs to capture every AWT/Java2D/font JNI code path
           for svg in comparison/svg/*.svg; do
             java --enable-preview -Djava.awt.headless=true \
               -agentlib:native-image-agent=config-merge-dir=native-config \
@@ -74,22 +55,7 @@ jobs:
           done
           echo "Collected metadata files:"
           ls -la native-config/
-      - name: Collect native-image metadata with tracing agent (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $cliJars = Get-ChildItem target\*-cli.jar
-          New-Item -ItemType Directory -Force -Path native-config | Out-Null
-          foreach ($svg in Get-ChildItem comparison\svg\*.svg | Sort-Object Name) {
-            java --enable-preview "-Djava.awt.headless=true" `
-              "-agentlib:native-image-agent=config-merge-dir=native-config" `
-              -jar $cliJars[0].FullName $svg.FullName -o "$env:TEMP\$($svg.BaseName).png"
-          }
-          Write-Output "Collected metadata files:"
-          Get-ChildItem native-config
-      - name: Build native image (Unix)
-        if: runner.os != 'Windows'
-        shell: bash
+      - name: Build native image
         run: |
           shopt -s nullglob
           cli_jars=(target/*-cli.jar)
@@ -101,41 +67,16 @@ jobs:
           native-image --enable-preview \
             -Djava.awt.headless=true \
             -H:ConfigurationFileDirectories=native-config \
-            -o "jairosvg-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}" \
+            -o "jairosvg-${VERSION}-linux-x64" \
             -jar "${cli_jars[0]}"
-      - name: Build native image (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $cliJars = Get-ChildItem target\*-cli.jar
-          if ($cliJars.Count -eq 0) {
-            Write-Error "No shaded CLI jar found in target\"
-            exit 1
-          }
-          $version = "${{ steps.version.outputs.version }}"
-          native-image --enable-preview `
-            "-Djava.awt.headless=true" `
-            "-H:ConfigurationFileDirectories=native-config" `
-            -o "jairosvg-${version}-${{ matrix.platform }}-${{ matrix.arch }}" `
-            -jar $cliJars[0].FullName
-      - name: Smoke test (Unix)
-        if: runner.os != 'Windows'
-        shell: bash
+      - name: Smoke test
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          ./"jairosvg-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}" --help
-      - name: Smoke test (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $version = "${{ steps.version.outputs.version }}"
-          & ".\jairosvg-${version}-${{ matrix.platform }}-${{ matrix.arch }}.exe" --help
-      - name: Benchmark (Unix)
-        if: runner.os != 'Windows'
-        shell: bash
+          ./"jairosvg-${VERSION}-linux-x64" --help
+      - name: Benchmark
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          BIN="./jairosvg-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}"
+          BIN="./jairosvg-${VERSION}-linux-x64"
           OUT_DIR=$(mktemp -d)
           printf "%-40s %10s\n" "SVG Test Case" "Time (ms)"
           printf "%-40s %10s\n" "$(printf '%0.s-' {1..40})" "----------"
@@ -144,9 +85,9 @@ jobs:
           for svg in comparison/svg/*.svg; do
             name=$(basename "$svg" .svg)
             out="$OUT_DIR/${name}.png"
-            start=$(date +%s%N 2>/dev/null || python3 -c 'import time; print(int(time.time_ns()))')
+            start=$(date +%s%N)
             if "$BIN" "$svg" -o "$out" 2>/dev/null; then
-              end=$(date +%s%N 2>/dev/null || python3 -c 'import time; print(int(time.time_ns()))')
+              end=$(date +%s%N)
               elapsed_ms=$(( (end - start) / 1000000 ))
               total_ms=$((total_ms + elapsed_ms))
               count=$((count + 1))
@@ -162,42 +103,9 @@ jobs:
             printf "%-40s %10d\n" "AVERAGE" "$avg"
           fi
           rm -rf "$OUT_DIR"
-      - name: Benchmark (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $version = "${{ steps.version.outputs.version }}"
-          $bin = ".\jairosvg-${version}-${{ matrix.platform }}-${{ matrix.arch }}.exe"
-          $outDir = New-Item -ItemType Directory -Path (Join-Path $env:TEMP "jairosvg-bench")
-          "{0,-40} {1,10}" -f "SVG Test Case", "Time (ms)"
-          "{0,-40} {1,10}" -f ("-" * 40), ("-" * 10)
-          $totalMs = 0
-          $count = 0
-          foreach ($svg in Get-ChildItem comparison\svg\*.svg | Sort-Object Name) {
-            $name = $svg.BaseName
-            $out = Join-Path $outDir.FullName "$name.png"
-            $sw = [System.Diagnostics.Stopwatch]::StartNew()
-            $proc = Start-Process -FilePath $bin -ArgumentList $svg.FullName,"-o",$out -NoNewWindow -Wait -PassThru -RedirectStandardError ([System.IO.Path]::GetTempFileName())
-            $sw.Stop()
-            if ($proc.ExitCode -eq 0) {
-              $ms = $sw.ElapsedMilliseconds
-              $totalMs += $ms
-              $count++
-              "{0,-40} {1,10}" -f $name, $ms
-            } else {
-              "{0,-40} {1,10}" -f $name, "FAILED"
-            }
-          }
-          "{0,-40} {1,10}" -f ("-" * 40), ("-" * 10)
-          "{0,-40} {1,10}" -f "TOTAL ($count cases)", $totalMs
-          if ($count -gt 0) {
-            $avg = [math]::Round($totalMs / $count)
-            "{0,-40} {1,10}" -f "AVERAGE", $avg
-          }
-          Remove-Item -Recurse -Force $outDir.FullName
       - name: Upload native binary
         if: always() && steps.version.outputs.version != ''
         uses: actions/upload-artifact@v7
         with:
-          name: native-${{ matrix.platform }}-${{ matrix.arch }}
-          path: jairosvg-${{ steps.version.outputs.version }}-${{ matrix.platform }}-${{ matrix.arch }}*
+          name: native-linux-x64
+          path: jairosvg-${{ steps.version.outputs.version }}-linux-x64*
