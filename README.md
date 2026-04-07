@@ -70,8 +70,6 @@ Download pre-built native binaries (no JVM required) from the [GitHub Releases p
 |-------------|-----------------------------------------------|
 | Linux x64   | `jairosvg-{version}-linux-x64`               |
 | Linux arm64 | `jairosvg-{version}-linux-arm64`             |
-| macOS x64   | `jairosvg-{version}-macos-x64`               |
-| macOS arm64 | `jairosvg-{version}-macos-arm64`             |
 | Windows x64 | `jairosvg-{version}-windows-x64.exe`         |
 
 ```bash
