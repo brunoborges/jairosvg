@@ -6,12 +6,14 @@ on:
     paths:
       - 'src/**'
       - 'pom.xml'
+      - 'comparison/svg/**'
       - '.github/workflows/native-image.yml'
   pull_request:
     branches: [main]
     paths:
       - 'src/**'
       - 'pom.xml'
+      - 'comparison/svg/**'
       - '.github/workflows/native-image.yml'
   workflow_dispatch:
 
@@ -96,6 +98,60 @@ jobs:
         run: |
           $version = "${{ steps.version.outputs.version }}"
           & ".\jairosvg-${version}-${{ matrix.platform }}-${{ matrix.arch }}.exe" --help
+      - name: Benchmark (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          BIN="./"jairosvg-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}""
+          OUT_DIR=$(mktemp -d)
+          printf "%-40s %10s\n" "SVG Test Case" "Time (ms)"
+          printf "%-40s %10s\n" "$(printf '%0.s-' {1..40})" "----------"
+          total_ms=0
+          count=0
+          for svg in comparison/svg/*.svg; do
+            name=$(basename "$svg" .svg)
+            out="$OUT_DIR/${name}.png"
+            start=$(date +%s%N 2>/dev/null || python3 -c 'import time; print(int(time.time_ns()))')
+            "$BIN" "$svg" -o "$out"
+            end=$(date +%s%N 2>/dev/null || python3 -c 'import time; print(int(time.time_ns()))')
+            elapsed_ms=$(( (end - start) / 1000000 ))
+            total_ms=$((total_ms + elapsed_ms))
+            count=$((count + 1))
+            printf "%-40s %10d\n" "$name" "$elapsed_ms"
+          done
+          printf "%-40s %10s\n" "$(printf '%0.s-' {1..40})" "----------"
+          printf "%-40s %10d\n" "TOTAL ($count cases)" "$total_ms"
+          avg=$((total_ms / count))
+          printf "%-40s %10d\n" "AVERAGE" "$avg"
+          rm -rf "$OUT_DIR"
+      - name: Benchmark (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          $bin = ".\jairosvg-${version}-${{ matrix.platform }}-${{ matrix.arch }}.exe"
+          $outDir = New-Item -ItemType Directory -Path (Join-Path $env:TEMP "jairosvg-bench")
+          "{0,-40} {1,10}" -f "SVG Test Case", "Time (ms)"
+          "{0,-40} {1,10}" -f ("-" * 40), ("-" * 10)
+          $totalMs = 0
+          $count = 0
+          foreach ($svg in Get-ChildItem comparison\svg\*.svg | Sort-Object Name) {
+            $name = $svg.BaseName
+            $out = Join-Path $outDir.FullName "$name.png"
+            $sw = [System.Diagnostics.Stopwatch]::StartNew()
+            & $bin $svg.FullName -o $out
+            $sw.Stop()
+            $ms = $sw.ElapsedMilliseconds
+            $totalMs += $ms
+            $count++
+            "{0,-40} {1,10}" -f $name, $ms
+          }
+          "{0,-40} {1,10}" -f ("-" * 40), ("-" * 10)
+          "{0,-40} {1,10}" -f "TOTAL ($count cases)", $totalMs
+          $avg = [math]::Round($totalMs / $count)
+          "{0,-40} {1,10}" -f "AVERAGE", $avg
+          Remove-Item -Recurse -Force $outDir.FullName
       - name: Upload native binary
         uses: actions/upload-artifact@v7
         with:
