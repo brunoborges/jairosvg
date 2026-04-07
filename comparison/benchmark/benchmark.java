@@ -340,11 +340,30 @@ public class benchmark {
                         .build()
                 : null;
 
+        // Track engine/case combos that fail during warmup so we skip them in measurement
+        Set<String> failedCombos = new HashSet<>();
+
         try {
             for (SvgCase c : cases) {
                 warmup(jairosvg, c.contentBytes(), WARMUP, warmupPb);
-                if (runEcho) warmup(echosvg, c.contentBytes(), WARMUP, warmupPb);
-                if (runJsvg) warmup(jsvg, c.contentBytes(), WARMUP, warmupPb);
+                if (runEcho) {
+                    try {
+                        warmup(echosvg, c.contentBytes(), WARMUP, warmupPb);
+                    } catch (Exception e) {
+                        System.err.println("  EchoSVG warmup failed for '" + c.name() + "': " + e.getMessage());
+                        failedCombos.add("echosvg:" + c.name());
+                        if (warmupPb != null) warmupPb.stepBy(WARMUP - 1); // account for remaining steps
+                    }
+                }
+                if (runJsvg) {
+                    try {
+                        warmup(jsvg, c.contentBytes(), WARMUP, warmupPb);
+                    } catch (Exception e) {
+                        System.err.println("  JSVG warmup failed for '" + c.name() + "': " + e.getMessage());
+                        failedCombos.add("jsvg:" + c.name());
+                        if (warmupPb != null) warmupPb.stepBy(WARMUP - 1);
+                    }
+                }
             }
         } finally {
             if (warmupPb != null) warmupPb.close();
@@ -377,14 +396,24 @@ public class benchmark {
             try {
                 jTimes = measure(jairosvg, c.contentBytes(), ITERATIONS, pb);
 
-                if (runEcho) {
+                if (runEcho && !failedCombos.contains("echosvg:" + c.name())) {
                     System.gc(); Thread.sleep(100);
-                    eTimes = measure(echosvg, c.contentBytes(), ITERATIONS, pb);
+                    try {
+                        eTimes = measure(echosvg, c.contentBytes(), ITERATIONS, pb);
+                    } catch (Exception e) {
+                        System.err.println("  EchoSVG measurement failed for '" + c.name() + "': " + e.getMessage());
+                        eTimes = null;
+                    }
                 }
 
-                if (runJsvg) {
+                if (runJsvg && !failedCombos.contains("jsvg:" + c.name())) {
                     System.gc(); Thread.sleep(100);
-                    sTimes = measure(jsvg, c.contentBytes(), ITERATIONS, pb);
+                    try {
+                        sTimes = measure(jsvg, c.contentBytes(), ITERATIONS, pb);
+                    } catch (Exception e) {
+                        System.err.println("  JSVG measurement failed for '" + c.name() + "': " + e.getMessage());
+                        sTimes = null;
+                    }
                 }
 
                 if (runCairo) {
@@ -406,6 +435,8 @@ public class benchmark {
                 printStats("EchoSVG   (Java/Batik)", eTimes);
                 emitJson("echosvg", c.name(), eTimes);
                 eAvg = Arrays.stream(eTimes).average().orElse(0);
+            } else if (runEcho) {
+                emitJsonError("echosvg", c.name(), "EchoSVG failed for this case");
             }
 
             double sAvg = 0;
@@ -413,6 +444,8 @@ public class benchmark {
                 printStats("JSVG      (Java/Java2D)", sTimes);
                 emitJson("jsvg", c.name(), sTimes);
                 sAvg = Arrays.stream(sTimes).average().orElse(0);
+            } else if (runJsvg) {
+                emitJsonError("jsvg", c.name(), "JSVG failed for this case");
             }
 
             double cAvg = 0;
