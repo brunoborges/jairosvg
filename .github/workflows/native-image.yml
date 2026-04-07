@@ -84,7 +84,7 @@ jobs:
           foreach ($svg in @("comparison\svg\01_basic_shapes.svg", "comparison\svg\10_gradients.svg", "comparison\svg\20_filters.svg")) {
             if (Test-Path $svg) {
               $name = [System.IO.Path]::GetFileNameWithoutExtension($svg)
-              java --enable-preview -Djava.awt.headless=true `
+              java --enable-preview "-Djava.awt.headless=true" `
                 "-agentlib:native-image-agent=config-merge-dir=native-config" `
                 -jar $cliJars[0].FullName $svg -o "$env:TEMP\$name.png"
             }
@@ -118,7 +118,7 @@ jobs:
           }
           $version = "${{ steps.version.outputs.version }}"
           native-image --enable-preview `
-            -Djava.awt.headless=true `
+            "-Djava.awt.headless=true" `
             "-H:ConfigurationFileDirectories=native-config" `
             -o "jairosvg-${version}-${{ matrix.platform }}-${{ matrix.arch }}" `
             -jar $cliJars[0].FullName
