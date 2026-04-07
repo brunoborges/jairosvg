@@ -59,6 +59,38 @@ jobs:
         env:
           MAVEN_OPTS: --enable-preview
         run: ./mvnw -DskipTests package --no-transfer-progress
+      - name: Collect native-image metadata with tracing agent (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          shopt -s nullglob
+          cli_jars=(target/*-cli.jar)
+          mkdir -p native-config
+          # Run a few representative SVGs to capture all AWT/Java2D JNI metadata
+          for svg in comparison/svg/01_basic_shapes.svg comparison/svg/10_gradients.svg comparison/svg/20_filters.svg; do
+            [ -f "$svg" ] || continue
+            java --enable-preview -Djava.awt.headless=true \
+              -agentlib:native-image-agent=config-merge-dir=native-config \
+              -jar "${cli_jars[0]}" "$svg" -o "/tmp/$(basename "$svg" .svg).png"
+          done
+          echo "Collected metadata files:"
+          ls -la native-config/
+      - name: Collect native-image metadata with tracing agent (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $cliJars = Get-ChildItem target\*-cli.jar
+          New-Item -ItemType Directory -Force -Path native-config | Out-Null
+          foreach ($svg in @("comparison\svg\01_basic_shapes.svg", "comparison\svg\10_gradients.svg", "comparison\svg\20_filters.svg")) {
+            if (Test-Path $svg) {
+              $name = [System.IO.Path]::GetFileNameWithoutExtension($svg)
+              java --enable-preview -Djava.awt.headless=true `
+                "-agentlib:native-image-agent=config-merge-dir=native-config" `
+                -jar $cliJars[0].FullName $svg -o "$env:TEMP\$name.png"
+            }
+          }
+          Write-Output "Collected metadata files:"
+          Get-ChildItem native-config
       - name: Build native image (Unix)
         if: runner.os != 'Windows'
         shell: bash
@@ -72,6 +104,7 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           native-image --enable-preview \
             -Djava.awt.headless=true \
+            -H:ConfigurationFileDirectories=native-config \
             -o "jairosvg-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}" \
             -jar "${cli_jars[0]}"
       - name: Build native image (Windows)
@@ -86,6 +119,7 @@ jobs:
           $version = "${{ steps.version.outputs.version }}"
           native-image --enable-preview `
             -Djava.awt.headless=true `
+            "-H:ConfigurationFileDirectories=native-config" `
             -o "jairosvg-${version}-${{ matrix.platform }}-${{ matrix.arch }}" `
             -jar $cliJars[0].FullName
       - name: Smoke test (Unix)
