@@ -100,6 +100,7 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           native-image --enable-preview \
             -Djava.awt.headless=true \
+            -Djava.home="$JAVA_HOME" \
             -H:ConfigurationFileDirectories=native-config \
             -o "jairosvg-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}" \
             -jar "${cli_jars[0]}"
@@ -115,6 +116,7 @@ jobs:
           $version = "${{ steps.version.outputs.version }}"
           native-image --enable-preview `
             "-Djava.awt.headless=true" `
+            "-Djava.home=$env:JAVA_HOME" `
             "-H:ConfigurationFileDirectories=native-config" `
             -o "jairosvg-${version}-${{ matrix.platform }}-${{ matrix.arch }}" `
             -jar $cliJars[0].FullName
@@ -146,17 +148,22 @@ jobs:
             name=$(basename "$svg" .svg)
             out="$OUT_DIR/${name}.png"
             start=$(date +%s%N 2>/dev/null || python3 -c 'import time; print(int(time.time_ns()))')
-            "$BIN" "$svg" -o "$out"
-            end=$(date +%s%N 2>/dev/null || python3 -c 'import time; print(int(time.time_ns()))')
-            elapsed_ms=$(( (end - start) / 1000000 ))
-            total_ms=$((total_ms + elapsed_ms))
-            count=$((count + 1))
-            printf "%-40s %10d\n" "$name" "$elapsed_ms"
+            if "$BIN" "$svg" -o "$out" 2>/dev/null; then
+              end=$(date +%s%N 2>/dev/null || python3 -c 'import time; print(int(time.time_ns()))')
+              elapsed_ms=$(( (end - start) / 1000000 ))
+              total_ms=$((total_ms + elapsed_ms))
+              count=$((count + 1))
+              printf "%-40s %10d\n" "$name" "$elapsed_ms"
+            else
+              printf "%-40s %10s\n" "$name" "FAILED"
+            fi
           done
           printf "%-40s %10s\n" "$(printf '%0.s-' {1..40})" "----------"
           printf "%-40s %10d\n" "TOTAL ($count cases)" "$total_ms"
-          avg=$((total_ms / count))
-          printf "%-40s %10d\n" "AVERAGE" "$avg"
+          if [ "$count" -gt 0 ]; then
+            avg=$((total_ms / count))
+            printf "%-40s %10d\n" "AVERAGE" "$avg"
+          fi
           rm -rf "$OUT_DIR"
       - name: Benchmark (Windows)
         if: runner.os == 'Windows'
@@ -174,17 +181,23 @@ jobs:
             $name = $svg.BaseName
             $out = Join-Path $outDir.FullName "$name.png"
             $sw = [System.Diagnostics.Stopwatch]::StartNew()
-            & $bin $svg.FullName -o $out
+            $proc = Start-Process -FilePath $bin -ArgumentList $svg.FullName,"-o",$out -NoNewWindow -Wait -PassThru -RedirectStandardError ([System.IO.Path]::GetTempFileName())
             $sw.Stop()
-            $ms = $sw.ElapsedMilliseconds
-            $totalMs += $ms
-            $count++
-            "{0,-40} {1,10}" -f $name, $ms
+            if ($proc.ExitCode -eq 0) {
+              $ms = $sw.ElapsedMilliseconds
+              $totalMs += $ms
+              $count++
+              "{0,-40} {1,10}" -f $name, $ms
+            } else {
+              "{0,-40} {1,10}" -f $name, "FAILED"
+            }
           }
           "{0,-40} {1,10}" -f ("-" * 40), ("-" * 10)
           "{0,-40} {1,10}" -f "TOTAL ($count cases)", $totalMs
-          $avg = [math]::Round($totalMs / $count)
-          "{0,-40} {1,10}" -f "AVERAGE", $avg
+          if ($count -gt 0) {
+            $avg = [math]::Round($totalMs / $count)
+            "{0,-40} {1,10}" -f "AVERAGE", $avg
+          }
           Remove-Item -Recurse -Force $outDir.FullName
       - name: Upload native binary
         if: always() && steps.version.outputs.version != ''
