@@ -66,9 +66,8 @@ jobs:
           shopt -s nullglob
           cli_jars=(target/*-cli.jar)
           mkdir -p native-config
-          # Run a few representative SVGs to capture all AWT/Java2D JNI metadata
-          for svg in comparison/svg/01_basic_shapes.svg comparison/svg/10_gradients.svg comparison/svg/20_filters.svg; do
-            [ -f "$svg" ] || continue
+          # Run all SVGs to capture every AWT/Java2D/font JNI code path
+          for svg in comparison/svg/*.svg; do
             java --enable-preview -Djava.awt.headless=true \
               -agentlib:native-image-agent=config-merge-dir=native-config \
               -jar "${cli_jars[0]}" "$svg" -o "/tmp/$(basename "$svg" .svg).png"
@@ -81,13 +80,10 @@ jobs:
         run: |
           $cliJars = Get-ChildItem target\*-cli.jar
           New-Item -ItemType Directory -Force -Path native-config | Out-Null
-          foreach ($svg in @("comparison\svg\01_basic_shapes.svg", "comparison\svg\10_gradients.svg", "comparison\svg\20_filters.svg")) {
-            if (Test-Path $svg) {
-              $name = [System.IO.Path]::GetFileNameWithoutExtension($svg)
-              java --enable-preview "-Djava.awt.headless=true" `
-                "-agentlib:native-image-agent=config-merge-dir=native-config" `
-                -jar $cliJars[0].FullName $svg -o "$env:TEMP\$name.png"
-            }
+          foreach ($svg in Get-ChildItem comparison\svg\*.svg | Sort-Object Name) {
+            java --enable-preview "-Djava.awt.headless=true" `
+              "-agentlib:native-image-agent=config-merge-dir=native-config" `
+              -jar $cliJars[0].FullName $svg.FullName -o "$env:TEMP\$($svg.BaseName).png"
           }
           Write-Output "Collected metadata files:"
           Get-ChildItem native-config
