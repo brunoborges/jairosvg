@@ -19,14 +19,14 @@
 <dependency>
     <groupId>io.brunoborges</groupId>
     <artifactId>jairosvg</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.10</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-implementation 'io.brunoborges:jairosvg:1.0.4'
+implementation 'io.brunoborges:jairosvg:1.0.10'
 ```
 
 ## Quick Example

@@ -25,62 +25,57 @@ fi
 
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 
-# Portable sed -i (macOS vs GNU)
+# Portable sed -i with extended regex (macOS vs GNU)
 sedi() {
     if [[ "$(uname)" == "Darwin" ]]; then
-        sed -i '' "$@"
+        sed -i '' -E "$@"
     else
-        sed -i "$@"
+        sed -i -E "$@"
     fi
 }
 
 if [[ "$MODE" == "release" ]]; then
-    # ── Detect the current release version from pom.xml ──
-    OLD_SNAPSHOT=$(grep '<version>' "$ROOT/pom.xml" | head -1 | sed 's/.*<version>//;s/<\/version>.*//' | tr -d ' ')
-    OLD_VERSION="${OLD_SNAPSHOT%-SNAPSHOT}"
-
-    if [[ -z "$OLD_VERSION" ]]; then
-        echo "ERROR: Could not detect current version from pom.xml"
-        exit 1
-    fi
-
-    echo "Bumping release version: $OLD_VERSION → $NEW_VERSION"
+    echo "Bumping release version → $NEW_VERSION"
     echo ""
 
-    # 1. pom.xml — set release version (remove -SNAPSHOT)
-    sedi "s|<version>$OLD_SNAPSHOT</version>|<version>$NEW_VERSION</version>|" "$ROOT/pom.xml"
+    # Regex matching any jairosvg version (with optional -SNAPSHOT suffix, possibly repeated)
+    # Uses extended regex via sed -E for portability
+    VER_RE='[0-9]+\.[0-9]+\.[0-9]+(-SNAPSHOT)*'
+
+    # 1. pom.xml — set release version (first <version> tag only)
+    sedi "1,/<version>/s|<version>${VER_RE}</version>|<version>$NEW_VERSION</version>|" "$ROOT/pom.xml"
     echo "  ✓ pom.xml"
 
     # 2. README.md — Maven, Gradle, JBang, CLI examples
-    sedi "s|io.brunoborges:jairosvg:$OLD_VERSION|io.brunoborges:jairosvg:$NEW_VERSION|g" "$ROOT/README.md"
-    sedi "s|<version>$OLD_VERSION</version>|<version>$NEW_VERSION</version>|g" "$ROOT/README.md"
-    sedi "s|jairosvg-$OLD_VERSION-cli.jar|jairosvg-$NEW_VERSION-cli.jar|g" "$ROOT/README.md"
+    sedi "s|io\.brunoborges:jairosvg:${VER_RE}|io.brunoborges:jairosvg:$NEW_VERSION|g" "$ROOT/README.md"
+    sedi "/artifactId>jairosvg/{ n; s|<version>${VER_RE}</version>|<version>$NEW_VERSION</version>|; }" "$ROOT/README.md"
+    sedi "s|jairosvg-${VER_RE}-cli\.jar|jairosvg-$NEW_VERSION-cli.jar|g" "$ROOT/README.md"
     echo "  ✓ README.md"
 
     # 3. jbang-catalog.json
-    sedi "s|io.brunoborges:jairosvg:$OLD_VERSION|io.brunoborges:jairosvg:$NEW_VERSION|g" "$ROOT/jbang-catalog.json"
+    sedi "s|io\.brunoborges:jairosvg:${VER_RE}|io.brunoborges:jairosvg:$NEW_VERSION|g" "$ROOT/jbang-catalog.json"
     echo "  ✓ jbang-catalog.json"
 
-    # 4. comparison/README.md — version in comparison table
-    sedi "s|$OLD_VERSION|$NEW_VERSION|g" "$ROOT/comparison/README.md"
+    # 4. comparison/README.md — version in comparison table (only in "Current version" row)
+    sedi "/Current version/s|${VER_RE}|$NEW_VERSION|" "$ROOT/comparison/README.md"
     echo "  ✓ comparison/README.md"
 
     # 5. Site docs
     for f in index.md getting-started.md; do
         filepath="$ROOT/src/site/markdown/$f"
         if [[ -f "$filepath" ]]; then
-            sedi "s|io.brunoborges:jairosvg:$OLD_VERSION|io.brunoborges:jairosvg:$NEW_VERSION|g" "$filepath"
-            sedi "s|<version>$OLD_VERSION</version>|<version>$NEW_VERSION</version>|g" "$filepath"
-            sedi "s|jairosvg-$OLD_VERSION-cli.jar|jairosvg-$NEW_VERSION-cli.jar|g" "$filepath"
+            sedi "s|io\.brunoborges:jairosvg:${VER_RE}|io.brunoborges:jairosvg:$NEW_VERSION|g" "$filepath"
+            sedi "/artifactId>jairosvg/{ n; s|<version>${VER_RE}</version>|<version>$NEW_VERSION</version>|; }" "$filepath"
+            sedi "s|jairosvg-${VER_RE}-cli\.jar|jairosvg-$NEW_VERSION-cli.jar|g" "$filepath"
             echo "  ✓ src/site/markdown/$f"
         fi
     done
 
-    # 6. comparison JBang scripts
-    for f in benchmark/benchmark.java visual/generate.java; do
+    # 6. comparison JBang scripts — set to release version (no -SNAPSHOT)
+    for f in benchmark/benchmark.java visual/generate.java profiling/profile.java; do
         filepath="$ROOT/comparison/$f"
         if [[ -f "$filepath" ]]; then
-            sedi "s|io.brunoborges:jairosvg:$OLD_VERSION|io.brunoborges:jairosvg:$NEW_VERSION|g" "$filepath"
+            sedi "s|io\.brunoborges:jairosvg:${VER_RE}|io.brunoborges:jairosvg:$NEW_VERSION|g" "$filepath"
             echo "  ✓ comparison/$f"
         fi
     done
@@ -92,26 +87,21 @@ if [[ "$MODE" == "release" ]]; then
 elif [[ "$MODE" == "snapshot" ]]; then
     NEW_SNAPSHOT="${NEW_VERSION}-SNAPSHOT"
 
-    # ── Detect old version from pom.xml ──
-    OLD_POM_VERSION=$(grep '<version>' "$ROOT/pom.xml" | head -1 | sed 's/.*<version>//;s/<\/version>.*//' | tr -d ' ')
-
-    if [[ -z "$OLD_POM_VERSION" ]]; then
-        echo "ERROR: Could not detect current version from pom.xml"
-        exit 1
-    fi
-
-    echo "Bumping snapshot version: $OLD_POM_VERSION → $NEW_SNAPSHOT"
+    echo "Bumping snapshot version → $NEW_SNAPSHOT"
     echo ""
 
-    # 1. pom.xml
-    sedi "s|<version>$OLD_POM_VERSION</version>|<version>$NEW_SNAPSHOT</version>|" "$ROOT/pom.xml"
+    # Regex matching any jairosvg version (with optional -SNAPSHOT suffix)
+    VER_RE='[0-9]+\.[0-9]+\.[0-9]+(-SNAPSHOT)*'
+
+    # 1. pom.xml (first <version> tag only)
+    sedi "1,/<version>/s|<version>${VER_RE}</version>|<version>$NEW_SNAPSHOT</version>|" "$ROOT/pom.xml"
     echo "  ✓ pom.xml"
 
     # 2. comparison JBang scripts
-    for f in benchmark/benchmark.java visual/generate.java; do
+    for f in benchmark/benchmark.java visual/generate.java profiling/profile.java; do
         filepath="$ROOT/comparison/$f"
         if [[ -f "$filepath" ]]; then
-            sedi "s|io.brunoborges:jairosvg:$OLD_POM_VERSION|io.brunoborges:jairosvg:$NEW_SNAPSHOT|g" "$filepath"
+            sedi "s|io\.brunoborges:jairosvg:${VER_RE}|io.brunoborges:jairosvg:$NEW_SNAPSHOT|g" "$filepath"
             echo "  ✓ comparison/$f"
         fi
     done
