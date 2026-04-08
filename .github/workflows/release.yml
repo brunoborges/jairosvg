@@ -56,6 +56,9 @@ jobs:
       - name: Build and stage artifacts
         run: ./mvnw clean deploy -Prelease --no-transfer-progress
 
+      - name: Remove CLI jar from Maven Central staging
+        run: find target/staging-deploy -name '*-cli*' -delete
+
       - name: Upload staged artifacts
         uses: actions/upload-artifact@v7
         with:
