@@ -63,23 +63,16 @@ See **[comparison/COMPARISON.md](comparison/COMPARISON.md)** for side-by-side re
 
 > **Tip:** Check [Maven Central](https://central.sonatype.com/artifact/io.brunoborges/jairosvg) for the latest released version.
 
-### Native Binary (GraalVM)
+### CLI Jar
 
-Download pre-built native binaries (no JVM required) from the [GitHub Releases page](https://github.com/brunoborges/jairosvg/releases):
-
-| Platform    | Binary                                        |
-|-------------|-----------------------------------------------|
-| Linux x64   | `jairosvg-{version}-linux-x64`               |
-| Linux arm64 | `jairosvg-{version}-linux-arm64`             |
-| Windows x64 | `jairosvg-{version}-windows-x64.exe`         |
+Download the standalone CLI jar from the [GitHub Releases page](https://github.com/brunoborges/jairosvg/releases):
 
 ```bash
-# Linux: make executable and run
-chmod +x jairosvg-{version}-linux-x64
-./jairosvg-{version}-linux-x64 input.svg -o output.png
+# Download the CLI jar (requires Java 25+)
+java --enable-preview -jar jairosvg-{version}-cli.jar input.svg -o output.png
 
-# Windows (PowerShell)
-.\jairosvg-{version}-windows-x64.exe input.svg -o output.png
+# Convert multiple files at once
+java --enable-preview -jar jairosvg-{version}-cli.jar *.svg -o output-dir/
 ```
 
 ### Maven
@@ -221,33 +214,34 @@ jairosvg input.svg -o output.png
 
 # SVG → PDF with 2x scale
 jairosvg input.svg -f pdf -s 2 -o output.pdf
+
+# Convert multiple files to a directory
+jairosvg *.svg -o output-dir/
 ```
 
-Manually build:
+Or download the CLI jar from [GitHub Releases](https://github.com/brunoborges/jairosvg/releases):
 ```bash
-# Build the CLI
-mvn package
-
 # SVG → PNG
-java --enable-preview -jar target/jairosvg-1.0.4-cli.jar input.svg -o output.png
+java --enable-preview -jar jairosvg-{version}-cli.jar input.svg -o output.png
 
 # SVG → PDF with 2x scale
-java --enable-preview -jar target/jairosvg-1.0.4-cli.jar input.svg -f pdf -s 2 -o output.pdf
+java --enable-preview -jar jairosvg-{version}-cli.jar input.svg -f pdf -s 2 -o output.pdf
+
+# Convert multiple files to a directory
+java --enable-preview -jar jairosvg-{version}-cli.jar *.svg -o output-dir/
 ```
 
-Build a GraalVM native CLI:
+Build from source:
 ```bash
-# Create native executable from the shaded CLI JAR
-# Required native-image arguments are read from the JAR's META-INF/native-image config
-native-image -jar target/jairosvg-1.0.4-cli.jar
-./jairosvg input.svg -o output.png
+mvn package
+java --enable-preview -jar target/jairosvg-{version}-cli.jar input.svg -o output.png
 ```
 
 ### CLI Options
 
 | Option                   | Description                                                     |
 | ------------------------ | --------------------------------------------------------------- |
-| `-o, --output FILE`      | Output filename                                                 |
+| `-o, --output FILE\|DIR` | Output filename or directory (default: stdout)                  |
 | `-f, --format FORMAT`    | Output format: `png`, `jpeg`, `tiff`, `pdf`, `ps`, `eps` |
 | `-d, --dpi DPI`          | Resolution (default: 96)                                        |
 | `-s, --scale FACTOR`     | Scale factor (default: 1)                                       |
@@ -259,6 +253,8 @@ native-image -jar target/jairosvg-1.0.4-cli.jar
 | `-n, --negate-colors`    | Negate vector colors                                            |
 | `-i, --invert-images`    | Invert raster image colors                                      |
 | `-u, --unsafe`           | Allow external file access                                      |
+
+When multiple input files are given, `-o` specifies an output directory. Output filenames are derived from input names with the appropriate extension.
 
 ## Supported SVG Features
 
