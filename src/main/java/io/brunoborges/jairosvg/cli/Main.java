@@ -2,7 +2,10 @@ package io.brunoborges.jairosvg.cli;
 
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import io.brunoborges.jairosvg.JairoSVG;
@@ -29,7 +32,7 @@ public final class Main {
         }
 
         // Parse arguments
-        String input = null;
+        List<String> inputs = new ArrayList<>();
         String output = "-";
         String format = null;
         double dpi = 96;
@@ -57,57 +60,84 @@ public final class Main {
                 case "--output-height" -> outputHeight = Double.parseDouble(args[++i]);
                 default -> {
                     if (!args[i].startsWith("-") || "-".equals(args[i])) {
-                        input = args[i];
+                        inputs.add(args[i]);
                     }
                 }
             }
         }
 
-        if (input == null) {
+        if (inputs.isEmpty()) {
             System.err.println("Error: No input file specified.");
             printUsage();
             throw new IllegalArgumentException("No input file specified.");
         }
 
+        boolean multiFile = inputs.size() > 1 || (!"-".equals(output) && Files.isDirectory(Path.of(output)));
+
+        // For multiple files, -o must be a directory (or omitted for auto-naming)
+        if (multiFile && !"-".equals(output) && !Files.isDirectory(Path.of(output))) {
+            Files.createDirectories(Path.of(output));
+        }
+
         // Determine output format
-        if (format == null) {
-            if (!"-".equals(output)) {
-                String ext = output.substring(output.lastIndexOf('.') + 1).toLowerCase();
-                format = FORMAT_EXTENSIONS.getOrDefault(ext, "PNG");
-            } else {
-                format = "PNG";
-            }
-        } else {
+        if (format != null) {
             format = format.toUpperCase();
+        } else if (!multiFile && !"-".equals(output)) {
+            String ext = output.substring(output.lastIndexOf('.') + 1).toLowerCase();
+            format = FORMAT_EXTENSIONS.getOrDefault(ext, "PNG");
+        } else {
+            format = "PNG";
         }
 
-        // Build conversion
-        var builder = JairoSVG.builder().dpi(dpi).scale(scale).unsafe(unsafe).negateColors(negateColors);
+        String formatExt = switch (format) {
+            case "JPEG" -> "jpeg";
+            case "TIFF" -> "tiff";
+            case "PDF" -> "pdf";
+            case "PS", "EPS" -> "ps";
+            default -> "png";
+        };
 
-        if (background != null)
-            builder.backgroundColor(background);
-        if (width != null)
-            builder.parentWidth(width);
-        if (height != null)
-            builder.parentHeight(height);
-        if (outputWidth != null)
-            builder.outputWidth(outputWidth);
-        if (outputHeight != null)
-            builder.outputHeight(outputHeight);
+        for (String input : inputs) {
+            var builder = JairoSVG.builder().dpi(dpi).scale(scale).unsafe(unsafe).negateColors(negateColors);
 
-        // Read input
-        if ("-".equals(input)) {
-            builder.fromStream(System.in);
-        } else {
-            builder.fromFile(Path.of(input));
-        }
+            if (background != null)
+                builder.backgroundColor(background);
+            if (width != null)
+                builder.parentWidth(width);
+            if (height != null)
+                builder.parentHeight(height);
+            if (outputWidth != null)
+                builder.outputWidth(outputWidth);
+            if (outputHeight != null)
+                builder.outputHeight(outputHeight);
 
-        // Write output
-        if ("-".equals(output)) {
-            writeOutput(builder, format, System.out);
-        } else {
-            try (var out = new FileOutputStream(output)) {
-                writeOutput(builder, format, out);
+            // Read input
+            if ("-".equals(input)) {
+                builder.fromStream(System.in);
+            } else {
+                builder.fromFile(Path.of(input));
+            }
+
+            // Determine per-file output path
+            String fileOutput;
+            if (multiFile) {
+                String baseName = Path.of(input).getFileName().toString().replaceFirst("\\.[^.]+$", "");
+                if ("-".equals(output)) {
+                    fileOutput = baseName + "." + formatExt;
+                } else {
+                    fileOutput = Path.of(output, baseName + "." + formatExt).toString();
+                }
+            } else {
+                fileOutput = output;
+            }
+
+            // Write output
+            if ("-".equals(fileOutput)) {
+                writeOutput(builder, format, System.out);
+            } else {
+                try (var out = new FileOutputStream(fileOutput)) {
+                    writeOutput(builder, format, out);
+                }
             }
         }
     }
@@ -116,10 +146,10 @@ public final class Main {
         System.out.println("""
                 JairoSVG %s - Convert SVG files to other formats
 
-                Usage: jairosvg [options] input.svg
+                Usage: jairosvg [options] input.svg [input2.svg ...]
 
                 Options:
-                  -o, --output FILE      Output filename (default: stdout)
+                  -o, --output FILE|DIR  Output filename or directory (default: stdout)
                   -f, --format FORMAT    Output format: png, jpeg, tiff, pdf, ps, eps
                   -d, --dpi DPI          DPI ratio (default: 96)
                   -W, --width PIXELS     Parent container width
@@ -132,6 +162,9 @@ public final class Main {
                   --output-height PIXELS Desired output height
                   -v, --version          Show version
                   -h, --help             Show this help
+
+                When multiple input files are given, -o specifies an output directory.
+                Output filenames are derived from input names with the appropriate extension.
                 """.formatted(JairoSVG.VERSION));
     }
 

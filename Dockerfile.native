@@ -1,0 +1,51 @@
+FROM --platform=$BUILDPLATFORM ghcr.io/graalvm/native-image-community:25 AS builder
+
+# Maven wrapper needs unzip to extract Maven distribution
+RUN microdnf install -y unzip freetype fontconfig
+
+WORKDIR /app
+
+# Copy Maven wrapper and POM first for layer caching
+COPY mvnw pom.xml ./
+COPY .mvn .mvn
+RUN chmod +x mvnw && ./mvnw dependency:go-offline --no-transfer-progress -q 2>/dev/null || true
+
+# Copy source code
+COPY src src
+COPY comparison/svg comparison/svg
+
+# Build shaded CLI JAR (jni-config.json is embedded in the JAR via META-INF)
+ENV MAVEN_OPTS="--enable-preview"
+RUN ./mvnw -DskipTests package --no-transfer-progress
+
+# Collect additional native-image metadata with tracing agent (all SVGs)
+RUN mkdir -p native-config && \
+    for svg in comparison/svg/*.svg; do \
+      java --enable-preview -Djava.awt.headless=true \
+        -agentlib:native-image-agent=config-merge-dir=native-config \
+        -jar target/*-cli.jar "$svg" -o "/tmp/$(basename "$svg" .svg).png" || true; \
+    done && \
+    echo "=== Collected metadata ===" && ls -la native-config/
+
+# Build native image
+# jni-config.json from META-INF is auto-discovered; tracing agent adds AWT/Java2D reflection
+RUN native-image --enable-preview \
+      -Djava.awt.headless=true \
+      -H:ConfigurationFileDirectories=native-config \
+      -o jairosvg \
+      -jar target/*-cli.jar && \
+    mkdir -p /output && cp jairosvg /output/ && \
+    cp lib*.so /output/ 2>/dev/null || true
+
+# --- Runtime stage ---
+FROM ubuntu:24.04
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      fontconfig fonts-dejavu-core libfreetype6 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY --from=builder /output/ /app/
+COPY --from=builder /app/comparison/svg comparison/svg
+
+ENTRYPOINT ["/app/jairosvg"]

@@ -47,12 +47,10 @@ jobs:
         run: |
           shopt -s nullglob
           cli_jars=(target/*-cli.jar)
-          mkdir -p native-config
-          for svg in comparison/svg/*.svg; do
-            java --enable-preview -Djava.awt.headless=true \
-              -agentlib:native-image-agent=config-merge-dir=native-config \
-              -jar "${cli_jars[0]}" "$svg" -o "/tmp/$(basename "$svg" .svg).png"
-          done
+          mkdir -p native-config /tmp/trace-out
+          java --enable-preview -Djava.awt.headless=true \
+            -agentlib:native-image-agent=config-merge-dir=native-config \
+            -jar "${cli_jars[0]}" comparison/svg/*.svg -o /tmp/trace-out
           echo "Collected metadata files:"
           ls -la native-config/
       - name: Build instrumented native image (PGO)
@@ -72,9 +70,7 @@ jobs:
       - name: Collect PGO profile data
         run: |
           OUT_DIR=$(mktemp -d)
-          for svg in comparison/svg/*.svg; do
-            ./jairosvg-instrumented "$svg" -o "$OUT_DIR/$(basename "$svg" .svg).png" || true
-          done
+          ./jairosvg-instrumented comparison/svg/*.svg -o "$OUT_DIR" || true
           rm -rf "$OUT_DIR"
           echo "Profile data collected:"
           ls -la default.iprof
@@ -97,6 +93,23 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           BIN="./jairosvg-${VERSION}-linux-x64"
+          OUT_DIR=$(mktemp -d)
+
+          echo "=== Batch conversion (single invocation, all 42 SVGs) ==="
+          start=$(date +%s%N)
+          "$BIN" comparison/svg/*.svg -o "$OUT_DIR"
+          end=$(date +%s%N)
+          batch_ms=$(( (end - start) / 1000000 ))
+          file_count=$(ls "$OUT_DIR"/*.png 2>/dev/null | wc -l)
+          echo "Total: ${batch_ms} ms for ${file_count} files"
+          if [ "$file_count" -gt 0 ]; then
+            avg=$((batch_ms / file_count))
+            echo "Average: ${avg} ms/file"
+          fi
+          rm -rf "$OUT_DIR"
+
+          echo ""
+          echo "=== Per-file conversion (individual invocations) ==="
           OUT_DIR=$(mktemp -d)
           printf "%-40s %10s\n" "SVG Test Case" "Time (ms)"
           printf "%-40s %10s\n" "$(printf '%0.s-' {1..40})" "----------"
