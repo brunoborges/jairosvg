@@ -3,7 +3,7 @@
 //COMPILE_OPTIONS --release 25
 //REPOS mavenCentral,mavenLocal
 //REPOS css4j=https://css4j.github.io/maven/
-//DEPS io.brunoborges:jairosvg:1.0.10-SNAPSHOT-SNAPSHOT
+//DEPS io.brunoborges:jairosvg:1.0.11-SNAPSHOT-SNAPSHOT-SNAPSHOT
 //DEPS io.sf.carte:echosvg-transcoder:2.4
 //DEPS com.github.weisj:jsvg:2.0.0
 //DEPS com.google.code.gson:gson:2.13.1
