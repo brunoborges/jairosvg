@@ -55,7 +55,7 @@ jobs:
           done
           echo "Collected metadata files:"
           ls -la native-config/
-      - name: Build native image
+      - name: Build instrumented native image (PGO)
         run: |
           shopt -s nullglob
           cli_jars=(target/*-cli.jar)
@@ -63,8 +63,28 @@ jobs:
             echo "No shaded CLI jar found in target/"
             exit 1
           fi
+          native-image --enable-preview \
+            --pgo-instrument \
+            -Djava.awt.headless=true \
+            -H:ConfigurationFileDirectories=native-config \
+            -o jairosvg-instrumented \
+            -jar "${cli_jars[0]}"
+      - name: Collect PGO profile data
+        run: |
+          OUT_DIR=$(mktemp -d)
+          for svg in comparison/svg/*.svg; do
+            ./jairosvg-instrumented "$svg" -o "$OUT_DIR/$(basename "$svg" .svg).png" || true
+          done
+          rm -rf "$OUT_DIR"
+          echo "Profile data collected:"
+          ls -la default.iprof
+      - name: Build optimized native image (PGO)
+        run: |
+          shopt -s nullglob
+          cli_jars=(target/*-cli.jar)
           VERSION="${{ steps.version.outputs.version }}"
           native-image --enable-preview \
+            --pgo=default.iprof \
             -Djava.awt.headless=true \
             -H:ConfigurationFileDirectories=native-config \
             -o "jairosvg-${VERSION}-linux-x64" \
