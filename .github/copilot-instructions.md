@@ -78,5 +78,5 @@ Always use `UrlHelper.parseUrl(href, baseUrl)` before fetching external resource
 - **Static drawer methods**: All drawer classes (`ShapeDrawer`, `PathDrawer`, `TextDrawer`, `Defs`, `ImageHandler`) use static methods that take `(Surface, Node)` as parameters
 - **Formatting**: 4-space indentation, Eclipse formatter via Spotless. Run `./mvnw spotless:apply` before committing
 - **Testing**: JUnit Jupiter (JUnit 6). Single test class `JairoSVGTest` with integration-style tests. Use `@TempDir` for file I/O tests. Float assertions use epsilon tolerance (0.01)
-- **Preview features**: `--enable-preview` is required everywhere (compiler, surefire, CLI jar). This is configured in pom.xml
+- **Preview features**: No preview features are used. The project compiles and runs on standard Java 25
 - **CI**: Runs on ubuntu, macOS, and Windows via GitHub Actions. JaCoCo coverage uploaded from Ubuntu

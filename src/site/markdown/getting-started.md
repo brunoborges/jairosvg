@@ -39,7 +39,7 @@ jbang --deps io.brunoborges:jairosvg:1.0.4 MyScript.java
 git clone https://github.com/brunoborges/jairosvg.git
 cd jairosvg
 ./mvnw package
-java --enable-preview -jar target/jairosvg-1.0.4-cli.jar --help
+java -jar target/jairosvg-1.0.4-cli.jar --help
 ```
 
 ## First Conversion
@@ -74,13 +74,13 @@ byte[] result = JairoSVG.builder()
 
 ```bash
 # SVG to PNG
-java --enable-preview -jar jairosvg-cli.jar input.svg -o output.png
+java -jar jairosvg-cli.jar input.svg -o output.png
 
 # SVG to PDF at 2x scale
-java --enable-preview -jar jairosvg-cli.jar input.svg -f pdf -s 2 -o output.pdf
+java -jar jairosvg-cli.jar input.svg -f pdf -s 2 -o output.pdf
 
 # From URL
-java --enable-preview -jar jairosvg-cli.jar https://example.com/image.svg -o output.png
+java -jar jairosvg-cli.jar https://example.com/image.svg -o output.png
 ```
 
 ## Next Steps

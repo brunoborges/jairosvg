@@ -350,7 +350,7 @@ class CliTest {
             props.load(in);
             var args = props.getProperty("Args");
             assertNotNull(args);
-            assertTrue(args.contains("--enable-preview"));
+            assertFalse(args.contains("--enable-preview"));
             assertTrue(args.contains("-H:Class=io.brunoborges.jairosvg.cli.Main"));
         }
     }

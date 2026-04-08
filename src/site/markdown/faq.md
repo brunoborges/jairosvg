@@ -12,7 +12,7 @@ JairoSVG is a Java SVG 1.1 converter. It converts SVG 1.1 images to PNG, JPEG, T
 
 ### What Java version is required?
 
-Java 25 or later with `--enable-preview` flag. The project uses Java 25 preview features.
+Java 25 or later. The project targets Java 25.
 
 ### Does it require native libraries?
 
@@ -103,13 +103,9 @@ Without PDFBox, calling `.toPdf()` throws `UnsupportedOperationException`.
 
 You need Java 25 or later. Check with `java -version`.
 
-### `Preview features not enabled`
-
-Add `--enable-preview` to your JVM arguments.
-
 ### `OutOfMemoryError`
 
-Large or complex SVGs may need more heap space: `java -Xmx512m --enable-preview -jar jairosvg-cli.jar ...`
+Large or complex SVGs may need more heap space: `java -Xmx512m -jar jairosvg-cli.jar ...`
 
 ### `UnsupportedOperationException: PDF output requires Apache PDFBox`
 

@@ -15,13 +15,13 @@ COPY src src
 COPY comparison/svg comparison/svg
 
 # Build shaded CLI JAR (jni-config.json is embedded in the JAR via META-INF)
-ENV MAVEN_OPTS="--enable-preview"
+
 RUN ./mvnw -DskipTests package --no-transfer-progress
 
 # Collect additional native-image metadata with tracing agent (all SVGs)
 RUN mkdir -p native-config && \
     for svg in comparison/svg/*.svg; do \
-      java --enable-preview -Djava.awt.headless=true \
+      java -Djava.awt.headless=true \
         -agentlib:native-image-agent=config-merge-dir=native-config \
         -jar target/*-cli.jar "$svg" -o "/tmp/$(basename "$svg" .svg).png" || true; \
     done && \
@@ -29,7 +29,7 @@ RUN mkdir -p native-config && \
 
 # Build native image
 # jni-config.json from META-INF is auto-discovered; tracing agent adds AWT/Java2D reflection
-RUN native-image --enable-preview \
+RUN native-image \
       -Djava.awt.headless=true \
       -H:ConfigurationFileDirectories=native-config \
       -o jairosvg \

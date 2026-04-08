@@ -42,7 +42,6 @@ profile_one() {
     echo "=== Profiling: $scenario | $library | mode=$MODE ==="
 
     jbang \
-        --enable-preview \
         -R="-agentpath:${ASYNC_PROFILER_LIB}=start,event=cpu,file=${outfile},flamegraph,title=${scenario}-${library}-${MODE}" \
         "$SCRIPT_DIR/profile.java" \
         "$scenario" \

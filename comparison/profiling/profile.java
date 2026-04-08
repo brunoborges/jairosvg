@@ -1,6 +1,5 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 //JAVA 25+
-//JAVA_OPTIONS --enable-preview
 //DEPS io.brunoborges:jairosvg:1.0.3-SNAPSHOT
 //DEPS com.github.weisj:jsvg:2.0.0
 

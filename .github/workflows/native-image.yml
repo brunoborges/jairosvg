@@ -40,15 +40,13 @@ jobs:
           POM_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout --no-transfer-progress)
           echo "version=${POM_VERSION}" >> "$GITHUB_OUTPUT"
       - name: Build shaded CLI JAR
-        env:
-          MAVEN_OPTS: --enable-preview
         run: ./mvnw -DskipTests package --no-transfer-progress
       - name: Collect native-image metadata with tracing agent
         run: |
           shopt -s nullglob
           cli_jars=(target/*-cli.jar)
           mkdir -p native-config /tmp/trace-out
-          java --enable-preview -Djava.awt.headless=true \
+          java -Djava.awt.headless=true \
             -agentlib:native-image-agent=config-merge-dir=native-config \
             -jar "${cli_jars[0]}" comparison/svg/*.svg -o /tmp/trace-out
           echo "Collected metadata files:"
@@ -61,7 +59,7 @@ jobs:
             echo "No shaded CLI jar found in target/"
             exit 1
           fi
-          native-image --enable-preview \
+          native-image \
             --pgo-instrument \
             -Djava.awt.headless=true \
             -H:ConfigurationFileDirectories=native-config \
@@ -79,7 +77,7 @@ jobs:
           shopt -s nullglob
           cli_jars=(target/*-cli.jar)
           VERSION="${{ steps.version.outputs.version }}"
-          native-image --enable-preview \
+          native-image \
             --pgo=default.iprof \
             -Djava.awt.headless=true \
             -H:ConfigurationFileDirectories=native-config \

@@ -311,7 +311,7 @@ See **[COMPARISON.md](COMPARISON.md)** for per-test-case benchmark times, file s
 | **Artifact size**        | 1 JAR (~130 KB) + CLI shaded JAR             | Many modular JARs         | Single Python package                                   | 1 JAR                           |
 | **Source files**         | 31                                          | 20+ modules               | ~10 modules                                             | ~30K LOC                        |
 | **Lines of code**        | ~8,800                                      | ~200,000+                 | ~4,000                                                  | ~30,000                         |
-| **Platform req.**        | Java 25+ (`--enable-preview`)               | Java 8+                   | Python 3.6+ / Cairo C lib                               | Java 11+                        |
+| **Platform req.**        | Java 25+                                    | Java 8+                   | Python 3.6+ / Cairo C lib                               | Java 11+                        |
 | **Build system**         | Maven                                       | Gradle                    | pip / setuptools                                        | Gradle                          |
 | **Native dependency**    | None                                        | None                      | Cairo C library required                                | None                            |
 

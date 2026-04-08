@@ -3,7 +3,7 @@
 ## Usage
 
 ```bash
-java --enable-preview -jar jairosvg-cli.jar [OPTIONS] INPUT
+java -jar jairosvg-cli.jar [OPTIONS] INPUT
 ```
 
 Where `INPUT` is a path to an SVG file or a URL.
@@ -32,45 +32,45 @@ Where `INPUT` is a path to an SVG file or a URL.
 
 ```bash
 # SVG to PNG
-java --enable-preview -jar jairosvg-cli.jar logo.svg -o logo.png
+java -jar jairosvg-cli.jar logo.svg -o logo.png
 
 # SVG to PDF
-java --enable-preview -jar jairosvg-cli.jar diagram.svg -f pdf -o diagram.pdf
+java -jar jairosvg-cli.jar diagram.svg -f pdf -o diagram.pdf
 
 # SVG to JPEG
-java --enable-preview -jar jairosvg-cli.jar photo.svg -f jpeg -o photo.jpg
+java -jar jairosvg-cli.jar photo.svg -f jpeg -o photo.jpg
 ```
 
 ### Scaling and DPI
 
 ```bash
 # 2x scale for retina displays
-java --enable-preview -jar jairosvg-cli.jar icon.svg -s 2 -o icon@2x.png
+java -jar jairosvg-cli.jar icon.svg -s 2 -o icon@2x.png
 
 # High DPI output
-java --enable-preview -jar jairosvg-cli.jar chart.svg -d 300 -o chart-print.png
+java -jar jairosvg-cli.jar chart.svg -d 300 -o chart-print.png
 ```
 
 ### Background and colors
 
 ```bash
 # White background
-java --enable-preview -jar jairosvg-cli.jar logo.svg -b white -o logo-white.png
+java -jar jairosvg-cli.jar logo.svg -b white -o logo-white.png
 
 # Dark mode (negate colors)
-java --enable-preview -jar jairosvg-cli.jar logo.svg -n -o logo-dark.png
+java -jar jairosvg-cli.jar logo.svg -n -o logo-dark.png
 ```
 
 ### From URL
 
 ```bash
-java --enable-preview -jar jairosvg-cli.jar https://example.com/image.svg -o output.png
+java -jar jairosvg-cli.jar https://example.com/image.svg -o output.png
 ```
 
 ### Output to stdout (pipe)
 
 ```bash
-java --enable-preview -jar jairosvg-cli.jar input.svg | display
+java -jar jairosvg-cli.jar input.svg | display
 ```
 
 ### Using JBang

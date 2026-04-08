@@ -1,7 +1,6 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 //JAVA 25
-//COMPILE_OPTIONS --enable-preview --release 25
-//RUNTIME_OPTIONS --enable-preview
+//COMPILE_OPTIONS --release 25
 //DEPS com.google.code.gson:gson:2.13.1
 
 /**

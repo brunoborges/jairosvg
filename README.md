@@ -69,10 +69,10 @@ Download the standalone CLI jar from the [GitHub Releases page](https://github.c
 
 ```bash
 # Download the CLI jar (requires Java 25+)
-java --enable-preview -jar jairosvg-{version}-cli.jar input.svg -o output.png
+java -jar jairosvg-{version}-cli.jar input.svg -o output.png
 
 # Convert multiple files at once
-java --enable-preview -jar jairosvg-{version}-cli.jar *.svg -o output-dir/
+java -jar jairosvg-{version}-cli.jar *.svg -o output-dir/
 ```
 
 ### Maven
@@ -222,19 +222,19 @@ jairosvg *.svg -o output-dir/
 Or download the CLI jar from [GitHub Releases](https://github.com/brunoborges/jairosvg/releases):
 ```bash
 # SVG → PNG
-java --enable-preview -jar jairosvg-{version}-cli.jar input.svg -o output.png
+java -jar jairosvg-{version}-cli.jar input.svg -o output.png
 
 # SVG → PDF with 2x scale
-java --enable-preview -jar jairosvg-{version}-cli.jar input.svg -f pdf -s 2 -o output.pdf
+java -jar jairosvg-{version}-cli.jar input.svg -f pdf -s 2 -o output.pdf
 
 # Convert multiple files to a directory
-java --enable-preview -jar jairosvg-{version}-cli.jar *.svg -o output-dir/
+java -jar jairosvg-{version}-cli.jar *.svg -o output-dir/
 ```
 
 Build from source:
 ```bash
 mvn package
-java --enable-preview -jar target/jairosvg-{version}-cli.jar input.svg -o output.png
+java -jar target/jairosvg-{version}-cli.jar input.svg -o output.png
 ```
 
 ### CLI Options
