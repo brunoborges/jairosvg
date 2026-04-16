@@ -1842,4 +1842,933 @@ class FilterRendererTest {
         BufferedImage img = render(svg);
         assertNotNull(img);
     }
+
+    // ── SourceAlpha lazy creation via in= ────────────────────────────────
+
+    @Test
+    void sourceAlphaViaIn() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feFlood flood-color="red" result="r"/>
+                      <feComposite in="SourceAlpha" in2="r" operator="in"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="blue" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 50, 50);
+        assertTrue(px[3] > 0, "SourceAlpha via in= should produce visible output");
+    }
+
+    @Test
+    void sourceAlphaViaIn2() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feFlood flood-color="green" result="g"/>
+                      <feComposite in="g" in2="SourceAlpha" operator="in"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="blue" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feComposite operator branches ────────────────────────────────────
+
+    @Test
+    void feCompositeOut() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feFlood flood-color="red" result="r"/>
+                      <feComposite in="SourceGraphic" in2="r" operator="out"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="blue" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void feCompositeAtop() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feFlood flood-color="red" flood-opacity="0.5" result="r"/>
+                      <feComposite in="SourceGraphic" in2="r" operator="atop"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="blue" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 50, 50);
+        assertTrue(px[3] > 0, "Atop composite should produce visible output");
+    }
+
+    @Test
+    void feCompositeXor() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feFlood flood-color="green" flood-opacity="0.5" result="g"/>
+                      <feComposite in="SourceGraphic" in2="g" operator="xor"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void feCompositeOver() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feFlood flood-color="blue" flood-opacity="0.5" result="b"/>
+                      <feComposite in="SourceGraphic" in2="b" operator="over"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 50, 50);
+        assertTrue(px[0] > 200, "Over composite should show source on top, R=" + px[0]);
+    }
+
+    // ── feComponentTransfer with feFuncA ─────────────────────────────────
+
+    @Test
+    void feComponentTransferWithFuncA() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feComponentTransfer>
+                        <feFuncR type="identity"/>
+                        <feFuncA type="linear" slope="0.5" intercept="0"/>
+                      </feComponentTransfer>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 50, 50);
+        assertTrue(px[3] >= 120 && px[3] <= 136, "Alpha should be ~128 with slope=0.5, got A=" + px[3]);
+    }
+
+    @Test
+    void feComponentTransferTableTooFewValues() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="f">
+                      <feComponentTransfer>
+                        <feFuncR type="table" tableValues="0.5"/>
+                      </feComponentTransfer>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // table with < 2 values falls back to identity
+        assertPixelColor(img, 25, 25, 255, 0, 0);
+    }
+
+    @Test
+    void feComponentTransferDiscreteEmptyTable() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="f">
+                      <feComponentTransfer>
+                        <feFuncR type="discrete" tableValues=""/>
+                      </feComponentTransfer>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // empty discrete falls back to identity
+        assertPixelColor(img, 25, 25, 255, 0, 0);
+    }
+
+    @Test
+    void feComponentTransferProducesZeroAlpha() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="f">
+                      <feComponentTransfer>
+                        <feFuncA type="linear" slope="0" intercept="0"/>
+                      </feComponentTransfer>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 25, 25);
+        assertTrue(px[3] < 5, "Zero alpha slope should produce transparent, got A=" + px[3]);
+    }
+
+    // ── feConvolveMatrix additional branches ─────────────────────────────
+
+    @Test
+    void feConvolveMatrixPreserveAlpha() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs><filter id="f">
+                    <feConvolveMatrix order="3" kernelMatrix="0 0 0 0 1 0 0 0 0"
+                      preserveAlpha="true"/>
+                  </filter></defs>
+                  <rect width="50" height="50" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        assertPixelColor(img, 25, 25, 255, 0, 0);
+    }
+
+    @Test
+    void feConvolveMatrixInvalidKernel() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs><filter id="f">
+                    <feConvolveMatrix order="3" kernelMatrix="1 0"/>
+                  </filter></defs>
+                  <rect width="50" height="50" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // Invalid kernel copies input unchanged
+        assertPixelColor(img, 25, 25, 255, 0, 0);
+    }
+
+    @Test
+    void feConvolveMatrixZeroSumKernel() throws Exception {
+        // Kernel sums to 0 → divisor defaults to 1 (not 0)
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs><filter id="f">
+                    <feConvolveMatrix order="3"
+                      kernelMatrix="-1 -1 -1 -1 8 -1 -1 -1 -1"/>
+                  </filter></defs>
+                  <rect width="50" height="50" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void feConvolveMatrixExplicitDivisorZero() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs><filter id="f">
+                    <feConvolveMatrix order="3" kernelMatrix="0 0 0 0 1 0 0 0 0"
+                      divisor="0"/>
+                  </filter></defs>
+                  <rect width="50" height="50" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void feConvolveMatrixRectangularOrder() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs><filter id="f">
+                    <feConvolveMatrix order="3 2"
+                      kernelMatrix="0 0 0 0 1 0"/>
+                  </filter></defs>
+                  <rect width="50" height="50" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void feConvolveMatrixSemiTransparentInput() throws Exception {
+        // Semi-transparent pixels exercise the premultiply branch (pa > 0 && pa < 255)
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs><filter id="f">
+                    <feConvolveMatrix order="3" kernelMatrix="0 0 0 0 1 0 0 0 0"/>
+                  </filter></defs>
+                  <rect width="50" height="50" fill="red" opacity="0.5" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 25, 25);
+        assertTrue(px[0] > 100, "Semi-transparent convolved should keep red, got R=" + px[0]);
+    }
+
+    // ── feTile zero-dimension filter region ──────────────────────────────
+
+    @Test
+    void feTileZeroDimensionRegion() throws Exception {
+        // Filter region that ends up with tileW<=0 after clamping in tile()
+        // Use a filter region at the far edge beyond image content
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="f" filterUnits="userSpaceOnUse" x="49" y="49" width="1" height="1">
+                      <feTile in="SourceGraphic"/>
+                    </filter>
+                  </defs>
+                  <rect x="0" y="0" width="10" height="10" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = assertDoesNotThrow(() -> render(svg));
+        assertNotNull(img);
+    }
+
+    // ── feColorMatrix produces zero alpha ────────────────────────────────
+
+    @Test
+    void feColorMatrixZeroAlpha() throws Exception {
+        // Matrix that zeroes the alpha channel
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="f">
+                      <feColorMatrix type="matrix"
+                        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0 0"/>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 25, 25);
+        assertTrue(px[3] < 5, "Alpha-zeroing matrix should produce transparent, got A=" + px[3]);
+    }
+
+    // ── feTurbulence zero frequency with type=turbulence ─────────────────
+
+    @Test
+    void feTurbulenceZeroFrequencyTurbulenceType() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs><filter id="f">
+                    <feTurbulence type="turbulence" baseFrequency="0" numOctaves="1"/>
+                  </filter></defs>
+                  <rect width="50" height="50" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // turbulence type with zero frequency → black (not mid-gray like fractalNoise)
+        int[] px = rgba(img, 25, 25);
+        assertTrue(px[0] < 5 && px[1] < 5 && px[2] < 5, "Zero-freq turbulence should be black");
+    }
+
+    @Test
+    void feTurbulenceZeroOctaves() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs><filter id="f">
+                    <feTurbulence baseFrequency="0.1" numOctaves="0" seed="1"/>
+                  </filter></defs>
+                  <rect width="50" height="50" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 25, 25);
+        assertTrue(px[3] > 0, "numOctaves clamped to 1 should produce visible output");
+    }
+
+    @Test
+    void feTurbulenceTwoComponentFrequency() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs><filter id="f">
+                    <feTurbulence baseFrequency="0.05 0.1" numOctaves="2" seed="10"/>
+                  </filter></defs>
+                  <rect width="50" height="50" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feDiffuseLighting / feSpecularLighting no light source ────────────
+
+    @Test
+    void feDiffuseLightingNoLightSource() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="f">
+                      <feDiffuseLighting surfaceScale="1" diffuseConstant="1">
+                      </feDiffuseLighting>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="white" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // No light source → cleared buffer
+        int[] px = rgba(img, 25, 25);
+        assertTrue(px[3] < 5, "No light source should produce transparent output");
+    }
+
+    @Test
+    void feSpecularLightingNoLightSource() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="f">
+                      <feSpecularLighting surfaceScale="1" specularConstant="1" specularExponent="10">
+                      </feSpecularLighting>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="white" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feSpecularLighting with spot light + limiting cone angle ──────────
+
+    @Test
+    void feSpecularLightingSpotLightWithConeAngle() throws Exception {
+        // Tight cone angle causes cone rejection on pixels far from pointsAt target
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feSpecularLighting surfaceScale="3" specularConstant="1" specularExponent="10">
+                        <feSpotLight x="50" y="50" z="50" pointsAtX="50" pointsAtY="50" pointsAtZ="0"
+                          specularExponent="5" limitingConeAngle="10"/>
+                      </feSpecularLighting>
+                    </filter>
+                  </defs>
+                  <circle cx="50" cy="50" r="40" fill="white" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    @Test
+    void feDiffuseLightingSpotLightBehindSurface() throws Exception {
+        // Light behind the surface: cosAngle <= 0 path
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f">
+                      <feDiffuseLighting surfaceScale="1" diffuseConstant="1">
+                        <feSpotLight x="50" y="50" z="-100" pointsAtX="50" pointsAtY="50" pointsAtZ="-200"
+                          specularExponent="1" limitingConeAngle="90"/>
+                      </feDiffuseLighting>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="white" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feImage with non-image data (ImageIO returns null) ───────────────
+
+    @Test
+    void feImageWithNonImageData() throws Exception {
+        // base64 of "Hello World!" — not an image, but >= MIN_IMAGE_BYTES
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="f">
+                      <feImage href="data:application/octet-stream;base64,SGVsbG8gV29ybGQh"/>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = assertDoesNotThrow(() -> render(svg));
+        assertNotNull(img);
+    }
+
+    // ── feImage fragment ref with no sub-region offset ────────────────────
+
+    @Test
+    void feImageFragmentRefNoOffset() throws Exception {
+        // No userSpaceOnUse filter → no sub-region, so renderNode gets offsetX=0,
+        // offsetY=0
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <rect id="ref" width="50" height="50" fill="green"/>
+                    <filter id="f">
+                      <feImage href="#ref"/>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="white" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── Chained filter that pre-allocates buffers ────────────────────────
+
+    @Test
+    void chainedPrimitivesReuseAllocatedBuffers() throws Exception {
+        // feGaussianBlur allocates buf1/buf2/buf3. Subsequent primitives
+        // should reuse them (false branch of buf==null).
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">
+                  <defs>
+                    <filter id="f">
+                      <feGaussianBlur stdDeviation="1" result="b"/>
+                      <feColorMatrix type="saturate" values="0.5"/>
+                      <feComponentTransfer>
+                        <feFuncR type="linear" slope="1.2" intercept="0"/>
+                      </feComponentTransfer>
+                      <feMorphology operator="dilate" radius="1"/>
+                      <feConvolveMatrix order="3" kernelMatrix="0 0 0 0 1 0 0 0 0"/>
+                      <feFlood flood-color="red" flood-opacity="0.3" result="fl"/>
+                      <feBlend in="b" in2="fl" mode="normal"/>
+                    </filter>
+                  </defs>
+                  <rect x="10" y="10" width="60" height="60" fill="blue" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feMorphology with two-component radius ───────────────────────────
+
+    @Test
+    void feMorphologyTwoComponentRadius() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f" filterUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+                      <feMorphology operator="dilate" radius="3 5"/>
+                    </filter>
+                  </defs>
+                  <rect x="40" y="40" width="20" height="20" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feTurbulence fractalNoise with zero frequency ────────────────────
+
+    @Test
+    void feTurbulenceFractalNoiseZeroFrequency() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs><filter id="f">
+                    <feTurbulence type="fractalNoise" baseFrequency="0" numOctaves="1"/>
+                  </filter></defs>
+                  <rect width="50" height="50" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        // fractalNoise + zero freq → mid-gray
+        int[] px = rgba(img, 25, 25);
+        assertTrue(px[0] > 100 && px[0] < 160, "fractalNoise zero-freq should be mid-gray, got R=" + px[0]);
+    }
+
+    // ── parseLightSource with unknown child ──────────────────────────────
+
+    @Test
+    void lightingWithUnknownChildElement() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="f">
+                      <feDiffuseLighting surfaceScale="1" diffuseConstant="1">
+                        <desc>Not a light source</desc>
+                      </feDiffuseLighting>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="white" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feDisplacementMap with smaller map than input ─────────────────────
+
+    @Test
+    void feDisplacementMapSmallMap() throws Exception {
+        // in2 is a small feImage, smaller than the canvas, so map pixel boundary check
+        // fires
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f" filterUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+                      <feFlood flood-color="rgb(128,128,128)" flood-opacity="1" result="map"/>
+                      <feDisplacementMap in="SourceGraphic" in2="map" scale="5"
+                        xChannelSelector="R" yChannelSelector="G"/>
+                    </filter>
+                  </defs>
+                  <rect width="100" height="100" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── Chained filters exercising feDiffuseLighting + feSpecularLighting
+    // after prior primitives (buf already allocated) ────────────────────
+
+    @Test
+    void lightingAfterPriorPrimitive() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">
+                  <defs>
+                    <filter id="f">
+                      <feGaussianBlur stdDeviation="1" result="b"/>
+                      <feDiffuseLighting in="b" surfaceScale="2" diffuseConstant="1" result="diffuse">
+                        <fePointLight x="40" y="40" z="50"/>
+                      </feDiffuseLighting>
+                      <feSpecularLighting in="b" surfaceScale="2" specularConstant="1" specularExponent="10" result="spec">
+                        <feDistantLight azimuth="45" elevation="45"/>
+                      </feSpecularLighting>
+                      <feMerge>
+                        <feMergeNode in="diffuse"/>
+                        <feMergeNode in="spec"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  <circle cx="40" cy="40" r="30" fill="white" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feDisplacementMap after prior primitives (buf pre-allocated) ──────
+
+    @Test
+    void feDisplacementMapAfterPriorPrimitive() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">
+                  <defs>
+                    <filter id="f">
+                      <feGaussianBlur stdDeviation="1" result="b"/>
+                      <feTurbulence baseFrequency="0.05" numOctaves="1" seed="1" result="turb"/>
+                      <feDisplacementMap in="b" in2="turb" scale="10"
+                        xChannelSelector="R" yChannelSelector="G"/>
+                    </filter>
+                  </defs>
+                  <rect x="10" y="10" width="60" height="60" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feTurbulence after prior primitives (buf pre-allocated) ──────────
+
+    @Test
+    void feTurbulenceAfterPriorPrimitive() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">
+                  <defs>
+                    <filter id="f">
+                      <feGaussianBlur stdDeviation="1" result="b"/>
+                      <feTurbulence baseFrequency="0.05" numOctaves="1" seed="1"/>
+                    </filter>
+                  </defs>
+                  <rect x="10" y="10" width="60" height="60" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feDropShadow as first primitive with SourceGraphic (non-managed) ─
+
+    @Test
+    void feDropShadowNonManagedInput() throws Exception {
+        // SourceGraphic is not a managed buffer (not buf1/buf2/buf3)
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">
+                  <defs>
+                    <filter id="f">
+                      <feDropShadow in="SourceGraphic" dx="3" dy="3" stdDeviation="1"
+                        flood-color="black" flood-opacity="0.5"/>
+                    </filter>
+                  </defs>
+                  <rect x="10" y="10" width="50" height="50" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── resolveInput with SourceAlpha via default getOrDefault ────────────
+
+    @Test
+    void resolveInputSourceAlphaDefault() throws Exception {
+        // References SourceAlpha but from in2 of feBlend after SourceAlpha is already
+        // created
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">
+                  <defs>
+                    <filter id="f">
+                      <feOffset in="SourceAlpha" dx="3" dy="3" result="alphaOff"/>
+                      <feFlood flood-color="black" flood-opacity="0.5" result="shadow"/>
+                      <feComposite in="shadow" in2="alphaOff" operator="in" result="clipped"/>
+                      <feMerge>
+                        <feMergeNode in="clipped"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  <rect x="10" y="10" width="50" height="50" fill="blue" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── parsePercentOrFraction with null/empty/non-percent value ──────────
+
+    @Test
+    void filterRegionFractionValues() throws Exception {
+        // Explicit fraction values (not percentage) for filter region
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <defs>
+                    <filter id="f" x="-0.1" y="-0.1" width="1.2" height="1.2">
+                      <feGaussianBlur stdDeviation="1"/>
+                    </filter>
+                  </defs>
+                  <rect x="20" y="20" width="60" height="60" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feConvolveMatrix output un-premultiply with mid-alpha ────────────
+
+    @Test
+    void feConvolveMatrixMidAlphaUnpremultiply() throws Exception {
+        // A box-blur kernel on semi-transparent edge pixels exercises
+        // the un-premultiply path where 0 < a < 255
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs><filter id="f">
+                    <feConvolveMatrix order="3" kernelMatrix="1 1 1 1 1 1 1 1 1"/>
+                  </filter></defs>
+                  <rect x="10" y="10" width="30" height="30" fill="red" opacity="0.5" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── SourceAlpha referenced multiple times ────────────────────────────
+
+    @Test
+    void sourceAlphaReusedMultipleTimes() throws Exception {
+        // First primitive creates SourceAlpha; subsequent ones reuse it
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">
+                  <defs>
+                    <filter id="f">
+                      <feOffset in="SourceAlpha" dx="2" dy="2" result="off1"/>
+                      <feOffset in="SourceAlpha" dx="4" dy="4" result="off2"/>
+                      <feFlood flood-color="red" result="r"/>
+                      <feComposite in="r" in2="SourceAlpha" operator="in"/>
+                    </filter>
+                  </defs>
+                  <rect x="10" y="10" width="50" height="50" fill="blue" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feComposite as very first primitive (buf allocation path) ────────
+
+    @Test
+    void feCompositeAsFirstPrimitive() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="f">
+                      <feComposite in="SourceGraphic" in2="SourceGraphic" operator="over"/>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        assertPixelColor(img, 25, 25, 255, 0, 0);
+    }
+
+    // ── feDisplacementMap as very first primitive ─────────────────────────
+
+    @Test
+    void feDisplacementMapAsFirstPrimitive() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="f">
+                      <feDisplacementMap in="SourceGraphic" in2="SourceGraphic" scale="0"
+                        xChannelSelector="R" yChannelSelector="G"/>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="blue" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feMorphology with asymmetric zero radius (rx=0, ry>0) ────────────
+
+    @Test
+    void feMorphologyAsymmetricRadius() throws Exception {
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">
+                  <defs>
+                    <filter id="f" filterUnits="userSpaceOnUse" x="0" y="0" width="80" height="80">
+                      <feMorphology operator="dilate" radius="0 3"/>
+                    </filter>
+                  </defs>
+                  <rect x="30" y="30" width="20" height="20" fill="red" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feSpecularLighting with coincident light position ────────────────
+
+    @Test
+    void feSpecularLightingCoincidentSpotLight() throws Exception {
+        // Light at same position as pointsAt → slen near zero in computeSpotIntensity
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="f">
+                      <feSpecularLighting surfaceScale="1" specularConstant="1" specularExponent="5">
+                        <feSpotLight x="25" y="25" z="10" pointsAtX="25" pointsAtY="25" pointsAtZ="10"
+                          specularExponent="1"/>
+                      </feSpecularLighting>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="white" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── feSpecularLighting with low hlen (L near opposite of E) ──────────
+
+    @Test
+    void feSpecularLightingLowHlen() throws Exception {
+        // Point light directly below surface: L ≈ (0, 0, -1), E = (0, 0, 1)
+        // H = L + E ≈ (0, 0, 0), so hlen near zero
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="f">
+                      <feSpecularLighting surfaceScale="1" specularConstant="1" specularExponent="5">
+                        <fePointLight x="25" y="25" z="-1000"/>
+                      </feSpecularLighting>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="white" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── computeLightVector near-zero length vector ───────────────────────
+
+    @Test
+    void feDiffuseLightingPointLightAtSurface() throws Exception {
+        // Point light at exact surface position: dx=dy=dz≈0 → near-zero vector
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="f">
+                      <feDiffuseLighting surfaceScale="0" diffuseConstant="1">
+                        <fePointLight x="25" y="25" z="0"/>
+                      </feDiffuseLighting>
+                    </filter>
+                  </defs>
+                  <rect width="50" height="50" fill="white" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+    }
+
+    // ── computeLightVector distant light branch ──────────────────────────
+
+    @Test
+    void feDiffuseLightingDistantLightBranch() throws Exception {
+        // Distant light exercises the "distant" case in computeLightVector switch
+        var svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">
+                  <defs>
+                    <filter id="f">
+                      <feDiffuseLighting surfaceScale="2" diffuseConstant="1">
+                        <feDistantLight azimuth="90" elevation="30"/>
+                      </feDiffuseLighting>
+                    </filter>
+                  </defs>
+                  <circle cx="25" cy="25" r="20" fill="white" filter="url(#f)"/>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+        assertNotNull(img);
+        int[] px = rgba(img, 25, 25);
+        assertTrue(px[3] > 0, "Should produce visible output");
+    }
 }
