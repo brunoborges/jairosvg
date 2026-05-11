@@ -388,6 +388,24 @@ class ColorsTest {
         assertColor(Colors.color("color(rec2020 1 1 1)"), 1.0, 1.0, 1.0, 1.0);
     }
 
+    @Test
+    void testCssColorLevel4ReferenceVectors() {
+        assertColor(Colors.color("hwb(210 10% 20% / 0.6)"), 0.100000, 0.450000, 0.800000, 0.600000);
+        assertColor(Colors.color("lab(29.2345% 39.3825 20.0664 / 0.75)"), 0.490634, 0.138671, 0.159006, 0.750000);
+        assertColor(Colors.color("lch(52.2345% 72.2 56.2 / 0.4)"), 0.776174, 0.363390, 0.024548, 0.400000);
+        assertColor(Colors.color("oklab(0.65 0.12 -0.08 / 0.5)"), 0.736052, 0.427375, 0.742813, 0.500000);
+        assertColor(Colors.color("oklch(0.72 0.15 145deg / 0.8)"), 0.381141, 0.739946, 0.402384, 0.800000);
+        assertColor(Colors.color("color(srgb 0.2 0.4 0.6 / 0.7)"), 0.200000, 0.400000, 0.600000, 0.700000);
+        assertColor(Colors.color("color(srgb-linear 0.0331048 0.132868 0.318547 / 0.9)"), 0.200000, 0.400000, 0.600000,
+                0.900000);
+        assertColor(Colors.color("color(display-p3 0.8 0.2 0.4 / 0.65)"), 0.871509, 0.093899, 0.397991, 0.650000);
+        assertColor(Colors.color("color(a98-rgb 0.7 0.3 0.5 / 0.55)"), 0.803625, 0.295040, 0.510684, 0.550000);
+        assertColor(Colors.color("color(prophoto-rgb 0.6 0.3 0.1 / 0.45)"), 0.866626, 0.247179, 0.000000, 0.450000);
+        assertColor(Colors.color("color(rec2020 0.7 0.4 0.2 / 0.35)"), 0.860803, 0.402047, 0.208319, 0.350000);
+        assertColor(Colors.color("color(xyz-d65 0.25 0.4 0.1 / 0.25)"), 0.417450, 0.743356, 0.215123, 0.250000);
+        assertColor(Colors.color("color(xyz-d50 0.25 0.4 0.1 / 0.15)"), 0.327340, 0.751683, 0.286937, 0.150000);
+    }
+
     // ── Unknown color → BLACK ─────────────────────────────────────────
 
     @Test
