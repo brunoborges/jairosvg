@@ -424,9 +424,19 @@ Gradient `spreadMethod` (reflect/repeat/pad), `fx`/`fy` focus, `href` inheritanc
 | **Size** | 9,118 bytes ✅ | 12,543 bytes | 9,950 bytes | 10,463 bytes |
 | **Time** | **4.2300 ms** ✅ | 22.5300 ms | 10.2600 ms | 4.5500 ms |
 
+### 43_css_color_level_4
+
+CSS Color Level 4 syntax: HWB, Lab/LCH, OKLab/OKLCH, color(), alpha hex, and slash alpha.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| ![SVG](svg/43_css_color_level_4.svg) | ![JairoSVG](visual/png/jairosvg/43_css_color_level_4.png) | ![EchoSVG](visual/png/echosvg/43_css_color_level_4.png) | — | ![JSVG](visual/png/jsvg/43_css_color_level_4.png) |
+| **Size** | 16,214 bytes | 47,602 bytes | — | 15,886 bytes ✅ |
+| **Time** | — | — | — | — |
+
 ---
 
-> **⚠️ Filters/Masks caveat:** CairoSVG supports only three SVG filter primitives (`feBlend`, `feFlood`, `feOffset`) — all others (`feGaussianBlur`, `feDropShadow`, `feTurbulence`, `feDisplacementMap`, `feLighting`, `feColorMatrix`, `feMorphology`, `feConvolveMatrix`, `feComponentTransfer`, `feComposite`, `feMerge`, `feImage`, `feTile`) are silently skipped. Masks are also rendered incorrectly (missing gradient and shape content). For those tests, CairoSVG appears faster and produces smaller files because it skips the rendering work. JairoSVG and JSVG perform the actual computation. Note: JairoSVG **outperforms CairoSVG on both Masks and feBlend modes** despite rendering them correctly. CairoSVG also **crashes** on CSS custom properties (`var()`) — test 28 produces no output.
+> **⚠️ Filters/Masks caveat:** CairoSVG supports only three SVG filter primitives (`feBlend`, `feFlood`, `feOffset`) — all others (`feGaussianBlur`, `feDropShadow`, `feTurbulence`, `feDisplacementMap`, `feLighting`, `feColorMatrix`, `feMorphology`, `feConvolveMatrix`, `feComponentTransfer`, `feComposite`, `feMerge`, `feImage`, `feTile`) are silently skipped. Masks are also rendered incorrectly (missing gradient and shape content). For those tests, CairoSVG appears faster and produces smaller files because it skips the rendering work. JairoSVG and JSVG perform the actual computation. Note: JairoSVG **outperforms CairoSVG on both Masks and feBlend modes** despite rendering them correctly. CairoSVG also **crashes** on CSS custom properties (`var()`) and CSS Color Level 4 syntax — tests 28 and 43 produce no output.
 
 <!-- BEGIN:BENCHMARK_NOTE -->
 > **Note:** Benchmarks were run with 50 warm-up iterations and 500 measured iterations per SVG file. Median time reported. Results may vary by hardware and SVG complexity.

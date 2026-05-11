@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="260" viewBox="0 0 420 260">
+  <style>
+    .label {
+      fill: #475569;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 9px;
+      text-anchor: middle;
+    }
+    .swatch {
+      stroke: color(srgb 0.08 0.11 0.18 / 0.35);
+      stroke-width: 1;
+    }
+  </style>
+
+  <defs>
+    <linearGradient id="color4Gradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="oklch(62.796% 0.25768 29.234deg)"/>
+      <stop offset="50%" stop-color="lab(87.818% -79.287 80.99)"/>
+      <stop offset="100%" stop-color="color(display-p3 0.2 0.4 1)"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="420" height="260" fill="#f8fafc"/>
+
+  <text x="210" y="24" text-anchor="middle" font-size="16" fill="#334155"
+        font-family="Arial, Helvetica, sans-serif">CSS Color Level 4</text>
+  <text x="210" y="42" text-anchor="middle" font-size="10" fill="#64748b"
+        font-family="Arial, Helvetica, sans-serif">
+    HWB · Lab/LCH · OKLab/OKLCH · color() · alpha hex · slash alpha
+  </text>
+
+  <g>
+    <rect class="swatch" x="20" y="60" width="70" height="40" rx="6" fill="hwb(210 10% 20%)"/>
+    <text class="label" x="55" y="116">hwb()</text>
+
+    <rect class="swatch" x="100" y="60" width="70" height="40" rx="6" fill="lab(54.291% 80.812 69.885)"/>
+    <text class="label" x="135" y="116">lab()</text>
+
+    <rect class="swatch" x="180" y="60" width="70" height="40" rx="6" fill="lch(54.291% 106.839 40.853)"/>
+    <text class="label" x="215" y="116">lch()</text>
+
+    <rect class="swatch" x="260" y="60" width="70" height="40" rx="6" fill="oklab(62.796% 0.22486 0.12585)"/>
+    <text class="label" x="295" y="116">oklab()</text>
+
+    <rect class="swatch" x="340" y="60" width="60" height="40" rx="6" fill="oklch(62.796% 0.25768 29.234deg)"/>
+    <text class="label" x="370" y="116">oklch()</text>
+  </g>
+
+  <g>
+    <circle class="swatch" cx="55" cy="155" r="23" fill="rgb(255 80 0 / 85%)"/>
+    <text class="label" x="55" y="192">rgb / alpha</text>
+
+    <circle class="swatch" cx="135" cy="155" r="23" fill="hsl(0.58turn 90% 55% / 90%)"/>
+    <text class="label" x="135" y="192">hsl units</text>
+
+    <circle class="swatch" cx="215" cy="155" r="23" fill="#22c55eaa"/>
+    <text class="label" x="215" y="192">#rrggbbaa</text>
+
+    <circle class="swatch" cx="295" cy="155" r="23" fill="color(srgb-linear 0.0331048 0.132868 0.318547)"/>
+    <text class="label" x="295" y="192">srgb-linear</text>
+
+    <circle class="swatch" cx="370" cy="155" r="23" fill="color(rec2020 0.7 0.4 0.2 / 0.9)"/>
+    <text class="label" x="370" y="192">rec2020</text>
+  </g>
+
+  <rect class="swatch" x="35" y="212" width="160" height="28" rx="8" fill="url(#color4Gradient)"/>
+  <text class="label" x="115" y="253">gradient stops</text>
+
+  <rect class="swatch" x="225" y="212" width="160" height="28" rx="8"
+        fill="color(xyz-d65 0.25 0.4 0.1 / 0.85)"/>
+  <text class="label" x="305" y="253">xyz-d65 color()</text>
+</svg>
