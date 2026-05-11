@@ -156,7 +156,7 @@ JSVG is a **lightweight Java SVG renderer** designed for AWT/Swing applications.
 | `currentColor`                                              |     ✅     |   ✅    |     ✅     |    ✅    |
 | `rgb()` / `rgba()` / hex colors                             |     ✅     |   ✅    |     ✅     |    ✅    |
 | `hsl()` / `hsla()`                                          |     ✅     |   ✅    |     ❌     |    ✅    |
-| CSS Color Level 4 (`oklch`, `lab`, etc.)                    | ❌ ([#23]) |   ✅    |     ❌     |    ❌    |
+| CSS Color Level 4 (`oklch`, `lab`, etc.)                    |     ✅     |   ✅    |     ❌     |    ❌    |
 
 ---
 
@@ -466,6 +466,7 @@ jbang comparison/visual/generate.java
 
 ```bash
 jbang comparison/benchmark/benchmark.java
+jbang comparison/benchmark/benchmark.java "color level 4"
 ```
 
 ---

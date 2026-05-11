@@ -244,7 +244,8 @@ public class generate {
             Map.entry("39_fe_displacement_map", "`feDisplacementMap` distortion using a turbulence displacement source."),
             Map.entry("40_fe_lighting",        "`feDiffuseLighting` and `feSpecularLighting` with distant and point light sources."),
             Map.entry("41_fe_convolve_matrix", "`feConvolveMatrix` convolution effects: emboss, edge detection, sharpen, and box blur."),
-            Map.entry("42_fe_component_transfer", "`feComponentTransfer` with gamma, discrete, linear, and table transfer functions.")
+            Map.entry("42_fe_component_transfer", "`feComponentTransfer` with gamma, discrete, linear, and table transfer functions."),
+            Map.entry("43_css_color_level_4", "CSS Color Level 4 syntax: HWB, Lab/LCH, OKLab/OKLCH, color(), alpha hex, and slash alpha.")
     );
 
     static final Path COMPARISON_PATH = Path.of("comparison", "COMPARISON.md");
