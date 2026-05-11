@@ -2,8 +2,6 @@ package io.brunoborges.jairosvg.css;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * SVG color parsing. Converts color strings to RGBA tuples (0.0–1.0).
@@ -16,14 +14,16 @@ public final class Colors {
         public static final RGBA BLACK = new RGBA(0, 0, 0, 1);
     }
 
-    private static final Pattern RGBA_PATTERN = Pattern.compile("rgba\\((.+?)\\)");
-    private static final Pattern RGB_PATTERN = Pattern.compile("rgb\\((.+?)\\)");
-    private static final Pattern HSLA_PATTERN = Pattern.compile("hsla\\((.+?)\\)");
-    private static final Pattern HSL_PATTERN = Pattern.compile("hsl\\((.+?)\\)");
-    private static final Pattern HEX_RRGGBB = Pattern.compile("#[0-9a-f]{6}");
-    private static final Pattern HEX_RGB = Pattern.compile("#[0-9a-f]{3}");
+    private static final double D50_X = 0.96422;
+    private static final double D50_Y = 1.0;
+    private static final double D50_Z = 0.82521;
+    private static final double LAB_EPSILON = 216.0 / 24389.0;
+    private static final double LAB_KAPPA = 24389.0 / 27.0;
 
     private static final Map<String, RGBA> NAMED_COLORS = buildNamedColors();
+
+    private record ParsedComponents(String[] components, String alpha) {
+    }
 
     private Colors() {
     }
@@ -217,15 +217,30 @@ public final class Colors {
             return RGBA.TRANSPARENT;
         }
 
-        // Fast-path: hex color — skip strip()/toLowerCase() since parseInt handles
-        // case
+        string = string.strip();
+
+        // Fast-path: hex color — skip toLowerCase() since parseInt handles case
         if (string.charAt(0) == '#') {
             int len = string.length();
+            if (len == 9) {
+                double r = Integer.parseInt(string, 1, 3, 16) / 255.0;
+                double g = Integer.parseInt(string, 3, 5, 16) / 255.0;
+                double b = Integer.parseInt(string, 5, 7, 16) / 255.0;
+                double a = Integer.parseInt(string, 7, 9, 16) / 255.0;
+                return new RGBA(r, g, b, a * opacity);
+            }
             if (len == 7) {
                 double r = Integer.parseInt(string, 1, 3, 16) / 255.0;
                 double g = Integer.parseInt(string, 3, 5, 16) / 255.0;
                 double b = Integer.parseInt(string, 5, 7, 16) / 255.0;
                 return new RGBA(r, g, b, opacity);
+            }
+            if (len == 5) {
+                double r = Character.digit(string.charAt(1), 16) / 15.0;
+                double g = Character.digit(string.charAt(2), 16) / 15.0;
+                double b = Character.digit(string.charAt(3), 16) / 15.0;
+                double a = Character.digit(string.charAt(4), 16) / 15.0;
+                return new RGBA(r, g, b, a * opacity);
             }
             if (len == 4) {
                 double r = Character.digit(string.charAt(1), 16) / 15.0;
@@ -236,7 +251,7 @@ public final class Colors {
             return RGBA.BLACK;
         }
 
-        string = string.strip().toLowerCase();
+        string = string.toLowerCase();
 
         // Named color lookup
         RGBA named = NAMED_COLORS.get(string);
@@ -249,47 +264,25 @@ public final class Colors {
         // Functional notation — dispatch by prefix to avoid creating Matchers for wrong
         // types
         if (string.startsWith("rgba(")) {
-            Matcher m = RGBA_PATTERN.matcher(string);
-            if (m.find()) {
-                String[] parts = m.group(1).strip().split(",");
-                if (parts.length == 4) {
-                    double r = parseColorComponent(parts[0]);
-                    double g = parseColorComponent(parts[1]);
-                    double b = parseColorComponent(parts[2]);
-                    double a = Double.parseDouble(parts[3].strip());
-                    return new RGBA(r, g, b, a * opacity);
-                }
-            }
+            return parseRgb(functionBody(string, "rgba"), true, opacity);
         } else if (string.startsWith("rgb(")) {
-            Matcher m = RGB_PATTERN.matcher(string);
-            if (m.find()) {
-                String[] parts = m.group(1).strip().split(",");
-                if (parts.length == 3) {
-                    double r = parseColorComponent(parts[0]);
-                    double g = parseColorComponent(parts[1]);
-                    double b = parseColorComponent(parts[2]);
-                    return new RGBA(r, g, b, opacity);
-                }
-            }
+            return parseRgb(functionBody(string, "rgb"), false, opacity);
         } else if (string.startsWith("hsla(")) {
-            Matcher m = HSLA_PATTERN.matcher(string);
-            if (m.find()) {
-                String[] parts = m.group(1).strip().split(",");
-                if (parts.length == 4) {
-                    double[] rgb = hslToRgb(parts[0], parts[1], parts[2]);
-                    double a = Double.parseDouble(parts[3].strip());
-                    return new RGBA(rgb[0], rgb[1], rgb[2], a * opacity);
-                }
-            }
+            return parseHsl(functionBody(string, "hsla"), true, opacity);
         } else if (string.startsWith("hsl(")) {
-            Matcher m = HSL_PATTERN.matcher(string);
-            if (m.find()) {
-                String[] parts = m.group(1).strip().split(",");
-                if (parts.length == 3) {
-                    double[] rgb = hslToRgb(parts[0], parts[1], parts[2]);
-                    return new RGBA(rgb[0], rgb[1], rgb[2], opacity);
-                }
-            }
+            return parseHsl(functionBody(string, "hsl"), false, opacity);
+        } else if (string.startsWith("hwb(")) {
+            return parseHwb(functionBody(string, "hwb"), opacity);
+        } else if (string.startsWith("lab(")) {
+            return parseLab(functionBody(string, "lab"), opacity);
+        } else if (string.startsWith("lch(")) {
+            return parseLch(functionBody(string, "lch"), opacity);
+        } else if (string.startsWith("oklab(")) {
+            return parseOklab(functionBody(string, "oklab"), opacity);
+        } else if (string.startsWith("oklch(")) {
+            return parseOklch(functionBody(string, "oklch"), opacity);
+        } else if (string.startsWith("color(")) {
+            return parseColorFunction(functionBody(string, "color"), opacity);
         }
 
         return RGBA.BLACK;
@@ -305,15 +298,212 @@ public final class Colors {
         return new RGBA(1 - c.r(), 1 - c.g(), 1 - c.b(), c.a());
     }
 
-    private static double[] hslToRgb(String hPart, String sPart, String lPart) {
-        double h = (((Double.parseDouble(hPart.strip()) % 360) + 360) % 360) / 360.0;
-        sPart = sPart.strip();
-        lPart = lPart.strip();
-        if (!sPart.endsWith("%") || !lPart.endsWith("%")) {
-            throw new IllegalArgumentException("Saturation and lightness in hsl() must be percentages.");
+    private static String functionBody(String string, String name) {
+        if (!string.endsWith(")")) {
+            return "";
         }
-        double s = Double.parseDouble(sPart.substring(0, sPart.length() - 1)) / 100.0;
-        double l = Double.parseDouble(lPart.substring(0, lPart.length() - 1)) / 100.0;
+        return string.substring(name.length() + 1, string.length() - 1);
+    }
+
+    private static RGBA parseRgb(String body, boolean alphaAllowedWithCommas, double opacity) {
+        if (body.indexOf(',') >= 0) {
+            String[] parts = body.strip().split(",");
+            if (parts.length != (alphaAllowedWithCommas ? 4 : 3)) {
+                return RGBA.BLACK;
+            }
+            double a = alphaAllowedWithCommas ? parseAlpha(parts[3]) : 1.0;
+            return rgba(parseColorComponent(parts[0]), parseColorComponent(parts[1]), parseColorComponent(parts[2]), a,
+                    opacity);
+        }
+
+        ParsedComponents parsed = parseSpaceSeparated(body, 3);
+        if (parsed == null) {
+            return RGBA.BLACK;
+        }
+        double a = parsed.alpha() == null ? 1.0 : parseAlpha(parsed.alpha());
+        return rgba(parseColorComponent(parsed.components()[0]), parseColorComponent(parsed.components()[1]),
+                parseColorComponent(parsed.components()[2]), a, opacity);
+    }
+
+    private static RGBA parseHsl(String body, boolean alphaAllowedWithCommas, double opacity) {
+        if (body.indexOf(',') >= 0) {
+            String[] parts = body.strip().split(",");
+            if (parts.length != (alphaAllowedWithCommas ? 4 : 3)) {
+                return RGBA.BLACK;
+            }
+            double[] rgb = hslToRgb(parts[0], parts[1], parts[2]);
+            double a = alphaAllowedWithCommas ? parseAlpha(parts[3]) : 1.0;
+            return rgba(rgb[0], rgb[1], rgb[2], a, opacity);
+        }
+
+        ParsedComponents parsed = parseSpaceSeparated(body, 3);
+        if (parsed == null) {
+            return RGBA.BLACK;
+        }
+        double[] rgb = hslToRgb(parsed.components()[0], parsed.components()[1], parsed.components()[2]);
+        double a = parsed.alpha() == null ? 1.0 : parseAlpha(parsed.alpha());
+        return rgba(rgb[0], rgb[1], rgb[2], a, opacity);
+    }
+
+    private static RGBA parseHwb(String body, double opacity) {
+        ParsedComponents parsed = parseSpaceSeparated(body, 3);
+        if (parsed == null) {
+            return RGBA.BLACK;
+        }
+
+        double[] hue = hslToRgb(parsed.components()[0], "100%", "50%");
+        double whiteness = parseRequiredPercent(parsed.components()[1]);
+        double blackness = parseRequiredPercent(parsed.components()[2]);
+        double a = parsed.alpha() == null ? 1.0 : parseAlpha(parsed.alpha());
+        if (whiteness + blackness >= 1.0) {
+            double gray = whiteness / (whiteness + blackness);
+            return rgba(gray, gray, gray, a, opacity);
+        }
+
+        double factor = 1.0 - whiteness - blackness;
+        return rgba(hue[0] * factor + whiteness, hue[1] * factor + whiteness, hue[2] * factor + whiteness, a, opacity);
+    }
+
+    private static RGBA parseLab(String body, double opacity) {
+        ParsedComponents parsed = parseSpaceSeparated(body, 3);
+        if (parsed == null) {
+            return RGBA.BLACK;
+        }
+
+        double lightness = parseLightness(parsed.components()[0], 100.0);
+        double aAxis = parseSignedPercent(parsed.components()[1], 125.0);
+        double bAxis = parseSignedPercent(parsed.components()[2], 125.0);
+        double alpha = parsed.alpha() == null ? 1.0 : parseAlpha(parsed.alpha());
+        return labToRgb(lightness, aAxis, bAxis, alpha, opacity);
+    }
+
+    private static RGBA parseLch(String body, double opacity) {
+        ParsedComponents parsed = parseSpaceSeparated(body, 3);
+        if (parsed == null) {
+            return RGBA.BLACK;
+        }
+
+        double lightness = parseLightness(parsed.components()[0], 100.0);
+        double chroma = parseSignedPercent(parsed.components()[1], 150.0);
+        double hueRadians = Math.toRadians(parseHue(parsed.components()[2]));
+        double alpha = parsed.alpha() == null ? 1.0 : parseAlpha(parsed.alpha());
+        return labToRgb(lightness, chroma * Math.cos(hueRadians), chroma * Math.sin(hueRadians), alpha, opacity);
+    }
+
+    private static RGBA parseOklab(String body, double opacity) {
+        ParsedComponents parsed = parseSpaceSeparated(body, 3);
+        if (parsed == null) {
+            return RGBA.BLACK;
+        }
+
+        double lightness = parseLightness(parsed.components()[0], 1.0);
+        double aAxis = parseSignedPercent(parsed.components()[1], 0.4);
+        double bAxis = parseSignedPercent(parsed.components()[2], 0.4);
+        double alpha = parsed.alpha() == null ? 1.0 : parseAlpha(parsed.alpha());
+        return oklabToRgb(lightness, aAxis, bAxis, alpha, opacity);
+    }
+
+    private static RGBA parseOklch(String body, double opacity) {
+        ParsedComponents parsed = parseSpaceSeparated(body, 3);
+        if (parsed == null) {
+            return RGBA.BLACK;
+        }
+
+        double lightness = parseLightness(parsed.components()[0], 1.0);
+        double chroma = parseSignedPercent(parsed.components()[1], 0.4);
+        double hueRadians = Math.toRadians(parseHue(parsed.components()[2]));
+        double alpha = parsed.alpha() == null ? 1.0 : parseAlpha(parsed.alpha());
+        return oklabToRgb(lightness, chroma * Math.cos(hueRadians), chroma * Math.sin(hueRadians), alpha, opacity);
+    }
+
+    private static RGBA parseColorFunction(String body, double opacity) {
+        String normalized = body.replace("/", " / ").strip();
+        if (normalized.isEmpty()) {
+            return RGBA.BLACK;
+        }
+
+        String[] tokens = normalized.split("\\s+");
+        if (tokens.length < 4) {
+            return RGBA.BLACK;
+        }
+
+        String colorSpace = tokens[0];
+        StringBuilder components = new StringBuilder();
+        for (int i = 1; i < tokens.length; i++) {
+            if (components.length() > 0) {
+                components.append(' ');
+            }
+            components.append(tokens[i]);
+        }
+
+        ParsedComponents parsed = parseSpaceSeparated(components.toString(), 3);
+        if (parsed == null) {
+            return RGBA.BLACK;
+        }
+
+        double c0 = parseUnitComponent(parsed.components()[0]);
+        double c1 = parseUnitComponent(parsed.components()[1]);
+        double c2 = parseUnitComponent(parsed.components()[2]);
+        double alpha = parsed.alpha() == null ? 1.0 : parseAlpha(parsed.alpha());
+
+        return switch (colorSpace) {
+            case "srgb" -> rgba(c0, c1, c2, alpha, opacity);
+            case "srgb-linear" -> linearSrgbToRgb(c0, c1, c2, alpha, opacity);
+            case "display-p3" -> displayP3ToRgb(c0, c1, c2, alpha, opacity);
+            case "a98-rgb" -> a98RgbToRgb(c0, c1, c2, alpha, opacity);
+            case "prophoto-rgb" -> prophotoRgbToRgb(c0, c1, c2, alpha, opacity);
+            case "rec2020" -> rec2020ToRgb(c0, c1, c2, alpha, opacity);
+            case "xyz", "xyz-d65" -> xyzD65ToRgb(c0, c1, c2, alpha, opacity);
+            case "xyz-d50" -> {
+                double[] xyzD65 = d50ToD65(c0, c1, c2);
+                yield xyzD65ToRgb(xyzD65[0], xyzD65[1], xyzD65[2], alpha, opacity);
+            }
+            default -> RGBA.BLACK;
+        };
+    }
+
+    private static ParsedComponents parseSpaceSeparated(String body, int expectedComponents) {
+        String normalized = body.replace("/", " / ").strip();
+        if (normalized.isEmpty()) {
+            return null;
+        }
+
+        String[] tokens = normalized.split("\\s+");
+        String[] components = new String[expectedComponents];
+        String alpha = null;
+        int componentIndex = 0;
+        boolean readingAlpha = false;
+        for (String token : tokens) {
+            if (token.equals("/")) {
+                if (readingAlpha) {
+                    return null;
+                }
+                readingAlpha = true;
+                continue;
+            }
+            if (readingAlpha) {
+                if (alpha != null) {
+                    return null;
+                }
+                alpha = token;
+            } else {
+                if (componentIndex >= expectedComponents) {
+                    return null;
+                }
+                components[componentIndex++] = token;
+            }
+        }
+
+        if (componentIndex != expectedComponents || readingAlpha && alpha == null) {
+            return null;
+        }
+        return new ParsedComponents(components, alpha);
+    }
+
+    private static double[] hslToRgb(String hPart, String sPart, String lPart) {
+        double h = (((parseHue(hPart) % 360) + 360) % 360) / 360.0;
+        double s = parseRequiredPercent(sPart);
+        double l = parseRequiredPercent(lPart);
         if (s == 0) {
             return new double[]{l, l, l};
         }
@@ -338,9 +528,210 @@ public final class Colors {
 
     private static double parseColorComponent(String part) {
         part = part.strip();
+        if (part.equals("none")) {
+            return 0;
+        }
         if (part.endsWith("%")) {
             return Double.parseDouble(part.substring(0, part.length() - 1)) / 100.0;
         }
         return Double.parseDouble(part) / 255.0;
+    }
+
+    private static double parseUnitComponent(String part) {
+        part = part.strip();
+        if (part.equals("none")) {
+            return 0;
+        }
+        if (part.endsWith("%")) {
+            return Double.parseDouble(part.substring(0, part.length() - 1)) / 100.0;
+        }
+        return Double.parseDouble(part);
+    }
+
+    private static double parseAlpha(String part) {
+        part = part.strip();
+        if (part.equals("none")) {
+            return 1;
+        }
+        if (part.endsWith("%")) {
+            return Double.parseDouble(part.substring(0, part.length() - 1)) / 100.0;
+        }
+        return Double.parseDouble(part);
+    }
+
+    private static double parseHue(String part) {
+        part = part.strip();
+        if (part.equals("none")) {
+            return 0;
+        }
+        if (part.endsWith("deg")) {
+            return Double.parseDouble(part.substring(0, part.length() - 3));
+        }
+        if (part.endsWith("grad")) {
+            return Double.parseDouble(part.substring(0, part.length() - 4)) * 0.9;
+        }
+        if (part.endsWith("rad")) {
+            return Math.toDegrees(Double.parseDouble(part.substring(0, part.length() - 3)));
+        }
+        if (part.endsWith("turn")) {
+            return Double.parseDouble(part.substring(0, part.length() - 4)) * 360.0;
+        }
+        return Double.parseDouble(part);
+    }
+
+    private static double parseRequiredPercent(String part) {
+        part = part.strip();
+        if (part.equals("none")) {
+            return 0;
+        }
+        if (!part.endsWith("%")) {
+            throw new IllegalArgumentException("Expected percentage color component.");
+        }
+        return Double.parseDouble(part.substring(0, part.length() - 1)) / 100.0;
+    }
+
+    private static double parseLightness(String part, double percentScale) {
+        part = part.strip();
+        if (part.equals("none")) {
+            return 0;
+        }
+        if (part.endsWith("%")) {
+            return Double.parseDouble(part.substring(0, part.length() - 1)) / 100.0 * percentScale;
+        }
+        return Double.parseDouble(part);
+    }
+
+    private static double parseSignedPercent(String part, double percentScale) {
+        part = part.strip();
+        if (part.equals("none")) {
+            return 0;
+        }
+        if (part.endsWith("%")) {
+            return Double.parseDouble(part.substring(0, part.length() - 1)) / 100.0 * percentScale;
+        }
+        return Double.parseDouble(part);
+    }
+
+    private static RGBA labToRgb(double lightness, double aAxis, double bAxis, double alpha, double opacity) {
+        double fy = (lightness + 16.0) / 116.0;
+        double fx = fy + aAxis / 500.0;
+        double fz = fy - bAxis / 200.0;
+
+        double x = D50_X * labInverse(fx);
+        double y = D50_Y * labInverse(fy);
+        double z = D50_Z * labInverse(fz);
+        double[] xyzD65 = d50ToD65(x, y, z);
+        return xyzD65ToRgb(xyzD65[0], xyzD65[1], xyzD65[2], alpha, opacity);
+    }
+
+    private static double labInverse(double value) {
+        double cube = value * value * value;
+        return cube > LAB_EPSILON ? cube : (116.0 * value - 16.0) / LAB_KAPPA;
+    }
+
+    private static RGBA oklabToRgb(double lightness, double aAxis, double bAxis, double alpha, double opacity) {
+        double lPrime = lightness + 0.3963377774 * aAxis + 0.2158037573 * bAxis;
+        double mPrime = lightness - 0.1055613458 * aAxis - 0.0638541728 * bAxis;
+        double sPrime = lightness - 0.0894841775 * aAxis - 1.2914855480 * bAxis;
+
+        double l = lPrime * lPrime * lPrime;
+        double m = mPrime * mPrime * mPrime;
+        double s = sPrime * sPrime * sPrime;
+
+        double r = 4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
+        double g = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
+        double b = -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s;
+        return linearSrgbToRgb(r, g, b, alpha, opacity);
+    }
+
+    private static RGBA displayP3ToRgb(double r, double g, double b, double alpha, double opacity) {
+        double linearR = srgbToLinear(r);
+        double linearG = srgbToLinear(g);
+        double linearB = srgbToLinear(b);
+        double x = 0.4865709486482162 * linearR + 0.26566769316909306 * linearG + 0.1982172852343625 * linearB;
+        double y = 0.2289745640697488 * linearR + 0.6917385218365064 * linearG + 0.079286914093745 * linearB;
+        double z = 0.04511338185890264 * linearG + 1.043944368900976 * linearB;
+        return xyzD65ToRgb(x, y, z, alpha, opacity);
+    }
+
+    private static RGBA a98RgbToRgb(double r, double g, double b, double alpha, double opacity) {
+        double linearR = Math.copySign(Math.pow(Math.abs(r), 563.0 / 256.0), r);
+        double linearG = Math.copySign(Math.pow(Math.abs(g), 563.0 / 256.0), g);
+        double linearB = Math.copySign(Math.pow(Math.abs(b), 563.0 / 256.0), b);
+        double x = 0.5766690429 * linearR + 0.1855582379 * linearG + 0.1882286462 * linearB;
+        double y = 0.2973449753 * linearR + 0.6273635663 * linearG + 0.0752914585 * linearB;
+        double z = 0.0270313614 * linearR + 0.0706888525 * linearG + 0.9913375368 * linearB;
+        return xyzD65ToRgb(x, y, z, alpha, opacity);
+    }
+
+    private static RGBA prophotoRgbToRgb(double r, double g, double b, double alpha, double opacity) {
+        double linearR = prophotoToLinear(r);
+        double linearG = prophotoToLinear(g);
+        double linearB = prophotoToLinear(b);
+        double x = 0.7977604897 * linearR + 0.1351858372 * linearG + 0.0313493496 * linearB;
+        double y = 0.2880711282 * linearR + 0.7118432178 * linearG + 0.0000856539 * linearB;
+        double z = 0.8251046025 * linearB;
+        double[] xyzD65 = d50ToD65(x, y, z);
+        return xyzD65ToRgb(xyzD65[0], xyzD65[1], xyzD65[2], alpha, opacity);
+    }
+
+    private static double prophotoToLinear(double component) {
+        double absolute = Math.abs(component);
+        double linear = absolute <= 16.0 / 512.0 ? absolute / 16.0 : Math.pow(absolute, 1.8);
+        return Math.copySign(linear, component);
+    }
+
+    private static RGBA rec2020ToRgb(double r, double g, double b, double alpha, double opacity) {
+        double linearR = rec2020ToLinear(r);
+        double linearG = rec2020ToLinear(g);
+        double linearB = rec2020ToLinear(b);
+        double x = 0.6369580483 * linearR + 0.1446169036 * linearG + 0.1688809752 * linearB;
+        double y = 0.2627002120 * linearR + 0.6779980715 * linearG + 0.0593017165 * linearB;
+        double z = 0.0280726930 * linearG + 1.0609850577 * linearB;
+        return xyzD65ToRgb(x, y, z, alpha, opacity);
+    }
+
+    private static double rec2020ToLinear(double component) {
+        double alpha = 1.09929682680944;
+        double beta = 0.018053968510807;
+        double absolute = Math.abs(component);
+        double linear = absolute < beta * 4.5 ? absolute / 4.5 : Math.pow((absolute + alpha - 1.0) / alpha, 1.0 / 0.45);
+        return Math.copySign(linear, component);
+    }
+
+    private static RGBA xyzD65ToRgb(double x, double y, double z, double alpha, double opacity) {
+        double r = 3.2409699419045226 * x - 1.5373831775700935 * y - 0.4986107602930034 * z;
+        double g = -0.9692436362808796 * x + 1.8759675015077202 * y + 0.0415550574071756 * z;
+        double b = 0.0556300796969936 * x - 0.2039769588889765 * y + 1.0569715142428786 * z;
+        return linearSrgbToRgb(r, g, b, alpha, opacity);
+    }
+
+    private static double[] d50ToD65(double x, double y, double z) {
+        return new double[]{0.9555766 * x - 0.0230393 * y + 0.0631636 * z,
+                -0.0282895 * x + 1.0099416 * y + 0.0210077 * z, 0.0122982 * x - 0.0204830 * y + 1.3299098 * z};
+    }
+
+    private static RGBA linearSrgbToRgb(double r, double g, double b, double alpha, double opacity) {
+        return rgba(linearToSrgb(r), linearToSrgb(g), linearToSrgb(b), alpha, opacity);
+    }
+
+    private static double srgbToLinear(double component) {
+        double absolute = Math.abs(component);
+        double linear = absolute <= 0.04045 ? absolute / 12.92 : Math.pow((absolute + 0.055) / 1.055, 2.4);
+        return Math.copySign(linear, component);
+    }
+
+    private static double linearToSrgb(double component) {
+        double absolute = Math.abs(component);
+        double encoded = absolute <= 0.0031308 ? 12.92 * absolute : 1.055 * Math.pow(absolute, 1.0 / 2.4) - 0.055;
+        return Math.copySign(encoded, component);
+    }
+
+    private static RGBA rgba(double r, double g, double b, double alpha, double opacity) {
+        return new RGBA(clamp01(r), clamp01(g), clamp01(b), clamp01(alpha * opacity));
+    }
+
+    private static double clamp01(double value) {
+        return Math.max(0, Math.min(1, value));
     }
 }

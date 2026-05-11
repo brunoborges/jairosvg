@@ -11,6 +11,13 @@ class ColorsTest {
 
     private static final double EPSILON = 0.01;
 
+    private static void assertColor(RGBA color, double r, double g, double b, double a) {
+        assertEquals(r, color.r(), EPSILON);
+        assertEquals(g, color.g(), EPSILON);
+        assertEquals(b, color.b(), EPSILON);
+        assertEquals(a, color.a(), EPSILON);
+    }
+
     // ── Basic named colors ────────────────────────────────────────────
 
     @Test
@@ -111,6 +118,16 @@ class ColorsTest {
     }
 
     @Test
+    void testHex8() {
+        assertColor(Colors.color("#00ff0080"), 0.0, 1.0, 0.0, 128 / 255.0);
+    }
+
+    @Test
+    void testHex4() {
+        assertColor(Colors.color("#0f08"), 0.0, 1.0, 0.0, 8 / 15.0);
+    }
+
+    @Test
     void testHex6WithOpacity() {
         RGBA c = Colors.color("#ff0000", 0.5);
         assertEquals(1.0, c.r(), EPSILON);
@@ -191,6 +208,11 @@ class ColorsTest {
         RGBA c = Colors.color("rgb(255, 0, 0)", 0.5);
         assertEquals(1.0, c.r(), EPSILON);
         assertEquals(0.5, c.a(), EPSILON);
+    }
+
+    @Test
+    void testRgbSpaceSeparatedWithSlashAlpha() {
+        assertColor(Colors.color("rgb(255 0 128 / 50%)"), 1.0, 0.0, 128 / 255.0, 0.5);
     }
 
     // ── rgba() ────────────────────────────────────────────────────────
@@ -294,6 +316,13 @@ class ColorsTest {
         assertThrows(IllegalArgumentException.class, () -> Colors.color("hsl(0, 50, 50)"));
     }
 
+    @Test
+    void testHslSpaceSeparatedWithHueUnitsAndSlashAlpha() {
+        assertColor(Colors.color("hsl(0.5turn 100% 50% / 25%)"), 0.0, 1.0, 1.0, 0.25);
+        assertColor(Colors.color("hsl(3.141592653589793rad 100% 50%)"), 0.0, 1.0, 1.0, 1.0);
+        assertColor(Colors.color("hsl(200grad 100% 50%)"), 0.0, 1.0, 1.0, 1.0);
+    }
+
     // ── hsla() ────────────────────────────────────────────────────────
 
     @Test
@@ -316,6 +345,47 @@ class ColorsTest {
         RGBA c = Colors.color("hsla(0, 100%, 50%, 0.8)", 0.5);
         assertEquals(1.0, c.r(), EPSILON);
         assertEquals(0.4, c.a(), EPSILON);
+    }
+
+    // ── CSS Color Level 4 ─────────────────────────────────────────────
+
+    @Test
+    void testHwb() {
+        assertColor(Colors.color("hwb(120 0% 0%)"), 0.0, 1.0, 0.0, 1.0);
+        assertColor(Colors.color("hwb(0 20% 30% / 50%)"), 0.7, 0.2, 0.2, 0.5);
+        assertColor(Colors.color("hwb(0 100% 100%)"), 0.5, 0.5, 0.5, 1.0);
+    }
+
+    @Test
+    void testLabAndLch() {
+        assertColor(Colors.color("lab(50% 0 0 / 75%)"), 0.47, 0.47, 0.47, 0.75);
+        assertColor(Colors.color("lch(50% 0 120)"), 0.47, 0.47, 0.47, 1.0);
+        assertColor(Colors.color("lab(54.291% 80.812 69.885)"), 1.0, 0.0, 0.0, 1.0);
+        assertColor(Colors.color("lch(54.291% 106.839 40.853)"), 1.0, 0.0, 0.0, 1.0);
+    }
+
+    @Test
+    void testOklabAndOklch() {
+        assertColor(Colors.color("oklab(0.5 0 0 / 75%)"), 0.39, 0.39, 0.39, 0.75);
+        assertColor(Colors.color("oklch(0.5 0 120)"), 0.39, 0.39, 0.39, 1.0);
+        assertColor(Colors.color("oklab(62.796% 0.22486 0.12585)"), 1.0, 0.0, 0.0, 1.0);
+        assertColor(Colors.color("oklch(62.796% 0.25768 29.234deg)"), 1.0, 0.0, 0.0, 1.0);
+    }
+
+    @Test
+    void testColorFunction() {
+        assertColor(Colors.color("color(srgb 25% 50% 75% / 25%)"), 0.25, 0.5, 0.75, 0.25);
+        assertColor(Colors.color("color(srgb-linear 0.214041 0.214041 0.214041)"), 0.5, 0.5, 0.5, 1.0);
+        assertColor(Colors.color("color(xyz-d65 0.95047 1 1.08883)"), 1.0, 1.0, 1.0, 1.0);
+        assertColor(Colors.color("color(xyz-d50 0.96422 1 0.82521)"), 1.0, 1.0, 1.0, 1.0);
+    }
+
+    @Test
+    void testWideGamutColorFunctionSpaces() {
+        assertColor(Colors.color("color(display-p3 1 1 1)"), 1.0, 1.0, 1.0, 1.0);
+        assertColor(Colors.color("color(a98-rgb 1 1 1)"), 1.0, 1.0, 1.0, 1.0);
+        assertColor(Colors.color("color(prophoto-rgb 1 1 1)"), 1.0, 1.0, 1.0, 1.0);
+        assertColor(Colors.color("color(rec2020 1 1 1)"), 1.0, 1.0, 1.0, 1.0);
     }
 
     // ── Unknown color → BLACK ─────────────────────────────────────────
@@ -389,5 +459,16 @@ class ColorsTest {
         var img = RenderTestHelper.render(svg);
         int[] pixel = RenderTestHelper.rgba(img, 50, 50);
         assertTrue(pixel[1] > 150, "Should have green channel");
+    }
+
+    @Test
+    void testOklchColorRendering() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                  <rect x="0" y="0" width="100" height="100" fill="oklch(62.796% 0.25768 29.234deg)"/>
+                </svg>
+                """;
+        var img = RenderTestHelper.render(svg);
+        RenderTestHelper.assertPixelColor(img, 50, 50, 255, 0, 0, 5);
     }
 }
