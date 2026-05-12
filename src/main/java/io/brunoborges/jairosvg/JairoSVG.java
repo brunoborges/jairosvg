@@ -449,7 +449,7 @@ public final class JairoSVG {
         }
 
         private void initSurface(Surface surface, Node tree, OutputStream out) {
-            UnaryOperator<Colors.RGBA> colorMapper = negateColors ? Colors::negateColor : null;
+            UnaryOperator<in.virit.color.Color> colorMapper = negateColors ? Colors::negateColor : null;
 
             surface.init(tree, out, dpi, parentWidth, parentHeight, scale, outputWidth, outputHeight, backgroundColor,
                     colorMapper, renderingHints);

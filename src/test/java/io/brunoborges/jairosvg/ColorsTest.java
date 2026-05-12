@@ -1,7 +1,8 @@
 package io.brunoborges.jairosvg;
 
 import io.brunoborges.jairosvg.css.Colors;
-import io.brunoborges.jairosvg.css.Colors.RGBA;
+import in.virit.color.Color;
+import in.virit.color.RgbColor;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,110 +12,125 @@ class ColorsTest {
 
     private static final double EPSILON = 0.01;
 
-    private static void assertColor(RGBA color, double r, double g, double b, double a) {
-        assertEquals(r, color.r(), EPSILON);
-        assertEquals(g, color.g(), EPSILON);
-        assertEquals(b, color.b(), EPSILON);
-        assertEquals(a, color.a(), EPSILON);
+    /** Component getters in 0..1 space, mirroring the old RGBA API. */
+    private static double r(Color c) { return c.toRgbColor().r() / 255.0; }
+    private static double g(Color c) { return c.toRgbColor().g() / 255.0; }
+    private static double b(Color c) { return c.toRgbColor().b() / 255.0; }
+    private static double a(Color c) { return c.toRgbColor().a(); }
+
+    /** Construct an RgbColor from 0..1 component fractions for equality comparisons. */
+    private static Color rgba(double r, double g, double b, double a) {
+        return new RgbColor(
+                (int) Math.round(r * 255),
+                (int) Math.round(g * 255),
+                (int) Math.round(b * 255),
+                a);
+    }
+
+    private static void assertColor(Color color, double r, double g, double b, double a) {
+        assertEquals(r, r(color), EPSILON);
+        assertEquals(g, g(color), EPSILON);
+        assertEquals(b, b(color), EPSILON);
+        assertEquals(a, a(color), EPSILON);
     }
 
     // ── Basic named colors ────────────────────────────────────────────
 
     @Test
     void testColorParsing() {
-        assertEquals(new RGBA(1, 0, 0, 1), Colors.color("red"));
-        assertEquals(new RGBA(0, 0, 0, 1), Colors.color("black"));
-        assertEquals(new RGBA(1, 1, 1, 1), Colors.color("white"));
-        assertEquals(new RGBA(0, 0, 0, 0), Colors.color("transparent"));
-        assertEquals(new RGBA(1, 0, 0, 1), Colors.color("#ff0000"));
-        assertEquals(new RGBA(1, 0, 0, 1), Colors.color("#f00"));
-        assertEquals(new RGBA(1, 0, 0, 1), Colors.color("rgb(255, 0, 0)"));
-        assertEquals(new RGBA(1, 0, 0, 1), Colors.color("rgba(255, 0, 0, 1)"));
+        assertEquals(rgba(1, 0, 0, 1), Colors.color("red"));
+        assertEquals(rgba(0, 0, 0, 1), Colors.color("black"));
+        assertEquals(rgba(1, 1, 1, 1), Colors.color("white"));
+        assertEquals(rgba(0, 0, 0, 0), Colors.color("transparent"));
+        assertEquals(rgba(1, 0, 0, 1), Colors.color("#ff0000"));
+        assertEquals(rgba(1, 0, 0, 1), Colors.color("#f00"));
+        assertEquals(rgba(1, 0, 0, 1), Colors.color("rgb(255, 0, 0)"));
+        assertEquals(rgba(1, 0, 0, 1), Colors.color("rgba(255, 0, 0, 1)"));
 
-        Colors.RGBA hslRed = Colors.color("hsl(0, 100%, 50%)");
-        assertEquals(1.0, hslRed.r(), EPSILON);
-        assertEquals(0.0, hslRed.g(), EPSILON);
-        assertEquals(0.0, hslRed.b(), EPSILON);
-        assertEquals(1.0, hslRed.a(), EPSILON);
+        Color hslRed = Colors.color("hsl(0, 100%, 50%)");
+        assertEquals(1.0, r(hslRed), EPSILON);
+        assertEquals(0.0, g(hslRed), EPSILON);
+        assertEquals(0.0, b(hslRed), EPSILON);
+        assertEquals(1.0, a(hslRed), EPSILON);
 
-        Colors.RGBA hslGreen = Colors.color("hsl(120, 100%, 50%)");
-        assertEquals(0.0, hslGreen.r(), EPSILON);
-        assertEquals(1.0, hslGreen.g(), EPSILON);
-        assertEquals(0.0, hslGreen.b(), EPSILON);
+        Color hslGreen = Colors.color("hsl(120, 100%, 50%)");
+        assertEquals(0.0, r(hslGreen), EPSILON);
+        assertEquals(1.0, g(hslGreen), EPSILON);
+        assertEquals(0.0, b(hslGreen), EPSILON);
 
-        Colors.RGBA hslBlue = Colors.color("hsl(240, 100%, 50%)");
-        assertEquals(0.0, hslBlue.r(), EPSILON);
-        assertEquals(0.0, hslBlue.g(), EPSILON);
-        assertEquals(1.0, hslBlue.b(), EPSILON);
+        Color hslBlue = Colors.color("hsl(240, 100%, 50%)");
+        assertEquals(0.0, r(hslBlue), EPSILON);
+        assertEquals(0.0, g(hslBlue), EPSILON);
+        assertEquals(1.0, b(hslBlue), EPSILON);
 
-        Colors.RGBA hslGray = Colors.color("hsl(0, 0%, 50%)");
-        assertEquals(0.5, hslGray.r(), EPSILON);
-        assertEquals(0.5, hslGray.g(), EPSILON);
-        assertEquals(0.5, hslGray.b(), EPSILON);
+        Color hslGray = Colors.color("hsl(0, 0%, 50%)");
+        assertEquals(0.5, r(hslGray), EPSILON);
+        assertEquals(0.5, g(hslGray), EPSILON);
+        assertEquals(0.5, b(hslGray), EPSILON);
 
-        Colors.RGBA hslaRed = Colors.color("hsla(0, 100%, 50%, 0.5)");
-        assertEquals(1.0, hslaRed.r(), EPSILON);
-        assertEquals(0.0, hslaRed.g(), EPSILON);
-        assertEquals(0.0, hslaRed.b(), EPSILON);
-        assertEquals(0.5, hslaRed.a(), EPSILON);
+        Color hslaRed = Colors.color("hsla(0, 100%, 50%, 0.5)");
+        assertEquals(1.0, r(hslaRed), EPSILON);
+        assertEquals(0.0, g(hslaRed), EPSILON);
+        assertEquals(0.0, b(hslaRed), EPSILON);
+        assertEquals(0.5, a(hslaRed), EPSILON);
 
-        Colors.RGBA hslRedWithOpacity = Colors.color("hsl(0, 100%, 50%)", 0.5);
-        assertEquals(1.0, hslRedWithOpacity.r(), EPSILON);
-        assertEquals(0.0, hslRedWithOpacity.g(), EPSILON);
-        assertEquals(0.0, hslRedWithOpacity.b(), EPSILON);
-        assertEquals(0.5, hslRedWithOpacity.a(), EPSILON);
+        Color hslRedWithOpacity = Colors.color("hsl(0, 100%, 50%)", 0.5);
+        assertEquals(1.0, r(hslRedWithOpacity), EPSILON);
+        assertEquals(0.0, g(hslRedWithOpacity), EPSILON);
+        assertEquals(0.0, b(hslRedWithOpacity), EPSILON);
+        assertEquals(0.5, a(hslRedWithOpacity), EPSILON);
 
-        Colors.RGBA hslaRedWithOpacity = Colors.color("hsla(0, 100%, 50%, 0.5)", 0.5);
-        assertEquals(1.0, hslaRedWithOpacity.r(), EPSILON);
-        assertEquals(0.0, hslaRedWithOpacity.g(), EPSILON);
-        assertEquals(0.0, hslaRedWithOpacity.b(), EPSILON);
-        assertEquals(0.25, hslaRedWithOpacity.a(), EPSILON);
+        Color hslaRedWithOpacity = Colors.color("hsla(0, 100%, 50%, 0.5)", 0.5);
+        assertEquals(1.0, r(hslaRedWithOpacity), EPSILON);
+        assertEquals(0.0, g(hslaRedWithOpacity), EPSILON);
+        assertEquals(0.0, b(hslaRedWithOpacity), EPSILON);
+        assertEquals(0.25, a(hslaRedWithOpacity), EPSILON);
     }
 
     @Test
     void testColorNegate() {
-        RGBA red = new RGBA(1, 0, 0, 1);
-        RGBA negated = Colors.negateColor(red);
-        assertEquals(0, negated.r(), 0.001);
-        assertEquals(1, negated.g(), 0.001);
-        assertEquals(1, negated.b(), 0.001);
-        assertEquals(1, negated.a(), 0.001);
+        Color red = rgba(1, 0, 0, 1);
+        Color negated = Colors.negateColor(red);
+        assertEquals(0, r(negated), 0.001);
+        assertEquals(1, g(negated), 0.001);
+        assertEquals(1, b(negated), 0.001);
+        assertEquals(1, a(negated), 0.001);
     }
 
     // ── null / blank / empty ──────────────────────────────────────────
 
     @Test
     void testColorNull() {
-        assertEquals(RGBA.TRANSPARENT, Colors.color(null));
+        assertEquals(Colors.TRANSPARENT, Colors.color(null));
     }
 
     @Test
     void testColorEmpty() {
-        assertEquals(RGBA.TRANSPARENT, Colors.color(""));
+        assertEquals(Colors.TRANSPARENT, Colors.color(""));
     }
 
     @Test
     void testColorBlank() {
-        assertEquals(RGBA.TRANSPARENT, Colors.color("   "));
+        assertEquals(Colors.TRANSPARENT, Colors.color("   "));
     }
 
     // ── Hex colors ────────────────────────────────────────────────────
 
     @Test
     void testHex6() {
-        RGBA c = Colors.color("#00ff00");
-        assertEquals(0.0, c.r(), EPSILON);
-        assertEquals(1.0, c.g(), EPSILON);
-        assertEquals(0.0, c.b(), EPSILON);
-        assertEquals(1.0, c.a(), EPSILON);
+        Color c = Colors.color("#00ff00");
+        assertEquals(0.0, r(c), EPSILON);
+        assertEquals(1.0, g(c), EPSILON);
+        assertEquals(0.0, b(c), EPSILON);
+        assertEquals(1.0, a(c), EPSILON);
     }
 
     @Test
     void testHex3() {
-        RGBA c = Colors.color("#0f0");
-        assertEquals(0.0, c.r(), EPSILON);
-        assertEquals(1.0, c.g(), EPSILON);
-        assertEquals(0.0, c.b(), EPSILON);
+        Color c = Colors.color("#0f0");
+        assertEquals(0.0, r(c), EPSILON);
+        assertEquals(1.0, g(c), EPSILON);
+        assertEquals(0.0, b(c), EPSILON);
     }
 
     @Test
@@ -129,85 +145,85 @@ class ColorsTest {
 
     @Test
     void testHex6WithOpacity() {
-        RGBA c = Colors.color("#ff0000", 0.5);
-        assertEquals(1.0, c.r(), EPSILON);
-        assertEquals(0.5, c.a(), EPSILON);
+        Color c = Colors.color("#ff0000", 0.5);
+        assertEquals(1.0, r(c), EPSILON);
+        assertEquals(0.5, a(c), EPSILON);
     }
 
     @Test
     void testHex3WithOpacity() {
-        RGBA c = Colors.color("#f00", 0.5);
-        assertEquals(1.0, c.r(), EPSILON);
-        assertEquals(0.5, c.a(), EPSILON);
+        Color c = Colors.color("#f00", 0.5);
+        assertEquals(1.0, r(c), EPSILON);
+        assertEquals(0.5, a(c), EPSILON);
     }
 
     @Test
     void testHexInvalidLength() {
-        RGBA c = Colors.color("#ff");
-        assertEquals(RGBA.BLACK, c);
+        Color c = Colors.color("#ff");
+        assertEquals(Colors.BLACK, c);
     }
 
     @Test
     void testHex5Chars() {
-        RGBA c = Colors.color("#ff00f");
-        assertEquals(RGBA.BLACK, c);
+        Color c = Colors.color("#ff00f");
+        assertEquals(Colors.BLACK, c);
     }
 
     // ── Named colors with opacity ─────────────────────────────────────
 
     @Test
     void testNamedColorWithOpacity() {
-        RGBA c = Colors.color("red", 0.5);
-        assertEquals(1.0, c.r(), EPSILON);
-        assertEquals(0.0, c.g(), EPSILON);
-        assertEquals(0.0, c.b(), EPSILON);
-        assertEquals(0.5, c.a(), EPSILON);
+        Color c = Colors.color("red", 0.5);
+        assertEquals(1.0, r(c), EPSILON);
+        assertEquals(0.0, g(c), EPSILON);
+        assertEquals(0.0, b(c), EPSILON);
+        assertEquals(0.5, a(c), EPSILON);
     }
 
     @Test
     void testNamedColorFullOpacity() {
-        RGBA c = Colors.color("blue");
-        assertEquals(0.0, c.r(), EPSILON);
-        assertEquals(0.0, c.g(), EPSILON);
-        assertEquals(1.0, c.b(), EPSILON);
-        assertEquals(1.0, c.a(), EPSILON);
+        Color c = Colors.color("blue");
+        assertEquals(0.0, r(c), EPSILON);
+        assertEquals(0.0, g(c), EPSILON);
+        assertEquals(1.0, b(c), EPSILON);
+        assertEquals(1.0, a(c), EPSILON);
     }
 
     @Test
     void testNamedColorCaseInsensitive() {
-        RGBA c = Colors.color("  RED  ");
-        assertEquals(1.0, c.r(), EPSILON);
+        Color c = Colors.color("  RED  ");
+        assertEquals(1.0, r(c), EPSILON);
     }
 
     // ── rgb() ─────────────────────────────────────────────────────────
 
     @Test
     void testRgbIntegers() {
-        RGBA c = Colors.color("rgb(0, 128, 255)");
-        assertEquals(0.0, c.r(), EPSILON);
-        assertEquals(128 / 255.0, c.g(), EPSILON);
-        assertEquals(1.0, c.b(), EPSILON);
+        Color c = Colors.color("rgb(0, 128, 255)");
+        assertEquals(0.0, r(c), EPSILON);
+        assertEquals(128 / 255.0, g(c), EPSILON);
+        assertEquals(1.0, b(c), EPSILON);
     }
 
     @Test
     void testRgbPercentages() {
-        RGBA c = Colors.color("rgb(100%, 0%, 50%)");
-        assertEquals(1.0, c.r(), EPSILON);
-        assertEquals(0.0, c.g(), EPSILON);
-        assertEquals(0.5, c.b(), EPSILON);
+        Color c = Colors.color("rgb(100%, 0%, 50%)");
+        assertEquals(1.0, r(c), EPSILON);
+        assertEquals(0.0, g(c), EPSILON);
+        assertEquals(0.5, b(c), EPSILON);
     }
 
     @Test
     void testRgbWrongPartCount() {
-        RGBA c = Colors.color("rgb(255, 0)");
-        assertEquals(RGBA.BLACK, c);
+        Color c = Colors.color("rgb(255, 0)");
+        assertEquals(Colors.BLACK, c);
     }
 
     @Test
     void testRgbWithOpacity() {
-        RGBA c = Colors.color("rgb(255, 0, 0)", 0.5);
-        assertEquals(1.0, c.r(), EPSILON);
-        assertEquals(0.5, c.a(), EPSILON);
+        Color c = Colors.color("rgb(255, 0, 0)", 0.5);
+        assertEquals(1.0, r(c), EPSILON);
+        assertEquals(0.5, a(c), EPSILON);
     }
 
     @Test
@@ -219,110 +235,110 @@ class ColorsTest {
 
     @Test
     void testRgbaValid() {
-        RGBA c = Colors.color("rgba(128, 0, 255, 0.5)");
-        assertEquals(128 / 255.0, c.r(), EPSILON);
-        assertEquals(0.0, c.g(), EPSILON);
-        assertEquals(1.0, c.b(), EPSILON);
-        assertEquals(0.5, c.a(), EPSILON);
+        Color c = Colors.color("rgba(128, 0, 255, 0.5)");
+        assertEquals(128 / 255.0, r(c), EPSILON);
+        assertEquals(0.0, g(c), EPSILON);
+        assertEquals(1.0, b(c), EPSILON);
+        assertEquals(0.5, a(c), EPSILON);
     }
 
     @Test
     void testRgbaAcceptsThreeArgs() {
         // CSS Color 4: rgba() is an alias of rgb(), so 3 args is valid.
-        RGBA c = Colors.color("rgba(255, 0, 0)");
-        assertEquals(1.0, c.r(), EPSILON);
-        assertEquals(0.0, c.g(), EPSILON);
-        assertEquals(0.0, c.b(), EPSILON);
-        assertEquals(1.0, c.a(), EPSILON);
+        Color c = Colors.color("rgba(255, 0, 0)");
+        assertEquals(1.0, r(c), EPSILON);
+        assertEquals(0.0, g(c), EPSILON);
+        assertEquals(0.0, b(c), EPSILON);
+        assertEquals(1.0, a(c), EPSILON);
     }
 
     @Test
     void testRgbaWithOpacityMultiplied() {
-        RGBA c = Colors.color("rgba(255, 0, 0, 0.5)", 0.5);
-        assertEquals(1.0, c.r(), EPSILON);
-        assertEquals(0.25, c.a(), EPSILON);
+        Color c = Colors.color("rgba(255, 0, 0, 0.5)", 0.5);
+        assertEquals(1.0, r(c), EPSILON);
+        assertEquals(0.25, a(c), EPSILON);
     }
 
     @Test
     void testRgbaPercentages() {
-        RGBA c = Colors.color("rgba(100%, 50%, 0%, 0.8)");
-        assertEquals(1.0, c.r(), EPSILON);
-        assertEquals(0.5, c.g(), EPSILON);
-        assertEquals(0.0, c.b(), EPSILON);
-        assertEquals(0.8, c.a(), EPSILON);
+        Color c = Colors.color("rgba(100%, 50%, 0%, 0.8)");
+        assertEquals(1.0, r(c), EPSILON);
+        assertEquals(0.5, g(c), EPSILON);
+        assertEquals(0.0, b(c), EPSILON);
+        assertEquals(0.8, a(c), EPSILON);
     }
 
     // ── hsl() ─────────────────────────────────────────────────────────
 
     @Test
     void testHslAchromatic() {
-        RGBA c = Colors.color("hsl(0, 0%, 75%)");
-        assertEquals(0.75, c.r(), EPSILON);
-        assertEquals(0.75, c.g(), EPSILON);
-        assertEquals(0.75, c.b(), EPSILON);
+        Color c = Colors.color("hsl(0, 0%, 75%)");
+        assertEquals(0.75, r(c), EPSILON);
+        assertEquals(0.75, g(c), EPSILON);
+        assertEquals(0.75, b(c), EPSILON);
     }
 
     @Test
     void testHslLowLightness() {
-        RGBA c = Colors.color("hsl(0, 100%, 25%)");
-        assertEquals(0.5, c.r(), EPSILON);
-        assertEquals(0.0, c.g(), EPSILON);
-        assertEquals(0.0, c.b(), EPSILON);
+        Color c = Colors.color("hsl(0, 100%, 25%)");
+        assertEquals(0.5, r(c), EPSILON);
+        assertEquals(0.0, g(c), EPSILON);
+        assertEquals(0.0, b(c), EPSILON);
     }
 
     @Test
     void testHslHighLightness() {
-        RGBA c = Colors.color("hsl(0, 50%, 75%)");
-        assertTrue(c.r() > 0.5);
-        assertTrue(c.g() > 0.3);
+        Color c = Colors.color("hsl(0, 50%, 75%)");
+        assertTrue(r(c) > 0.5);
+        assertTrue(g(c) > 0.3);
     }
 
     @Test
     void testHslCyan() {
-        RGBA c = Colors.color("hsl(180, 100%, 50%)");
-        assertEquals(0.0, c.r(), EPSILON);
-        assertEquals(1.0, c.g(), EPSILON);
-        assertEquals(1.0, c.b(), EPSILON);
+        Color c = Colors.color("hsl(180, 100%, 50%)");
+        assertEquals(0.0, r(c), EPSILON);
+        assertEquals(1.0, g(c), EPSILON);
+        assertEquals(1.0, b(c), EPSILON);
     }
 
     @Test
     void testHslMagenta() {
-        RGBA c = Colors.color("hsl(300, 100%, 50%)");
-        assertEquals(1.0, c.r(), EPSILON);
-        assertEquals(0.0, c.g(), EPSILON);
-        assertEquals(1.0, c.b(), EPSILON);
+        Color c = Colors.color("hsl(300, 100%, 50%)");
+        assertEquals(1.0, r(c), EPSILON);
+        assertEquals(0.0, g(c), EPSILON);
+        assertEquals(1.0, b(c), EPSILON);
     }
 
     @Test
     void testHslNegativeHue() {
-        RGBA c = Colors.color("hsl(-60, 100%, 50%)");
-        assertEquals(1.0, c.r(), EPSILON);
-        assertEquals(0.0, c.g(), EPSILON);
-        assertEquals(1.0, c.b(), EPSILON);
+        Color c = Colors.color("hsl(-60, 100%, 50%)");
+        assertEquals(1.0, r(c), EPSILON);
+        assertEquals(0.0, g(c), EPSILON);
+        assertEquals(1.0, b(c), EPSILON);
     }
 
     @Test
     void testHslLargeHue() {
-        RGBA c = Colors.color("hsl(420, 100%, 50%)");
-        assertEquals(1.0, c.r(), EPSILON);
-        assertEquals(1.0, c.g(), EPSILON);
-        assertEquals(0.0, c.b(), EPSILON);
+        Color c = Colors.color("hsl(420, 100%, 50%)");
+        assertEquals(1.0, r(c), EPSILON);
+        assertEquals(1.0, g(c), EPSILON);
+        assertEquals(0.0, b(c), EPSILON);
     }
 
     @Test
     void testHslWrongPartCount() {
-        RGBA c = Colors.color("hsl(120, 100%)");
-        assertEquals(RGBA.BLACK, c);
+        Color c = Colors.color("hsl(120, 100%)");
+        assertEquals(Colors.BLACK, c);
     }
 
     @Test
     void testHslAcceptsBareNumbers() {
         // CSS Color 4 permits hsl(h s l) without explicit percent signs;
         // bare 50 is interpreted as 50% for saturation/lightness.
-        RGBA c = Colors.color("hsl(0, 50, 50)");
-        assertEquals(0.749, c.r(), 0.01);
-        assertEquals(0.251, c.g(), 0.01);
-        assertEquals(0.251, c.b(), 0.01);
+        Color c = Colors.color("hsl(0, 50, 50)");
+        assertEquals(0.749, r(c), 0.01);
+        assertEquals(0.251, g(c), 0.01);
+        assertEquals(0.251, b(c), 0.01);
     }
 
     @Test
@@ -336,28 +352,28 @@ class ColorsTest {
 
     @Test
     void testHslaValid() {
-        RGBA c = Colors.color("hsla(120, 100%, 50%, 0.5)");
-        assertEquals(0.0, c.r(), EPSILON);
-        assertEquals(1.0, c.g(), EPSILON);
-        assertEquals(0.0, c.b(), EPSILON);
-        assertEquals(0.5, c.a(), EPSILON);
+        Color c = Colors.color("hsla(120, 100%, 50%, 0.5)");
+        assertEquals(0.0, r(c), EPSILON);
+        assertEquals(1.0, g(c), EPSILON);
+        assertEquals(0.0, b(c), EPSILON);
+        assertEquals(0.5, a(c), EPSILON);
     }
 
     @Test
     void testHslaAcceptsThreeArgs() {
         // CSS Color 4: hsla() is an alias of hsl(), so 3 args is valid.
-        RGBA c = Colors.color("hsla(120, 100%, 50%)");
-        assertEquals(0.0, c.r(), EPSILON);
-        assertEquals(1.0, c.g(), EPSILON);
-        assertEquals(0.0, c.b(), EPSILON);
-        assertEquals(1.0, c.a(), EPSILON);
+        Color c = Colors.color("hsla(120, 100%, 50%)");
+        assertEquals(0.0, r(c), EPSILON);
+        assertEquals(1.0, g(c), EPSILON);
+        assertEquals(0.0, b(c), EPSILON);
+        assertEquals(1.0, a(c), EPSILON);
     }
 
     @Test
     void testHslaWithOpacity() {
-        RGBA c = Colors.color("hsla(0, 100%, 50%, 0.8)", 0.5);
-        assertEquals(1.0, c.r(), EPSILON);
-        assertEquals(0.4, c.a(), EPSILON);
+        Color c = Colors.color("hsla(0, 100%, 50%, 0.8)", 0.5);
+        assertEquals(1.0, r(c), EPSILON);
+        assertEquals(0.4, a(c), EPSILON);
     }
 
     // ── CSS Color Level 4 ─────────────────────────────────────────────
@@ -423,36 +439,36 @@ class ColorsTest {
 
     @Test
     void testUnknownColor() {
-        RGBA c = Colors.color("notacolor");
-        assertEquals(RGBA.BLACK, c);
+        Color c = Colors.color("notacolor");
+        assertEquals(Colors.BLACK, c);
     }
 
     // ── negateColor ───────────────────────────────────────────────────
 
     @Test
     void testNegateColorPartial() {
-        RGBA c = Colors.negateColor(new RGBA(0.2, 0.3, 0.4, 1.0));
-        assertEquals(0.8, c.r(), EPSILON);
-        assertEquals(0.7, c.g(), EPSILON);
-        assertEquals(0.6, c.b(), EPSILON);
-        assertEquals(1.0, c.a(), EPSILON);
+        Color c = Colors.negateColor(rgba(0.2, 0.3, 0.4, 1.0));
+        assertEquals(0.8, r(c), EPSILON);
+        assertEquals(0.7, g(c), EPSILON);
+        assertEquals(0.6, b(c), EPSILON);
+        assertEquals(1.0, a(c), EPSILON);
     }
 
     @Test
     void testNegateBlack() {
-        RGBA c = Colors.negateColor(RGBA.BLACK);
-        assertEquals(1.0, c.r(), EPSILON);
-        assertEquals(1.0, c.g(), EPSILON);
-        assertEquals(1.0, c.b(), EPSILON);
+        Color c = Colors.negateColor(Colors.BLACK);
+        assertEquals(1.0, r(c), EPSILON);
+        assertEquals(1.0, g(c), EPSILON);
+        assertEquals(1.0, b(c), EPSILON);
     }
 
     // ── color(String) overload ────────────────────────────────────────
 
     @Test
     void testColorDefaultOpacity() {
-        RGBA c = Colors.color("#ff0000");
-        assertEquals(1.0, c.r(), EPSILON);
-        assertEquals(1.0, c.a(), EPSILON);
+        Color c = Colors.color("#ff0000");
+        assertEquals(1.0, r(c), EPSILON);
+        assertEquals(1.0, a(c), EPSILON);
     }
 
     // ── Rendering-based color tests ───────────────────────────────────
