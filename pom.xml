@@ -57,6 +57,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Type-safe CSS color objects on the public builder API -->
+        <dependency>
+            <groupId>in.virit</groupId>
+            <artifactId>color</artifactId>
+            <version>0.0.5-SNAPSHOT</version>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
