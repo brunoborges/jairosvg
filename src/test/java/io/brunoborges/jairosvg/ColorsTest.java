@@ -13,18 +13,24 @@ class ColorsTest {
     private static final double EPSILON = 0.01;
 
     /** Component getters in 0..1 space, mirroring the old RGBA API. */
-    private static double r(Color c) { return c.toRgbColor().r() / 255.0; }
-    private static double g(Color c) { return c.toRgbColor().g() / 255.0; }
-    private static double b(Color c) { return c.toRgbColor().b() / 255.0; }
-    private static double a(Color c) { return c.toRgbColor().a(); }
+    private static double r(Color c) {
+        return c.toRgbColor().r() / 255.0;
+    }
+    private static double g(Color c) {
+        return c.toRgbColor().g() / 255.0;
+    }
+    private static double b(Color c) {
+        return c.toRgbColor().b() / 255.0;
+    }
+    private static double a(Color c) {
+        return c.toRgbColor().a();
+    }
 
-    /** Construct an RgbColor from 0..1 component fractions for equality comparisons. */
+    /**
+     * Construct an RgbColor from 0..1 component fractions for equality comparisons.
+     */
     private static Color rgba(double r, double g, double b, double a) {
-        return new RgbColor(
-                (int) Math.round(r * 255),
-                (int) Math.round(g * 255),
-                (int) Math.round(b * 255),
-                a);
+        return new RgbColor((int) Math.round(r * 255), (int) Math.round(g * 255), (int) Math.round(b * 255), a);
     }
 
     private static void assertColor(Color color, double r, double g, double b, double a) {

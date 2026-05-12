@@ -14,7 +14,6 @@ import java.awt.RadialGradientPaint;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
-import io.brunoborges.jairosvg.css.Colors;
 import io.brunoborges.jairosvg.dom.BoundingBox;
 import io.brunoborges.jairosvg.dom.Node;
 import io.brunoborges.jairosvg.surface.Surface;

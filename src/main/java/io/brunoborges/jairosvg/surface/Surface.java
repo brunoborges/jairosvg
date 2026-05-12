@@ -140,8 +140,8 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
 
     /** Initialize the surface with optional rendering hint overrides. */
     public void init(Node tree, OutputStream output, double dpi, Double parentWidth, Double parentHeight, double scale,
-            Double outputWidth, Double outputHeight, String backgroundColor, UnaryOperator<in.virit.color.Color> mapRgba,
-            Map<RenderingHints.Key, Object> renderingHintOverrides) {
+            Double outputWidth, Double outputHeight, String backgroundColor,
+            UnaryOperator<in.virit.color.Color> mapRgba, Map<RenderingHints.Key, Object> renderingHintOverrides) {
 
         this.output = output;
         this.dpi = dpi;

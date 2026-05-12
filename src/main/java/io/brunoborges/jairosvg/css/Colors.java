@@ -7,12 +7,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * SVG color parsing. Returns {@link Color} instances from the {@code in.virit:color}
- * library — typically {@link RgbColor} — with hex and named colors taking direct
- * fast paths and functional notation ({@code rgb(), hsl(), hwb(), lab(), lch(),
+ * SVG color parsing. Returns {@link Color} instances from the
+ * {@code in.virit:color} library — typically {@link RgbColor} — with hex and
+ * named colors taking direct fast paths and functional notation
+ * ({@code rgb(), hsl(), hwb(), lab(), lch(),
  * oklab(), oklch(), color()}) delegated to the library's CSS parser.
  *
- * <p>The internal representation is {@link RgbColor} (int 0..255 + double alpha)
+ * <p>
+ * The internal representation is {@link RgbColor} (int 0..255 + double alpha)
  * because the SVG rendering target is 8-bit PNG/AWT, so sub-byte precision in
  * intermediate values is irrelevant.
  */
@@ -276,10 +278,8 @@ public final class Colors {
     }
 
     private static boolean isFunctionalNotation(String s) {
-        return s.startsWith("rgb") || s.startsWith("hsl") || s.startsWith("hwb")
-                || s.startsWith("lab") || s.startsWith("lch")
-                || s.startsWith("oklab") || s.startsWith("oklch")
-                || s.startsWith("color(");
+        return s.startsWith("rgb") || s.startsWith("hsl") || s.startsWith("hwb") || s.startsWith("lab")
+                || s.startsWith("lch") || s.startsWith("oklab") || s.startsWith("oklch") || s.startsWith("color(");
     }
 
     /** Parse with default opacity of 1. */

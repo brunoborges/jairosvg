@@ -248,11 +248,12 @@ public final class JairoSVG {
         }
 
         /**
-         * Set the output background color from a type-safe {@link in.virit.color.Color}.
-         * Equivalent to passing the color's CSS string representation to
-         * {@link #backgroundColor(String)}.
+         * Set the output background color from a type-safe
+         * {@link in.virit.color.Color}. Equivalent to passing the color's CSS string
+         * representation to {@link #backgroundColor(String)}.
          *
-         * @param color the background color, or {@code null} to clear
+         * @param color
+         *            the background color, or {@code null} to clear
          * @return this builder
          */
         public ConversionBuilder backgroundColor(in.virit.color.Color color) {

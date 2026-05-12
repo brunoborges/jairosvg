@@ -153,16 +153,14 @@ class BuilderApiTest {
         assertColor(imgTyped.getRGB(5, 5), 255, 0, 0);
         assertEquals(imgString.getRGB(5, 5), imgTyped.getRGB(5, 5));
 
-        // CSS Color 4 type: sRGB red ≈ oklch(0.628 0.258 29.234), clamped to (255, 0, 0)
-        byte[] viaOklch = JairoSVG.builder()
-                .fromString(svg)
-                .backgroundColor(new OklchColor(0.628, 0.258, 29.234))
+        // CSS Color 4 type: sRGB red ≈ oklch(0.628 0.258 29.234), clamped to (255, 0,
+        // 0)
+        byte[] viaOklch = JairoSVG.builder().fromString(svg).backgroundColor(new OklchColor(0.628, 0.258, 29.234))
                 .toPng();
         BufferedImage imgOklch = ImageIO.read(new ByteArrayInputStream(viaOklch));
         int pixel = imgOklch.getRGB(5, 5);
         int r = (pixel >> 16) & 0xFF, g = (pixel >> 8) & 0xFF, b = pixel & 0xFF;
-        assertTrue(Math.abs(r - 255) <= 2 && g <= 2 && b <= 2,
-                "Expected near-red, got " + r + "," + g + "," + b);
+        assertTrue(Math.abs(r - 255) <= 2 && g <= 2 && b <= 2, "Expected near-red, got " + r + "," + g + "," + b);
     }
 
     @Test
@@ -170,10 +168,7 @@ class BuilderApiTest {
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"/>
                 """;
-        byte[] png = JairoSVG.builder()
-                .fromString(svg)
-                .backgroundColor((in.virit.color.Color) null)
-                .toPng();
+        byte[] png = JairoSVG.builder().fromString(svg).backgroundColor((in.virit.color.Color) null).toPng();
         assertNotNull(png);
     }
 
