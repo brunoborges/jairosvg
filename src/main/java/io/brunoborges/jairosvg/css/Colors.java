@@ -1,10 +1,18 @@
 package io.brunoborges.jairosvg.css;
 
+import in.virit.color.Color;
+import in.virit.color.RgbColor;
+
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * SVG color parsing. Converts color strings to RGBA tuples (0.0–1.0).
+ *
+ * <p>Functional notation ({@code rgb(), hsl(), hwb(), lab(), lch(), oklab(),
+ * oklch(), color()}) is delegated to {@code in.virit:color}. Hex and named
+ * colors keep the original fast paths to avoid an allocation per lookup
+ * on what dominates real SVGs.
  */
 public final class Colors {
 
@@ -261,31 +269,24 @@ public final class Colors {
                     : new RGBA(named.r(), named.g(), named.b(), named.a() * opacity);
         }
 
-        // Functional notation — dispatch by prefix to avoid creating Matchers for wrong
-        // types
-        if (string.startsWith("rgba(")) {
-            return parseRgb(functionBody(string, "rgba"), true, opacity);
-        } else if (string.startsWith("rgb(")) {
-            return parseRgb(functionBody(string, "rgb"), false, opacity);
-        } else if (string.startsWith("hsla(")) {
-            return parseHsl(functionBody(string, "hsla"), true, opacity);
-        } else if (string.startsWith("hsl(")) {
-            return parseHsl(functionBody(string, "hsl"), false, opacity);
-        } else if (string.startsWith("hwb(")) {
-            return parseHwb(functionBody(string, "hwb"), opacity);
-        } else if (string.startsWith("lab(")) {
-            return parseLab(functionBody(string, "lab"), opacity);
-        } else if (string.startsWith("lch(")) {
-            return parseLch(functionBody(string, "lch"), opacity);
-        } else if (string.startsWith("oklab(")) {
-            return parseOklab(functionBody(string, "oklab"), opacity);
-        } else if (string.startsWith("oklch(")) {
-            return parseOklch(functionBody(string, "oklch"), opacity);
-        } else if (string.startsWith("color(")) {
-            return parseColorFunction(functionBody(string, "color"), opacity);
+        // Functional notation — delegated to the in.virit:color library
+        if (isFunctionalNotation(string)) {
+            try {
+                RgbColor rgb = Color.parseCssColor(string).toRgbColor();
+                return new RGBA(rgb.r() / 255.0, rgb.g() / 255.0, rgb.b() / 255.0, rgb.a() * opacity);
+            } catch (IllegalArgumentException e) {
+                return RGBA.BLACK;
+            }
         }
 
         return RGBA.BLACK;
+    }
+
+    private static boolean isFunctionalNotation(String s) {
+        return s.startsWith("rgb") || s.startsWith("hsl") || s.startsWith("hwb")
+                || s.startsWith("lab") || s.startsWith("lch")
+                || s.startsWith("oklab") || s.startsWith("oklch")
+                || s.startsWith("color(");
     }
 
     /** Parse with default opacity of 1. */

@@ -227,9 +227,13 @@ class ColorsTest {
     }
 
     @Test
-    void testRgbaWrongPartCount() {
+    void testRgbaAcceptsThreeArgs() {
+        // CSS Color 4: rgba() is an alias of rgb(), so 3 args is valid.
         RGBA c = Colors.color("rgba(255, 0, 0)");
-        assertEquals(RGBA.BLACK, c);
+        assertEquals(1.0, c.r(), EPSILON);
+        assertEquals(0.0, c.g(), EPSILON);
+        assertEquals(0.0, c.b(), EPSILON);
+        assertEquals(1.0, c.a(), EPSILON);
     }
 
     @Test
@@ -312,8 +316,13 @@ class ColorsTest {
     }
 
     @Test
-    void testHslWithoutPercentThrows() {
-        assertThrows(IllegalArgumentException.class, () -> Colors.color("hsl(0, 50, 50)"));
+    void testHslAcceptsBareNumbers() {
+        // CSS Color 4 permits hsl(h s l) without explicit percent signs;
+        // bare 50 is interpreted as 50% for saturation/lightness.
+        RGBA c = Colors.color("hsl(0, 50, 50)");
+        assertEquals(0.749, c.r(), 0.01);
+        assertEquals(0.251, c.g(), 0.01);
+        assertEquals(0.251, c.b(), 0.01);
     }
 
     @Test
@@ -335,9 +344,13 @@ class ColorsTest {
     }
 
     @Test
-    void testHslaWrongPartCount() {
+    void testHslaAcceptsThreeArgs() {
+        // CSS Color 4: hsla() is an alias of hsl(), so 3 args is valid.
         RGBA c = Colors.color("hsla(120, 100%, 50%)");
-        assertEquals(RGBA.BLACK, c);
+        assertEquals(0.0, c.r(), EPSILON);
+        assertEquals(1.0, c.g(), EPSILON);
+        assertEquals(0.0, c.b(), EPSILON);
+        assertEquals(1.0, c.a(), EPSILON);
     }
 
     @Test
