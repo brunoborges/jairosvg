@@ -175,6 +175,29 @@ class ColorsTest {
         assertEquals(Colors.BLACK, c);
     }
 
+    // Regression: malformed hex digits must not abort rendering.
+    // Reported by Bruno on PR #211 — fill="#ggg" used to throw
+    // IllegalArgumentException because the hex fast path bypassed the
+    // lenient parser and fed -1 (from Character.digit('g', 16)) into
+    // the RgbColor range check.
+    @Test
+    void testHexInvalidDigitsShortFormFallsBackToBlack() {
+        Color c = Colors.color("#ggg");
+        assertEquals(Colors.BLACK, c);
+    }
+
+    @Test
+    void testHexInvalidDigitsLongFormFallsBackToBlack() {
+        Color c = Colors.color("#gggggg");
+        assertEquals(Colors.BLACK, c);
+    }
+
+    @Test
+    void testHexInvalidDigitsWithAlphaFallsBackToBlack() {
+        Color c = Colors.color("#gggggggg");
+        assertEquals(Colors.BLACK, c);
+    }
+
     // ── Named colors with opacity ─────────────────────────────────────
 
     @Test

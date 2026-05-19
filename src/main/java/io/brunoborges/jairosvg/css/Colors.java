@@ -88,34 +88,44 @@ public final class Colors {
 
         string = string.strip();
 
-        // Fast-path: hex color — skip toLowerCase() since parseInt handles case
+        // Fast-path: hex color — skip toLowerCase() since parseInt handles case.
+        // Malformed hex (wrong length OR non-hex digits like #ggg) falls back
+        // to BLACK; the try/catch costs nothing on the happy path and only
+        // pays exception-construction cost on the rare malformed branch.
         if (string.charAt(0) == '#') {
-            int len = string.length();
-            if (len == 9) {
-                int r = Integer.parseInt(string, 1, 3, 16);
-                int g = Integer.parseInt(string, 3, 5, 16);
-                int b = Integer.parseInt(string, 5, 7, 16);
-                double a = Integer.parseInt(string, 7, 9, 16) / 255.0;
-                return new RgbColor(r, g, b, a * opacity);
-            }
-            if (len == 7) {
-                int r = Integer.parseInt(string, 1, 3, 16);
-                int g = Integer.parseInt(string, 3, 5, 16);
-                int b = Integer.parseInt(string, 5, 7, 16);
-                return new RgbColor(r, g, b, opacity);
-            }
-            if (len == 5) {
-                int r = Character.digit(string.charAt(1), 16) * 17;
-                int g = Character.digit(string.charAt(2), 16) * 17;
-                int b = Character.digit(string.charAt(3), 16) * 17;
-                double a = Character.digit(string.charAt(4), 16) / 15.0;
-                return new RgbColor(r, g, b, a * opacity);
-            }
-            if (len == 4) {
-                int r = Character.digit(string.charAt(1), 16) * 17;
-                int g = Character.digit(string.charAt(2), 16) * 17;
-                int b = Character.digit(string.charAt(3), 16) * 17;
-                return new RgbColor(r, g, b, opacity);
+            try {
+                int len = string.length();
+                if (len == 9) {
+                    int r = Integer.parseInt(string, 1, 3, 16);
+                    int g = Integer.parseInt(string, 3, 5, 16);
+                    int b = Integer.parseInt(string, 5, 7, 16);
+                    double a = Integer.parseInt(string, 7, 9, 16) / 255.0;
+                    return new RgbColor(r, g, b, a * opacity);
+                }
+                if (len == 7) {
+                    int r = Integer.parseInt(string, 1, 3, 16);
+                    int g = Integer.parseInt(string, 3, 5, 16);
+                    int b = Integer.parseInt(string, 5, 7, 16);
+                    return new RgbColor(r, g, b, opacity);
+                }
+                if (len == 5) {
+                    int r = Character.digit(string.charAt(1), 16) * 17;
+                    int g = Character.digit(string.charAt(2), 16) * 17;
+                    int b = Character.digit(string.charAt(3), 16) * 17;
+                    double a = Character.digit(string.charAt(4), 16) / 15.0;
+                    return new RgbColor(r, g, b, a * opacity);
+                }
+                if (len == 4) {
+                    int r = Character.digit(string.charAt(1), 16) * 17;
+                    int g = Character.digit(string.charAt(2), 16) * 17;
+                    int b = Character.digit(string.charAt(3), 16) * 17;
+                    return new RgbColor(r, g, b, opacity);
+                }
+            } catch (IllegalArgumentException malformed) {
+                // covers NumberFormatException (subclass) plus the RgbColor
+                // range check that fires for negative components from
+                // Character.digit returning -1 on non-hex input.
+                // fall through to BLACK
             }
             return BLACK;
         }
