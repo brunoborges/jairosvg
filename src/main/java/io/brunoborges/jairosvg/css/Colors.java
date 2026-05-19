@@ -264,14 +264,14 @@ public final class Colors {
                     : new RgbColor(named.r(), named.g(), named.b(), named.a() * opacity);
         }
 
-        // Functional notation — delegated to the in.virit:color library
+        // Functional notation — delegated to the in.virit:color library.
+        // Lenient parse so malformed input falls back to BLACK instead of
+        // aborting the render.
         if (isFunctionalNotation(string)) {
-            try {
-                RgbColor rgb = Color.parseCssColor(string).toRgbColor();
-                return opacity >= 1.0 ? rgb : rgb.withAlpha(rgb.a() * opacity);
-            } catch (IllegalArgumentException e) {
-                return BLACK;
-            }
+            return Color.tryParseCssColor(string)
+                    .map(Color::toRgbColor)
+                    .map(rgb -> opacity >= 1.0 ? rgb : rgb.withAlpha(rgb.a() * opacity))
+                    .orElse(BLACK);
         }
 
         return BLACK;
