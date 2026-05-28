@@ -14,7 +14,6 @@ import java.awt.RadialGradientPaint;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
-import io.brunoborges.jairosvg.css.Colors;
 import io.brunoborges.jairosvg.dom.BoundingBox;
 import io.brunoborges.jairosvg.dom.Node;
 import io.brunoborges.jairosvg.surface.Surface;
@@ -77,10 +76,10 @@ public final class GradientPainter {
                 offset = Math.max(lastOffset, Math.min(1, offset));
                 lastOffset = offset;
 
-                Colors.RGBA rgba = surface.mapColor(child.get("stop-color", "black"),
+                in.virit.color.Color stopColor = surface.mapColor(child.get("stop-color", "black"),
                         parseDouble(child.get("stop-opacity", "1")) * opacity);
                 stops.add(new float[]{offset});
-                stopColors.add(new Color((float) rgba.r(), (float) rgba.g(), (float) rgba.b(), (float) rgba.a()));
+                stopColors.add(io.brunoborges.jairosvg.surface.Surface.toAwtColor(stopColor));
             }
 
             if (stops.isEmpty())
