@@ -12,7 +12,7 @@ Rectangles, circles, ellipses, and lines with solid fills and strokes.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/01_basic_shapes.svg) | ![JairoSVG](visual/png/jairosvg/01_basic_shapes.png) | ![EchoSVG](visual/png/echosvg/01_basic_shapes.png) | ![CairoSVG](visual/png/cairosvg/01_basic_shapes.png) | ![JSVG](visual/png/jsvg/01_basic_shapes.png) |
 | **Size** | 6,718 bytes ✅ | 8,159 bytes | 8,920 bytes | 7,031 bytes |
-| **Time** | **3.2696 ms** ✅ | — | — | — |
+| **Time** | **2.9378 ms** ✅ | 16.2779 ms | 4.3447 ms | 3.1295 ms |
 
 ### 02_gradients
 
@@ -22,7 +22,7 @@ Linear and radial gradients with color stops and spread methods.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/02_gradients.svg) | ![JairoSVG](visual/png/jairosvg/02_gradients.png) | ![EchoSVG](visual/png/echosvg/02_gradients.png) | ![CairoSVG](visual/png/cairosvg/02_gradients.png) | ![JSVG](visual/png/jsvg/02_gradients.png) |
 | **Size** | 25,554 bytes | 25,018 bytes | 23,637 bytes ✅ | 26,410 bytes |
-| **Time** | **4.0823 ms** ✅ | — | — | — |
+| **Time** | 4.1467 ms | 132.0730 ms | 10.8322 ms | **3.9726 ms** ✅ |
 
 ### 03_complex_paths
 
@@ -32,7 +32,7 @@ Cubic/quadratic Bézier curves, arcs, and complex path commands.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/03_complex_paths.svg) | ![JairoSVG](visual/png/jairosvg/03_complex_paths.png) | ![EchoSVG](visual/png/echosvg/03_complex_paths.png) | ![CairoSVG](visual/png/cairosvg/03_complex_paths.png) | ![JSVG](visual/png/jsvg/03_complex_paths.png) |
 | **Size** | 12,657 bytes ✅ | 16,936 bytes | 15,633 bytes | 12,730 bytes |
-| **Time** | **3.9184 ms** ✅ | — | — | — |
+| **Time** | **3.8052 ms** ✅ | 22.0858 ms | 4.5711 ms | 3.8228 ms |
 
 ### 04_text_rendering
 
@@ -42,7 +42,7 @@ Text rendering with different fonts, sizes, weights, and tspan.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/04_text_rendering.svg) | ![JairoSVG](visual/png/jairosvg/04_text_rendering.png) | ![EchoSVG](visual/png/echosvg/04_text_rendering.png) | ![CairoSVG](visual/png/cairosvg/04_text_rendering.png) | ![JSVG](visual/png/jsvg/04_text_rendering.png) |
 | **Size** | 13,276 bytes ✅ | 19,125 bytes | 16,321 bytes | 15,626 bytes |
-| **Time** | **4.3277 ms** ✅ | — | — | — |
+| **Time** | **4.1618 ms** ✅ | 22.2738 ms | 5.9388 ms | 4.2625 ms |
 
 ### 05_transforms
 
@@ -52,7 +52,7 @@ Translate, rotate, scale, skewX, and nested group transforms.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/05_transforms.svg) | ![JairoSVG](visual/png/jairosvg/05_transforms.png) | ![EchoSVG](visual/png/echosvg/05_transforms.png) | ![CairoSVG](visual/png/cairosvg/05_transforms.png) | ![JSVG](visual/png/jsvg/05_transforms.png) |
 | **Size** | 5,461 bytes | 5,261 bytes ✅ | 6,001 bytes | 5,827 bytes |
-| **Time** | **3.8281 ms** ✅ | — | — | — |
+| **Time** | 3.5523 ms | 13.5011 ms | 3.9676 ms | **3.3308 ms** ✅ |
 
 ### 06_stroke_styles
 
@@ -62,7 +62,7 @@ Dash arrays, line caps (butt/round/square), and line joins.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/06_stroke_styles.svg) | ![JairoSVG](visual/png/jairosvg/06_stroke_styles.png) | ![EchoSVG](visual/png/echosvg/06_stroke_styles.png) | ![CairoSVG](visual/png/cairosvg/06_stroke_styles.png) | ![JSVG](visual/png/jsvg/06_stroke_styles.png) |
 | **Size** | 3,363 bytes ✅ | 5,038 bytes | 4,478 bytes | 4,074 bytes |
-| **Time** | **3.3482 ms** ✅ | — | — | — |
+| **Time** | **3.1679 ms** ✅ | 11.1525 ms | 3.5202 ms | 3.1686 ms |
 
 ### 07_opacity_blend
 
@@ -72,7 +72,7 @@ Fill opacity, stroke opacity, and layered element opacity.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/07_opacity_blend.svg) | ![JairoSVG](visual/png/jairosvg/07_opacity_blend.png) | ![EchoSVG](visual/png/echosvg/07_opacity_blend.png) | ![CairoSVG](visual/png/cairosvg/07_opacity_blend.png) | ![JSVG](visual/png/jsvg/07_opacity_blend.png) |
 | **Size** | 8,409 bytes ✅ | 10,201 bytes | 9,853 bytes | 8,788 bytes |
-| **Time** | **3.0207 ms** ✅ | — | — | — |
+| **Time** | 3.0657 ms | 17.0705 ms | 3.4613 ms | **3.0452 ms** ✅ |
 
 ### 08_viewbox_aspect
 
@@ -82,7 +82,7 @@ viewBox scaling with different preserveAspectRatio values.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/08_viewbox_aspect.svg) | ![JairoSVG](visual/png/jairosvg/08_viewbox_aspect.png) | ![EchoSVG](visual/png/echosvg/08_viewbox_aspect.png) | ![CairoSVG](visual/png/cairosvg/08_viewbox_aspect.png) | ![JSVG](visual/png/jsvg/08_viewbox_aspect.png) |
 | **Size** | 10,492 bytes ✅ | 12,769 bytes | 11,444 bytes | 12,147 bytes |
-| **Time** | **4.4151 ms** ✅ | — | — | — |
+| **Time** | 4.5154 ms | 19.3201 ms | 5.3146 ms | **4.3400 ms** ✅ |
 
 ### 09_css_styling
 
@@ -92,7 +92,7 @@ CSS `<style>` block with class and ID selectors.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/09_css_styling.svg) | ![JairoSVG](visual/png/jairosvg/09_css_styling.png) | ![EchoSVG](visual/png/echosvg/09_css_styling.png) | ![CairoSVG](visual/png/cairosvg/09_css_styling.png) | ![JSVG](visual/png/jsvg/09_css_styling.png) |
 | **Size** | 7,755 bytes ✅ | 11,144 bytes | 10,818 bytes | 8,653 bytes |
-| **Time** | **3.0622 ms** ✅ | — | — | — |
+| **Time** | **3.0175 ms** ✅ | 14.7148 ms | 4.0447 ms | 3.0299 ms |
 
 ### 10_use_and_defs
 
@@ -102,7 +102,7 @@ CSS `<style>` block with class and ID selectors.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/10_use_and_defs.svg) | ![JairoSVG](visual/png/jairosvg/10_use_and_defs.png) | ![EchoSVG](visual/png/echosvg/10_use_and_defs.png) | ![CairoSVG](visual/png/cairosvg/10_use_and_defs.png) | ![JSVG](visual/png/jsvg/10_use_and_defs.png) |
 | **Size** | 5,448 bytes ✅ | 6,122 bytes | 9,712 bytes | 6,144 bytes |
-| **Time** | **3.6996 ms** ✅ | — | — | — |
+| **Time** | **3.6000 ms** ✅ | 14.5424 ms | 4.5598 ms | 3.6310 ms |
 
 ### 11_star_polygon
 
@@ -112,7 +112,7 @@ Complex star polygon with fill-rule evenodd.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/11_star_polygon.svg) | ![JairoSVG](visual/png/jairosvg/11_star_polygon.png) | ![EchoSVG](visual/png/echosvg/11_star_polygon.png) | ![CairoSVG](visual/png/cairosvg/11_star_polygon.png) | ![JSVG](visual/png/jsvg/11_star_polygon.png) |
 | **Size** | 6,228 bytes ✅ | 8,862 bytes | 8,911 bytes | 6,455 bytes |
-| **Time** | **2.9634 ms** ✅ | — | — | — |
+| **Time** | 3.0078 ms | 14.2783 ms | 3.1621 ms | **2.8655 ms** ✅ |
 
 ### 12_nested_svg
 
@@ -122,7 +122,7 @@ Nested `<svg>` elements with independent viewports.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/12_nested_svg.svg) | ![JairoSVG](visual/png/jairosvg/12_nested_svg.png) | ![EchoSVG](visual/png/echosvg/12_nested_svg.png) | ![CairoSVG](visual/png/cairosvg/12_nested_svg.png) | ![JSVG](visual/png/jsvg/12_nested_svg.png) |
 | **Size** | 10,926 bytes ✅ | 12,522 bytes | 11,879 bytes | 12,101 bytes |
-| **Time** | **4.1240 ms** ✅ | — | — | — |
+| **Time** | 4.2233 ms | 18.9891 ms | 5.0038 ms | **4.1273 ms** ✅ |
 
 ### 13_patterns
 
@@ -132,7 +132,7 @@ Tiled pattern fills: dots, cross-hatch stripes, and grid lines.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/13_patterns.svg) | ![JairoSVG](visual/png/jairosvg/13_patterns.png) | ![EchoSVG](visual/png/echosvg/13_patterns.png) | ![CairoSVG](visual/png/cairosvg/13_patterns.png) | ![JSVG](visual/png/jsvg/13_patterns.png) |
 | **Size** | 9,532 bytes ✅ | 11,832 bytes | 11,096 bytes | 11,043 bytes |
-| **Time** | **4.0260 ms** ✅ | — | — | — |
+| **Time** | **4.0008 ms** ✅ | 15.8355 ms | 4.6806 ms | 4.0230 ms |
 
 ### 14_clip_paths
 
@@ -142,7 +142,7 @@ Star and text clip paths applied to gradient fills.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/14_clip_paths.svg) | ![JairoSVG](visual/png/jairosvg/14_clip_paths.png) | ![EchoSVG](visual/png/echosvg/14_clip_paths.png) | ![CairoSVG](visual/png/cairosvg/14_clip_paths.png) | ![JSVG](visual/png/jsvg/14_clip_paths.png) |
 | **Size** | 9,342 bytes ✅ | 10,558 bytes | 13,552 bytes | 10,253 bytes |
-| **Time** | **3.7843 ms** ✅ | — | — | — |
+| **Time** | 3.8193 ms | 25.2830 ms | 5.8814 ms | **3.7310 ms** ✅ |
 
 ### 15_masks
 
@@ -152,7 +152,7 @@ Horizontal, vertical, and circular gradient masks with luminance blending.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/15_masks.svg) | ![JairoSVG](visual/png/jairosvg/15_masks.png) | ![EchoSVG](visual/png/echosvg/15_masks.png) | ![CairoSVG](visual/png/cairosvg/15_masks.png) | ![JSVG](visual/png/jsvg/15_masks.png) |
 | **Size** | 5,692 bytes | 5,566 bytes | 1,161 bytes ✅ | 6,209 bytes |
-| **Time** | **4.0714 ms** ✅ | — | — | — |
+| **Time** | 3.9088 ms | 20.6881 ms | **3.5859 ms** ✅ | 3.9528 ms |
 
 ### 16_markers
 
@@ -162,7 +162,7 @@ Arrow, dot, and square markers on lines, polylines, and curves.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/16_markers.svg) | ![JairoSVG](visual/png/jairosvg/16_markers.png) | ![EchoSVG](visual/png/echosvg/16_markers.png) | ![CairoSVG](visual/png/cairosvg/16_markers.png) | ![JSVG](visual/png/jsvg/16_markers.png) |
 | **Size** | 9,796 bytes ✅ | 12,642 bytes | 12,655 bytes | 10,041 bytes |
-| **Time** | **4.0981 ms** ✅ | — | — | — |
+| **Time** | 4.0060 ms | 16.6303 ms | 5.5849 ms | **3.8814 ms** ✅ |
 
 ### 17_filters
 
@@ -172,7 +172,7 @@ Gaussian blur and drop-shadow filters on shapes and text.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/17_filters.svg) | ![JairoSVG](visual/png/jairosvg/17_filters.png) | ![EchoSVG](visual/png/echosvg/17_filters.png) | ![CairoSVG](visual/png/cairosvg/17_filters.png) | ![JSVG](visual/png/jsvg/17_filters.png) |
 | **Size** | 28,934 bytes | 24,063 bytes | 8,519 bytes ✅ | 32,346 bytes |
-| **Time** | **6.7785 ms** ✅ | — | — | — |
+| **Time** | 6.6101 ms | 33.5668 ms | **4.4692 ms** ✅ | 7.8636 ms |
 
 ### 18_embedded_image
 
@@ -182,7 +182,7 @@ Base64-encoded PNG images with clipping, transforms, and opacity.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/18_embedded_image.svg) | ![JairoSVG](visual/png/jairosvg/18_embedded_image.png) | ![EchoSVG](visual/png/echosvg/18_embedded_image.png) | ![CairoSVG](visual/png/cairosvg/18_embedded_image.png) | ![JSVG](visual/png/jsvg/18_embedded_image.png) |
 | **Size** | 9,432 bytes ✅ | 11,994 bytes | 21,204 bytes | 11,642 bytes |
-| **Time** | **4.1417 ms** ✅ | — | — | — |
+| **Time** | **4.0074 ms** ✅ | 15.7865 ms | 7.0497 ms | 10.5228 ms |
 
 ### 19_text_advanced
 
@@ -192,7 +192,7 @@ Multi-span text (tspan), text-decoration, textPath on curves, and rotated text.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/19_text_advanced.svg) | ![JairoSVG](visual/png/jairosvg/19_text_advanced.png) | ![EchoSVG](visual/png/echosvg/19_text_advanced.png) | ![CairoSVG](visual/png/cairosvg/19_text_advanced.png) | ![JSVG](visual/png/jsvg/19_text_advanced.png) |
 | **Size** | 18,801 bytes ✅ | 26,256 bytes | 23,861 bytes | 19,756 bytes |
-| **Time** | **4.8332 ms** ✅ | — | — | — |
+| **Time** | 4.7007 ms | 24.9951 ms | 8.4329 ms | **4.5512 ms** ✅ |
 
 ### 20_fe_blend_modes
 
@@ -202,7 +202,7 @@ feBlend modes: normal, multiply, screen, darken, and lighten.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/20_fe_blend_modes.svg) | ![JairoSVG](visual/png/jairosvg/20_fe_blend_modes.png) | ![EchoSVG](visual/png/echosvg/20_fe_blend_modes.png) | ![CairoSVG](visual/png/cairosvg/20_fe_blend_modes.png) | ![JSVG](visual/png/jsvg/20_fe_blend_modes.png) |
 | **Size** | 12,005 bytes ✅ | 16,216 bytes | 12,504 bytes | 15,773 bytes |
-| **Time** | **9.0678 ms** ✅ | — | — | — |
+| **Time** | **8.9614 ms** ✅ | 25.8039 ms | 12.5466 ms | 18.1637 ms |
 
 ### 21_fe_tile
 
@@ -212,7 +212,7 @@ feBlend modes: normal, multiply, screen, darken, and lighten.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/21_fe_tile.svg) | ![JairoSVG](visual/png/jairosvg/21_fe_tile.png) | ![EchoSVG](visual/png/echosvg/21_fe_tile.png) | ![CairoSVG](visual/png/cairosvg/21_fe_tile.png) | ![JSVG](visual/png/jsvg/21_fe_tile.png) |
 | **Size** | 1,456 bytes ✅ | 2,009 bytes | 1,768 bytes | 1,489 bytes |
-| **Time** | **2.3157 ms** ✅ | — | — | — |
+| **Time** | 2.1769 ms | 5.8411 ms | 2.4966 ms | **2.1766 ms** ✅ |
 
 ### 22_feimage_data_uri
 
@@ -222,7 +222,7 @@ feBlend modes: normal, multiply, screen, darken, and lighten.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/22_feimage_data_uri.svg) | ![JairoSVG](visual/png/jairosvg/22_feimage_data_uri.png) | ![EchoSVG](visual/png/echosvg/22_feimage_data_uri.png) | ![CairoSVG](visual/png/cairosvg/22_feimage_data_uri.png) | ![JSVG](visual/png/jsvg/22_feimage_data_uri.png) |
 | **Size** | 2,633 bytes ✅ | 4,406 bytes | 3,206 bytes | 3,639 bytes |
-| **Time** | **1.5172 ms** ✅ | — | — | — |
+| **Time** | 1.4083 ms | 5.4350 ms | 1.6998 ms | **1.3998 ms** ✅ |
 
 ### 23_feimage_inline_ref
 
@@ -232,7 +232,7 @@ feBlend modes: normal, multiply, screen, darken, and lighten.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/23_feimage_inline_ref.svg) | ![JairoSVG](visual/png/jairosvg/23_feimage_inline_ref.png) | ![EchoSVG](visual/png/echosvg/23_feimage_inline_ref.png) | ![CairoSVG](visual/png/cairosvg/23_feimage_inline_ref.png) | ![JSVG](visual/png/jsvg/23_feimage_inline_ref.png) |
 | **Size** | 2,702 bytes ✅ | 3,642 bytes | 4,902 bytes | 4,380 bytes |
-| **Time** | **1.5478 ms** ✅ | — | — | — |
+| **Time** | **1.4847 ms** ✅ | 4.2467 ms | 1.8277 ms | 2.2533 ms |
 
 ### 24_localized_masks
 
@@ -242,7 +242,7 @@ Masks with localized coordinate systems and gradient fills.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/24_localized_masks.svg) | ![JairoSVG](visual/png/jairosvg/24_localized_masks.png) | ![EchoSVG](visual/png/echosvg/24_localized_masks.png) | ![CairoSVG](visual/png/cairosvg/24_localized_masks.png) | ![JSVG](visual/png/jsvg/24_localized_masks.png) |
 | **Size** | 18,389 bytes | 17,868 bytes | 13,218 bytes ✅ | 20,239 bytes |
-| **Time** | **13.5393 ms** ✅ | — | — | — |
+| **Time** | **12.7395 ms** ✅ | 51.0279 ms | 15.2851 ms | 12.9332 ms |
 
 ### 25_svg_fonts
 
@@ -252,7 +252,7 @@ Custom SVG font with glyph paths and missing-glyph fallback.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/25_svg_fonts.svg) | ![JairoSVG](visual/png/jairosvg/25_svg_fonts.png) | ![EchoSVG](visual/png/echosvg/25_svg_fonts.png) | ![CairoSVG](visual/png/cairosvg/25_svg_fonts.png) | ![JSVG](visual/png/jsvg/25_svg_fonts.png) |
 | **Size** | 10,331 bytes ✅ | 14,274 bytes | 15,228 bytes | 12,607 bytes |
-| **Time** | **3.3249 ms** ✅ | — | — | — |
+| **Time** | **3.0761 ms** ✅ | 16.3117 ms | 3.9746 ms | 3.1613 ms |
 
 ### 26_symbol_use
 
@@ -262,7 +262,7 @@ Reusable `<symbol>` elements instantiated with `<use>` at different sizes and po
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/26_symbol_use.svg) | ![JairoSVG](visual/png/jairosvg/26_symbol_use.png) | ![EchoSVG](visual/png/echosvg/26_symbol_use.png) | ![CairoSVG](visual/png/cairosvg/26_symbol_use.png) | ![JSVG](visual/png/jsvg/26_symbol_use.png) |
 | **Size** | 15,665 bytes ✅ | 24,513 bytes | 21,624 bytes | 18,260 bytes |
-| **Time** | **4.2834 ms** ✅ | — | — | — |
+| **Time** | 4.0890 ms | 24.2356 ms | 8.6016 ms | **4.0400 ms** ✅ |
 
 ### 27_switch_features
 
@@ -272,7 +272,7 @@ Reusable `<symbol>` elements instantiated with `<use>` at different sizes and po
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/27_switch_features.svg) | ![JairoSVG](visual/png/jairosvg/27_switch_features.png) | ![EchoSVG](visual/png/echosvg/27_switch_features.png) | ![CairoSVG](visual/png/cairosvg/27_switch_features.png) | ![JSVG](visual/png/jsvg/27_switch_features.png) |
 | **Size** | 11,535 bytes | 18,040 bytes | 14,491 bytes | 8,503 bytes ✅ |
-| **Time** | **3.8447 ms** ✅ | — | — | — |
+| **Time** | 3.6788 ms | 19.5307 ms | 5.6286 ms | **2.8218 ms** ✅ |
 
 ### 28_css_variables
 
@@ -282,7 +282,7 @@ CSS custom properties with `var()` function and fallback values.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/28_css_variables.svg) | ![JairoSVG](visual/png/jairosvg/28_css_variables.png) | ![EchoSVG](visual/png/echosvg/28_css_variables.png) | — | ![JSVG](visual/png/jsvg/28_css_variables.png) |
 | **Size** | 11,574 bytes ✅ | 17,016 bytes | — | 12,509 bytes |
-| **Time** | **3.8512 ms** ✅ | — | — | — |
+| **Time** | 3.8023 ms | 19.6162 ms | — | **3.5050 ms** ✅ |
 
 ### 29_current_color
 
@@ -292,7 +292,7 @@ CSS custom properties with `var()` function and fallback values.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/29_current_color.svg) | ![JairoSVG](visual/png/jairosvg/29_current_color.png) | ![EchoSVG](visual/png/echosvg/29_current_color.png) | ![CairoSVG](visual/png/cairosvg/29_current_color.png) | ![JSVG](visual/png/jsvg/29_current_color.png) |
 | **Size** | 10,037 bytes ✅ | 14,642 bytes | 11,006 bytes | 13,030 bytes |
-| **Time** | **3.6827 ms** ✅ | — | — | — |
+| **Time** | 3.7022 ms | 17.2133 ms | 5.6925 ms | **3.4465 ms** ✅ |
 
 ### 30_display_visibility
 
@@ -302,7 +302,7 @@ CSS custom properties with `var()` function and fallback values.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/30_display_visibility.svg) | ![JairoSVG](visual/png/jairosvg/30_display_visibility.png) | ![EchoSVG](visual/png/echosvg/30_display_visibility.png) | ![CairoSVG](visual/png/cairosvg/30_display_visibility.png) | ![JSVG](visual/png/jsvg/30_display_visibility.png) |
 | **Size** | 11,009 bytes ✅ | 17,473 bytes | 13,207 bytes | 14,263 bytes |
-| **Time** | **4.0995 ms** ✅ | — | — | — |
+| **Time** | 3.9939 ms | 19.9070 ms | 6.7403 ms | **3.7151 ms** ✅ |
 
 ### 31_nested_overflow
 
@@ -312,7 +312,7 @@ Nested `<svg>` elements with `overflow` values: hidden, scroll, visible, and aut
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/31_nested_overflow.svg) | ![JairoSVG](visual/png/jairosvg/31_nested_overflow.png) | ![EchoSVG](visual/png/echosvg/31_nested_overflow.png) | ![CairoSVG](visual/png/cairosvg/31_nested_overflow.png) | ![JSVG](visual/png/jsvg/31_nested_overflow.png) |
 | **Size** | 11,273 bytes ✅ | 16,322 bytes | 13,737 bytes | 13,737 bytes |
-| **Time** | **3.9323 ms** ✅ | — | — | — |
+| **Time** | 3.6578 ms | 21.1625 ms | 5.8908 ms | **3.5415 ms** ✅ |
 
 ### 32_stroke_advanced
 
@@ -322,7 +322,7 @@ Nested `<svg>` elements with `overflow` values: hidden, scroll, visible, and aut
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/32_stroke_advanced.svg) | ![JairoSVG](visual/png/jairosvg/32_stroke_advanced.png) | ![EchoSVG](visual/png/echosvg/32_stroke_advanced.png) | ![CairoSVG](visual/png/cairosvg/32_stroke_advanced.png) | ![JSVG](visual/png/jsvg/32_stroke_advanced.png) |
 | **Size** | 9,287 bytes ✅ | 14,507 bytes | 12,246 bytes | 11,702 bytes |
-| **Time** | **3.5561 ms** ✅ | — | — | — |
+| **Time** | 3.4646 ms | 17.4535 ms | 5.4751 ms | **3.2160 ms** ✅ |
 
 ### 33_pattern_transforms
 
@@ -332,7 +332,7 @@ Nested `<svg>` elements with `overflow` values: hidden, scroll, visible, and aut
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/33_pattern_transforms.svg) | ![JairoSVG](visual/png/jairosvg/33_pattern_transforms.png) | ![EchoSVG](visual/png/echosvg/33_pattern_transforms.png) | ![CairoSVG](visual/png/cairosvg/33_pattern_transforms.png) | ![JSVG](visual/png/jsvg/33_pattern_transforms.png) |
 | **Size** | 9,052 bytes ✅ | 16,101 bytes | 13,060 bytes | 16,273 bytes |
-| **Time** | **3.8645 ms** ✅ | — | — | — |
+| **Time** | 3.5588 ms | 19.9965 ms | 6.1495 ms | **3.4063 ms** ✅ |
 
 ### 34_gradient_advanced
 
@@ -342,7 +342,7 @@ Gradient `spreadMethod` (reflect/repeat/pad), `fx`/`fy` focus, `href` inheritanc
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/34_gradient_advanced.svg) | ![JairoSVG](visual/png/jairosvg/34_gradient_advanced.png) | ![EchoSVG](visual/png/echosvg/34_gradient_advanced.png) | ![CairoSVG](visual/png/cairosvg/34_gradient_advanced.png) | ![JSVG](visual/png/jsvg/34_gradient_advanced.png) |
 | **Size** | 31,339 bytes | 35,647 bytes | 30,958 bytes ✅ | 35,070 bytes |
-| **Time** | **6.7951 ms** ✅ | — | — | — |
+| **Time** | 6.6499 ms | 43.5230 ms | 12.2178 ms | **6.0780 ms** ✅ |
 
 ### 35_filter_merge_offset
 
@@ -352,7 +352,7 @@ Gradient `spreadMethod` (reflect/repeat/pad), `fx`/`fy` focus, `href` inheritanc
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/35_filter_merge_offset.svg) | ![JairoSVG](visual/png/jairosvg/35_filter_merge_offset.png) | ![EchoSVG](visual/png/echosvg/35_filter_merge_offset.png) | ![CairoSVG](visual/png/cairosvg/35_filter_merge_offset.png) | ![JSVG](visual/png/jsvg/35_filter_merge_offset.png) |
 | **Size** | 9,348 bytes ✅ | 14,868 bytes | 14,167 bytes | 12,184 bytes |
-| **Time** | **4.9455 ms** ✅ | — | — | — |
+| **Time** | **4.7183 ms** ✅ | 18.5601 ms | 6.0255 ms | 7.4538 ms |
 
 ### 36_fe_color_matrix
 
@@ -362,7 +362,7 @@ Gradient `spreadMethod` (reflect/repeat/pad), `fx`/`fy` focus, `href` inheritanc
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/36_fe_color_matrix.svg) | ![JairoSVG](visual/png/jairosvg/36_fe_color_matrix.png) | ![EchoSVG](visual/png/echosvg/36_fe_color_matrix.png) | ![CairoSVG](visual/png/cairosvg/36_fe_color_matrix.png) | ![JSVG](visual/png/jsvg/36_fe_color_matrix.png) |
 | **Size** | 13,131 bytes | 15,605 bytes | 10,152 bytes ✅ | 14,503 bytes |
-| **Time** | **3.5739 ms** ✅ | — | — | — |
+| **Time** | 3.2990 ms | 17.2791 ms | 5.4290 ms | **3.1993 ms** ✅ |
 
 ### 37_fe_morphology
 
@@ -372,7 +372,7 @@ Gradient `spreadMethod` (reflect/repeat/pad), `fx`/`fy` focus, `href` inheritanc
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/37_fe_morphology.svg) | ![JairoSVG](visual/png/jairosvg/37_fe_morphology.png) | ![EchoSVG](visual/png/echosvg/37_fe_morphology.png) | ![CairoSVG](visual/png/cairosvg/37_fe_morphology.png) | ![JSVG](visual/png/jsvg/37_fe_morphology.png) |
 | **Size** | 9,850 bytes | 13,914 bytes | 10,313 bytes | 9,544 bytes ✅ |
-| **Time** | **3.6595 ms** ✅ | — | — | — |
+| **Time** | **3.3573 ms** ✅ | 17.0871 ms | 4.9924 ms | 3.4936 ms |
 
 ### 38_fe_turbulence
 
@@ -382,7 +382,7 @@ Gradient `spreadMethod` (reflect/repeat/pad), `fx`/`fy` focus, `href` inheritanc
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/38_fe_turbulence.svg) | ![JairoSVG](visual/png/jairosvg/38_fe_turbulence.png) | ![EchoSVG](visual/png/echosvg/38_fe_turbulence.png) | ![CairoSVG](visual/png/cairosvg/38_fe_turbulence.png) | ![JSVG](visual/png/jsvg/38_fe_turbulence.png) |
 | **Size** | 77,590 bytes | 64,097 bytes | 9,368 bytes ✅ | 76,437 bytes |
-| **Time** | **8.4514 ms** ✅ | — | — | — |
+| **Time** | 7.5621 ms | 34.5246 ms | **5.3226 ms** ✅ | 7.3860 ms |
 
 ### 39_fe_displacement_map
 
@@ -392,7 +392,7 @@ Gradient `spreadMethod` (reflect/repeat/pad), `fx`/`fy` focus, `href` inheritanc
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/39_fe_displacement_map.svg) | ![JairoSVG](visual/png/jairosvg/39_fe_displacement_map.png) | ![EchoSVG](visual/png/echosvg/39_fe_displacement_map.png) | ![CairoSVG](visual/png/cairosvg/39_fe_displacement_map.png) | ![JSVG](visual/png/jsvg/39_fe_displacement_map.png) |
 | **Size** | 9,151 bytes ✅ | 17,633 bytes | 9,684 bytes | 10,208 bytes |
-| **Time** | **4.2783 ms** ✅ | — | — | — |
+| **Time** | 3.9988 ms | 19.4256 ms | **3.8444 ms** ✅ | 8.8000 ms |
 
 ### 40_fe_lighting
 
@@ -402,7 +402,7 @@ Gradient `spreadMethod` (reflect/repeat/pad), `fx`/`fy` focus, `href` inheritanc
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/40_fe_lighting.svg) | ![JairoSVG](visual/png/jairosvg/40_fe_lighting.png) | ![EchoSVG](visual/png/echosvg/40_fe_lighting.png) | ![CairoSVG](visual/png/cairosvg/40_fe_lighting.png) | ![JSVG](visual/png/jsvg/40_fe_lighting.png) |
 | **Size** | 12,213 bytes | 18,277 bytes | 9,002 bytes ✅ | 10,269 bytes |
-| **Time** | **4.4220 ms** ✅ | — | — | — |
+| **Time** | 4.1330 ms | 21.5556 ms | 4.6881 ms | **3.9570 ms** ✅ |
 
 ### 41_fe_convolve_matrix
 
@@ -412,7 +412,7 @@ Gradient `spreadMethod` (reflect/repeat/pad), `fx`/`fy` focus, `href` inheritanc
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/41_fe_convolve_matrix.svg) | ![JairoSVG](visual/png/jairosvg/41_fe_convolve_matrix.png) | ![EchoSVG](visual/png/echosvg/41_fe_convolve_matrix.png) | ![CairoSVG](visual/png/cairosvg/41_fe_convolve_matrix.png) | ![JSVG](visual/png/jsvg/41_fe_convolve_matrix.png) |
 | **Size** | 12,104 bytes | 6,858 bytes ✅ | 9,043 bytes | 8,834 bytes |
-| **Time** | **3.7980 ms** ✅ | — | — | — |
+| **Time** | **3.5410 ms** ✅ | 9.5479 ms | 4.6863 ms | 5.9042 ms |
 
 ### 42_fe_component_transfer
 
@@ -422,7 +422,7 @@ Gradient `spreadMethod` (reflect/repeat/pad), `fx`/`fy` focus, `href` inheritanc
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/42_fe_component_transfer.svg) | ![JairoSVG](visual/png/jairosvg/42_fe_component_transfer.png) | ![EchoSVG](visual/png/echosvg/42_fe_component_transfer.png) | ![CairoSVG](visual/png/cairosvg/42_fe_component_transfer.png) | ![JSVG](visual/png/jsvg/42_fe_component_transfer.png) |
 | **Size** | 9,118 bytes ✅ | 12,543 bytes | 9,952 bytes | 10,463 bytes |
-| **Time** | **3.2775 ms** ✅ | — | — | — |
+| **Time** | 3.0045 ms | 16.0440 ms | 5.5773 ms | **2.9737 ms** ✅ |
 
 ### 43_css_color_level_4
 
@@ -432,7 +432,7 @@ CSS Color Level 4 syntax: HWB, Lab/LCH, OKLab/OKLCH, color(), alpha hex, and sla
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/43_css_color_level_4.svg) | ![JairoSVG](visual/png/jairosvg/43_css_color_level_4.png) | ![EchoSVG](visual/png/echosvg/43_css_color_level_4.png) | — | ![JSVG](visual/png/jsvg/43_css_color_level_4.png) |
 | **Size** | 16,214 bytes | 47,602 bytes | — | 15,886 bytes ✅ |
-| **Time** | **4.9612 ms** ✅ | — | — | — |
+| **Time** | 4.7836 ms | 127.2777 ms | — | **4.1239 ms** ✅ |
 
 ---
 
