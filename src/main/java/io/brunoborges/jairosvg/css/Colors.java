@@ -83,6 +83,13 @@ public final class Colors {
             return TRANSPARENT;
         }
         string = string.strip();
+        String lower = string.toLowerCase(Locale.ROOT);
+
+        // Fast-path SVG-only keywords before invoking the general CSS parser.
+        RgbColor keyword = SVG_KEYWORDS.get(lower);
+        if (keyword != null) {
+            return applyOpacity(keyword, opacity);
+        }
 
         // The library parses every real CSS color (hex, named, functional) and
         // recovers gracefully from malformed input, so it handles the common
@@ -90,13 +97,6 @@ public final class Colors {
         RgbColor rgb = Color.tryParseCssColor(string).map(Color::toRgbColor).orElse(null);
         if (rgb != null) {
             return applyOpacity(rgb, opacity);
-        }
-
-        // Not a CSS color — try the SVG-specific keywords ("none", system
-        // colors). These never overlap with CSS named colors.
-        RgbColor keyword = SVG_KEYWORDS.get(string.toLowerCase(Locale.ROOT));
-        if (keyword != null) {
-            return applyOpacity(keyword, opacity);
         }
 
         return BLACK;

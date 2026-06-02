@@ -224,6 +224,11 @@ class ColorsTest {
         assertEquals(1.0, r(c), EPSILON);
     }
 
+    @Test
+    void testSvgKeywordNoneCaseInsensitive() {
+        assertEquals(Colors.TRANSPARENT, Colors.color("  NoNe  "));
+    }
+
     // ── rgb() ─────────────────────────────────────────────────────────
 
     @Test
