@@ -96,7 +96,7 @@ class ColorsTest {
     @Test
     void testColorNegate() {
         Color red = rgba(1, 0, 0, 1);
-        Color negated = Colors.negateColor(red);
+        Color negated = red.negate();
         assertEquals(0, r(negated), 0.001);
         assertEquals(1, g(negated), 0.001);
         assertEquals(1, b(negated), 0.001);
@@ -476,7 +476,7 @@ class ColorsTest {
 
     @Test
     void testNegateColorPartial() {
-        Color c = Colors.negateColor(rgba(0.2, 0.3, 0.4, 1.0));
+        Color c = rgba(0.2, 0.3, 0.4, 1.0).negate();
         assertEquals(0.8, r(c), EPSILON);
         assertEquals(0.7, g(c), EPSILON);
         assertEquals(0.6, b(c), EPSILON);
@@ -485,7 +485,7 @@ class ColorsTest {
 
     @Test
     void testNegateBlack() {
-        Color c = Colors.negateColor(Colors.BLACK);
+        Color c = Colors.BLACK.negate();
         assertEquals(1.0, r(c), EPSILON);
         assertEquals(1.0, g(c), EPSILON);
         assertEquals(1.0, b(c), EPSILON);
