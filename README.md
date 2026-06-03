@@ -81,7 +81,7 @@ java -jar jairosvg-{version}-cli.jar *.svg -o output-dir/
 <dependency>
     <groupId>io.brunoborges</groupId>
     <artifactId>jairosvg</artifactId>
-    <version>1.0.11</version>
+    <version>1.0.12</version>
 </dependency>
 ```
 
@@ -98,13 +98,13 @@ java -jar jairosvg-{version}-cli.jar *.svg -o output-dir/
 ### Gradle
 
 ```groovy
-implementation 'io.brunoborges:jairosvg:1.0.11'
+implementation 'io.brunoborges:jairosvg:1.0.12'
 ```
 
 ### JBang (quick run)
 
 ```bash
-jbang --deps io.brunoborges:jairosvg:1.0.11 MyScript.java
+jbang --deps io.brunoborges:jairosvg:1.0.12 MyScript.java
 ```
 
 ## Quick Start
