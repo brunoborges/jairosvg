@@ -100,7 +100,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     protected OutputStream output;
 
     // Color mapping
-    private UnaryOperator<Colors.RGBA> mapRgba;
+    private UnaryOperator<in.virit.color.Color> mapRgba;
 
     // Dash array cache (keyed by raw stroke-dasharray string)
     private final Map<String, float[]> dashArrayCache = new HashMap<>();
@@ -140,8 +140,8 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
 
     /** Initialize the surface with optional rendering hint overrides. */
     public void init(Node tree, OutputStream output, double dpi, Double parentWidth, Double parentHeight, double scale,
-            Double outputWidth, Double outputHeight, String backgroundColor, UnaryOperator<Colors.RGBA> mapRgba,
-            Map<RenderingHints.Key, Object> renderingHintOverrides) {
+            Double outputWidth, Double outputHeight, String backgroundColor,
+            UnaryOperator<in.virit.color.Color> mapRgba, Map<RenderingHints.Key, Object> renderingHintOverrides) {
 
         this.output = output;
         this.dpi = dpi;
@@ -184,8 +184,8 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         context.translate(0, 0);
 
         if (backgroundColor != null) {
-            Colors.RGBA bg = Colors.color(backgroundColor);
-            context.setColor(new Color((float) bg.r(), (float) bg.g(), (float) bg.b(), (float) bg.a()));
+            in.virit.color.Color bg = Colors.color(backgroundColor);
+            context.setColor(toAwtColor(bg));
             context.fillRect(0, 0, image.getWidth(), image.getHeight());
         }
 
@@ -240,9 +240,9 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     }
 
     /** Map a color string through the color mapper. */
-    public Colors.RGBA mapColor(String string, double opacity) {
-        Colors.RGBA rgba = Colors.color(string, opacity);
-        return mapRgba != null ? mapRgba.apply(rgba) : rgba;
+    public in.virit.color.Color mapColor(String string, double opacity) {
+        in.virit.color.Color color = Colors.color(string, opacity);
+        return mapRgba != null ? mapRgba.apply(color) : color;
     }
 
     /** Main draw method - renders a node and its children. */
@@ -438,7 +438,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                             if (cached != null) {
                                 context.setColor(cached);
                             } else {
-                                Colors.RGBA fillColor = Colors.color(fillColorStr, 1.0);
+                                in.virit.color.RgbColor fillColor = Colors.color(fillColorStr, 1.0).toRgbColor();
                                 doFill = fillColor.a() > 0;
                                 if (doFill) {
                                     cached = toAwtColor(fillColor);
@@ -447,7 +447,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                                 }
                             }
                         } else {
-                            Colors.RGBA fillColor = mapColor(fillColorStr, fillOpacity);
+                            in.virit.color.RgbColor fillColor = mapColor(fillColorStr, fillOpacity).toRgbColor();
                             doFill = fillColor.a() > 0;
                             if (doFill)
                                 context.setColor(toAwtColor(fillColor));
@@ -468,7 +468,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
                 String[] strokePaint = Helpers.paint(node.get("stroke"));
                 if (strokePaint[1] != null && !"none".equals(strokePaint[1])) {
                     if (!Defs.gradientOrPattern(this, node, strokePaint[0], strokeOpacity)) {
-                        Colors.RGBA strokeColor = mapColor(strokePaint[1], strokeOpacity);
+                        in.virit.color.RgbColor strokeColor = mapColor(strokePaint[1], strokeOpacity).toRgbColor();
                         if (strokeColor.a() > 0) {
                             context.setColor(toAwtColor(strokeColor));
                         } else {
@@ -718,9 +718,13 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
         };
     }
 
-    /** Convert RGBA to a clamped AWT Color. */
-    static Color toAwtColor(Colors.RGBA c) {
-        return new Color((float) Math.max(0, Math.min(1, c.r())), (float) Math.max(0, Math.min(1, c.g())),
-                (float) Math.max(0, Math.min(1, c.b())), (float) Math.max(0, Math.min(1, c.a())));
+    /** Convert an in.virit Color to AWT Color via its sRGB form. */
+    public static Color toAwtColor(in.virit.color.Color c) {
+        return toAwtColor(c.toRgbColor());
+    }
+
+    public static Color toAwtColor(in.virit.color.RgbColor c) {
+        float alpha = (float) Math.max(0, Math.min(1, c.a()));
+        return new Color(c.r() / 255f, c.g() / 255f, c.b() / 255f, alpha);
     }
 }

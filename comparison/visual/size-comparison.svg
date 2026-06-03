@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="760" height="3062" viewBox="0 0 760 3062">
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="3132" viewBox="0 0 760 3132">
   <style>
     text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
   </style>
-  <rect width="760" height="3062" rx="16" fill="#0f172a"/>
+  <rect width="760" height="3132" rx="16" fill="#0f172a"/>
 
   <text x="380" y="40" text-anchor="middle" font-size="20" font-weight="600" font-style="italic" fill="#f1f5f9">PNG Output File Sizes (bytes)</text>
   <text x="380" y="60" text-anchor="middle" font-size="13" font-style="italic" fill="#64748b">lower is better — JairoSVG vs EchoSVG vs JSVG vs CairoSVG</text>
@@ -61,7 +61,7 @@
   <rect x="160" y="348" width="100" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="358" text-anchor="end" font-size="10" fill="#60a5fa">15,626</text>
   <rect x="160" y="361" width="105" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="371" text-anchor="end" font-size="10" fill="#fb923c">16,317</text>
+  <text x="700" y="371" text-anchor="end" font-size="10" fill="#fb923c">16,321</text>
 
   <text x="152" y="420" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Transforms</text>
   <rect x="160" y="392" width="35" height="12" rx="4" fill="#4ade80"/>
@@ -116,7 +116,7 @@
   <rect x="160" y="698" width="55" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="708" text-anchor="end" font-size="10" fill="#60a5fa">8,653</text>
   <rect x="160" y="711" width="69" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="721" text-anchor="end" font-size="10" fill="#fb923c">10,816</text>
+  <text x="700" y="721" text-anchor="end" font-size="10" fill="#fb923c">10,818</text>
 
   <text x="152" y="770" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Use and defs</text>
   <rect x="160" y="742" width="35" height="12" rx="4" fill="#4ade80"/>
@@ -149,7 +149,7 @@
   <rect x="160" y="908" width="77" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="918" text-anchor="end" font-size="10" fill="#60a5fa">12,101</text>
   <rect x="160" y="921" width="76" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="931" text-anchor="end" font-size="10" fill="#fb923c">11,880</text>
+  <text x="700" y="931" text-anchor="end" font-size="10" fill="#fb923c">11,879</text>
 
   <text x="152" y="980" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Patterns</text>
   <rect x="160" y="952" width="61" height="12" rx="4" fill="#4ade80"/>
@@ -160,7 +160,7 @@
   <rect x="160" y="978" width="71" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="988" text-anchor="end" font-size="10" fill="#60a5fa">11,043</text>
   <rect x="160" y="991" width="71" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1001" text-anchor="end" font-size="10" fill="#fb923c">11,095</text>
+  <text x="700" y="1001" text-anchor="end" font-size="10" fill="#fb923c">11,096</text>
 
   <text x="152" y="1050" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Clip paths</text>
   <rect x="160" y="1022" width="60" height="12" rx="4" fill="#4ade80"/>
@@ -203,7 +203,7 @@
   <rect x="160" y="1258" width="208" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="1268" text-anchor="end" font-size="10" fill="#60a5fa">32,346</text>
   <rect x="160" y="1271" width="54" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1281" text-anchor="end" font-size="10" fill="#fb923c">8,520</text>
+  <text x="700" y="1281" text-anchor="end" font-size="10" fill="#fb923c">8,519</text>
   <text x="720" y="1281" text-anchor="middle" font-size="10" fill="#fb923c">◄</text>
 
   <text x="152" y="1330" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Embedded image</text>
@@ -215,7 +215,7 @@
   <rect x="160" y="1328" width="75" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="1338" text-anchor="end" font-size="10" fill="#60a5fa">11,642</text>
   <rect x="160" y="1341" width="136" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1351" text-anchor="end" font-size="10" fill="#fb923c">21,228</text>
+  <text x="700" y="1351" text-anchor="end" font-size="10" fill="#fb923c">21,204</text>
 
   <text x="152" y="1400" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Text advanced</text>
   <rect x="160" y="1372" width="121" height="12" rx="4" fill="#4ade80"/>
@@ -226,7 +226,7 @@
   <rect x="160" y="1398" width="127" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="1408" text-anchor="end" font-size="10" fill="#60a5fa">19,756</text>
   <rect x="160" y="1411" width="153" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1421" text-anchor="end" font-size="10" fill="#fb923c">23,864</text>
+  <text x="700" y="1421" text-anchor="end" font-size="10" fill="#fb923c">23,861</text>
 
   <text x="152" y="1470" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Fe blend modes</text>
   <rect x="160" y="1442" width="77" height="12" rx="4" fill="#4ade80"/>
@@ -237,7 +237,7 @@
   <rect x="160" y="1468" width="101" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="1478" text-anchor="end" font-size="10" fill="#60a5fa">15,773</text>
   <rect x="160" y="1481" width="80" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1491" text-anchor="end" font-size="10" fill="#fb923c">12,505</text>
+  <text x="700" y="1491" text-anchor="end" font-size="10" fill="#fb923c">12,504</text>
 
   <text x="152" y="1540" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Fe tile</text>
   <rect x="160" y="1512" width="9" height="12" rx="4" fill="#4ade80"/>
@@ -270,7 +270,7 @@
   <rect x="160" y="1678" width="28" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="1688" text-anchor="end" font-size="10" fill="#60a5fa">4,380</text>
   <rect x="160" y="1691" width="31" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1701" text-anchor="end" font-size="10" fill="#fb923c">4,903</text>
+  <text x="700" y="1701" text-anchor="end" font-size="10" fill="#fb923c">4,902</text>
 
   <text x="152" y="1750" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Localized masks</text>
   <rect x="160" y="1722" width="118" height="12" rx="4" fill="#4ade80"/>
@@ -292,7 +292,7 @@
   <rect x="160" y="1818" width="81" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="1828" text-anchor="end" font-size="10" fill="#60a5fa">12,607</text>
   <rect x="160" y="1831" width="98" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1841" text-anchor="end" font-size="10" fill="#fb923c">15,233</text>
+  <text x="700" y="1841" text-anchor="end" font-size="10" fill="#fb923c">15,228</text>
 
   <text x="152" y="1890" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Symbol use</text>
   <rect x="160" y="1862" width="100" height="12" rx="4" fill="#4ade80"/>
@@ -303,7 +303,7 @@
   <rect x="160" y="1888" width="117" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="1898" text-anchor="end" font-size="10" fill="#60a5fa">18,260</text>
   <rect x="160" y="1901" width="139" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1911" text-anchor="end" font-size="10" fill="#fb923c">21,625</text>
+  <text x="700" y="1911" text-anchor="end" font-size="10" fill="#fb923c">21,624</text>
 
   <text x="152" y="1960" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Switch features</text>
   <rect x="160" y="1932" width="74" height="12" rx="4" fill="#4ade80"/>
@@ -314,7 +314,7 @@
   <text x="700" y="1968" text-anchor="end" font-size="10" fill="#60a5fa">8,503</text>
   <text x="720" y="1968" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
   <rect x="160" y="1971" width="93" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="1981" text-anchor="end" font-size="10" fill="#fb923c">14,493</text>
+  <text x="700" y="1981" text-anchor="end" font-size="10" fill="#fb923c">14,491</text>
 
   <text x="152" y="2030" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Css variables</text>
   <rect x="160" y="2002" width="74" height="12" rx="4" fill="#4ade80"/>
@@ -345,7 +345,7 @@
   <rect x="160" y="2168" width="91" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="2178" text-anchor="end" font-size="10" fill="#60a5fa">14,263</text>
   <rect x="160" y="2181" width="85" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="2191" text-anchor="end" font-size="10" fill="#fb923c">13,218</text>
+  <text x="700" y="2191" text-anchor="end" font-size="10" fill="#fb923c">13,207</text>
 
   <text x="152" y="2240" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Nested overflow</text>
   <rect x="160" y="2212" width="72" height="12" rx="4" fill="#4ade80"/>
@@ -356,7 +356,7 @@
   <rect x="160" y="2238" width="88" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="2248" text-anchor="end" font-size="10" fill="#60a5fa">13,737</text>
   <rect x="160" y="2251" width="88" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="2261" text-anchor="end" font-size="10" fill="#fb923c">13,738</text>
+  <text x="700" y="2261" text-anchor="end" font-size="10" fill="#fb923c">13,737</text>
 
   <text x="152" y="2310" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Stroke advanced</text>
   <rect x="160" y="2282" width="59" height="12" rx="4" fill="#4ade80"/>
@@ -378,7 +378,7 @@
   <rect x="160" y="2378" width="104" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="2388" text-anchor="end" font-size="10" fill="#60a5fa">16,273</text>
   <rect x="160" y="2391" width="84" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="2401" text-anchor="end" font-size="10" fill="#fb923c">13,061</text>
+  <text x="700" y="2401" text-anchor="end" font-size="10" fill="#fb923c">13,060</text>
 
   <text x="152" y="2450" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Gradient advanced</text>
   <rect x="160" y="2422" width="201" height="12" rx="4" fill="#4ade80"/>
@@ -388,7 +388,7 @@
   <rect x="160" y="2448" width="225" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="2458" text-anchor="end" font-size="10" fill="#60a5fa">35,070</text>
   <rect x="160" y="2461" width="199" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="2471" text-anchor="end" font-size="10" fill="#fb923c">30,960</text>
+  <text x="700" y="2471" text-anchor="end" font-size="10" fill="#fb923c">30,958</text>
   <text x="720" y="2471" text-anchor="middle" font-size="10" fill="#fb923c">◄</text>
 
   <text x="152" y="2520" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Filter merge offset</text>
@@ -400,7 +400,7 @@
   <rect x="160" y="2518" width="78" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="2528" text-anchor="end" font-size="10" fill="#60a5fa">12,184</text>
   <rect x="160" y="2531" width="91" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="2541" text-anchor="end" font-size="10" fill="#fb923c">14,168</text>
+  <text x="700" y="2541" text-anchor="end" font-size="10" fill="#fb923c">14,167</text>
 
   <text x="152" y="2590" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Fe color matrix</text>
   <rect x="160" y="2562" width="84" height="12" rx="4" fill="#4ade80"/>
@@ -432,7 +432,7 @@
   <rect x="160" y="2728" width="492" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="2738" text-anchor="end" font-size="10" fill="#60a5fa">76,437</text>
   <rect x="160" y="2741" width="60" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="2751" text-anchor="end" font-size="10" fill="#fb923c">9,371</text>
+  <text x="700" y="2751" text-anchor="end" font-size="10" fill="#fb923c">9,368</text>
   <text x="720" y="2751" text-anchor="middle" font-size="10" fill="#fb923c">◄</text>
 
   <text x="152" y="2800" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Fe displacement map</text>
@@ -454,7 +454,7 @@
   <rect x="160" y="2868" width="66" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="2878" text-anchor="end" font-size="10" fill="#60a5fa">10,269</text>
   <rect x="160" y="2881" width="58" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="2891" text-anchor="end" font-size="10" fill="#fb923c">9,006</text>
+  <text x="700" y="2891" text-anchor="end" font-size="10" fill="#fb923c">9,002</text>
   <text x="720" y="2891" text-anchor="middle" font-size="10" fill="#fb923c">◄</text>
 
   <text x="152" y="2940" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Fe convolve matrix</text>
@@ -466,7 +466,7 @@
   <rect x="160" y="2938" width="56" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="2948" text-anchor="end" font-size="10" fill="#60a5fa">8,834</text>
   <rect x="160" y="2951" width="58" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="2961" text-anchor="end" font-size="10" fill="#fb923c">9,045</text>
+  <text x="700" y="2961" text-anchor="end" font-size="10" fill="#fb923c">9,043</text>
 
   <text x="152" y="3010" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Fe component transfer</text>
   <rect x="160" y="2982" width="58" height="12" rx="4" fill="#4ade80"/>
@@ -477,6 +477,15 @@
   <rect x="160" y="3008" width="67" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="3018" text-anchor="end" font-size="10" fill="#60a5fa">10,463</text>
   <rect x="160" y="3021" width="64" height="12" rx="4" fill="#fb923c"/>
-  <text x="700" y="3031" text-anchor="end" font-size="10" fill="#fb923c">9,950</text>
+  <text x="700" y="3031" text-anchor="end" font-size="10" fill="#fb923c">9,952</text>
+
+  <text x="152" y="3080" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Css color level 4</text>
+  <rect x="160" y="3052" width="104" height="12" rx="4" fill="#4ade80"/>
+  <text x="700" y="3062" text-anchor="end" font-size="10" fill="#4ade80">16,214</text>
+  <rect x="160" y="3065" width="306" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="3075" text-anchor="end" font-size="10" fill="#f87171">47,602</text>
+  <rect x="160" y="3078" width="102" height="12" rx="4" fill="#60a5fa"/>
+  <text x="700" y="3088" text-anchor="end" font-size="10" fill="#60a5fa">15,886</text>
+  <text x="720" y="3088" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
 
 </svg>

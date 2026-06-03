@@ -571,11 +571,11 @@ public final class FilterRenderer {
     }
 
     private static BufferedImage flood(int width, int height, String color, double opacity, BufferedImage output) {
-        Colors.RGBA floodColor = Colors.color(color, opacity);
+        in.virit.color.RgbColor floodColor = Colors.color(color, opacity).toRgbColor();
         int a = Math.clamp((int) (floodColor.a() * 255 + 0.5), 0, 255);
-        int r = Math.clamp((int) (floodColor.r() * 255 + 0.5), 0, 255);
-        int g = Math.clamp((int) (floodColor.g() * 255 + 0.5), 0, 255);
-        int b = Math.clamp((int) (floodColor.b() * 255 + 0.5), 0, 255);
+        int r = floodColor.r();
+        int g = floodColor.g();
+        int b = floodColor.b();
         int pixel = (a << 24) | (r << 16) | (g << 8) | b;
         java.util.Arrays.fill(((DataBufferInt) output.getRaster().getDataBuffer()).getData(), pixel);
         return output;
@@ -700,8 +700,8 @@ public final class FilterRenderer {
 
         // Step 1: shadow colorization → buf1 (use pixel operations instead of
         // Graphics2D)
-        Colors.RGBA rgba = Colors.color(floodColor, floodOpacity);
-        int colorRGB = ((int) (rgba.r() * 255) << 16) | ((int) (rgba.g() * 255) << 8) | (int) (rgba.b() * 255);
+        in.virit.color.RgbColor rgba = Colors.color(floodColor, floodOpacity).toRgbColor();
+        int colorRGB = (rgba.r() << 16) | (rgba.g() << 8) | rgba.b();
         int[] inputPixels = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
         int[] shadowPixels = ((DataBufferInt) buf1.getRaster().getDataBuffer()).getData();
         for (int i = 0; i < inputPixels.length; i++) {
@@ -1538,9 +1538,7 @@ public final class FilterRenderer {
         int h = input.getHeight();
         double surfaceScale = parseDoubleOr(node.get("surfaceScale"), 1);
         double kd = parseDoubleOr(node.get("diffuseConstant"), 1);
-        Colors.RGBA lightColor = Colors.color(node.get("lighting-color", "white"), 1.0);
-        if (lightColor == null)
-            lightColor = new Colors.RGBA(1, 1, 1, 1);
+        in.virit.color.RgbColor lightColor = Colors.color(node.get("lighting-color", "white"), 1.0).toRgbColor();
 
         LightSource light = parseLightSource(node);
         if (light == null) {
@@ -1551,9 +1549,9 @@ public final class FilterRenderer {
         int[] inData = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
         int[] outData = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
 
-        double lr = lightColor.r();
-        double lg = lightColor.g();
-        double lb = lightColor.b();
+        double lr = lightColor.r() / 255.0;
+        double lg = lightColor.g() / 255.0;
+        double lb = lightColor.b() / 255.0;
 
         for (int py = 0; py < h; py++) {
             for (int px = 0; px < w; px++) {
@@ -1583,9 +1581,7 @@ public final class FilterRenderer {
         double surfaceScale = parseDoubleOr(node.get("surfaceScale"), 1);
         double ks = parseDoubleOr(node.get("specularConstant"), 1);
         double specExp = parseDoubleOr(node.get("specularExponent"), 1);
-        Colors.RGBA lightColor = Colors.color(node.get("lighting-color", "white"), 1.0);
-        if (lightColor == null)
-            lightColor = new Colors.RGBA(1, 1, 1, 1);
+        in.virit.color.RgbColor lightColor = Colors.color(node.get("lighting-color", "white"), 1.0).toRgbColor();
 
         LightSource light = parseLightSource(node);
         if (light == null) {
@@ -1596,9 +1592,9 @@ public final class FilterRenderer {
         int[] inData = ((DataBufferInt) input.getRaster().getDataBuffer()).getData();
         int[] outData = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
 
-        double lr = lightColor.r();
-        double lg = lightColor.g();
-        double lb = lightColor.b();
+        double lr = lightColor.r() / 255.0;
+        double lg = lightColor.g() / 255.0;
+        double lb = lightColor.b() / 255.0;
 
         for (int py = 0; py < h; py++) {
             for (int px = 0; px < w; px++) {

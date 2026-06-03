@@ -57,6 +57,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- CSS color parsing/rendering support (kept internal to public API) -->
+        <dependency>
+            <groupId>in.virit</groupId>
+            <artifactId>color</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
