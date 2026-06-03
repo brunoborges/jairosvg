@@ -57,7 +57,7 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Type-safe CSS color objects on the public builder API -->
+        <!-- CSS color parsing/rendering support (kept internal to public API) -->
         <dependency>
             <groupId>in.virit</groupId>
             <artifactId>color</artifactId>

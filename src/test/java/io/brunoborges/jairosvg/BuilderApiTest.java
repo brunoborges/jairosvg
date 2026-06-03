@@ -1,7 +1,5 @@
 package io.brunoborges.jairosvg;
 
-import in.virit.color.HexColor;
-import in.virit.color.OklchColor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -146,7 +144,7 @@ class BuilderApiTest {
                 """;
 
         byte[] viaString = JairoSVG.builder().fromString(svg).backgroundColor("#ff0000").toPng();
-        byte[] viaTyped = JairoSVG.builder().fromString(svg).backgroundColor(new HexColor("#ff0000")).toPng();
+        byte[] viaTyped = JairoSVG.builder().fromString(svg).backgroundColor(CssColor.of("#ff0000")).toPng();
 
         BufferedImage imgString = ImageIO.read(new ByteArrayInputStream(viaString));
         BufferedImage imgTyped = ImageIO.read(new ByteArrayInputStream(viaTyped));
@@ -155,7 +153,7 @@ class BuilderApiTest {
 
         // CSS Color 4 type: sRGB red ≈ oklch(0.628 0.258 29.234), clamped to (255, 0,
         // 0)
-        byte[] viaOklch = JairoSVG.builder().fromString(svg).backgroundColor(new OklchColor(0.628, 0.258, 29.234))
+        byte[] viaOklch = JairoSVG.builder().fromString(svg).backgroundColor(CssColor.of("oklch(0.628 0.258 29.234)"))
                 .toPng();
         BufferedImage imgOklch = ImageIO.read(new ByteArrayInputStream(viaOklch));
         int pixel = imgOklch.getRGB(5, 5);
@@ -168,7 +166,7 @@ class BuilderApiTest {
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"/>
                 """;
-        byte[] png = JairoSVG.builder().fromString(svg).backgroundColor((in.virit.color.Color) null).toPng();
+        byte[] png = JairoSVG.builder().fromString(svg).backgroundColor((CssColor) null).toPng();
         assertNotNull(png);
     }
 
