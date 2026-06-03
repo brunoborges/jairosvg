@@ -44,20 +44,20 @@ A high-performance SVG 1.1 to PNG, JPEG, TIFF, PDF, and PS/EPS converter powered
 
 | Test Case                | JairoSVG (Java) | EchoSVG (Java) | JSVG (Java) | CairoSVG (Python) |
 | ------------------------ | :-------------: | :------------: | :---------: | :---------------: |
-| Simple shapes            |     4.3 ms      |    20.9 ms     | **4.3 ms**  |      5.7 ms       |
-| Gradients                |   **5.8 ms**    |    169.5 ms    |   5.8 ms    |      12.7 ms      |
-| Filters                  |   **9.8 ms**    |    45.3 ms     |  11.2 ms    |      6.3 ms       |
-| Fe blend modes           |  **13.6 ms**    |    37.8 ms     |  28.5 ms    |      24.2 ms      |
-| Embedded image           |   **5.8 ms**    |    22.3 ms     |   7.7 ms    |      10.8 ms      |
-| Localized masks          |  **19.4 ms**    |    66.3 ms     |  19.7 ms    |      25.9 ms      |
+| Simple shapes            | **2.94 ms**     |    16.28 ms    |   3.13 ms   |      4.34 ms      |
+| Gradients                |   4.15 ms       |   132.07 ms    | **3.97 ms** |      10.83 ms     |
+| Filters                  |   6.61 ms       |    33.57 ms    |   7.86 ms   |   **4.47 ms**     |
+| Fe blend modes           | **8.96 ms**     |    25.80 ms    |   18.16 ms  |      12.55 ms     |
+| Embedded image           | **4.01 ms**     |    15.79 ms    |   10.52 ms  |      7.05 ms      |
+| Localized masks          | **12.74 ms**    |    51.03 ms    |   12.93 ms  |      15.29 ms     |
 
-_JairoSVG is 3–29× faster than EchoSVG, on par with JSVG for simple SVGs, and significantly faster on filters, blends, masks, and images._
+_JairoSVG is about 3–32× faster than EchoSVG in this sample, wins 4 of these 6 cases, and stays competitive with JSVG and CairoSVG across the set._
 
 Run the benchmark yourself: `jbang comparison/benchmark/benchmark.java`.
 
 See **[comparison/README.md](comparison/README.md)** for full benchmark results, PNG file size comparisons, and feature matrices across JairoSVG, EchoSVG, CairoSVG, and JSVG.
 
-See **[comparison/COMPARISON.md](comparison/COMPARISON.md)** for side-by-side rendered PNG comparisons, benchmark times, and file sizes across 42 SVG test cases.
+See **[comparison/COMPARISON.md](comparison/COMPARISON.md)** for side-by-side rendered PNG comparisons, benchmark times, and file sizes across 43 SVG test cases.
 
 ## Installation
 
