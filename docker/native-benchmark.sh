@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 IMAGE_NAME="jairosvg-native"
 
 echo "=== Building native image container ==="
-docker build -f "$SCRIPT_DIR/Dockerfile.native" -t "$IMAGE_NAME" "$SCRIPT_DIR"
+docker build -f "$SCRIPT_DIR/Dockerfile.native" -t "$IMAGE_NAME" "$SCRIPT_DIR/.."
 
 echo ""
 echo "=== Smoke test ==="
