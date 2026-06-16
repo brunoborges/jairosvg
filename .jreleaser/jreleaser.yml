@@ -34,7 +34,7 @@ deploy:
       app:
         active: ALWAYS
         url: https://central.sonatype.com/api/v1/publisher
-        applyMavenCentralRules: true
+        applyMavenCentralRules: false
         stagingRepositories:
           - target/staging-deploy
 
