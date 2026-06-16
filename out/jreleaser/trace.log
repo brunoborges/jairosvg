@@ -4,7 +4,7 @@ jreleaser 1.24.0
 ------------------------------------------------------------
 Build time:   2026-04-30 10:35:16Z
 Revision:     4def7226a85e911d0a103b40a1857fb191aada0d
-JVM:          17.0.19 (Eclipse Adoptium 17.0.19+10)
+JVM:          21.0.11 (Azul Systems, Inc. 21.0.11+10-LTS)
 ------------------------------------------------------------
 [INFO]  Configuring with .jreleaser/jreleaser.yml
 [INFO]    - basedir set to /home/runner/work/jairosvg/jairosvg
@@ -85,7 +85,7 @@ JVM:          17.0.19 (Eclipse Adoptium 17.0.19+10)
 [DEBUG]   [postvalidation] assemble.deb
 [DEBUG]   [postvalidation] assemble.jpackage
 [DEBUG]   [resolution] assemble
-[DEBUG]   [validation] --== CONFIG ==--
+[DEBUG]   [validation] --== FULL ==--
 [DEBUG]   [validation] hooks
 [DEBUG]   [validation] hooks.command
 [DEBUG]   [validation] hooks.script
@@ -338,8 +338,8 @@ release:
         issueTrackerUrl: https://{{repoHost}}/{{repoOwner}}/{{repoName}}/issues
         tagName: v{{projectVersion}}
         releaseName: v{{projectVersion}}
-        branch: copilot/fix-release-job-failure-another-one
-        branchPush: copilot/fix-release-job-failure-another-one
+        branch: main
+        branchPush: main
         commitAuthor:
             name: jreleaserbot
             email: jreleaser@kordamp.org
@@ -948,7 +948,7 @@ deploy:
                 url: https://central.sonatype.com/api/v1/publisher
                 username: ************
                 password: ************
-                sign: false
+                sign: true
                 checksums: false
                 sourceJar: true
                 javadocJar: true
@@ -1423,9 +1423,326 @@ distributions:
  
 [INFO]  Project version set to 1.0.13
 [INFO]  Release is not snapshot
-[INFO]  Timestamp is 2026-06-16T20:32:54.524952601Z
-[INFO]  HEAD is at 422c66f
+[INFO]  Timestamp is 2026-06-16T22:15:37.100343991Z
+[INFO]  HEAD is at 4ca08f7
 [INFO]  Platform is linux-x86_64
 [DEBUG] loading extension default-jreleaser-mustache:jreleaser.shadow.org.jreleaser.extensions.internal.mustache.DefaultMustacheExtension
 [DEBUG] adding jreleaser.shadow.org.jreleaser.extensions.internal.mustache.DefaultMustacheExtensionPoint from default-jreleaser-mustache extension
+[INFO]  yolo set to false
+[INFO]  dry-run set to false
+[INFO]  Generating changelog
+[DEBUG] resolving commits
+[DEBUG] looking for tag that matches 'v1.0.13'
+[DEBUG] looking for a tag before 'v1.0.13' that matches 'v.*'
+[DEBUG] found tag v1.0.12
+[DEBUG] sorting commits DESC
+[INFO]  Storing changelog: out/jreleaser/release/CHANGELOG.md
+[DEBUG] ## Changelog
+
+## 🧰 Tasks
+- a5cc9c2 **deps**: Bump github/gh-aw-actions from 0.78.3 to 0.79.8
+- 874ef96 **deps-dev**: Bump org.jacoco:jacoco-maven-plugin (#222), closes #222
+- 7442ea9 **deps**: Bump codecov/codecov-action from 6 to 7 (#221), closes #221
+- bd35558 **deps**: Bump github/gh-aw-actions from 0.78.1 to 0.78.3 (#220), closes #220
+
+---
+- 415d516 Fix Maven Central deployment: enable signing in jreleaser.yml
+- d963a50 Initial plan
+- bd8d71a Validate release config change
+- 422c66f Disable JReleaser Maven Central precheck in release config
+- 370e5fa Initial plan
+- 36d4aa7 Fix JReleaser basedir: add --basedir . to release workflow arguments
+- 0e69e2b Initial plan
+- 8e5bf55 Fix release workflow JReleaser config path
+- 230d0a0 Initial plan
+- e12a382 Release v1.0.13
+- 5acf4f2 Align use+symbol auto sizing with SVG2
+- b0aceb4 Limit shading to CLI profile
+- c05f8dc Clean up root folder: move files into subfolders (#224), closes #224
+- 0bb61ab Update README benchmark sample
+- 539efaf Bump version to 1.0.13-SNAPSHOT
+
+
+## Contributors
+We'd like to thank the following people for their contributions:
+- Bruno Borges
+- GitHub
+- brunoborges
+- github-actions[bot]
+[INFO]  Calculating checksums for distributions and files
+[DEBUG]   [checksum] checksum does not exist: out/jreleaser/checksums/jairosvg/jairosvg-1.0.13.jar.sha256
+[INFO]    [checksum] target/jairosvg-1.0.13.jar.sha256
+[DEBUG]   [checksum] reading out/jreleaser/checksums/jairosvg/jairosvg-1.0.13.jar.sha256
+[DEBUG]   [checksum] checksum does not exist: out/jreleaser/checksums/jairosvg-cli/jairosvg-1.0.13-cli.jar.sha256
+[INFO]    [checksum] target/jairosvg-1.0.13-cli.jar.sha256
+[DEBUG]   [checksum] reading out/jreleaser/checksums/jairosvg-cli/jairosvg-1.0.13-cli.jar.sha256
+[INFO]  Cataloging artifacts
+[INFO]    Cataloging is not enabled. Skipping
+[INFO]  Signing distributions and files
+[DEBUG]   [gpg] signature does not exist: out/jreleaser/signatures/jairosvg-1.0.13.jar.asc
+[DEBUG]   [gpg] signature does not exist: out/jreleaser/signatures/jairosvg-1.0.13-cli.jar.asc
+[DEBUG]   [gpg] signature does not exist: out/jreleaser/signatures/checksums_sha256.txt.asc
+[DEBUG]   [gpg] signing 3 files into out/jreleaser/signatures
+[INFO]    [gpg] target/jairosvg-1.0.13.jar
+[INFO]    [gpg] target/jairosvg-1.0.13-cli.jar
+[INFO]    [gpg] out/jreleaser/checksums/checksums_sha256.txt
+[DEBUG]   [gpg] verifying 3 signatures
+[DEBUG]   [verify] out/jreleaser/signatures/jairosvg-1.0.13.jar.asc
+[DEBUG]   [verify] out/jreleaser/signatures/jairosvg-1.0.13-cli.jar.asc
+[DEBUG]   [verify] out/jreleaser/signatures/checksums_sha256.txt.asc
+[INFO]  Deploying Maven artifacts
+[INFO]    [maven] Deploying all staged artifacts
+[INFO]      [mavenCentral] Deploying to app
+[INFO]      [mavenCentral] Verifying prerequisites
+[WARN]      [mavenCentral] Signing key 51E003AB27AE3E0F does not expire
+[INFO]      [mavenCentral] Checking if key 51E003AB27AE3E0F has been published
+[DEBUG]     [mavenCentral]  + https://keys.openpgp.org
+[DEBUG]     [mavenCentral]  + https://keyserver.ubuntu.com
+[DEBUG]     [mavenCentral] Unexpected error Connect timed out
+[INFO]      [mavenCentral] Key 51E003AB27AE3E0F was found as published
+[DEBUG]     [sign] signature does not exist: target/staging-deploy/io/brunoborges/jairosvg/1.0.13/jairosvg-1.0.13-sources.jar.asc
+[INFO]      [sign] target/staging-deploy/io/brunoborges/jairosvg/1.0.13/jairosvg-1.0.13-sources.jar
+[DEBUG]     [verify] target/staging-deploy/io/brunoborges/jairosvg/1.0.13/jairosvg-1.0.13-sources.jar.asc
+[DEBUG]     [sign] signature does not exist: target/staging-deploy/io/brunoborges/jairosvg/1.0.13/jairosvg-1.0.13.pom.asc
+[INFO]      [sign] target/staging-deploy/io/brunoborges/jairosvg/1.0.13/jairosvg-1.0.13.pom
+[DEBUG]     [verify] target/staging-deploy/io/brunoborges/jairosvg/1.0.13/jairosvg-1.0.13.pom.asc
+[DEBUG]     [sign] signature does not exist: target/staging-deploy/io/brunoborges/jairosvg/1.0.13/jairosvg-1.0.13-javadoc.jar.asc
+[INFO]      [sign] target/staging-deploy/io/brunoborges/jairosvg/1.0.13/jairosvg-1.0.13-javadoc.jar
+[DEBUG]     [verify] target/staging-deploy/io/brunoborges/jairosvg/1.0.13/jairosvg-1.0.13-javadoc.jar.asc
+[DEBUG]     [sign] signature does not exist: target/staging-deploy/io/brunoborges/jairosvg/1.0.13/jairosvg-1.0.13.jar.asc
+[INFO]      [sign] target/staging-deploy/io/brunoborges/jairosvg/1.0.13/jairosvg-1.0.13.jar
+[DEBUG]     [verify] target/staging-deploy/io/brunoborges/jairosvg/1.0.13/jairosvg-1.0.13.jar.asc
+[DEBUG]     [mavenCentral] copying files from target/staging-deploy to /tmp/maven-central11275739058445754697
+[INFO]      [mavenCentral]  - io.brunoborges-JairoSVG-1.0.13-bundle.zip
+[INFO]      [mavenCentral] Uploading io.brunoborges-JairoSVG-1.0.13-bundle.zip
+[INFO]      [mavenCentral] Bundle io.brunoborges-JairoSVG-1.0.13-bundle.zip uploaded as deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[DEBUG]     [mavenCentral] waiting for deployment (00dbb0ec-c201-4dff-bfd5-e6e9445f1181) state to be one of [VALIDATED, FAILED]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Attempt 1 of 101
+[DEBUG]     [mavenCentral] attempt 1/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@1c2fb9e8]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Publishing deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[DEBUG]     [mavenCentral] waiting for deployment (00dbb0ec-c201-4dff-bfd5-e6e9445f1181) state to be one of [PUBLISHED, FAILED]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Attempt 1 of 101
+[DEBUG]     [mavenCentral] attempt 1/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@7c88d04f]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Attempt 2 of 101
+[DEBUG]     [mavenCentral] attempt 2/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@539dd2d0]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Attempt 3 of 101
+[DEBUG]     [mavenCentral] attempt 3/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@44e79e9e]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Attempt 4 of 101
+[DEBUG]     [mavenCentral] attempt 4/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@49153009]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Attempt 5 of 101
+[DEBUG]     [mavenCentral] attempt 5/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@25bc65ab]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Attempt 6 of 101
+[DEBUG]     [mavenCentral] attempt 6/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@6315bb4]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Attempt 7 of 101
+[DEBUG]     [mavenCentral] attempt 7/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@34e07e65]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Attempt 8 of 101
+[DEBUG]     [mavenCentral] attempt 8/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@3b576ee3]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Attempt 9 of 101
+[DEBUG]     [mavenCentral] attempt 9/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@795eddda]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Attempt 10 of 101
+[DEBUG]     [mavenCentral] attempt 10/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@52d9f36b]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Attempt 11 of 101
+[DEBUG]     [mavenCentral] attempt 11/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@52efb338]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Attempt 12 of 101
+[DEBUG]     [mavenCentral] attempt 12/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@71469e01]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Attempt 13 of 101
+[DEBUG]     [mavenCentral] attempt 13/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@43cf5bff]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Attempt 14 of 101
+[DEBUG]     [mavenCentral] attempt 14/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@649009d6]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]      [mavenCentral] Attempt 15 of 101
+[DEBUG]     [mavenCentral] attempt 15/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@1f293cb7]
+[DEBUG]     [mavenCentral] querying status for deployment 00dbb0ec-c201-4dff-bfd5-e6e9445f1181
+[INFO]  Uploading distributions and files
+[INFO]    [upload] Uploading is not enabled. Skipping
+[INFO]  Releasing to https://github.com/brunoborges/jairosvg@main
+[DEBUG] fetching all branches on brunoborges/jairosvg
+[DEBUG] looking up release with tag v1.0.13 at repository brunoborges/jairosvg
+[DEBUG] fetching release on brunoborges/jairosvg with tag v1.0.13
+[DEBUG] release v1.0.13 does not exist
+[DEBUG] creating release v1.0.13
+[DEBUG] creating release on brunoborges/jairosvg with tag v1.0.13
+[INFO]   - uploading checksums_sha256.txt
+[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/340438139/assets?name=checksums_sha256.txt
+[DEBUG] opening connection
+[DEBUG] configuring connection
+[DEBUG] Accept: [application/vnd.github+json]
+[DEBUG] User-Agent: [JReleaser/1.24.0]
+[DEBUG] X-GitHub-Api-Version: [2022-11-28]
+[DEBUG] Content-Type: [text/plain]
+[DEBUG] sending data
+[DEBUG] handling response
+[INFO]   - uploading checksums_sha256.txt.asc
+[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/340438139/assets?name=checksums_sha256.txt.asc
+[DEBUG] opening connection
+[DEBUG] configuring connection
+[DEBUG] Accept: [application/vnd.github+json]
+[DEBUG] User-Agent: [JReleaser/1.24.0]
+[DEBUG] X-GitHub-Api-Version: [2022-11-28]
+[DEBUG] Content-Type: [text/plain]
+[DEBUG] sending data
+[DEBUG] handling response
+[INFO]   - uploading jairosvg-1.0.13-cli.jar
+[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/340438139/assets?name=jairosvg-1.0.13-cli.jar
+[DEBUG] opening connection
+[DEBUG] configuring connection
+[DEBUG] Accept: [application/vnd.github+json]
+[DEBUG] User-Agent: [JReleaser/1.24.0]
+[DEBUG] X-GitHub-Api-Version: [2022-11-28]
+[DEBUG] Content-Type: [application/java-archive]
+[DEBUG] sending data
+[DEBUG] handling response
+[INFO]   - uploading jairosvg-1.0.13-cli.jar.asc
+[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/340438139/assets?name=jairosvg-1.0.13-cli.jar.asc
+[DEBUG] opening connection
+[DEBUG] configuring connection
+[DEBUG] Accept: [application/vnd.github+json]
+[DEBUG] User-Agent: [JReleaser/1.24.0]
+[DEBUG] X-GitHub-Api-Version: [2022-11-28]
+[DEBUG] Content-Type: [text/plain]
+[DEBUG] sending data
+[DEBUG] handling response
+[INFO]   - uploading jairosvg-1.0.13.jar
+[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/340438139/assets?name=jairosvg-1.0.13.jar
+[DEBUG] opening connection
+[DEBUG] configuring connection
+[DEBUG] Accept: [application/vnd.github+json]
+[DEBUG] User-Agent: [JReleaser/1.24.0]
+[DEBUG] X-GitHub-Api-Version: [2022-11-28]
+[DEBUG] Content-Type: [application/java-archive]
+[DEBUG] sending data
+[DEBUG] handling response
+[INFO]   - uploading jairosvg-1.0.13.jar.asc
+[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/340438139/assets?name=jairosvg-1.0.13.jar.asc
+[DEBUG] opening connection
+[DEBUG] configuring connection
+[DEBUG] Accept: [application/vnd.github+json]
+[DEBUG] User-Agent: [JReleaser/1.24.0]
+[DEBUG] X-GitHub-Api-Version: [2022-11-28]
+[DEBUG] Content-Type: [text/plain]
+[DEBUG] sending data
+[DEBUG] handling response
+[DEBUG] lookup open milestone 'v1.0.13' on brunoborges/jairosvg
+[DEBUG] fetching all milestones on brunoborges/jairosvg with status open
+[DEBUG] checking if release brunoborges/jairosvg@v1.0.13 was left as draft
+[DEBUG] fetching release on brunoborges/jairosvg with id 340438139
+[INFO]  Preparing distributions
+[INFO]    - Preparing jairosvg distribution
+[DEBUG]     [appimage] skipping for jairosvg distribution
+[DEBUG]     [asdf] skipping for jairosvg distribution
+[DEBUG]     [brew] skipping for jairosvg distribution
+[DEBUG]     [chocolatey] skipping for jairosvg distribution
+[DEBUG]     [docker] skipping for jairosvg distribution
+[DEBUG]     [flatpak] skipping for jairosvg distribution
+[DEBUG]     [gofish] skipping for jairosvg distribution
+[DEBUG]     [jbang] skipping for jairosvg distribution
+[DEBUG]     [jib] skipping for jairosvg distribution
+[DEBUG]     [macports] skipping for jairosvg distribution
+[DEBUG]     [scoop] skipping for jairosvg distribution
+[DEBUG]     [sdkman] skipping for jairosvg distribution
+[DEBUG]     [snap] skipping for jairosvg distribution
+[DEBUG]     [spec] skipping for jairosvg distribution
+[DEBUG]     [winget] skipping for jairosvg distribution
+[INFO]    - Preparing jairosvg-cli distribution
+[DEBUG]     [appimage] skipping for jairosvg-cli distribution
+[DEBUG]     [asdf] skipping for jairosvg-cli distribution
+[DEBUG]     [brew] skipping for jairosvg-cli distribution
+[DEBUG]     [chocolatey] skipping for jairosvg-cli distribution
+[DEBUG]     [docker] skipping for jairosvg-cli distribution
+[DEBUG]     [flatpak] skipping for jairosvg-cli distribution
+[DEBUG]     [gofish] skipping for jairosvg-cli distribution
+[DEBUG]     [jbang] skipping for jairosvg-cli distribution
+[DEBUG]     [jib] skipping for jairosvg-cli distribution
+[DEBUG]     [macports] skipping for jairosvg-cli distribution
+[DEBUG]     [scoop] skipping for jairosvg-cli distribution
+[DEBUG]     [sdkman] skipping for jairosvg-cli distribution
+[DEBUG]     [snap] skipping for jairosvg-cli distribution
+[DEBUG]     [spec] skipping for jairosvg-cli distribution
+[DEBUG]     [winget] skipping for jairosvg-cli distribution
+[INFO]  Packaging distributions
+[INFO]    - Packaging jairosvg distribution
+[DEBUG]     [appimage] skipping for jairosvg distribution
+[DEBUG]     [asdf] skipping for jairosvg distribution
+[DEBUG]     [brew] skipping for jairosvg distribution
+[DEBUG]     [chocolatey] skipping for jairosvg distribution
+[DEBUG]     [docker] skipping for jairosvg distribution
+[DEBUG]     [flatpak] skipping for jairosvg distribution
+[DEBUG]     [gofish] skipping for jairosvg distribution
+[DEBUG]     [jbang] skipping for jairosvg distribution
+[DEBUG]     [jib] skipping for jairosvg distribution
+[DEBUG]     [macports] skipping for jairosvg distribution
+[DEBUG]     [scoop] skipping for jairosvg distribution
+[DEBUG]     [sdkman] skipping for jairosvg distribution
+[DEBUG]     [snap] skipping for jairosvg distribution
+[DEBUG]     [spec] skipping for jairosvg distribution
+[DEBUG]     [winget] skipping for jairosvg distribution
+[INFO]    - Packaging jairosvg-cli distribution
+[DEBUG]     [appimage] skipping for jairosvg-cli distribution
+[DEBUG]     [asdf] skipping for jairosvg-cli distribution
+[DEBUG]     [brew] skipping for jairosvg-cli distribution
+[DEBUG]     [chocolatey] skipping for jairosvg-cli distribution
+[DEBUG]     [docker] skipping for jairosvg-cli distribution
+[DEBUG]     [flatpak] skipping for jairosvg-cli distribution
+[DEBUG]     [gofish] skipping for jairosvg-cli distribution
+[DEBUG]     [jbang] skipping for jairosvg-cli distribution
+[DEBUG]     [jib] skipping for jairosvg-cli distribution
+[DEBUG]     [macports] skipping for jairosvg-cli distribution
+[DEBUG]     [scoop] skipping for jairosvg-cli distribution
+[DEBUG]     [sdkman] skipping for jairosvg-cli distribution
+[DEBUG]     [snap] skipping for jairosvg-cli distribution
+[DEBUG]     [spec] skipping for jairosvg-cli distribution
+[DEBUG]     [winget] skipping for jairosvg-cli distribution
+[INFO]  Publishing distributions
+[INFO]    - Publishing jairosvg distribution
+[DEBUG]     [appimage] skipping for jairosvg distribution
+[DEBUG]     [asdf] skipping for jairosvg distribution
+[DEBUG]     [brew] skipping for jairosvg distribution
+[DEBUG]     [chocolatey] skipping for jairosvg distribution
+[DEBUG]     [docker] skipping for jairosvg distribution
+[DEBUG]     [flatpak] skipping for jairosvg distribution
+[DEBUG]     [gofish] skipping for jairosvg distribution
+[DEBUG]     [jbang] skipping for jairosvg distribution
+[DEBUG]     [jib] skipping for jairosvg distribution
+[DEBUG]     [macports] skipping for jairosvg distribution
+[DEBUG]     [scoop] skipping for jairosvg distribution
+[DEBUG]     [sdkman] skipping for jairosvg distribution
+[DEBUG]     [snap] skipping for jairosvg distribution
+[DEBUG]     [spec] skipping for jairosvg distribution
+[DEBUG]     [winget] skipping for jairosvg distribution
+[INFO]    - Publishing jairosvg-cli distribution
+[DEBUG]     [appimage] skipping for jairosvg-cli distribution
+[DEBUG]     [asdf] skipping for jairosvg-cli distribution
+[DEBUG]     [brew] skipping for jairosvg-cli distribution
+[DEBUG]     [chocolatey] skipping for jairosvg-cli distribution
+[DEBUG]     [docker] skipping for jairosvg-cli distribution
+[DEBUG]     [flatpak] skipping for jairosvg-cli distribution
+[DEBUG]     [gofish] skipping for jairosvg-cli distribution
+[DEBUG]     [jbang] skipping for jairosvg-cli distribution
+[DEBUG]     [jib] skipping for jairosvg-cli distribution
+[DEBUG]     [macports] skipping for jairosvg-cli distribution
+[DEBUG]     [scoop] skipping for jairosvg-cli distribution
+[DEBUG]     [sdkman] skipping for jairosvg-cli distribution
+[DEBUG]     [snap] skipping for jairosvg-cli distribution
+[DEBUG]     [spec] skipping for jairosvg-cli distribution
+[DEBUG]     [winget] skipping for jairosvg-cli distribution
+[INFO]  Announcing release
+[INFO]    [announce] Announcing is not enabled. Skipping
 [INFO]  Writing output properties to out/jreleaser/output.properties
+[INFO]  JReleaser succeeded after 05:58 m
