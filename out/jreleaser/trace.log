@@ -1,0 +1,1431 @@
+[INFO]  JReleaser 1.24.0
+------------------------------------------------------------
+jreleaser 1.24.0
+------------------------------------------------------------
+Build time:   2026-04-30 10:35:16Z
+Revision:     4def7226a85e911d0a103b40a1857fb191aada0d
+JVM:          17.0.19 (Eclipse Adoptium 17.0.19+10)
+------------------------------------------------------------
+[INFO]  Configuring with .jreleaser/jreleaser.yml
+[INFO]    - basedir set to /home/runner/work/jairosvg/jairosvg
+[INFO]    - outputdir set to /home/runner/work/jairosvg/jairosvg/out/jreleaser
+[INFO]  Reading configuration
+[DEBUG]   - basedir set to 
+[DEBUG]   - baseOutputDirectory set to out
+[DEBUG]   - outputDirectory set to out/jreleaser
+[DEBUG]   - checksumDirectory set to out/jreleaser/checksums
+[DEBUG]   - catalogsDirectory set to out/jreleaser/catalogs
+[DEBUG]   - signaturesDirectory set to out/jreleaser/signatures
+[DEBUG]   - prepareDirectory set to out/jreleaser/prepare
+[DEBUG]   - packageDirectory set to out/jreleaser/package
+[DEBUG]   - publishDirectory set to out/jreleaser/publish
+[DEBUG]   - downloadDirectory set to out/jreleaser/download
+[DEBUG]   - assembleDirectory set to out/jreleaser/assemble
+[DEBUG]   - artifactsDirectory set to out/jreleaser/artifacts
+[DEBUG]   - deployDirectory set to out/jreleaser/deploy
+[INFO]  git-root-search set to false
+[INFO]  Loading variables from /home/runner/.jreleaser/config.properties
+[WARN]  Variables source /home/runner/.jreleaser/config.properties does not exist
+[DEBUG] The following variables are defined in the current environment:
+[DEBUG]   JRELEASER_GITHUB_TOKEN
+[DEBUG]   JRELEASER_GPG_PASSPHRASE
+[DEBUG]   JRELEASER_GPG_PUBLIC_KEY
+[DEBUG]   JRELEASER_GPG_SECRET_KEY
+[DEBUG]   JRELEASER_MAVENCENTRAL_APP_PASSWORD
+[DEBUG]   JRELEASER_MAVENCENTRAL_APP_USERNAME
+[DEBUG]   JRELEASER_PROJECT_VERSION
+[INFO]  Validating configuration
+[INFO]  Strict mode set to false
+[INFO]  Reproducible set to false
+[DEBUG] adjusting distributions with assemblies
+[DEBUG]   [validation] --== ASSEMBLE ==--
+[DEBUG]   [validation] hooks
+[DEBUG]   [validation] hooks.command
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] hooks.script
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] hooks.jbang
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] project
+[DEBUG]   [validation] project.languages.java
+[DEBUG]   [validation] download
+[DEBUG]   [validation] catalog.swid
+[DEBUG]   [validation] catalog.swid.swid-tag
+[DEBUG]   [validation] assemble
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] signing
+[DEBUG]   [validation] signing.pgp
+[DEBUG]   [validation] signing.cosign
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] signing.minisign
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] release
+[DEBUG]   [validation] release.github
+[DEBUG]   [validation] checksum
+[DEBUG]   [validation] deploy
+[DEBUG]   [validation] deploy.maven
+[DEBUG]   [validation] deploy.maven.mavenCentral
+[DEBUG]   [validation] upload
+[DEBUG]   [validation] distributions
+[DEBUG]   [validation] catalog
+[DEBUG]   [validation] catalog.sbom
+[DEBUG]   [validation] catalog.sbom.cyclonedx
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] catalog.sbom.syft
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] catalog.github
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] catalog.slsa
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce
+[DEBUG]   [validation] - disabled
+[DEBUG]   [postvalidation] project
+[DEBUG]   [postvalidation] assemble
+[DEBUG]   [postvalidation] assemble.deb
+[DEBUG]   [postvalidation] assemble.jpackage
+[DEBUG]   [resolution] assemble
+[DEBUG]   [validation] --== CONFIG ==--
+[DEBUG]   [validation] hooks
+[DEBUG]   [validation] hooks.command
+[DEBUG]   [validation] hooks.script
+[DEBUG]   [validation] hooks.jbang
+[DEBUG]   [validation] project
+[DEBUG]   [validation] project.languages.java
+[DEBUG]   [validation] download
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] catalog.swid
+[DEBUG]   [validation] catalog.swid.swid-tag
+[DEBUG]   [validation] assemble
+[DEBUG]   [validation] signing
+[DEBUG]   [validation] signing.pgp
+[DEBUG]   [validation] signing.cosign
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] signing.minisign
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] release
+[DEBUG]   [validation] release.github
+[DEBUG]   [validation] checksum
+[DEBUG]   [validation] deploy
+[DEBUG]   [validation] deploy.maven
+[DEBUG]   [validation] deploy.maven.mavenCentral
+[DEBUG]   [validation] deploy.maven.mavenCentral.app
+[DEBUG]   [validation] upload
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] packagers
+[DEBUG]   [validation] distributions
+[DEBUG]   [validation] distribution.jairosvg
+[DEBUG]   [validation] distribution.jairosvg.java
+[DEBUG]   [validation] distribution.jairosvg.appImage
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg.asdf
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg.brew
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg.chocolatey
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg.docker
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg.flatpak
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg.gofish
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg.jbang
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg.jib
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg.macports
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg.scoop
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg.sdkman
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg.snap
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg.spec
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg.winget
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg-cli
+[DEBUG]   [validation] distribution.jairosvg-cli.java
+[DEBUG]   [validation] distribution.jairosvg-cli.appImage
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg-cli.asdf
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg-cli.brew
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg-cli.chocolatey
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg-cli.docker
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg-cli.flatpak
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg-cli.gofish
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg-cli.jbang
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg-cli.jib
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg-cli.macports
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg-cli.scoop
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg-cli.sdkman
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg-cli.snap
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg-cli.spec
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] distribution.jairosvg-cli.winget
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] files
+[DEBUG]   [validation] catalog
+[DEBUG]   [validation] catalog.sbom
+[DEBUG]   [validation] catalog.sbom.cyclonedx
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] catalog.sbom.syft
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] catalog.github
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] catalog.slsa
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce
+[DEBUG]   [validation] announce.article
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.bluesky
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.discussions
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.discord
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.discourse
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.gitter
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.googleChat
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.linkedin
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.http
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.smtp
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.mastodon
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.mattermost
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.reddit
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.openCollective
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.sdkman
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.slack
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.teams
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.telegram
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.twitter
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.webhooks
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.zernio
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] announce.zulip
+[DEBUG]   [validation] - disabled
+[DEBUG]   [validation] - disabled
+[DEBUG]   [postvalidation] project
+[DEBUG]   [postvalidation] assemble
+[DEBUG]   [postvalidation] assemble.deb
+[DEBUG]   [postvalidation] assemble.jpackage
+[DEBUG]   [postvalidation] distributions
+[DEBUG]   [postvalidation] distribution.jairosvg
+[DEBUG]   [postvalidation] distribution.jairosvg-cli
+environment:
+ 
+hooks:
+    enabled: false
+    active: NEVER
+    command:
+        enabled: false
+        active: NEVER
+    jbang:
+        enabled: false
+        active: NEVER
+    script:
+        enabled: false
+        active: NEVER
+ 
+project:
+    name: JairoSVG
+    version: 1.0.13
+    versionPattern: SEMVER
+    snapshot:
+        enabled: false
+        pattern: .*-SNAPSHOT
+        label: early-access
+        fullChangelog: false
+    description: SVG 1.1 to PNG, JPEG, TIFF, PDF, PS/EPS, and SVG converter powered by Java2D
+    longDescription: JairoSVG is a pure Java SVG 1.1 renderer using Java2D. It converts SVG files
+to PNG, JPEG, TIFF, PDF, PostScript, EPS, and SVG formats. Designed for
+simplicity and performance, JairoSVG delivers fast rendering without
+requiring any native dependencies.
+
+    license: MIT
+    inceptionYear: 2024
+    copyright: 2024 Bruno Borges
+    authors:
+        Bruno Borges
+    tags:
+        java
+        svg
+        png
+        pdf
+        converter
+        java2d
+    stereotype: NONE
+    links:
+        homepage: https://github.com/brunoborges/jairosvg
+        documentation: https://github.com/brunoborges/jairosvg
+        license: https://spdx.org/licenses/MIT.html
+        bugTracker: https://{{repoHost}}/{{repoOwner}}/{{repoName}}/issues
+        vcsBrowser: https://{{repoHost}}/{{repoOwner}}/{{repoName}}
+    extraProperties:
+        versionMajor: 1
+        versionMinor: 0
+        versionPatch: 13
+        versionNumber: 1.0.13
+        versionWithUnderscores: 1_0_13
+        versionWithDashes: 1-0-13
+        versionNumberWithUnderscores: 1_0_13
+        versionNumberWithDashes: 1-0-13
+        effectiveVersionWithUnderscores: 1_0_13
+        effectiveVersionWithDashes: 1-0-13
+    languages:
+        java:
+            enabled: true
+            groupId: io.brunoborges
+            artifactId: jairosvg
+            jvmOptions:
+            environmentVariables:
+            multiProject: false
+ 
+platform:
+ 
+release:
+    github:
+        enabled: true
+        host: github.com
+        owner: brunoborges
+        name: jairosvg
+        username: brunoborges
+        token: ************
+        artifacts: true
+        files: true
+        checksums: true
+        catalogs: true
+        signatures: true
+        repoUrl: https://{{repoHost}}/{{repoOwner}}/{{repoName}}
+        repoCloneUrl: https://{{repoHost}}/{{repoOwner}}/{{repoName}}.git
+        commitUrl: https://{{repoHost}}/{{repoOwner}}/{{repoName}}/commits
+        srcUrl: https://{{repoHost}}/{{repoOwner}}/{{repoName}}/blob/{{repoBranch}}
+        downloadUrl: https://{{repoHost}}/{{repoOwner}}/{{repoName}}/releases/download/{{tagName}}/{{artifactFile}}
+        releaseNotesUrl: https://{{repoHost}}/{{repoOwner}}/{{repoName}}/releases/tag/{{tagName}}
+        latestReleaseUrl: https://{{repoHost}}/{{repoOwner}}/{{repoName}}/releases/latest
+        issueTrackerUrl: https://{{repoHost}}/{{repoOwner}}/{{repoName}}/issues
+        tagName: v{{projectVersion}}
+        releaseName: v{{projectVersion}}
+        branch: copilot/fix-release-job-failure-another-one
+        branchPush: copilot/fix-release-job-failure-another-one
+        commitAuthor:
+            name: jreleaserbot
+            email: jreleaser@kordamp.org
+        sign: false
+        skipTag: true
+        skipRelease: false
+        overwrite: false
+        update:
+            enabled: false
+        apiEndpoint: https://api.github.com
+        connectTimeout: 20
+        readTimeout: 60
+        changelog:
+            enabled: true
+            append:
+                enabled: false
+            links: false
+            skipMergeCommits: false
+            sort: DESC
+            formatted: ALWAYS
+            preset: conventional-commits
+            format: - {{commitShortHash}} {{#commitIsConventional}}{{#conventionalCommitIsBreakingChange}}🚨 {{/conventionalCommitIsBreakingChange}}{{#conventionalCommitScope}}**{{conventionalCommitScope}}**: {{/conventionalCommitScope}}{{conventionalCommitDescription}}{{#conventionalCommitBreakingChangeContent}} - *{{conventionalCommitBreakingChangeContent}}*{{/conventionalCommitBreakingChangeContent}}{{/commitIsConventional}}{{^commitIsConventional}}{{commitTitle}}{{/commitIsConventional}}{{#commitHasIssues}}, closes{{#commitIssues}} {{issue}}{{/commitIssues}}{{/commitHasIssues}}
+            categoryTitleFormat: ## {{categoryTitle}}
+            contributorsTitleFormat: ## Contributors
+            content: 
+## Changelog
+
+{{changelogChanges}}
+    {{changelogContributors}}
+            hide:
+                categories:
+                    merge
+                contributors:
+                    Copilot
+                    dependabot
+            contributors:
+                enabled: true
+                format: - {{contributorName}}
+            categories:
+                category 0:
+                    key: merge
+                    title: 🔀 Merge
+                    labels:
+                        merge
+                    order: 0
+                category 1:
+                    key: features
+                    title: 🚀 Features
+                    labels:
+                        feat
+                    order: 10
+                category 2:
+                    key: fixes
+                    title: 🐛 Fixes
+                    labels:
+                        fix
+                    order: 20
+                category 3:
+                    key: changes
+                    title: 🔄️ Changes
+                    labels:
+                        revert
+                        style
+                        perf
+                        refactor
+                    order: 30
+                category 4:
+                    key: test
+                    title: 🧪 Tests
+                    labels:
+                        test
+                    order: 35
+                category 5:
+                    key: tasks
+                    title: 🧰 Tasks
+                    labels:
+                        chore
+                    order: 40
+                category 6:
+                    key: build
+                    title: 🛠  Build
+                    labels:
+                        test
+                        build
+                        ci
+                    order: 50
+                category 7:
+                    key: docs
+                    title: 📝 Documentation
+                    labels:
+                        docs
+                    order: 60
+            labelers:
+                labeler 0:
+                    label: merge
+                    title: Merge pull
+                    order: 0
+                labeler 1:
+                    label: merge
+                    title: Merge branch
+                    order: 5
+                labeler 2:
+                    label: build
+                    title: regex:^(?:build(?:\(.*\))?!?):\s.*
+                    order: 10
+                labeler 3:
+                    label: chore
+                    title: regex:^(?:chore(?:\(.*\))?!?):\s.*
+                    order: 20
+                labeler 4:
+                    label: ci
+                    title: regex:^(?:ci(?:\(.*\))?!?):\s.*
+                    order: 30
+                labeler 5:
+                    label: docs
+                    title: regex:^(?:docs(?:\(.*\))?!?):\s.*
+                    order: 40
+                labeler 6:
+                    label: feat
+                    title: regex:^(?:feat(?:\(.*\))?!?):\s.*
+                    order: 50
+                labeler 7:
+                    label: fix
+                    title: regex:^(?:fix(?:\(.*\))?!?):\s.*
+                    order: 60
+                labeler 8:
+                    label: perf
+                    title: regex:^(?:perf(?:\(.*\))?!?):\s.*
+                    order: 70
+                labeler 9:
+                    label: refactor
+                    title: regex:^(?:refactor(?:\(.*\))?!?):\s.*
+                    order: 80
+                labeler 10:
+                    label: revert
+                    title: regex:^(?:revert(?:\(.*\))?!?):\s.*
+                    order: 90
+                labeler 11:
+                    label: style
+                    title: regex:^(?:style(?:\(.*\))?!?):\s.*
+                    order: 100
+                labeler 12:
+                    label: test
+                    title: regex:^(?:test(?:\(.*\))?!?):\s.*
+                    order: 110
+        milestone:
+            name: {{tagName}}
+            close: true
+        issues:
+            enabled: false
+            comment: 🎉 This issue has been resolved in `{{tagName}}` ([Release Notes]({{releaseNotesUrl}}))
+            label:
+                name: released
+                color: #FF0000
+                description: Issue has been released
+        prerelease:
+            enabled: false
+        draft: false
+        immutableRelease: false
+        releaseNotes:
+            enabled: false
+        makeLatest: true
+ 
+checksum:
+    name: checksums.txt
+    individual: false
+    algorithms:
+        SHA_256
+    artifacts: true
+    files: true
+ 
+signing:
+    enabled: true
+    active: ALWAYS
+    pgp:
+        enabled: true
+        active: ALWAYS
+        verify: true
+        artifacts: true
+        files: true
+        checksums: true
+        catalogs: true
+        armored: true
+        mode: MEMORY
+        publicKey: **unset**
+        secretKey: ************
+    cosign:
+        enabled: false
+        active: NEVER
+        verify: true
+        artifacts: true
+        files: true
+        checksums: true
+        catalogs: true
+        secretKeyFile: **unset**
+        passphrase: **unset**
+    minisign:
+        enabled: false
+        active: NEVER
+        verify: true
+        artifacts: true
+        files: true
+        checksums: true
+        catalogs: true
+        secretKeyFile: **unset**
+        passphrase: **unset**
+ 
+announce:
+    enabled: false
+    active: NEVER
+    article:
+        enabled: false
+        active: NEVER
+        commitAuthor:
+        repository:
+            enabled: false
+            name: article
+            token: **unset**
+    bluesky:
+        enabled: false
+        active: NEVER
+        handle: **unset**
+        password: **unset**
+    discord:
+        enabled: false
+        active: NEVER
+        webhook: **unset**
+    discourse:
+        enabled: false
+        active: NEVER
+        apiKey: **unset**
+        username: **unset**
+    discussions:
+        enabled: false
+        active: NEVER
+    gitter:
+        enabled: false
+        active: NEVER
+        webhook: **unset**
+    googlechat:
+        enabled: false
+        active: NEVER
+        webhook: **unset**
+    linkedin:
+        enabled: false
+        active: NEVER
+        owner: **unset**
+        accessToken: **unset**
+    smtp:
+        enabled: false
+        active: NEVER
+        auth: false
+        password: **unset**
+    mastodon:
+        enabled: false
+        active: NEVER
+        accessToken: **unset**
+    mattermost:
+        enabled: false
+        active: NEVER
+        webhook: **unset**
+        structuredMessage: true
+    reddit:
+        enabled: false
+        active: NEVER
+        clientId: **unset**
+        clientSecret: **unset**
+        username: **unset**
+        password: **unset**
+        submissionType: SELF
+    opencollective:
+        enabled: false
+        active: NEVER
+        token: **unset**
+    sdkman:
+        enabled: false
+        consumerKey: **unset**
+        consumerToken: **unset**
+    slack:
+        enabled: false
+        active: NEVER
+        webhook: **unset**
+        token: **unset**
+    teams:
+        enabled: false
+        active: NEVER
+        webhook: **unset**
+    telegram:
+        enabled: false
+        active: NEVER
+        token: **unset**
+        chatId: **unset**
+    twitter:
+        enabled: false
+        active: NEVER
+        consumerKey: **unset**
+        consumerSecret: **unset**
+        accessToken: **unset**
+        accessTokenSecret: **unset**
+    zernio:
+        enabled: false
+        active: NEVER
+        token: **unset**
+    zulip:
+        enabled: false
+        active: NEVER
+        apiKey: **unset**
+ 
+packagers:
+    appimage:
+        enabled: false
+        active: NEVER
+        continueOnError: false
+        skipPublishing: false
+        commitAuthor:
+            name: jreleaserbot
+            email: jreleaser@kordamp.org
+        developerId: brunoborges
+        developerName: Bruno Borges
+        requiresTerminal: false
+        repository:
+            enabled: false
+            owner: brunoborges
+            name: appimage
+            tagName: v{{projectVersion}}
+            branch: HEAD
+            branchPush: HEAD
+            username: brunoborges
+            token: ************
+    asdf:
+        enabled: false
+        active: NEVER
+        continueOnError: false
+        skipPublishing: false
+        commitAuthor:
+            name: jreleaserbot
+            email: jreleaser@kordamp.org
+        repository:
+            enabled: false
+            owner: brunoborges
+            name: asdf
+            tagName: v{{projectVersion}}
+            branch: HEAD
+            branchPush: HEAD
+            username: brunoborges
+            token: ************
+    brew:
+        enabled: false
+        active: NEVER
+        continueOnError: false
+        skipPublishing: false
+        commitAuthor:
+            name: jreleaserbot
+            email: jreleaser@kordamp.org
+        multiPlatform: false
+        repository:
+            enabled: false
+            owner: brunoborges
+            name: homebrew-tap
+            tagName: v{{projectVersion}}
+            branch: HEAD
+            branchPush: HEAD
+            username: brunoborges
+            token: ************
+        cask:
+            enabled: false
+    chocolatey:
+        enabled: false
+        active: NEVER
+        continueOnError: false
+        skipPublishing: false
+        commitAuthor:
+            name: jreleaserbot
+            email: jreleaser@kordamp.org
+        apiKey: **unset**
+        remoteBuild: false
+        repository:
+            enabled: false
+            owner: brunoborges
+            name: chocolatey-bucket
+            tagName: v{{projectVersion}}
+            branch: HEAD
+            branchPush: HEAD
+            username: brunoborges
+            token: ************
+    docker:
+        enabled: false
+        active: NEVER
+        useLocalArtifact: true
+        buildx:
+            enabled: false
+            createBuilder: true
+        commitAuthor:
+            name: jreleaserbot
+            email: jreleaser@kordamp.org
+        repository:
+            enabled: false
+            owner: brunoborges
+            name: docker
+            tagName: v{{projectVersion}}
+            branch: HEAD
+            branchPush: HEAD
+            username: brunoborges
+            token: ************
+            versionedSubfolders: false
+        continueOnError: false
+        skipPublishing: false
+    flatpak:
+        enabled: false
+        active: NEVER
+        continueOnError: false
+        skipPublishing: false
+        commitAuthor:
+            name: jreleaserbot
+            email: jreleaser@kordamp.org
+        developerName: Bruno Borges
+        repository:
+            enabled: false
+            owner: brunoborges
+            name: flatpak
+            tagName: v{{projectVersion}}
+            branch: HEAD
+            branchPush: HEAD
+            username: brunoborges
+            token: ************
+    gofish:
+        enabled: false
+        active: NEVER
+        continueOnError: false
+        skipPublishing: false
+        commitAuthor:
+            name: jreleaserbot
+            email: jreleaser@kordamp.org
+        repository:
+            enabled: false
+            owner: brunoborges
+            name: brunoborges-fish-food
+            tagName: v{{projectVersion}}
+            branch: HEAD
+            branchPush: HEAD
+            username: brunoborges
+            token: ************
+    jbang:
+        enabled: false
+        active: NEVER
+        continueOnError: false
+        skipPublishing: false
+        commitAuthor:
+            name: jreleaserbot
+            email: jreleaser@kordamp.org
+        repository:
+            enabled: false
+            owner: brunoborges
+            name: jbang-catalog
+            tagName: v{{projectVersion}}
+            branch: HEAD
+            branchPush: HEAD
+            username: brunoborges
+            token: ************
+    jib:
+        enabled: false
+        active: NEVER
+        commitAuthor:
+            name: jreleaserbot
+            email: jreleaser@kordamp.org
+        repository:
+            enabled: false
+            owner: brunoborges
+            name: jib
+            tagName: v{{projectVersion}}
+            branch: HEAD
+            branchPush: HEAD
+            username: brunoborges
+            token: ************
+            versionedSubfolders: false
+        continueOnError: false
+        skipPublishing: false
+    macports:
+        enabled: false
+        active: NEVER
+        continueOnError: false
+        skipPublishing: false
+        commitAuthor:
+            name: jreleaserbot
+            email: jreleaser@kordamp.org
+        repository:
+            enabled: false
+            owner: brunoborges
+            name: macports
+            tagName: v{{projectVersion}}
+            branch: HEAD
+            branchPush: HEAD
+            username: brunoborges
+            token: ************
+    scoop:
+        enabled: false
+        active: NEVER
+        continueOnError: false
+        skipPublishing: false
+        commitAuthor:
+            name: jreleaserbot
+            email: jreleaser@kordamp.org
+        repository:
+            enabled: false
+            owner: brunoborges
+            name: scoop-brunoborges
+            tagName: v{{projectVersion}}
+            branch: HEAD
+            branchPush: HEAD
+            username: brunoborges
+            token: ************
+    sdkman:
+        enabled: false
+        continueOnError: false
+        skipPublishing: false
+        connectTimeout: 20
+        readTimeout: 60
+        consumerKey: **unset**
+        consumerToken: **unset**
+    snap:
+        enabled: false
+        active: NEVER
+        continueOnError: false
+        skipPublishing: false
+        commitAuthor:
+            name: jreleaserbot
+            email: jreleaser@kordamp.org
+        remoteBuild: false
+        repository:
+            enabled: false
+            owner: brunoborges
+            name: snap
+            tagName: v{{projectVersion}}
+            branch: HEAD
+            branchPush: HEAD
+            username: brunoborges
+            token: ************
+    spec:
+        enabled: false
+        active: NEVER
+        continueOnError: false
+        skipPublishing: false
+        commitAuthor:
+            name: jreleaserbot
+            email: jreleaser@kordamp.org
+        repository:
+            enabled: false
+            owner: brunoborges
+            name: brunoborges-spec
+            tagName: v{{projectVersion}}
+            branch: HEAD
+            branchPush: HEAD
+            username: brunoborges
+            token: ************
+    winget:
+        enabled: false
+        active: NEVER
+        continueOnError: false
+        skipPublishing: false
+        commitAuthor:
+            name: jreleaserbot
+            email: jreleaser@kordamp.org
+        package:
+        publisher:
+        installer:
+            type: WIX
+            scope: MACHINE
+            upgradeBehavior: INSTALL
+            dependencies:
+        repository:
+            enabled: false
+            owner: brunoborges
+            name: winget
+            tagName: v{{projectVersion}}
+            branch: HEAD
+            branchPush: HEAD
+            username: brunoborges
+            token: ************
+ 
+download:
+    enabled: false
+    active: NEVER
+ 
+assemble:
+    enabled: false
+    active: NEVER
+ 
+deploy:
+    enabled: true
+    active: ALWAYS
+    maven:
+        enabled: true
+        active: ALWAYS
+        pomchecker:
+            version: 1.15.0
+            failOnWarning: true
+            failOnError: true
+            strict: true
+        mavenCentral:
+            app:
+                enabled: true
+                active: ALWAYS
+                connectTimeout: 20
+                readTimeout: 60
+                authorization: BASIC
+                url: https://central.sonatype.com/api/v1/publisher
+                username: ************
+                password: ************
+                sign: false
+                checksums: false
+                sourceJar: true
+                javadocJar: true
+                verifyPom: false
+                applyMavenCentralRules: false
+                snapshotSupported: true
+                stagingRepositories:
+                    target/staging-deploy
+                stage: FULL
+                namespace: io.brunoborges
+                retryDelay: 20
+                maxRetries: 100
+                skipPublicationCheck: false
+ 
+upload:
+    enabled: false
+    active: NEVER
+ 
+catalog:
+    enabled: false
+    active: NEVER
+    github:
+        enabled: false
+        active: NEVER
+        artifacts: true
+        files: true
+        deployables: true
+    sbom:
+        enabled: false
+        active: NEVER
+        cyclonedx:
+            enabled: false
+            active: NEVER
+            distributions: false
+            files: false
+            pack:
+                enabled: false
+        syft:
+            enabled: false
+            active: NEVER
+            distributions: false
+            files: false
+            pack:
+                enabled: false
+    slsa:
+        enabled: false
+        active: NEVER
+        artifacts: true
+        files: true
+        deployables: true
+    swid:
+        enabled: false
+        active: NEVER
+        name: swid-tag
+        path: SWIDTAG
+        tagId: 490a58fa-6a17-3de1-917b-ea591d2111ed
+        tagVersion: 1
+        lang: en-US
+        corpus: false
+        patch: false
+        entities:
+            entity 0:
+                name: JairoSVG
+                regid: https://github.com/brunoborges/jairosvg
+                roles:
+                    softwareCreator
+                    tagCreator
+ 
+distributions:
+    jairosvg:
+        enabled: true
+        active: ALWAYS
+        type: SINGLE_JAR
+        executable:
+            name: jairosvg
+            windowsExtension: bat
+        platform:
+        applyDefaultMatrix: false
+        artifactPattern:
+            enabled: false
+            active: ALWAYS
+        artifacts:
+            artifact 0:
+                enabled: true
+                active: ALWAYS
+                path: target/jairosvg-{{projectVersion}}.jar
+        tags:
+            java
+            svg
+            png
+            pdf
+            converter
+            java2d
+        stereotype: NONE
+        java:
+            enabled: true
+            groupId: io.brunoborges
+            artifactId: jairosvg
+            jvmOptions:
+            environmentVariables:
+            multiProject: false
+        appimage:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            requiresTerminal: false
+            repository:
+                enabled: false
+                name: appimage
+                token: **unset**
+        asdf:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            repository:
+                enabled: false
+                name: asdf
+                token: **unset**
+        brew:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            multiPlatform: false
+            repository:
+                enabled: false
+                name: homebrew-tap
+                token: **unset**
+            cask:
+                enabled: false
+        chocolatey:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            apiKey: **unset**
+            remoteBuild: false
+            repository:
+                enabled: false
+                name: chocolatey-bucket
+                token: **unset**
+        docker:
+            enabled: false
+            active: NEVER
+            useLocalArtifact: true
+            buildx:
+                enabled: false
+                createBuilder: true
+            commitAuthor:
+            repository:
+                enabled: false
+                name: docker
+                token: **unset**
+                versionedSubfolders: false
+            continueOnError: false
+            skipPublishing: false
+        flatpak:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            repository:
+                enabled: false
+                name: flatpak
+                token: **unset**
+        gofish:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            repository:
+                enabled: false
+                name: fish-food
+                token: **unset**
+        jbang:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            repository:
+                enabled: false
+                name: jbang-catalog
+                token: **unset**
+        jib:
+            enabled: false
+            active: NEVER
+            commitAuthor:
+            repository:
+                enabled: false
+                name: jib
+                token: **unset**
+                versionedSubfolders: false
+            continueOnError: false
+            skipPublishing: false
+        macports:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            repository:
+                enabled: false
+                name: macports
+                token: **unset**
+        scoop:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            repository:
+                enabled: false
+                name: scoop
+                token: **unset**
+        sdkman:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            connectTimeout: 0
+            readTimeout: 0
+            consumerKey: **unset**
+            consumerToken: **unset**
+        snap:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            remoteBuild: false
+            repository:
+                enabled: false
+                name: snap
+                token: **unset**
+        spec:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            repository:
+                enabled: false
+                name: spec
+                token: **unset**
+        winget:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            package:
+            publisher:
+            installer:
+                type: WIX
+                scope: MACHINE
+                upgradeBehavior: INSTALL
+                dependencies:
+            repository:
+                enabled: false
+                name: winget
+                token: **unset**
+    jairosvg-cli:
+        enabled: true
+        active: ALWAYS
+        type: SINGLE_JAR
+        executable:
+            name: jairosvg-cli
+            windowsExtension: bat
+        platform:
+        applyDefaultMatrix: false
+        artifactPattern:
+            enabled: false
+            active: ALWAYS
+        artifacts:
+            artifact 0:
+                enabled: true
+                active: ALWAYS
+                path: target/jairosvg-{{projectVersion}}-cli.jar
+        tags:
+            java
+            svg
+            png
+            pdf
+            converter
+            java2d
+        stereotype: NONE
+        java:
+            enabled: true
+            groupId: io.brunoborges
+            artifactId: jairosvg-cli
+            jvmOptions:
+            environmentVariables:
+            multiProject: false
+        appimage:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            requiresTerminal: false
+            repository:
+                enabled: false
+                name: appimage
+                token: **unset**
+        asdf:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            repository:
+                enabled: false
+                name: asdf
+                token: **unset**
+        brew:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            multiPlatform: false
+            repository:
+                enabled: false
+                name: homebrew-tap
+                token: **unset**
+            cask:
+                enabled: false
+        chocolatey:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            apiKey: **unset**
+            remoteBuild: false
+            repository:
+                enabled: false
+                name: chocolatey-bucket
+                token: **unset**
+        docker:
+            enabled: false
+            active: NEVER
+            useLocalArtifact: true
+            buildx:
+                enabled: false
+                createBuilder: true
+            commitAuthor:
+            repository:
+                enabled: false
+                name: docker
+                token: **unset**
+                versionedSubfolders: false
+            continueOnError: false
+            skipPublishing: false
+        flatpak:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            repository:
+                enabled: false
+                name: flatpak
+                token: **unset**
+        gofish:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            repository:
+                enabled: false
+                name: fish-food
+                token: **unset**
+        jbang:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            repository:
+                enabled: false
+                name: jbang-catalog
+                token: **unset**
+        jib:
+            enabled: false
+            active: NEVER
+            commitAuthor:
+            repository:
+                enabled: false
+                name: jib
+                token: **unset**
+                versionedSubfolders: false
+            continueOnError: false
+            skipPublishing: false
+        macports:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            repository:
+                enabled: false
+                name: macports
+                token: **unset**
+        scoop:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            repository:
+                enabled: false
+                name: scoop
+                token: **unset**
+        sdkman:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            connectTimeout: 0
+            readTimeout: 0
+            consumerKey: **unset**
+            consumerToken: **unset**
+        snap:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            remoteBuild: false
+            repository:
+                enabled: false
+                name: snap
+                token: **unset**
+        spec:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            repository:
+                enabled: false
+                name: spec
+                token: **unset**
+        winget:
+            enabled: false
+            active: NEVER
+            continueOnError: false
+            skipPublishing: false
+            commitAuthor:
+            package:
+            publisher:
+            installer:
+                type: WIX
+                scope: MACHINE
+                upgradeBehavior: INSTALL
+                dependencies:
+            repository:
+                enabled: false
+                name: winget
+                token: **unset**
+ 
+[INFO]  Project version set to 1.0.13
+[INFO]  Release is not snapshot
+[INFO]  Timestamp is 2026-06-16T20:32:54.524952601Z
+[INFO]  HEAD is at 422c66f
+[INFO]  Platform is linux-x86_64
+[DEBUG] loading extension default-jreleaser-mustache:jreleaser.shadow.org.jreleaser.extensions.internal.mustache.DefaultMustacheExtension
+[DEBUG] adding jreleaser.shadow.org.jreleaser.extensions.internal.mustache.DefaultMustacheExtensionPoint from default-jreleaser-mustache extension
+[INFO]  Writing output properties to out/jreleaser/output.properties
