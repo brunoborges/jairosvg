@@ -289,8 +289,8 @@ class DefsTest {
 
     @Test
     void testUseWithSymbolNoWidthHeight() throws Exception {
-        // Symbol without explicit width/height on <use>: SVG 2 auto defaults to
-        // viewBox dimensions, so the green rect should be 20x20 at (10,10).
+        // Symbol without explicit width/height on <use>: SVG 2 treats symbol
+        // width/height auto as 100%, so it fills the nested viewport.
         String svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                   <defs>
@@ -303,14 +303,18 @@ class DefsTest {
                 </svg>
                 """;
         BufferedImage img = render(svg);
-        // Inside the 20x20 green area at (10,10)
+        // Inside the rendered symbol viewport
         int[] inside = rgba(img, 20, 20);
         assertTrue(inside[1] > 100 && inside[0] < 50,
                 "Inside should be green, got rgb(%d,%d,%d)".formatted(inside[0], inside[1], inside[2]));
-        // Outside the 20x20 area: (35,35) should be white
-        int[] outside = rgba(img, 35, 35);
+        // Top-left corner remains outside translated use viewport
+        int[] outside = rgba(img, 5, 5);
         assertTrue(outside[0] > 200 && outside[1] > 200 && outside[2] > 200,
                 "Outside should be white, got rgb(%d,%d,%d)".formatted(outside[0], outside[1], outside[2]));
+        // Bottom-right is inside rendered viewport after x/y translation
+        int[] farInside = rgba(img, 95, 95);
+        assertTrue(farInside[1] > 100 && farInside[0] < 50,
+                "Far inside should be green, got rgb(%d,%d,%d)".formatted(farInside[0], farInside[1], farInside[2]));
     }
 
     @Test

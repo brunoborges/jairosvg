@@ -21,7 +21,7 @@ JairoSVG already implements the following SVG 2 behaviors:
 |---------|--------|-------|
 | `requiredFeatures` ignored | ✅ Done | Deprecated in SVG 2; matches modern browser behavior |
 | `href` attribute support | ✅ Done | Resolved via fallback chain: `xlink:href` → `href` |
-| `<use>` auto-sizing from `<symbol>` viewBox | ✅ Done | SVG 2 "auto" behavior for width/height |
+| `<use>` + `<symbol>` auto sizing (`auto` → `100%`) | ✅ Done | Aligns with SVG 2 layout model used by modern browsers |
 | `<feDropShadow>` filter primitive | ✅ Done | SVG 2 / Filter Effects Level 1 addition |
 | CSS `var()` custom properties | ✅ Done | Recursive resolution with fallback values |
 
