@@ -1,6 +1,6 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 //JAVA 25+
-//DEPS io.brunoborges:jairosvg:1.0.13-SNAPSHOT
+//DEPS io.brunoborges:jairosvg:1.0.13
 //DEPS com.github.weisj:jsvg:2.0.0
 
 import com.github.weisj.jsvg.SVGDocument;

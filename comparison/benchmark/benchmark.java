@@ -4,7 +4,7 @@
 //RUNTIME_OPTIONS -XX:MaxRAMPercentage=75.0 -XX:CompileThreshold=500
 //REPOS mavenCentral,mavenLocal
 //REPOS css4j=https://css4j.github.io/maven/
-//DEPS io.brunoborges:jairosvg:1.0.13-SNAPSHOT
+//DEPS io.brunoborges:jairosvg:1.0.13
 //DEPS io.sf.carte:echosvg-transcoder:2.4
 //DEPS com.github.weisj:jsvg:2.0.0
 //DEPS me.tongfei:progressbar:0.10.2

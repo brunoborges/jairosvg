@@ -1,7 +1,7 @@
 {
   "aliases": {
     "jairosvg": {
-      "script-ref": "io.brunoborges:jairosvg:1.0.12",
+      "script-ref": "io.brunoborges:jairosvg:1.0.13",
       "description": "SVG to PNG/PDF/PS converter powered by Java2D"
     },
     "benchmark": {
