@@ -233,7 +233,7 @@ java -jar jairosvg-{version}-cli.jar *.svg -o output-dir/
 
 Build from source:
 ```bash
-mvn package
+mvn package -Pcli
 java -jar target/jairosvg-{version}-cli.jar input.svg -o output.png
 ```
 

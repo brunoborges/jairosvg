@@ -40,7 +40,7 @@ jobs:
           POM_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout --no-transfer-progress)
           echo "version=${POM_VERSION}" >> "$GITHUB_OUTPUT"
       - name: Build shaded CLI JAR
-        run: ./mvnw -DskipTests package --no-transfer-progress
+        run: ./mvnw -DskipTests -Pcli package --no-transfer-progress
       - name: Collect native-image metadata with tracing agent
         run: |
           shopt -s nullglob

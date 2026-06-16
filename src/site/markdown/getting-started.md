@@ -38,7 +38,7 @@ jbang --deps io.brunoborges:jairosvg:1.0.12 MyScript.java
 ```bash
 git clone https://github.com/brunoborges/jairosvg.git
 cd jairosvg
-./mvnw package
+./mvnw package -Pcli
 java -jar target/jairosvg-1.0.12-cli.jar --help
 ```
 

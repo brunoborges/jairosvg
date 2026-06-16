@@ -54,7 +54,7 @@ jobs:
           git push origin main --tags --force
 
       - name: Build and stage artifacts
-        run: ./mvnw clean deploy -Prelease --no-transfer-progress
+        run: ./mvnw clean deploy -Prelease,cli --no-transfer-progress
 
       - name: Remove CLI jar from Maven Central staging
         run: find target/staging-deploy -name '*-cli*' -delete
