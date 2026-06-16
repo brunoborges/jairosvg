@@ -108,7 +108,7 @@ jobs:
       - name: Run JReleaser
         uses: jreleaser/release-action@v2
         with:
-          arguments: full-release --config-file .jreleaser/jreleaser.yml
+          arguments: full-release --config-file .jreleaser/jreleaser.yml --basedir .
         env:
           JRELEASER_PROJECT_VERSION: ${{ needs.build-jars.outputs.version }}
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
