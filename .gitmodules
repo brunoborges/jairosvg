@@ -1,3 +1,0 @@
-[submodule ".github/extensions/jvm-pulse"]
-	path = .github/extensions/jvm-pulse
-	url = https://github.com/brunoborges/jvm-pulse.git
