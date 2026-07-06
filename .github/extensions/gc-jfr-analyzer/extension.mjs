@@ -1,15 +1,18 @@
 // Extension: gc-jfr-analyzer
-// Runs the JairoSVG benchmark as a JVM workload with GC logging + JFR enabled,
-// analyzes the results with Microsoft GCToolkit (GC log) and the `jfr` CLI
-// (flight recording), and visualizes everything in an interactive canvas.
+// Generic Java GC + JFR profiling canvas. The "Run analysis" button asks Copilot
+// to build and run the current project's workload with GC logging + JFR enabled
+// (choosing flags for the detected build tool + JDK). Copilot hands the produced
+// gc.log / dump.jfr back via the `gc_jfr_ingest` tool, which analyzes them with
+// Microsoft GCToolkit (GC log) and the `jfr` CLI (flight recording) and
+// visualizes everything in an interactive canvas.
 
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
-import { join, dirname, extname, normalize } from "node:path";
+import { join, dirname, extname, normalize, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 import { joinSession, createCanvas, CanvasError } from "@github/copilot-sdk/extension";
-import { runPipeline, loadLatest, readArtifact, TOOL_PATHS } from "./lib/pipeline.mjs";
-import { buildAnalysisPrompt } from "./lib/prompt.mjs";
+import { analyzeArtifacts, loadLatest, readArtifact, TOOL_PATHS } from "./lib/pipeline.mjs";
+import { buildAnalysisPrompt, buildRunPrompt } from "./lib/prompt.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const WEB_DIR = join(__dirname, "web");
@@ -39,12 +42,12 @@ function broadcast(event, data) {
     }
 }
 
-async function startAnalysis(opts) {
+async function ingestArtifacts(args) {
     if (runState.running) throw new Error("An analysis is already running.");
     runState.running = true;
-    broadcast("progress", { pct: 1, msg: "Starting…" });
+    broadcast("progress", { pct: 1, msg: "Ingesting run artifacts…" });
     try {
-        const report = await runPipeline(opts, (msg, pct) => broadcast("progress", { pct: pct ?? undefined, msg }));
+        const report = await analyzeArtifacts(args, (msg, pct) => broadcast("progress", { pct: pct ?? undefined, msg }));
         runState.lastReport = report;
         broadcast("done", { report });
         log(`GC/JFR analysis complete: ${report.gc?.summary?.eventCount ?? 0} GC events, throughput ${report.gc?.summary?.throughputPercent ?? "?"}%`);
@@ -56,6 +59,23 @@ async function startAnalysis(opts) {
     } finally {
         runState.running = false;
     }
+}
+
+/**
+ * Ask Copilot to build and run this project's workload with GC logging + JFR
+ * enabled, then hand the artifacts back via the `gc_jfr_ingest` tool. Injects a
+ * user turn into the current session; the agent does the project-specific work.
+ */
+async function requestRun(opts = {}) {
+    const { prompt, displayPrompt } = buildRunPrompt({
+        workspacePath: sessionRef?.workspacePath,
+        hint: opts.hint,
+        jfrMaxSizeMb: opts.jfrMaxSizeMb,
+    });
+    await sessionRef.send({ prompt, displayPrompt });
+    broadcast("awaiting", { msg: "Asked Copilot to run the workload…" });
+    log("Asked Copilot to run the project workload with GC logging + JFR.");
+    return { requested: true, displayPrompt };
 }
 
 /**
@@ -132,13 +152,17 @@ async function handleRequest(req, res) {
     }
 
     if (path === "/run" && req.method === "POST") {
-        if (runState.running) { res.writeHead(409, { "Content-Type": MIME[".json"] }); res.end(JSON.stringify({ error: "already running" })); return; }
+        if (runState.running) { res.writeHead(409, { "Content-Type": MIME[".json"] }); res.end(JSON.stringify({ error: "an analysis is already running" })); return; }
         let opts = {};
         try { opts = JSON.parse((await readBody(req)) || "{}"); } catch {}
-        res.writeHead(202, { "Content-Type": MIME[".json"] });
-        res.end(JSON.stringify({ started: true }));
-        // Fire and forget; progress is delivered over SSE.
-        startAnalysis(opts).catch(() => {});
+        try {
+            const result = await requestRun(opts);
+            res.writeHead(202, { "Content-Type": MIME[".json"] });
+            res.end(JSON.stringify({ started: true, ...result }));
+        } catch (err) {
+            res.writeHead(500, { "Content-Type": MIME[".json"] });
+            res.end(JSON.stringify({ error: String(err?.message || err) }));
+        }
         return;
     }
 
@@ -177,40 +201,21 @@ sessionRef = await joinSession({
         createCanvas({
             id: "gc-jfr-analyzer",
             displayName: "GC & JFR Analysis",
-            description: "Run the JairoSVG benchmark with GC logging + JFR and visualize GCToolkit/JFR analysis.",
+            description: "Profile any Java project: Copilot runs its workload with GC logging + JFR, then GCToolkit/JFR analysis is visualized here.",
             inputSchema: { type: "object", properties: {}, additionalProperties: true },
             actions: [
                 {
                     name: "run_analysis",
-                    description: "Run the JairoSVG benchmark workload with GC logging + JFR, analyze it, and update the canvas. Returns summary statistics.",
+                    description: "Ask Copilot to build and run this project's workload with GC logging + JFR enabled (detecting the build tool and JDK), then ingest the results via the gc_jfr_ingest tool. Does not run anything itself — it injects a request into the session.",
                     inputSchema: {
                         type: "object",
                         properties: {
-                            warmup: { type: "integer", description: "Warmup iterations per case (default 20)." },
-                            iterations: { type: "integer", description: "Measured iterations per case (default 200)." },
-                            heapMb: { type: "integer", description: "Max heap in MB; smaller = more GC activity (default 256)." },
-                            engines: { type: "string", enum: ["jairosvg", "all"], description: "'jairosvg' only or 'all' Java engines (default jairosvg)." },
-                            skipMvnInstall: { type: "boolean", description: "Skip the mvn install step if JairoSVG is already built." },
+                            hint: { type: "string", description: "Optional guidance on what workload to run (e.g. 'run the JMH benchmark in module X', 'run mvn verify')." },
+                            jfrMaxSizeMb: { type: "integer", description: "Max JFR recording size in MB (default 100)." },
                         },
                         additionalProperties: false,
                     },
-                    handler: async (ctx) => {
-                        const report = await startAnalysis(ctx.input || {});
-                        return {
-                            runId: report.runId,
-                            wallTimeSec: report.durationRealSec,
-                            gc: report.gc?.summary ?? null,
-                            causes: report.gc?.causes ?? {},
-                            types: report.gc?.types ?? {},
-                            gcConfig: report.gcConfig ?? null,
-                            jfr: {
-                                available: report.jfr?.available ?? false,
-                                totalAllocatedMb: report.jfr?.totalAllocatedMb ?? 0,
-                                topAllocations: (report.jfr?.topAllocations ?? []).slice(0, 5),
-                                hotMethods: (report.jfr?.hotMethods ?? []).slice(0, 5),
-                            },
-                        };
-                    },
+                    handler: async (ctx) => requestRun(ctx.input || {}),
                 },
                 {
                     name: "analyze_with_copilot",
@@ -232,6 +237,7 @@ sessionRef = await joinSession({
                         return {
                             runId: report.runId,
                             generatedAt: report.generatedAt,
+                            label: report.label ?? null,
                             gc: report.gc?.summary ?? null,
                             gcConfig: report.gcConfig ?? null,
                             jfrAvailable: report.jfr?.available ?? false,
@@ -240,7 +246,7 @@ sessionRef = await joinSession({
                 },
                 {
                     name: "tool_status",
-                    description: "Report the resolved paths of the jbang, jfr, and mvnw tools used by the pipeline.",
+                    description: "Report the resolved paths of the jbang and jfr tools used by the analyzer.",
                     handler: async () => ({ ...TOOL_PATHS }),
                 },
             ],
@@ -260,5 +266,44 @@ sessionRef = await joinSession({
                 }
             },
         }),
+    ],
+    tools: [
+        {
+            name: "gc_jfr_ingest",
+            description:
+                "Ingest a GC log (and optional JFR recording) produced by a Java workload, analyze them with Microsoft GCToolkit + the jfr CLI, and visualize the results in the GC & JFR Analysis canvas. Call this after you have run a workload with GC logging + JFR enabled. Paths must point to files on disk.",
+            parameters: {
+                type: "object",
+                properties: {
+                    gcLogPath: { type: "string", description: "Absolute path to the GC log file (unified -Xlog:gc* output or JDK 8 -Xloggc output)." },
+                    jfrPath: { type: "string", description: "Absolute path to the .jfr flight recording, if one was produced. Optional but strongly recommended." },
+                    label: { type: "string", description: "Short human-readable description of the workload and notable JVM flags (e.g. 'JMH io-bench, -Xmx512m G1')." },
+                },
+                required: ["gcLogPath"],
+                additionalProperties: false,
+            },
+            skipPermission: true,
+            handler: async (args) => {
+                const resolveArg = (p) => (p && !isAbsolute(p) && sessionRef?.workspacePath ? join(sessionRef.workspacePath, p) : p);
+                const gcLogPath = resolveArg(args?.gcLogPath);
+                const jfrPath = resolveArg(args?.jfrPath);
+                try {
+                    const report = await ingestArtifacts({ gcLogPath, jfrPath, label: args?.label });
+                    const s = report.gc?.summary ?? {};
+                    const jfr = report.jfr ?? {};
+                    const lines = [
+                        `Ingested GC/JFR run ${report.runId}${report.label ? ` — ${report.label}` : ""}.`,
+                        `GC: ${s.eventCount ?? 0} events, throughput ${s.throughputPercent ?? "?"}%, avg pause ${s.avgPauseMs ?? "?"} ms, p99 ${s.p99PauseMs ?? "?"} ms, alloc ${s.allocRateMbPerSec ?? "?"} MB/s, peak heap ${s.peakHeapKb ? Math.round(s.peakHeapKb / 1024) + " MB" : "?"}.`,
+                        jfr.available
+                            ? `JFR: ${jfr.sampleCount ?? 0} execution samples, ~${jfr.totalAllocatedMb ?? 0} MB sampled allocations.`
+                            : "JFR: not available (no recording ingested).",
+                        `Results are now visualized in the GC & JFR Analysis canvas. Use the "Analyze with AI" button (or ask me to analyze) for tuning recommendations.`,
+                    ];
+                    return lines.join("\n");
+                } catch (err) {
+                    return `Failed to ingest GC/JFR artifacts: ${err?.message || err}`;
+                }
+            },
+        },
     ],
 });

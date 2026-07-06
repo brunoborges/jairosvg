@@ -154,7 +154,6 @@ function renderReport(r) {
     statCard("Peak heap", fmt((s.peakHeapKb || 0) / 1024, 0), "MB"),
     statCard("Alloc rate", fmt(s.allocRateMbPerSec, 0), "MB/s"),
     statCard("GC runtime", fmt(s.runtimeSec, 1), "s"),
-    statCard("Wall time", fmt(r.durationRealSec, 1), "s"),
   ].join("") + `</div>`);
 
   // JVM + config table
@@ -166,7 +165,8 @@ function renderReport(r) {
     ["Version", (jvm.version || "").split(" for ")[0] || "–"],
     ["GC threads", cfg.parallelGCThreads != null ? `${cfg.parallelGCThreads} parallel · ${cfg.concurrentGCThreads} concurrent` : "–"],
     ["Java args", jvm.javaArgs || "–"],
-    ["Workload", r.workloadCommand || "–"],
+    ["Workload", r.label || "–"],
+    ["GC log", (r.source && r.source.gcLogName) || "–"],
   ];
 
   // Build panels
@@ -265,7 +265,7 @@ function shortMethod(name) {
 // App wiring: state fetch, run trigger, SSE progress
 // ---------------------------------------------------------------------------
 const el = (id) => document.getElementById(id);
-let running = false;
+let waiting = false;
 
 async function loadState() {
   try {
@@ -300,62 +300,73 @@ function showReport(r) {
 
 function setProgress(pct, msg) {
   el("progress").classList.remove("hidden");
-  el("progress-fill").style.transform = `scaleX(${Math.max(0, Math.min(100, pct)) / 100})`;
+  if (pct != null) el("progress-fill").style.transform = `scaleX(${Math.max(0, Math.min(100, pct)) / 100})`;
   if (msg) el("progress-msg").textContent = msg;
 }
 
 function openConfig() { el("config").classList.remove("hidden"); }
 function closeConfig() { el("config").classList.add("hidden"); }
 
-async function startRun() {
-  if (running) return;
-  running = true;
-  closeConfig();
-  el("run-btn").disabled = true;
-  el("run-status").textContent = "running…";
-  setProgress(2, "Starting…");
-
-  const body = {
-    warmup: Number(el("cfg-warmup").value) || 20,
-    iterations: Number(el("cfg-iterations").value) || 200,
-    heapMb: Number(el("cfg-heap").value) || 256,
-    engines: el("cfg-engines").value || "jairosvg",
-  };
-
-  // Subscribe to progress before kicking off the run.
+// A single persistent event stream: ingestion is triggered by Copilot (via the
+// gc_jfr_ingest tool), so progress/done events can arrive at any time, not just
+// during a button click.
+function connectEvents() {
   const evtSrc = new EventSource("events");
+  evtSrc.addEventListener("awaiting", (e) => {
+    try { const d = JSON.parse(e.data); setWaiting(d.msg || "Waiting for Copilot…"); } catch { setWaiting("Waiting for Copilot…"); }
+  });
   evtSrc.addEventListener("progress", (e) => {
-    try { const d = JSON.parse(e.data); setProgress(d.pct ?? 0, d.msg || ""); } catch {}
+    try { const d = JSON.parse(e.data); setProgress(d.pct ?? null, d.msg || ""); } catch {}
   });
   evtSrc.addEventListener("done", (e) => {
-    evtSrc.close();
-    finishRun();
+    finishWaiting();
+    setProgress(100, "Analysis complete.");
     try { const d = JSON.parse(e.data); if (d.report) showReport(d.report); else loadState(); } catch { loadState(); }
+    setTimeout(() => el("progress").classList.add("hidden"), 1500);
   });
   evtSrc.addEventListener("failed", (e) => {
-    evtSrc.close();
-    finishRun();
-    let msg = "Run failed.";
-    try { msg = "Run failed: " + (JSON.parse(e.data).error || ""); } catch {}
+    finishWaiting();
+    let msg = "Analysis failed.";
+    try { msg = "Analysis failed: " + (JSON.parse(e.data).error || ""); } catch {}
     el("run-status").textContent = msg;
     setProgress(100, msg);
   });
+}
+
+function setWaiting(msg) {
+  waiting = true;
+  el("run-status").textContent = msg;
+  setProgress(4, msg);
+}
+
+function finishWaiting() {
+  waiting = false;
+  el("run-btn").disabled = false;
+  el("run-status").textContent = "";
+}
+
+async function startRun() {
+  closeConfig();
+  el("run-btn").disabled = true;
+  setWaiting("Asking Copilot to run the workload…");
+
+  const body = {
+    hint: el("cfg-hint").value.trim(),
+    jfrMaxSizeMb: Number(el("cfg-jfr").value) || 100,
+  };
 
   try {
     const res = await fetch("run", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "HTTP " + res.status);
+    setWaiting("Copilot is running the workload — results appear here when it calls gc_jfr_ingest.");
+    // Re-enable so the user can trigger again if needed; ingestion is async.
+    el("run-btn").disabled = false;
   } catch (err) {
-    evtSrc.close();
-    finishRun();
-    el("run-status").textContent = "Failed to start run.";
+    finishWaiting();
+    el("run-status").textContent = "Failed to ask Copilot: " + (err.message || err);
+    el("progress").classList.add("hidden");
   }
-}
-
-function finishRun() {
-  running = false;
-  el("run-btn").disabled = false;
-  el("run-status").textContent = "";
-  setTimeout(() => el("progress").classList.add("hidden"), 1500);
 }
 
 async function analyzeWithAI() {
@@ -384,4 +395,5 @@ el("config-cancel").addEventListener("click", closeConfig);
 el("config-start").addEventListener("click", startRun);
 el("analyze-btn").addEventListener("click", analyzeWithAI);
 
+connectEvents();
 loadState();

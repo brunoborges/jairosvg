@@ -10,7 +10,7 @@
     <header class="topbar">
       <div class="title">
         <h1>GC &amp; JFR Analysis</h1>
-        <span class="subtitle">JairoSVG benchmark workload · Microsoft GCToolkit + JFR</span>
+        <span class="subtitle">Copilot-driven Java profiling · Microsoft GCToolkit + JFR</span>
       </div>
       <div class="actions">
         <span id="run-status" class="run-status"></span>
@@ -26,27 +26,22 @@
 
     <div id="config" class="config hidden">
       <div class="config-grid">
-        <label>Warmup <input id="cfg-warmup" type="number" value="20" min="0" /></label>
-        <label>Iterations <input id="cfg-iterations" type="number" value="200" min="1" /></label>
-        <label>Heap (MB) <input id="cfg-heap" type="number" value="256" min="32" /></label>
-        <label>Engines
-          <select id="cfg-engines">
-            <option value="jairosvg">JairoSVG only</option>
-            <option value="all">JairoSVG + EchoSVG + JSVG</option>
-          </select>
+        <label class="wide">What should Copilot run? <span class="opt">(optional)</span>
+          <textarea id="cfg-hint" rows="2" placeholder="e.g. run the JMH benchmark in the benchmarks module, or `mvn verify`. Leave blank to let Copilot decide."></textarea>
         </label>
+        <label>JFR max size (MB) <input id="cfg-jfr" type="number" value="100" min="1" /></label>
       </div>
       <div class="config-actions">
-        <button id="config-start" class="btn primary">Start</button>
+        <button id="config-start" class="btn primary">Ask Copilot to run</button>
         <button id="config-cancel" class="btn">Cancel</button>
       </div>
-      <p class="hint">A constrained heap forces frequent GC cycles — great for producing rich telemetry.</p>
+      <p class="hint">Copilot detects the build tool and JDK, runs the workload with GC logging + JFR, then ingests the results here. It may ask what to run if the project is ambiguous.</p>
     </div>
 
     <main id="content">
       <div id="empty" class="empty">
         <p>No analysis yet.</p>
-        <p class="muted">Click <strong>Run analysis</strong> to run the JairoSVG benchmark with GC logging and JFR enabled, then visualize the results.</p>
+        <p class="muted">Click <strong>Run analysis</strong> to have Copilot build and run this project's workload with GC logging and JFR enabled, then visualize the results here. You can also point Copilot at an existing <code>gc.log</code>/<code>.jfr</code> by asking it to call the <code>gc_jfr_ingest</code> tool.</p>
       </div>
       <div id="report" class="report hidden"></div>
     </main>

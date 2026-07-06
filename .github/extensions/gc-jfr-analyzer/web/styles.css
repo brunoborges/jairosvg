@@ -65,9 +65,11 @@ body {
 .progress-msg { margin-top: 0.4rem; font-size: 12px; color: var(--text-color-muted, #6e7781); font-family: var(--font-mono, monospace); }
 
 .config { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color-default, #d0d7de); background: var(--background-color-muted, #f6f8fa); }
-.config-grid { display: flex; flex-wrap: wrap; gap: 1rem; }
+.config-grid { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
 .config label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 12px; color: var(--text-color-muted, #6e7781); }
-.config input, .config select {
+.config label.wide { flex: 1 1 320px; min-width: 260px; }
+.config .opt { color: var(--text-color-muted, #8b949e); font-weight: normal; }
+.config input, .config select, .config textarea {
   padding: 0.35rem 0.5rem;
   border: 1px solid var(--border-color-default, #d0d7de);
   border-radius: 6px;
@@ -75,6 +77,13 @@ body {
   color: var(--text-color-default, #1f2328);
   font-size: 13px;
   min-width: 130px;
+}
+.config textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.4;
 }
 .config-actions { margin-top: 0.9rem; display: flex; gap: 0.5rem; }
 .hint { margin: 0.6rem 0 0; font-size: 12px; color: var(--text-color-muted, #6e7781); }

@@ -28,7 +28,6 @@ function breakdown(obj) {
  */
 export function buildAnalysisPrompt(report) {
     const s = report?.gc?.summary ?? {};
-    const cfg = report?.config ?? {};
     const gcConfig = report?.gcConfig ?? {};
     const jvm = report?.jvm ?? {};
     const jfr = report?.jfr ?? {};
@@ -38,13 +37,14 @@ export function buildAnalysisPrompt(report) {
         : "unknown";
 
     const prompt = `You are a JVM performance engineer. Analyze the garbage-collection and
-JDK Flight Recorder (JFR) telemetry below, captured from a benchmark run of the
-**JairoSVG** SVG-to-PNG rendering library, and produce actionable recommendations.
+JDK Flight Recorder (JFR) telemetry below, captured from a workload run of the
+Java project in this workspace, and produce actionable recommendations.
 
-## Run configuration
-- Workload: JairoSVG benchmark (warmup=${cfg.warmup}, iterations=${cfg.iterations}, engines=${cfg.engines})
-- Max heap: ${cfg.heapMb} MB
+## Run
+- Workload: ${report?.label || "(unspecified — see source artifacts)"}
+- GC log: ${report?.source?.gcLogName || "?"}
 - Collector: ${collector} (${num(gcConfig.parallelGCThreads)} parallel / ${num(gcConfig.concurrentGCThreads)} concurrent GC threads)
+- Max heap: ${mb(s.maxHeapSizeKb)}
 - JVM: ${jvm.name ?? "?"} ${jvm.version ? "— " + jvm.version.split(" for ")[0] : ""}
 
 ## GC summary (Microsoft GCToolkit)
@@ -80,7 +80,7 @@ Please provide:
    try, with the reasoning and the metric each should improve. Note any current
    flags that look counterproductive.
 3. **Allocation / code hotspots** — from the top allocations and hot methods,
-   which JairoSVG code paths are worth optimizing to reduce GC pressure, and how.
+   which application code paths are worth optimizing to reduce GC pressure, and how.
 4. **Suggested next experiment** — the single most valuable follow-up run
    (heap size / collector / iterations) and what you'd expect to see.
 
@@ -95,3 +95,60 @@ Ground every recommendation in the numbers above. Be specific and concise.`;
 
     return { prompt, displayPrompt, attachments };
 }
+
+/**
+ * Build the prompt that asks Copilot to build + run this project's workload with
+ * GC logging and JFR enabled (choosing flags correct for the detected JDK), then
+ * hand the resulting artifacts back via the `gc_jfr_ingest` tool.
+ *
+ * @param {object} o { workspacePath?, hint?, jfrMaxSizeMb? }
+ * @returns {{prompt:string, displayPrompt:string}}
+ */
+export function buildRunPrompt(o = {}) {
+    const ws = o.workspacePath || "(the current workspace)";
+    const jfrMb = o.jfrMaxSizeMb && Number(o.jfrMaxSizeMb) > 0 ? Number(o.jfrMaxSizeMb) : 100;
+    const hint = (o.hint || "").trim();
+
+    const prompt = `Set up and run a GC + JFR profiling run for the Java project in this
+workspace so its garbage-collection and flight-recorder telemetry can be
+analyzed and visualized in the **GC & JFR Analysis** canvas.
+
+Workspace: ${ws}
+${hint ? `Workload guidance from the user: "${hint}"\n` : ""}
+Do the following, thinking about which steps apply to *this* project:
+
+1. **Detect the build system and a representative workload.** Inspect the project
+   (pom.xml / build.gradle(.kts) / Makefile, main classes, JMH benchmarks,
+   runnable/shaded jars, existing benchmark or load scripts). Decide how to build
+   it and how to run a workload that exercises the app for roughly 15–60 seconds
+   so there is enough telemetry. Prefer, in order: an existing benchmark/JMH
+   harness, a runnable jar / main class, or a representative test. If it is
+   genuinely ambiguous and there is no reasonable default, ask the user what to
+   run before proceeding.
+
+2. **Detect the JDK version** (\`java -version\`) and pick the correct flags for
+   the JVM that runs the *application* (not the build tool):
+   - **JDK 9+** (unified logging): \`-Xlog:gc*:file=<gcLog>:time,uptime,level,tags\`
+   - **JDK 8**: \`-XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xloggc:<gcLog>\`
+   - **JFR (JDK 11+)**: \`-XX:StartFlightRecording=maxsize=${jfrMb}M,filename=<jfr>,settings=profile,dumponexit=true\`
+   - **JFR (Oracle JDK 8u40–8u261)**: additionally prepend \`-XX:+UnlockCommercialFeatures -XX:+FlightRecorder\`.
+   Use \`settings=profile\` so JFR captures method-execution and object-allocation samples.
+
+3. **Build, then run** the workload with those flags added. Write the GC log to a
+   file named \`gc.log\` and the recording to \`dump.jfr\` in a working directory of
+   your choosing (e.g. the project's \`target\`/\`build\` dir or a temp dir). If you
+   need to constrain the heap to make GC activity richer, that is fine — just note it.
+
+4. When the run finishes, **call the \`gc_jfr_ingest\` tool** with the absolute
+   \`gcLogPath\` and (if produced) \`jfrPath\`, plus a short \`label\` describing the
+   workload and any notable flags (heap size, collector). That parses and
+   visualizes the data in the canvas.
+
+Keep the run bounded so it completes in a couple of minutes, and report the exact
+command you used.`;
+
+    const displayPrompt = `Run this project's workload with GC logging + JFR enabled, then ingest the results into the GC & JFR Analysis canvas.${hint ? ` (Guidance: ${hint})` : ""}`;
+
+    return { prompt, displayPrompt };
+}
+
