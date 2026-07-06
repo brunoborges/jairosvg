@@ -219,6 +219,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   border: 1px solid var(--verdict-border, var(--border));
   background: var(--verdict-bg, var(--surface));
   box-shadow: var(--shadow-1);
+  margin-bottom: 0.9rem;
 }
 .verdict[data-status="good"] {
   --verdict-bg: color-mix(in srgb, var(--status-good) 8%, var(--surface));
@@ -267,7 +268,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .chip .chip-k { color: var(--ink-muted); }
 
 /* --- Primary KPI tiles --------------------------------------------------- */
-.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.75rem; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.75rem; margin-bottom: 0.9rem; }
 .kpi {
   position: relative;
   border: 1px solid var(--border);
