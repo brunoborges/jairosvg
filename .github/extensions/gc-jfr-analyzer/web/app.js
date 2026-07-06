@@ -59,8 +59,10 @@ function frame({ w = 560, h = 240, xmin, xmax, ymin, ymax, xlabel, ylabel, yfmt 
 }
 
 function svgWrap(w, h, inner) {
-  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet" role="img">${inner}</svg>`;
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet" role="img">${inner}</svg>`;
 }
+
+let gradSeq = 0;
 
 // Scatter of GC pauses over time, colored by collection type.
 function scatterPauses(events, { w = 560, h = 240 } = {}) {
@@ -70,7 +72,7 @@ function scatterPauses(events, { w = 560, h = 240 } = {}) {
   const f = frame({ w, h, xmin: 0, xmax, ymin: 0, ymax, xlabel: "Time (s)", ylabel: "Pause (ms)", yfmt: (v) => fmt(v, 1) });
   let dots = "";
   for (const e of events) {
-    dots += `<circle cx="${f.px(e.t).toFixed(1)}" cy="${f.py(e.durationMs).toFixed(1)}" r="3" fill="${colorForType(e.type)}" fill-opacity="0.75"><title>${esc(e.type)} · ${esc(e.cause)} · ${fmt(e.durationMs, 2)} ms @ ${fmt(e.t, 2)}s</title></circle>`;
+    dots += `<circle class="dot" cx="${f.px(e.t).toFixed(1)}" cy="${f.py(e.durationMs).toFixed(1)}" r="3" fill="${colorForType(e.type)}" fill-opacity="0.72"><title>${esc(e.type)} · ${esc(e.cause)} · ${fmt(e.durationMs, 2)} ms @ ${fmt(e.t, 2)}s</title></circle>`;
   }
   return svgWrap(w, h, f.g + dots);
 }
@@ -98,13 +100,15 @@ function heapArea(events, { w = 560, h = 240 } = {}) {
   const xmax = Math.max(...pts.map((e) => e.t), 1);
   const ymax = Math.max(...pts.map((e) => Math.max(e.heapBeforeKb, e.heapSizeKb))) / 1024 * 1.05;
   const f = frame({ w, h, xmin: 0, xmax, ymin: 0, ymax, xlabel: "Time (s)", ylabel: "Heap (MB)", yfmt: (v) => fmt(v, 0) });
+  const gid = `heapgrad${++gradSeq}`;
   const beforeLine = pts.map((e, i) => `${i ? "L" : "M"}${f.px(e.t).toFixed(1)},${f.py(e.heapBeforeKb / 1024).toFixed(1)}`).join(" ");
   const afterD = pts.map((e, i) => `${i ? "L" : "M"}${f.px(e.t).toFixed(1)},${f.py(e.heapAfterKb / 1024).toFixed(1)}`).join(" ");
   const areaD = `${afterD} L${f.px(pts[pts.length - 1].t).toFixed(1)},${f.py(0).toFixed(1)} L${f.px(pts[0].t).toFixed(1)},${f.py(0).toFixed(1)} Z`;
-  const area = `<path d="${areaD}" fill="var(--gc-young)" fill-opacity="0.16"/>`;
+  const defs = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--gc-young)" stop-opacity="0.28"/><stop offset="100%" stop-color="var(--gc-young)" stop-opacity="0.02"/></linearGradient></defs>`;
+  const area = `<path d="${areaD}" fill="url(#${gid})"/>`;
   const after = `<path d="${afterD}" fill="none" stroke="var(--gc-young)" stroke-width="1.6"/>`;
   const before = `<path d="${beforeLine}" fill="none" stroke="var(--gc-old)" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="3 3"/>`;
-  return svgWrap(w, h, f.g + area + after + before);
+  return svgWrap(w, h, defs + f.g + area + after + before);
 }
 
 function emptyChart(w, h) {
@@ -112,15 +116,32 @@ function emptyChart(w, h) {
 }
 
 // Horizontal bar list rendered as HTML (better label handling than SVG).
-function barList(items, { max, valueFmt = (v) => fmt(v, 1), unit = "", colorBy } = {}) {
+// items: [{ name, label, value, sub?, owner?, color? }]. Fills animate from 0
+// via CSS once the `--w` target is applied by animateBars().
+function barList(items, { max, valueFmt = (v) => fmt(v, 1), unit = "", colorBy, ranked = false } = {}) {
   const m = max ?? Math.max(...items.map((i) => i.value), 1);
   return `<div class="barrow">` + items.map((it, idx) => {
-    const pct = Math.max(2, (it.value / m) * 100);
-    const color = colorBy ? colorBy(it, idx) : "var(--accent)";
-    return `<div class="bar-item"><span class="name" title="${esc(it.name)}">${esc(it.label ?? it.name)}</span>` +
-      `<span class="track"><span class="fill" style="width:${pct.toFixed(1)}%;background:${color}"></span></span>` +
-      `<span class="val">${esc(valueFmt(it.value))}${unit}</span></div>`;
+    const pct = Math.max(1.5, (it.value / m) * 100);
+    const color = it.color || (colorBy ? colorBy(it, idx) : "var(--accent)");
+    const rank = ranked ? `<span class="rank">${idx + 1}</span>` : `<span class="rank"></span>`;
+    const owner = it.owner ? `<span class="owner">${esc(it.owner)}</span>` : "";
+    const sub = it.sub ? `<span class="sub">${esc(it.sub)}</span>` : "";
+    return `<div class="bar-item">${rank}` +
+      `<span class="name" title="${esc(it.name)}">${owner}<span>${esc(it.label ?? it.name)}</span></span>` +
+      `<span class="track"><span class="fill" data-w="${pct.toFixed(1)}" style="background:${color}"></span></span>` +
+      `<span class="val">${esc(valueFmt(it.value))}${unit}${sub}</span></div>`;
   }).join("") + `</div>`;
+}
+
+// Apply target widths after the markup is in the DOM so the CSS width
+// transition animates from 0. Called by showReport().
+function animateBars(root) {
+  const fills = (root || document).querySelectorAll(".bar-item .fill[data-w]");
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce) { fills.forEach((f) => (f.style.width = f.dataset.w + "%")); return; }
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    fills.forEach((f) => (f.style.width = f.dataset.w + "%"));
+  }));
 }
 
 function legend(items) {
@@ -130,33 +151,200 @@ function legend(items) {
 // ---------------------------------------------------------------------------
 // Rendering the report
 // ---------------------------------------------------------------------------
-function statCard(label, value, unit = "") {
-  return `<div class="stat"><div class="label">${esc(label)}</div><div class="value">${esc(value)}<span class="unit">${esc(unit)}</span></div></div>`;
+
+// Human-friendly memory: promote MB to GB past 1024 so "25.8 GB" beats "25,757 MB".
+function humanBytesMb(mb, d = 1) {
+  if (mb == null || Number.isNaN(mb)) return "–";
+  if (mb >= 1024) return `${fmt(mb / 1024, d)} GB`;
+  if (mb >= 1) return `${fmt(mb, mb < 10 ? 1 : 0)} MB`;
+  return `${fmt(mb * 1024, 0)} KB`;
+}
+
+const worseOf = (a, b) => (["good", "warn", "bad", "neutral"].indexOf(b) > ["good", "warn", "bad", "neutral"].indexOf(a) && b !== "neutral" ? b : a);
+const band = (v, goodBelow, warnBelow) => (v == null ? "neutral" : v < goodBelow ? "good" : v <= warnBelow ? "warn" : "bad");
+const bandAbove = (v, goodAbove, warnAbove) => (v == null ? "neutral" : v >= goodAbove ? "good" : v >= warnAbove ? "warn" : "bad");
+const STATUS_COLOR = { good: "var(--status-good)", warn: "var(--status-warn)", bad: "var(--status-bad)", neutral: "var(--status-neutral)" };
+const isJdk = (name) => /^(java|javax|jdk|sun|com\.sun|jakarta|kotlin|scala|groovy|org\.graalvm|com\.oracle)\./.test(name);
+
+// The dashboard's point of view: assess GC health and name the main lever.
+function assess(s, jfr) {
+  const tp = s.throughputPercent, p99 = s.p99PauseMs, mx = s.maxPauseMs, ar = s.allocRateMbPerSec;
+  const tpS = bandAbove(tp, 95, 90);
+  const p99S = band(p99, 20, 50);
+  const mxS = band(mx, 50, 150);
+  const arS = band(ar, 64, 256);
+  const peakRatio = s.maxHeapSizeKb ? (s.peakHeapKb || 0) / s.maxHeapSizeKb : null;
+  const heapS = peakRatio == null ? "neutral" : peakRatio > 0.92 ? "warn" : "neutral";
+  const overall = worseOf(worseOf(tpS, p99S), mxS);
+  return { tp, p99, mx, ar, tpS, p99S, mxS, arS, heapS, overall };
+}
+
+function verdictBlock(a, s, jfr) {
+  const headline = {
+    good: "Garbage collection is healthy",
+    warn: "Garbage collection needs a look",
+    bad: "Garbage collection is a bottleneck",
+    neutral: "Garbage collection profile",
+  }[a.overall];
+
+  let detail = `${fmt(a.tp, 1)}% throughput`;
+  if (a.p99 != null) detail += `, p99 pause ${fmt(a.p99, 1)} ms`;
+  detail += a.overall === "good" ? " — GC is not the bottleneck."
+    : a.overall === "warn" ? " — there's pause or throughput headroom to reclaim."
+    : " — pauses or low throughput are hurting the workload.";
+  if (a.ar != null) {
+    const churn = jfr && jfr.totalAllocatedMb ? ` (≈ ${humanBytesMb(jfr.totalAllocatedMb)} churned)` : "";
+    detail += a.arS === "good"
+      ? ` Allocation pressure is low at ${fmt(a.ar, 0)} MB/s.`
+      : ` Allocation pressure is ${a.arS === "warn" ? "elevated" : "high"} at ${fmt(a.ar, 0)} MB/s${churn} — the main lever for further gains.`;
+  }
+
+  const chips = [];
+  const chip = (k, v, st) => `<span class="chip"><span class="dot" style="background:${STATUS_COLOR[st]}"></span><span class="chip-k">${esc(k)}</span> <b>${esc(v)}</b></span>`;
+  chips.push(chip("Throughput", `${fmt(a.tp, 1)}%`, a.tpS));
+  if (a.p99 != null) chips.push(chip("p99 pause", `${fmt(a.p99, 1)} ms`, a.p99S));
+  if (a.ar != null) chips.push(chip("Alloc", `${fmt(a.ar, 0)} MB/s`, a.arS));
+  const top = jfr && jfr.topAllocations && jfr.topAllocations[0];
+  if (top) chips.push(chip("Top type", `${shortClass(top.name)} ${fmt(top.pressurePct, 0)}%`, "neutral"));
+
+  return `<div class="verdict reveal" data-status="${a.overall}" style="--i:0">
+    <span class="badge"><span class="dot"></span>${a.overall === "good" ? "Healthy" : a.overall === "warn" ? "Attention" : a.overall === "bad" ? "Critical" : "Profile"}</span>
+    <div class="vbody">
+      <p class="headline">${esc(headline)}</p>
+      <p class="detail">${esc(detail)}</p>
+      <div class="chips">${chips.join("")}</div>
+    </div>
+  </div>`;
+}
+
+function kpiTile(label, value, unit, status, tag, sub) {
+  return `<div class="kpi" data-status="${status}">
+    <div class="khead"><span class="klabel">${esc(label)}</span>${tag ? `<span class="ktag">${esc(tag)}</span>` : ""}</div>
+    <div class="kvalue">${esc(value)}${unit ? `<span class="unit">${esc(unit)}</span>` : ""}</div>
+    ${sub ? `<div class="ksub">${esc(sub)}</div>` : ""}
+  </div>`;
+}
+
+function subStat(label, value, unit) {
+  return `<div class="substat"><div class="label">${esc(label)}</div><div class="value">${esc(value)}${unit ? `<span class="unit">${esc(unit)}</span>` : ""}</div></div>`;
+}
+
+function sectionHeader(title, count) {
+  return `<div class="section"><h2>${esc(title)}</h2><span class="rule"></span>${count != null ? `<span class="count">${esc(count)}</span>` : ""}</div>`;
 }
 
 function renderReport(r) {
   const gc = r.gc || {};
   const s = gc.summary || {};
   const jfr = r.jfr || {};
-  const parts = [];
+  const out = [];
 
-  if (gc.error) parts.push(`<div class="error-banner">GC log analysis error: ${esc(gc.error)}</div>`);
+  if (gc.error) out.push(`<div class="error-banner"><strong>GC log analysis error.</strong> ${esc(gc.error)}</div>`);
 
-  // Overview stats
-  parts.push(`<div class="section-title">Overview</div>`);
-  parts.push(`<div class="stats">` + [
-    statCard("Throughput", fmt(s.throughputPercent, 2), "%"),
-    statCard("GC events", fmt(s.eventCount, 0)),
-    statCard("Total pause", fmt(s.totalPauseMs, 1), "ms"),
-    statCard("Avg pause", fmt(s.avgPauseMs, 2), "ms"),
-    statCard("Max pause", fmt(s.maxPauseMs, 2), "ms"),
-    statCard("p99 pause", fmt(s.p99PauseMs, 2), "ms"),
-    statCard("Peak heap", fmt((s.peakHeapKb || 0) / 1024, 0), "MB"),
-    statCard("Alloc rate", fmt(s.allocRateMbPerSec, 0), "MB/s"),
-    statCard("GC runtime", fmt(s.runtimeSec, 1), "s"),
+  const a = assess(s, jfr);
+
+  // 1. Verdict — lead with a point of view.
+  if (s.throughputPercent != null) out.push(verdictBlock(a, s, jfr));
+
+  // 2. Primary KPIs — the four metrics that decide GC health.
+  const tagTp = { good: "Healthy", warn: "Fair", bad: "Poor", neutral: "" }[a.tpS];
+  const tagP99 = { good: "Tight", warn: "Elevated", bad: "High", neutral: "" }[a.p99S];
+  const tagAr = { good: "Low", warn: "Elevated", bad: "High", neutral: "" }[a.arS];
+  const maxHeapMb = (s.maxHeapSizeKb || 0) / 1024;
+  out.push(`<div class="kpis reveal" style="--i:1">` + [
+    kpiTile("Throughput", fmt(s.throughputPercent, 2), "%", a.tpS, tagTp, `${fmt(s.percentPaused, 2)}% of time in GC`),
+    kpiTile("p99 pause", fmt(s.p99PauseMs, 1), "ms", a.p99S, tagP99, `max ${fmt(s.maxPauseMs, 1)} ms`),
+    kpiTile("Alloc rate", fmt(s.allocRateMbPerSec, 0), "MB/s", a.arS, tagAr, jfr.totalAllocatedMb ? `≈ ${humanBytesMb(jfr.totalAllocatedMb)} churned` : "sustained"),
+    kpiTile("Peak heap", fmt((s.peakHeapKb || 0) / 1024, 0), "MB", a.heapS, "", maxHeapMb ? `of ${fmt(maxHeapMb, 0)} MB max` : "committed"),
   ].join("") + `</div>`);
 
-  // JVM + config table
+  // Secondary stats — supporting detail, denser.
+  out.push(`<div class="substats reveal" style="--i:2">` + [
+    subStat("GC events", fmt(s.eventCount, 0)),
+    subStat("Total pause", fmt(s.totalPauseMs, 0), "ms"),
+    subStat("Avg pause", fmt(s.avgPauseMs, 2), "ms"),
+    subStat("GC runtime", fmt(s.runtimeSec, 1), "s"),
+  ].join("") + `</div>`);
+
+  // 3. Charts
+  const panels = [];
+  panels.push(panel("GC pause timeline", "Every stop-the-world pause, colored by collection type.",
+    scatterPauses(gc.events || []) + typeLegend(gc.types || {})));
+
+  panels.push(panel("Heap occupancy", "Heap used after each GC (solid) vs. before (dashed).",
+    heapArea(gc.events || []) + legend([
+      { color: "var(--gc-young)", label: "After GC" },
+      { color: "var(--gc-old)", label: "Before GC" },
+    ])));
+
+  const causeItems = Object.entries(gc.causes || {}).map(([name, value]) => ({ name, label: name, value })).sort((x, y) => y.value - x.value);
+  panels.push(panel("GC cause breakdown", "Collections triggered by each cause.",
+    causeItems.length ? barList(causeItems, { valueFmt: (v) => fmt(v, 0), colorBy: (_, i) => PALETTE[i % PALETTE.length] }) : emptyChart(560, 120)));
+
+  if (jfr.cpuLoad && jfr.cpuLoad.length) {
+    panels.push(panel("CPU load", "JVM vs. machine CPU utilization over the run (JFR).",
+      lineChart([
+        { name: "jvmUser", color: "var(--gc-young)", points: jfr.cpuLoad.map((d) => ({ t: d.t, v: d.jvmUser * 100 })) },
+        { name: "jvmSystem", color: "var(--gc-system)", points: jfr.cpuLoad.map((d) => ({ t: d.t, v: d.jvmSystem * 100 })) },
+        { name: "machineTotal", color: "var(--status-neutral)", points: jfr.cpuLoad.map((d) => ({ t: d.t, v: d.machineTotal * 100 })) },
+      ], { ylabel: "CPU (%)", yfmt: (v) => fmt(v, 0), ymaxForce: 100 }) + legend([
+        { color: "var(--gc-young)", label: "JVM user" },
+        { color: "var(--gc-system)", label: "JVM system" },
+        { color: "var(--status-neutral)", label: "Machine total" },
+      ])));
+  }
+
+  if (jfr.heapSummary && jfr.heapSummary.length) {
+    panels.push(panel("Heap used (JFR)", "Fine-grained heap sampled around every GC id.",
+      lineChart([
+        { name: "used", color: "var(--accent)", points: jfr.heapSummary.map((d) => ({ t: d.t, v: d.usedMb })) },
+        { name: "committed", color: "var(--status-neutral)", points: jfr.heapSummary.map((d) => ({ t: d.t, v: d.committedMb })) },
+      ], { ylabel: "Heap (MB)" }) + legend([
+        { color: "var(--accent)", label: "Used" },
+        { color: "var(--status-neutral)", label: "Committed" },
+      ])));
+  }
+
+  // Top allocations — where the memory churn goes (the lever).
+  if (jfr.topAllocations && jfr.topAllocations.length) {
+    const items = jfr.topAllocations.map((al) => ({
+      name: al.name,
+      label: shortClass(al.name),
+      value: al.weightMb != null ? al.weightMb : al.pressurePct,
+      sub: al.weightMb != null && al.pressurePct != null ? `${fmt(al.pressurePct, 1)}%` : "",
+      color: "var(--gc-system)",
+    }));
+    const useBytes = jfr.topAllocations[0].weightMb != null;
+    const desc = jfr.totalAllocatedMb
+      ? `By share of allocation pressure. Total ≈ ${humanBytesMb(jfr.totalAllocatedMb)} churned.`
+      : "By share of allocation pressure (JFR sampling).";
+    panels.push(panel("Top allocations", desc,
+      barList(items, { ranked: true, valueFmt: useBytes ? (v) => humanBytesMb(v) : (v) => fmt(v, 1) + "%" })));
+  }
+
+  // Hot methods — self time, with your code called out from JDK internals.
+  if (jfr.hotMethods && jfr.hotMethods.length) {
+    const items = jfr.hotMethods.map((mth) => {
+      const app = !isJdk(mth.name);
+      return {
+        name: mth.name,
+        label: shortMethod(mth.name),
+        value: mth.pct,
+        sub: mth.samples != null ? `${fmt(mth.samples, 0)} smpl` : "",
+        owner: app ? "App" : "",
+        color: app ? "var(--accent)" : "var(--status-neutral)",
+      };
+    });
+    panels.push(panel("Hot methods", `Top self-time methods from ${fmt(jfr.sampleCount, 0)} execution samples. App code highlighted.`,
+      barList(items, { ranked: true, valueFmt: (v) => fmt(v, 1), unit: "%", max: Math.max(items[0].value * 1.05, 10) }), "wide"));
+  }
+
+  out.push(sectionHeader("Charts", `${panels.length} panels`));
+  out.push(`<div class="panels">` + panels.map((p, i) =>
+    p.replace('<div class="panel ', `<div style="--i:${Math.min(i + 3, 9)}" class="panel reveal `)
+  ).join("") + `</div>`);
+
+  // 4. Environment
   const jvm = r.jvm || {};
   const cfg = r.gcConfig || {};
   const infoRows = [
@@ -168,79 +356,20 @@ function renderReport(r) {
     ["Workload", r.label || "–"],
     ["GC log", (r.source && r.source.gcLogName) || "–"],
   ];
+  out.push(sectionHeader("Environment"));
+  out.push(`<div class="panels">` + panel("", "", `<table class="info">${infoRows.map(([k, v]) => `<tr><td class="k">${esc(k)}</td><td class="v">${esc(v)}</td></tr>`).join("")}</table>`, "wide") + `</div>`);
 
-  // Build panels
-  const panels = [];
-
-  panels.push(panel("GC pause timeline", "Every stop-the-world pause, colored by collection type.",
-    scatterPauses(gc.events || []) + typeLegend(gc.types || {})));
-
-  panels.push(panel("Heap occupancy", "Heap used after each GC (solid) vs. before each GC (dashed).",
-    heapArea(gc.events || []) + legend([
-      { color: "var(--gc-young)", label: "After GC" },
-      { color: "var(--gc-old)", label: "Before GC" },
-    ])));
-
-  // GC cause breakdown
-  const causeItems = Object.entries(gc.causes || {}).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
-  panels.push(panel("GC cause breakdown", "How many collections each cause triggered.",
-    causeItems.length ? barList(causeItems, { valueFmt: (v) => fmt(v, 0), colorBy: (_, i) => PALETTE[i % PALETTE.length] }) : emptyChart(560, 120)));
-
-  // CPU load
-  if (jfr.cpuLoad && jfr.cpuLoad.length) {
-    panels.push(panel("CPU load", "JVM and machine CPU utilization over the run (from JFR).",
-      lineChart([
-        { name: "jvmUser", color: "var(--gc-young)", points: jfr.cpuLoad.map((d) => ({ t: d.t, v: d.jvmUser * 100 })) },
-        { name: "jvmSystem", color: "var(--gc-system)", points: jfr.cpuLoad.map((d) => ({ t: d.t, v: d.jvmSystem * 100 })) },
-        { name: "machineTotal", color: "var(--gc-old)", points: jfr.cpuLoad.map((d) => ({ t: d.t, v: d.machineTotal * 100 })) },
-      ], { ylabel: "CPU (%)", yfmt: (v) => fmt(v, 0), ymaxForce: 100 }) + legend([
-        { color: "var(--gc-young)", label: "JVM user" },
-        { color: "var(--gc-system)", label: "JVM system" },
-        { color: "var(--gc-old)", label: "Machine total" },
-      ])));
-  }
-
-  // Heap used from JFR (finer grained than GC log)
-  if (jfr.heapSummary && jfr.heapSummary.length) {
-    panels.push(panel("Heap used (JFR)", "Heap used sampled before/after every GC id.",
-      lineChart([
-        { name: "used", color: "var(--accent)", points: jfr.heapSummary.map((d) => ({ t: d.t, v: d.usedMb })) },
-        { name: "committed", color: "var(--gc-old)", points: jfr.heapSummary.map((d) => ({ t: d.t, v: d.committedMb })) },
-      ], { ylabel: "Heap (MB)" }) + legend([
-        { color: "var(--accent)", label: "Used" },
-        { color: "var(--gc-old)", label: "Committed" },
-      ])));
-  }
-
-  // Top allocations
-  if (jfr.topAllocations && jfr.topAllocations.length) {
-    const items = jfr.topAllocations.map((a) => ({ name: a.name, label: shortClass(a.name), value: a.weightMb }));
-    panels.push(panel("Top allocations", `Allocated memory by type — GC allocation rate × runtime, split by JFR allocation pressure. Total ≈ ${fmt(jfr.totalAllocatedMb, 0)} MB.`,
-      barList(items, { valueFmt: (v) => fmt(v, 1), unit: " MB" })));
-  }
-
-  // Hot methods
-  if (jfr.hotMethods && jfr.hotMethods.length) {
-    const items = jfr.hotMethods.map((mth) => ({ name: mth.name, label: shortMethod(mth.name), value: mth.pct }));
-    panels.push(panel("Hot methods", `Top self-time methods from ${fmt(jfr.sampleCount, 0)} execution samples (JFR).`,
-      barList(items, { valueFmt: (v) => fmt(v, 1), unit: "%", max: 100 })));
-  }
-
-  const panelsHtml = `<div class="panels">${panels.join("")}</div>`;
-  const infoPanel = panel("Environment", "", `<table class="info">${infoRows.map(([k, v]) => `<tr><td class="k">${esc(k)}</td><td class="v">${esc(v)}</td></tr>`).join("")}</table>`, "wide");
-
-  let html = parts.join("") + `<div class="section-title">Charts</div>` + panelsHtml +
-    `<div class="section-title">Details</div><div class="panels">${infoPanel}</div>`;
-
-  // JFR views text (loaded lazily)
+  let html = out.join("");
   if (r.artifacts && r.artifacts.views) {
-    html += `<details class="views"><summary>jfr view all-views (full report)</summary><pre id="views-pre">Loading…</pre></details>`;
+    html += `<details class="views"><summary>Raw <code>jfr view all-views</code> report</summary><pre id="views-pre">Loading…</pre></details>`;
   }
   return html;
 }
 
 function panel(title, desc, body, extraClass = "") {
-  return `<div class="panel ${extraClass}"><h3>${esc(title)}</h3>${desc ? `<p class="desc">${esc(desc)}</p>` : ""}${body}</div>`;
+  const head = title ? `<div class="phead"><h3>${esc(title)}</h3></div>` : "";
+  const d = desc ? `<p class="desc">${esc(desc)}</p>` : "";
+  return `<div class="panel ${extraClass}">${head}${d}${body}</div>`;
 }
 
 function typeLegend(types) {
@@ -249,16 +378,19 @@ function typeLegend(types) {
 }
 
 function shortClass(name) {
-  let n = name.replace(/^\[+L?/, "").replace(/;$/, "");
+  let n = String(name).replace(/^\[+L?/, "").replace(/;$/, "");
   const parts = n.split(".");
   return parts.length > 2 ? parts.slice(-2).join(".") : n;
 }
 function shortMethod(name) {
-  const hashIdx = name.lastIndexOf(".");
-  const cls = name.slice(0, hashIdx);
-  const method = name.slice(hashIdx + 1);
+  const paren = name.indexOf("(");
+  const head = paren >= 0 ? name.slice(0, paren) : name;
+  const args = paren >= 0 ? name.slice(paren) : "";
+  const dot = head.lastIndexOf(".");
+  const cls = head.slice(0, dot);
+  const method = head.slice(dot + 1);
   const clsParts = cls.split(".");
-  return `${clsParts[clsParts.length - 1] || cls}.${method}`;
+  return `${clsParts[clsParts.length - 1] || cls}.${method}${args ? "()" : ""}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -289,6 +421,7 @@ function showReport(r) {
   const rep = el("report");
   rep.innerHTML = renderReport(r);
   rep.classList.remove("hidden");
+  animateBars(rep);
   el("analyze-btn").classList.remove("hidden");
   if (r.artifacts && r.artifacts.views) {
     fetch("views").then((res) => (res.ok ? res.text() : "")).then((txt) => {

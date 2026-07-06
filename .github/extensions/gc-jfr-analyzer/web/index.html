@@ -9,13 +9,24 @@
   <body>
     <header class="topbar">
       <div class="title">
-        <h1>GC &amp; JFR Analysis</h1>
-        <span class="subtitle">Copilot-driven Java profiling · Microsoft GCToolkit + JFR</span>
+        <span class="glyph" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+        </span>
+        <div>
+          <h1>GC &amp; JFR Analysis</h1>
+          <div class="subtitle">Copilot-driven Java profiling · Microsoft GCToolkit + JFR</div>
+        </div>
       </div>
       <div class="actions">
         <span id="run-status" class="run-status"></span>
-        <button id="analyze-btn" class="btn hidden">✦ Analyze with AI</button>
-        <button id="run-btn" class="btn primary">Run analysis</button>
+        <button id="analyze-btn" class="btn ai hidden">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.9 5.1L19 9l-5.1 1.9L12 16l-1.9-5.1L5 9l5.1-1.9L12 2zM19 15l.9 2.4L22 18l-2.1.6L19 21l-.9-2.4L16 18l2.1-.6L19 15z"/></svg>
+          Analyze with AI
+        </button>
+        <button id="run-btn" class="btn primary">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          Run analysis
+        </button>
       </div>
     </header>
 
@@ -40,8 +51,12 @@
 
     <main id="content">
       <div id="empty" class="empty">
-        <p>No analysis yet.</p>
-        <p class="muted">Click <strong>Run analysis</strong> to have Copilot build and run this project's workload with GC logging and JFR enabled, then visualize the results here. You can also point Copilot at an existing <code>gc.log</code>/<code>.jfr</code> by asking it to call the <code>gc_jfr_ingest</code> tool.</p>
+        <div class="empty-glyph" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-4 3 2 4-6"/></svg>
+        </div>
+        <h2>No profile yet</h2>
+        <p>Click <strong>Run analysis</strong> and Copilot will build and run this project's workload with GC logging and JFR enabled, then visualize throughput, pauses, heap, allocations, and hot methods here.</p>
+        <p class="muted">Already have artifacts? Ask Copilot to call the <code>gc_jfr_ingest</code> tool with your <code>gc.log</code> and <code>.jfr</code> paths.</p>
       </div>
       <div id="report" class="report hidden"></div>
     </main>
