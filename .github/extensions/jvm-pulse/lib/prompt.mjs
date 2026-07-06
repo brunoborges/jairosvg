@@ -99,7 +99,7 @@ Ground every recommendation in the numbers above. Be specific and concise.`;
 /**
  * Build the prompt that asks Copilot to build + run this project's workload with
  * GC logging and JFR enabled (choosing flags correct for the detected JDK), then
- * hand the resulting artifacts back via the `gc_jfr_ingest` tool.
+ * hand the resulting artifacts back via the `jvm_pulse_ingest` tool.
  *
  * @param {object} o { workspacePath?, hint?, jfrMaxSizeMb? }
  * @returns {{prompt:string, displayPrompt:string}}
@@ -111,7 +111,7 @@ export function buildRunPrompt(o = {}) {
 
     const prompt = `Set up and run a GC + JFR profiling run for the Java project in this
 workspace so its garbage-collection and flight-recorder telemetry can be
-analyzed and visualized in the **GC & JFR Analysis** canvas.
+analyzed and visualized in the **JVM Pulse** canvas.
 
 Workspace: ${ws}
 ${hint ? `Workload guidance from the user: "${hint}"\n` : ""}
@@ -139,7 +139,7 @@ Do the following, thinking about which steps apply to *this* project:
    your choosing (e.g. the project's \`target\`/\`build\` dir or a temp dir). If you
    need to constrain the heap to make GC activity richer, that is fine — just note it.
 
-4. When the run finishes, **call the \`gc_jfr_ingest\` tool** with the absolute
+4. When the run finishes, **call the \`jvm_pulse_ingest\` tool** with the absolute
    \`gcLogPath\` and (if produced) \`jfrPath\`, plus a short \`label\` describing the
    workload and any notable flags (heap size, collector). That parses and
    visualizes the data in the canvas.
@@ -147,7 +147,7 @@ Do the following, thinking about which steps apply to *this* project:
 Keep the run bounded so it completes in a couple of minutes, and report the exact
 command you used.`;
 
-    const displayPrompt = `Run this project's workload with GC logging + JFR enabled, then ingest the results into the GC & JFR Analysis canvas.${hint ? ` (Guidance: ${hint})` : ""}`;
+    const displayPrompt = `Run this project's workload with GC logging + JFR enabled, then ingest the results into the JVM Pulse canvas.${hint ? ` (Guidance: ${hint})` : ""}`;
 
     return { prompt, displayPrompt };
 }

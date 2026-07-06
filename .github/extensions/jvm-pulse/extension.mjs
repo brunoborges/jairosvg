@@ -1,9 +1,9 @@
-// Extension: gc-jfr-analyzer
-// Generic Java GC + JFR profiling canvas. The "Run analysis" button asks Copilot
-// to build and run the current project's workload with GC logging + JFR enabled
-// (choosing flags for the detected build tool + JDK). Copilot hands the produced
-// gc.log / dump.jfr back via the `gc_jfr_ingest` tool, which analyzes them with
-// Microsoft GCToolkit (GC log) and the `jfr` CLI (flight recording) and
+// Extension: jvm-pulse
+// JVM Pulse — a generic Java GC + JFR profiling canvas. The "Run analysis" button
+// asks Copilot to build and run the current project's workload with GC logging +
+// JFR enabled (choosing flags for the detected build tool + JDK). Copilot hands the
+// produced gc.log / dump.jfr back via the `jvm_pulse_ingest` tool, which analyzes
+// them with Microsoft GCToolkit (GC log) and the `jfr` CLI (flight recording) and
 // visualizes everything in an interactive canvas.
 
 import { createServer } from "node:http";
@@ -63,7 +63,7 @@ async function ingestArtifacts(args) {
 
 /**
  * Ask Copilot to build and run this project's workload with GC logging + JFR
- * enabled, then hand the artifacts back via the `gc_jfr_ingest` tool. Injects a
+ * enabled, then hand the artifacts back via the `jvm_pulse_ingest` tool. Injects a
  * user turn into the current session; the agent does the project-specific work.
  */
 async function requestRun(opts = {}) {
@@ -199,14 +199,14 @@ async function startServer() {
 sessionRef = await joinSession({
     canvases: [
         createCanvas({
-            id: "gc-jfr-analyzer",
-            displayName: "GC & JFR Analysis",
+            id: "jvm-pulse",
+            displayName: "JVM Pulse",
             description: "Profile any Java project: Copilot runs its workload with GC logging + JFR, then GCToolkit/JFR analysis is visualized here.",
             inputSchema: { type: "object", properties: {}, additionalProperties: true },
             actions: [
                 {
                     name: "run_analysis",
-                    description: "Ask Copilot to build and run this project's workload with GC logging + JFR enabled (detecting the build tool and JDK), then ingest the results via the gc_jfr_ingest tool. Does not run anything itself — it injects a request into the session.",
+                    description: "Ask Copilot to build and run this project's workload with GC logging + JFR enabled (detecting the build tool and JDK), then ingest the results via the jvm_pulse_ingest tool. Does not run anything itself — it injects a request into the session.",
                     inputSchema: {
                         type: "object",
                         properties: {
@@ -256,7 +256,7 @@ sessionRef = await joinSession({
                     entry = await startServer();
                     servers.set(ctx.instanceId, entry);
                 }
-                return { title: "GC & JFR Analysis", url: entry.url, status: runState.running ? "running" : undefined };
+                return { title: "JVM Pulse", url: entry.url, status: runState.running ? "running" : undefined };
             },
             onClose: async (ctx) => {
                 const entry = servers.get(ctx.instanceId);
@@ -269,9 +269,9 @@ sessionRef = await joinSession({
     ],
     tools: [
         {
-            name: "gc_jfr_ingest",
+            name: "jvm_pulse_ingest",
             description:
-                "Ingest a GC log (and optional JFR recording) produced by a Java workload, analyze them with Microsoft GCToolkit + the jfr CLI, and visualize the results in the GC & JFR Analysis canvas. Call this after you have run a workload with GC logging + JFR enabled. Paths must point to files on disk.",
+                "Ingest a GC log (and optional JFR recording) produced by a Java workload, analyze them with Microsoft GCToolkit + the jfr CLI, and visualize the results in the JVM Pulse canvas. Call this after you have run a workload with GC logging + JFR enabled. Paths must point to files on disk.",
             parameters: {
                 type: "object",
                 properties: {
@@ -297,7 +297,7 @@ sessionRef = await joinSession({
                         jfr.available
                             ? `JFR: ${jfr.sampleCount ?? 0} execution samples, ~${jfr.totalAllocatedMb ?? 0} MB sampled allocations.`
                             : "JFR: not available (no recording ingested).",
-                        `Results are now visualized in the GC & JFR Analysis canvas. Use the "Analyze with AI" button (or ask me to analyze) for tuning recommendations.`,
+                        `Results are now visualized in the JVM Pulse canvas. Use the "Analyze with AI" button (or ask me to analyze) for tuning recommendations.`,
                     ];
                     return lines.join("\n");
                 } catch (err) {

@@ -441,7 +441,7 @@ function openConfig() { el("config").classList.remove("hidden"); }
 function closeConfig() { el("config").classList.add("hidden"); }
 
 // A single persistent event stream: ingestion is triggered by Copilot (via the
-// gc_jfr_ingest tool), so progress/done events can arrive at any time, not just
+// jvm_pulse_ingest tool), so progress/done events can arrive at any time, not just
 // during a button click.
 function connectEvents() {
   const evtSrc = new EventSource("events");
@@ -492,7 +492,7 @@ async function startRun() {
     const res = await fetch("run", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || "HTTP " + res.status);
-    setWaiting("Copilot is running the workload — results appear here when it calls gc_jfr_ingest.");
+    setWaiting("Copilot is running the workload — results appear here when it calls jvm_pulse_ingest.");
     // Re-enable so the user can trigger again if needed; ingestion is async.
     el("run-btn").disabled = false;
   } catch (err) {

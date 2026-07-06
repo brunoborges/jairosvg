@@ -1,4 +1,4 @@
-# GC & JFR Analysis canvas
+# JVM Pulse
 
 A Copilot CLI **canvas extension** that profiles **any Java project's** garbage
 collection and flight-recording telemetry and visualizes it in an interactive
@@ -27,7 +27,7 @@ It combines three data sources:
                                                  workload with GC log + JFR
                                                           │
                                                           ▼
-                                          Copilot calls the gc_jfr_ingest tool
+                                          Copilot calls the jvm_pulse_ingest tool
                                           with the gc.log / dump.jfr paths
                                                           │
                                                           ▼
@@ -37,7 +37,7 @@ It combines three data sources:
                                                                 for tuning advice
 ```
 
-The `gc_jfr_ingest` tool is also usable directly: point Copilot at any existing
+The `jvm_pulse_ingest` tool is also usable directly: point Copilot at any existing
 `gc.log`/`.jfr` on disk and ask it to ingest them — no run required.
 
 ## What it shows
@@ -66,10 +66,10 @@ locations; inspect them with the `tool_status` action or `GET /tools`.
 
 ## Usage
 
-Open the **GC & JFR Analysis** canvas and click **Run analysis** (optionally
+Open the **JVM Pulse** canvas and click **Run analysis** (optionally
 telling Copilot what workload to run), or drive it from chat:
 
-- **`gc_jfr_ingest`** *(agent tool)* — `{ gcLogPath, jfrPath?, label? }`. Analyzes
+- **`jvm_pulse_ingest`** *(agent tool)* — `{ gcLogPath, jfrPath?, label? }`. Analyzes
   a GC log + optional JFR recording and updates the canvas. Copilot calls this
   after running a workload, or you can invoke it on existing artifacts.
 - `run_analysis` *(canvas action)* — `{ hint?, jfrMaxSizeMb? }`. Injects the
@@ -83,7 +83,7 @@ telling Copilot what workload to run), or drive it from chat:
 ## Layout
 
 ```
-extension.mjs        wiring: canvas, HTTP server, SSE, actions, gc_jfr_ingest tool
+extension.mjs        wiring: canvas, HTTP server, SSE, actions, jvm_pulse_ingest tool
 lib/pipeline.mjs     analyzeArtifacts(): GC/JFR analysis of provided artifacts
 lib/jfr.mjs          jfr CLI extraction + reduction to chart-ready data
 lib/prompt.mjs       run prompt + AI-analysis prompt builders
