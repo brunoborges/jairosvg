@@ -113,6 +113,17 @@ export async function analyzeArtifacts(args = {}, onProgress = () => {}) {
         } catch {}
     }
 
+    // Reconstruct absolute allocation volume. The JFR allocation view yields
+    // only per-class pressure %, so derive an accurate total from GCToolkit's
+    // allocation rate × runtime and distribute it across classes by pressure.
+    if (jfrData?.topAllocations?.length && gc?.summary?.allocRateMbPerSec > 0 && gc?.summary?.runtimeSec > 0) {
+        const totalMb = gc.summary.allocRateMbPerSec * gc.summary.runtimeSec;
+        jfrData.totalAllocatedMb = totalMb;
+        for (const a of jfrData.topAllocations) {
+            a.weightMb = (a.pressurePct / 100) * totalMb;
+        }
+    }
+
     const report = {
         schema: 1,
         generatedAt: new Date().toISOString(),

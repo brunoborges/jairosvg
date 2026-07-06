@@ -61,8 +61,8 @@ ${breakdown(report?.gc?.causes)}
 ## GC types
 ${breakdown(report?.gc?.types)}
 
-## Top allocation sites (JFR object sampling, ~${num(jfr.totalAllocatedMb)} MB sampled)
-${topList(jfr.topAllocations, (a) => `${a.name} — ${num(a.weightMb, 1)} MB (${a.samples} samples)`)}
+## Top allocation sites (share of allocation pressure, ≈ ${num(jfr.totalAllocatedMb)} MB total)
+${topList(jfr.topAllocations, (a) => `${a.name} — ${num(a.pressurePct, 1)}% of allocations (≈ ${num(a.weightMb, 0)} MB)`)}
 
 ## Hot methods (JFR execution sampling, ${num(jfr.sampleCount)} samples)
 ${topList(jfr.hotMethods, (m) => `${m.name} — ${num(m.pct, 1)}% (${m.samples} samples)`)}

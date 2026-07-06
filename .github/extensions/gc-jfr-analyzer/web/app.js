@@ -215,7 +215,7 @@ function renderReport(r) {
   // Top allocations
   if (jfr.topAllocations && jfr.topAllocations.length) {
     const items = jfr.topAllocations.map((a) => ({ name: a.name, label: shortClass(a.name), value: a.weightMb }));
-    panels.push(panel("Top allocations", `Estimated allocated memory by type (JFR object sampling). Total ≈ ${fmt(jfr.totalAllocatedMb, 0)} MB.`,
+    panels.push(panel("Top allocations", `Allocated memory by type — GC allocation rate × runtime, split by JFR allocation pressure. Total ≈ ${fmt(jfr.totalAllocatedMb, 0)} MB.`,
       barList(items, { valueFmt: (v) => fmt(v, 1), unit: " MB" })));
   }
 

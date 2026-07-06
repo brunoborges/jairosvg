@@ -35,14 +35,61 @@ async function jfrEvents(jfrBin, file, events, extraArgs = []) {
     return parsed?.recording?.events ?? [];
 }
 
-function topFrameName(event) {
-    const frames = event?.values?.stackTrace?.frames;
-    if (!Array.isArray(frames) || frames.length === 0) return null;
-    const method = frames[0]?.method;
-    if (!method) return null;
-    const type = method?.type?.name?.replace(/\//g, ".") ?? "?";
-    return `${type}.${method.name}`;
+/**
+ * Run `jfr view <view> <file>` and parse its fixed-width table. JFR views are
+ * server-side aggregations, so their output is bounded regardless of how many
+ * raw events the recording holds — unlike `jfr print`, which can emit gigabytes
+ * for a long run and blow past any stdout buffer.
+ *
+ * Rows are parsed from the right: the trailing `numValueCols` whitespace-
+ * delimited tokens are the value columns; everything before them is the label
+ * (which may itself contain spaces, e.g. a method signature).
+ *
+ * @returns {Array<{label:string, values:string[]}>}
+ */
+async function jfrViewRows(jfrBin, file, view, numValueCols) {
+    const { stdout } = await execFileAsync(
+        jfrBin,
+        ["view", "--width", "400", "--cell-height", "1", view, file],
+        { maxBuffer: 32 * 1024 * 1024 },
+    );
+    const lines = stdout.split("\n");
+    let started = false;
+    const rows = [];
+    for (const raw of lines) {
+        const line = raw.replace(/\s+$/, "");
+        if (!started) {
+            // The dashed separator row marks the start of data.
+            if (/^-{3,}(\s+-{3,})*\s*$/.test(line)) started = true;
+            continue;
+        }
+        if (!line.trim()) break; // blank line ends the table
+        const toks = line.trim().split(/\s+/);
+        if (toks.length <= numValueCols) continue;
+        const values = toks.slice(toks.length - numValueCols);
+        const label = toks.slice(0, toks.length - numValueCols).join(" ");
+        rows.push({ label, values });
+    }
+    return rows;
 }
+
+/** Parse a `jfr summary` table into a Map of event name → event count. */
+async function jfrEventCounts(jfrBin, file) {
+    const counts = new Map();
+    try {
+        const { stdout } = await execFileAsync(jfrBin, ["summary", file], { maxBuffer: 8 * 1024 * 1024 });
+        for (const line of stdout.split("\n")) {
+            const m = line.trim().match(/^(jdk\.\S+)\s+(\d+)\s+\d+/);
+            if (m) counts.set(m[1], Number(m[2]));
+        }
+    } catch {}
+    return counts;
+}
+
+const pctToNumber = (s) => {
+    const n = parseFloat(String(s).replace("%", ""));
+    return Number.isFinite(n) ? n : 0;
+};
 
 /**
  * Extract every JFR stream we care about and reduce it to chart-ready data.
@@ -62,6 +109,7 @@ export async function extractJfr(jfrBin, file, { topN = 15 } = {}) {
         hotMethods: [],
         totalAllocatedMb: 0,
         sampleCount: 0,
+        allocationSampleCount: 0,
     };
 
     // Anchor all relative timestamps to the earliest event we observe.
@@ -139,41 +187,32 @@ export async function extractJfr(jfrBin, file, { topN = 15 } = {}) {
         }));
     } catch {}
 
-    // --- Top allocation sites (by sampled weight) -------------------------
+    // Bounded, server-side aggregations (jfr view) rather than `jfr print`, so
+    // a long recording with millions of samples can't overflow the buffer.
+    const counts = await jfrEventCounts(jfrBin, file);
+    out.sampleCount = counts.get("jdk.ExecutionSample") ?? 0;
+    out.allocationSampleCount = counts.get("jdk.ObjectAllocationSample") ?? 0;
+
+    // --- Top allocations (allocation pressure by class) -------------------
+    // The view reports each class's share of total sampled allocation weight
+    // ("Allocation Pressure %"). Absolute MB is reconstructed downstream from
+    // GCToolkit's accurate allocation rate; the JFR stream alone can't give a
+    // trustworthy absolute total for a sampled recording.
     try {
-        const events = await jfrEvents(jfrBin, file, "jdk.ObjectAllocationSample");
-        const byClass = new Map();
-        let totalWeight = 0;
-        for (const e of events) {
-            const cls = (e.values.objectClass?.name ?? "?").replace(/\//g, ".");
-            const weight = e.values.weight ?? 0;
-            totalWeight += weight;
-            const cur = byClass.get(cls) ?? { weight: 0, samples: 0 };
-            cur.weight += weight;
-            cur.samples += 1;
-            byClass.set(cls, cur);
-        }
-        out.totalAllocatedMb = totalWeight / (1024 * 1024);
-        out.topAllocations = [...byClass.entries()]
-            .map(([name, v]) => ({ name, weightMb: v.weight / (1024 * 1024), samples: v.samples }))
-            .sort((a, b) => b.weightMb - a.weightMb)
+        const rows = await jfrViewRows(jfrBin, file, "allocation-by-class", 1);
+        out.topAllocations = rows
+            .map((r) => ({ name: r.label, pressurePct: pctToNumber(r.values[0]), weightMb: null }))
+            .filter((a) => a.pressurePct > 0)
+            .sort((a, b) => b.pressurePct - a.pressurePct)
             .slice(0, topN);
     } catch {}
 
     // --- Hot methods (execution-sample top frames) ------------------------
     try {
-        const events = await jfrEvents(jfrBin, file, "jdk.ExecutionSample");
-        const byMethod = new Map();
-        let total = 0;
-        for (const e of events) {
-            const name = topFrameName(e);
-            if (!name) continue;
-            total += 1;
-            byMethod.set(name, (byMethod.get(name) ?? 0) + 1);
-        }
-        out.sampleCount = total;
-        out.hotMethods = [...byMethod.entries()]
-            .map(([name, samples]) => ({ name, samples, pct: total ? (samples / total) * 100 : 0 }))
+        const rows = await jfrViewRows(jfrBin, file, "hot-methods", 2);
+        out.hotMethods = rows
+            .map((r) => ({ name: r.label, samples: Number(r.values[0]) || 0, pct: pctToNumber(r.values[1]) }))
+            .filter((m) => m.samples > 0)
             .sort((a, b) => b.samples - a.samples)
             .slice(0, topN);
     } catch {}
