@@ -281,6 +281,7 @@ async function loadState() {
 function showEmpty() {
   el("empty").classList.remove("hidden");
   el("report").classList.add("hidden");
+  el("analyze-btn").classList.add("hidden");
 }
 
 function showReport(r) {
@@ -288,6 +289,7 @@ function showReport(r) {
   const rep = el("report");
   rep.innerHTML = renderReport(r);
   rep.classList.remove("hidden");
+  el("analyze-btn").classList.remove("hidden");
   if (r.artifacts && r.artifacts.views) {
     fetch("views").then((res) => (res.ok ? res.text() : "")).then((txt) => {
       const pre = el("views-pre");
@@ -356,8 +358,30 @@ function finishRun() {
   setTimeout(() => el("progress").classList.add("hidden"), 1500);
 }
 
+async function analyzeWithAI() {
+  const btn = el("analyze-btn");
+  btn.disabled = true;
+  const prev = btn.textContent;
+  btn.textContent = "Sending…";
+  el("run-status").textContent = "";
+  try {
+    const res = await fetch("analyze", { method: "POST" });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "HTTP " + res.status);
+    el("run-status").textContent = "Sent to Copilot — see the chat for recommendations.";
+    btn.textContent = "✓ Sent to Copilot";
+    setTimeout(() => { btn.textContent = prev; el("run-status").textContent = ""; }, 6000);
+  } catch (err) {
+    el("run-status").textContent = "Analyze failed: " + (err.message || err);
+    btn.textContent = prev;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 el("run-btn").addEventListener("click", openConfig);
 el("config-cancel").addEventListener("click", closeConfig);
 el("config-start").addEventListener("click", startRun);
+el("analyze-btn").addEventListener("click", analyzeWithAI);
 
 loadState();

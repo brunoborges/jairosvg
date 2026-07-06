@@ -9,6 +9,7 @@ import { join, dirname, extname, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { joinSession, createCanvas, CanvasError } from "@github/copilot-sdk/extension";
 import { runPipeline, loadLatest, readArtifact, TOOL_PATHS } from "./lib/pipeline.mjs";
+import { buildAnalysisPrompt } from "./lib/prompt.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const WEB_DIR = join(__dirname, "web");
@@ -55,6 +56,22 @@ async function startAnalysis(opts) {
     } finally {
         runState.running = false;
     }
+}
+
+/**
+ * Hand the latest analysis to the Copilot session for AI review. Injects a user
+ * turn (with the full report + jfr views attached) so the agent produces GC
+ * tuning and code-optimization recommendations grounded in the run's numbers.
+ */
+async function sendToCopilot() {
+    const report = runState.lastReport ?? (await loadLatest());
+    if (!report || !report.gc?.summary) {
+        throw new Error("No analysis available yet. Run an analysis first.");
+    }
+    const { prompt, displayPrompt, attachments } = buildAnalysisPrompt(report);
+    await sessionRef.send({ prompt, displayPrompt, attachments });
+    log("Sent GC/JFR analysis to Copilot for AI recommendations.");
+    return { sent: true, runId: report.runId, displayPrompt };
 }
 
 // --- HTTP server (one per open canvas instance) -----------------------------
@@ -125,6 +142,18 @@ async function handleRequest(req, res) {
         return;
     }
 
+    if (path === "/analyze" && req.method === "POST") {
+        try {
+            const result = await sendToCopilot();
+            res.writeHead(200, { "Content-Type": MIME[".json"] });
+            res.end(JSON.stringify(result));
+        } catch (err) {
+            res.writeHead(400, { "Content-Type": MIME[".json"] });
+            res.end(JSON.stringify({ error: String(err?.message || err) }));
+        }
+        return;
+    }
+
     if (path === "/tools") {
         res.writeHead(200, { "Content-Type": MIME[".json"] });
         res.end(JSON.stringify(TOOL_PATHS));
@@ -181,6 +210,17 @@ sessionRef = await joinSession({
                                 hotMethods: (report.jfr?.hotMethods ?? []).slice(0, 5),
                             },
                         };
+                    },
+                },
+                {
+                    name: "analyze_with_copilot",
+                    description: "Send the latest GC/JFR analysis to the Copilot session for AI review, producing JVM tuning and code-optimization recommendations grounded in the run's metrics.",
+                    handler: async () => {
+                        try {
+                            return await sendToCopilot();
+                        } catch (err) {
+                            throw new CanvasError("no_analysis", String(err?.message || err));
+                        }
                     },
                 },
                 {
