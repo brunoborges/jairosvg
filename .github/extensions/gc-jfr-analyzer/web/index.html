@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GC &amp; JFR Analysis</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="title">
+        <h1>GC &amp; JFR Analysis</h1>
+        <span class="subtitle">JairoSVG benchmark workload · Microsoft GCToolkit + JFR</span>
+      </div>
+      <div class="actions">
+        <span id="run-status" class="run-status"></span>
+        <button id="run-btn" class="btn primary">Run analysis</button>
+      </div>
+    </header>
+
+    <div id="progress" class="progress hidden">
+      <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+      <div id="progress-msg" class="progress-msg"></div>
+    </div>
+
+    <div id="config" class="config hidden">
+      <div class="config-grid">
+        <label>Warmup <input id="cfg-warmup" type="number" value="20" min="0" /></label>
+        <label>Iterations <input id="cfg-iterations" type="number" value="200" min="1" /></label>
+        <label>Heap (MB) <input id="cfg-heap" type="number" value="256" min="32" /></label>
+        <label>Engines
+          <select id="cfg-engines">
+            <option value="jairosvg">JairoSVG only</option>
+            <option value="all">JairoSVG + EchoSVG + JSVG</option>
+          </select>
+        </label>
+      </div>
+      <div class="config-actions">
+        <button id="config-start" class="btn primary">Start</button>
+        <button id="config-cancel" class="btn">Cancel</button>
+      </div>
+      <p class="hint">A constrained heap forces frequent GC cycles — great for producing rich telemetry.</p>
+    </div>
+
+    <main id="content">
+      <div id="empty" class="empty">
+        <p>No analysis yet.</p>
+        <p class="muted">Click <strong>Run analysis</strong> to run the JairoSVG benchmark with GC logging and JFR enabled, then visualize the results.</p>
+      </div>
+      <div id="report" class="report hidden"></div>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
