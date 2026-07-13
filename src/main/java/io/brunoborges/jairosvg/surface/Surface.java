@@ -99,6 +99,14 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     protected double height;
     protected OutputStream output;
 
+    /**
+     * When true, the output {@link #image} is borrowed from a thread-local
+     * {@link BufferPool} and must be returned via {@link #releaseImage()} once
+     * fully consumed. Only enable for paths that do not expose the image to the
+     * caller (i.e. the {@code byte[]}-returning conversions).
+     */
+    protected boolean pooled;
+
     // Color mapping
     private UnaryOperator<in.virit.color.Color> mapRgba;
 
@@ -195,7 +203,7 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     protected void createSurface(double w, double h) {
         int iw = Math.max(1, (int) Math.round(w));
         int ih = Math.max(1, (int) Math.round(h));
-        this.image = new BufferedImage(iw, ih, BufferedImage.TYPE_INT_ARGB);
+        this.image = pooled ? BufferPool.acquire(iw, ih) : new BufferedImage(iw, ih, BufferedImage.TYPE_INT_ARGB);
         this.width = iw;
         this.height = ih;
     }
@@ -664,6 +672,27 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     /** Get the rendered image. */
     public BufferedImage getImage() {
         return image;
+    }
+
+    /**
+     * Enable output-buffer pooling. Only call for conversion paths that fully
+     * consume the rendered image internally (never returning it to the caller),
+     * then invoke {@link #releaseImage()} after {@link #finish()}.
+     */
+    public void setPooled(boolean pooled) {
+        this.pooled = pooled;
+    }
+
+    /**
+     * Return a pooled output image to the thread-local {@link BufferPool} for
+     * reuse. No-op when pooling is disabled. After this call {@link #image} is no
+     * longer safe to read.
+     */
+    public void releaseImage() {
+        if (pooled && image != null) {
+            BufferPool.release(image);
+            image = null;
+        }
     }
 
     /**
