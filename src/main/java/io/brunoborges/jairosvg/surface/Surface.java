@@ -696,6 +696,26 @@ public sealed class Surface permits PngSurface, JpegSurface, TiffSurface, PdfSur
     }
 
     /**
+     * Borrow a cleared {@code TYPE_INT_ARGB} scratch image of the given size from
+     * the thread-local {@link BufferPool}. For short-lived internal render targets
+     * (e.g. filter sub-region buffers) that are fully consumed before
+     * {@link #releaseScratch(BufferedImage)} is called and never handed to the
+     * caller. Recycling these across conversions removes their per-call
+     * {@code int[]} allocation from the render hot path.
+     */
+    public BufferedImage acquireScratch(int w, int h) {
+        return BufferPool.acquire(w, h);
+    }
+
+    /**
+     * Return a scratch image obtained from {@link #acquireScratch(int, int)} to the
+     * pool. The image must not be read after this call.
+     */
+    public void releaseScratch(BufferedImage img) {
+        BufferPool.release(img);
+    }
+
+    /**
      * Paint a shape (fill or stroke) while honouring a pending
      * {@link #paintTransform}. When a pattern's {@code patternTransform} is active
      * the Graphics2D coordinate system is temporarily transformed so that the
