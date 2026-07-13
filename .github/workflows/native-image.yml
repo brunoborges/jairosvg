@@ -27,7 +27,7 @@ jobs:
   native-image:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set up GraalVM JDK 25
         uses: graalvm/setup-graalvm@v1
         with:
