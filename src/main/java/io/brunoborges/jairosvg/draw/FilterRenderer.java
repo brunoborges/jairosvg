@@ -69,7 +69,7 @@ public final class FilterRenderer {
             offsetY = subRegion.y;
             w = subRegion.width;
             h = subRegion.height;
-            workSource = extractSubRegion(sourceGraphic, subRegion);
+            workSource = extractSubRegion(surface, sourceGraphic, subRegion);
             // Adjust filter region to sub-region coordinates for feTile
             if (filterRegion != null) {
                 filterRegion = new java.awt.Rectangle(filterRegion.x - offsetX, filterRegion.y - offsetY,
@@ -318,6 +318,9 @@ public final class FilterRenderer {
 
         if (usingSubRegion) {
             placeSubRegion(sourceGraphic, last, subRegion);
+            // workSource was borrowed from the pool for this sub-region; all reads
+            // (including the placeSubRegion copy above) are done, so recycle it.
+            surface.releaseScratch(workSource);
             return sourceGraphic;
         }
         return last;
@@ -469,10 +472,10 @@ public final class FilterRenderer {
         return copy;
     }
 
-    private static BufferedImage extractSubRegion(BufferedImage src, java.awt.Rectangle region) {
+    private static BufferedImage extractSubRegion(Surface surface, BufferedImage src, java.awt.Rectangle region) {
         int fullW = src.getWidth();
         int w = region.width, h = region.height;
-        BufferedImage sub = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage sub = surface.acquireScratch(w, h);
         int[] srcPixels = ((DataBufferInt) src.getRaster().getDataBuffer()).getData();
         int[] subPixels = ((DataBufferInt) sub.getRaster().getDataBuffer()).getData();
         for (int y = 0; y < h; y++) {

@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
-import io.brunoborges.jairosvg.css.Colors;
 import io.brunoborges.jairosvg.dom.Node;
 import io.brunoborges.jairosvg.surface.*;
 
@@ -426,12 +425,15 @@ public final class JairoSVG {
 
         private void convert(Surface surface, OutputStream out) throws Exception {
             Node tree = parseInput();
+            surface.setPooled(true);
             initSurface(surface, tree, out);
             try {
                 surface.finish();
             } catch (Exception e) {
                 surface.context.dispose();
                 throw e;
+            } finally {
+                surface.releaseImage();
             }
         }
 
