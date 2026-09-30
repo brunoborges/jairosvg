@@ -61,7 +61,7 @@ if [[ "$MODE" == "release" ]]; then
     echo "  ✓ comparison/README.md"
 
     # 5. Site docs
-    for f in index.md getting-started.md; do
+    for f in index.md getting-started.md build-time-rendering.md; do
         filepath="$ROOT/src/site/markdown/$f"
         if [[ -f "$filepath" ]]; then
             sedi "s|io\.brunoborges:jairosvg:${VER_RE}|io.brunoborges:jairosvg:$NEW_VERSION|g" "$filepath"

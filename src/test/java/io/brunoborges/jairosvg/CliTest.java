@@ -118,15 +118,46 @@ class CliTest {
         assertTrue(Files.size(outFile) > 0);
     }
 
-    // ---- Unknown flag (ignored) ----
+    // ---- Argument validation ----
 
     @Test
-    void testUnknownFlagIgnored(@TempDir Path tempDir) throws Exception {
+    void testUnknownFlagRejected(@TempDir Path tempDir) throws Exception {
         Path svgFile = writeSvg(tempDir);
         Path outFile = tempDir.resolve("unknown.png");
-        Main.main(new String[]{"--some-unknown-flag", "-o", outFile.toString(), svgFile.toString()});
+        var ex = assertThrows(IllegalArgumentException.class,
+                () -> Main.main(new String[]{"--some-unknown-flag", "-o", outFile.toString(), svgFile.toString()}));
+        assertTrue(ex.getMessage().contains("--some-unknown-flag"));
+        assertFalse(Files.exists(outFile));
+    }
 
-        assertTrue(Files.exists(outFile));
+    @Test
+    void testMissingOptionValueRejected(@TempDir Path tempDir) throws Exception {
+        Path svgFile = writeSvg(tempDir);
+        var ex = assertThrows(IllegalArgumentException.class, () -> Main.main(new String[]{svgFile.toString(), "-o"}));
+        assertTrue(ex.getMessage().contains("-o"));
+    }
+
+    @Test
+    void testInvalidNumberRejected(@TempDir Path tempDir) throws Exception {
+        Path svgFile = writeSvg(tempDir);
+        var ex = assertThrows(IllegalArgumentException.class,
+                () -> Main.main(new String[]{"--output-width", "abc", svgFile.toString()}));
+        assertTrue(ex.getMessage().contains("--output-width"));
+    }
+
+    // ---- Output parent directories ----
+
+    @Test
+    void testCreatesMissingOutputParentDirectories(@TempDir Path tempDir) throws Exception {
+        Path svgFile = writeSvg(tempDir);
+        Path outFile = tempDir.resolve("a/b/META-INF/resources/icons/icon.png");
+        Main.main(new String[]{svgFile.toString(), "-o", outFile.toString(), "--output-width", "64", "--output-height",
+                "64"});
+
+        BufferedImage img = ImageIO.read(outFile.toFile());
+        assertNotNull(img);
+        assertEquals(64, img.getWidth());
+        assertEquals(64, img.getHeight());
     }
 
     // ---- Output format flags ----

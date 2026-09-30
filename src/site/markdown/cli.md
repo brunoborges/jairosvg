@@ -73,6 +73,11 @@ java -jar jairosvg-cli.jar https://example.com/image.svg -o output.png
 java -jar jairosvg-cli.jar input.svg | display
 ```
 
+### During a Maven or Gradle build
+
+The CLI can run in-process during a build to render icons and other images from SVG sources.
+See [Build-time Rendering](build-time-rendering.html).
+
 ### Using JBang
 
 ```bash

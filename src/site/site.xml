@@ -20,6 +20,7 @@
       <item name="Getting Started" href="getting-started.html"/>
       <item name="API Reference" href="api-reference.html"/>
       <item name="CLI Reference" href="cli.html"/>
+      <item name="Build-time Rendering" href="build-time-rendering.html"/>
       <item name="Architecture" href="architecture.html"/>
       <item name="Benchmark" href="benchmark.html"/>
       <item name="FAQ" href="faq.html"/>
