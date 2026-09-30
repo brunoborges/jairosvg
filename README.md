@@ -251,10 +251,51 @@ java -jar target/jairosvg-{version}-cli.jar input.svg -o output.png
 | `--output-width PIXELS`  | Desired output width                                            |
 | `--output-height PIXELS` | Desired output height                                           |
 | `-n, --negate-colors`    | Negate vector colors                                            |
-| `-i, --invert-images`    | Invert raster image colors                                      |
 | `-u, --unsafe`           | Allow external file access                                      |
 
-When multiple input files are given, `-o` specifies an output directory. Output filenames are derived from input names with the appropriate extension.
+When multiple input files are given, `-o` specifies an output directory. Output filenames are derived from input names with the appropriate extension. Missing parent directories of the output are created. Unknown options are rejected.
+
+### Build-time Rendering (Maven / Gradle)
+
+Generate PWA icons, favicons, and other raster images from an SVG during the build, with no dedicated plugin: run the CLI in-process with the [Exec Maven Plugin](https://www.mojohaus.org/exec-maven-plugin/) (or Gradle `JavaExec`).
+
+```xml
+<plugin>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>exec-maven-plugin</artifactId>
+    <version>3.6.4</version>
+    <dependencies>
+        <dependency>
+            <groupId>io.brunoborges</groupId>
+            <artifactId>jairosvg</artifactId>
+            <version>1.0.14</version>
+        </dependency>
+    </dependencies>
+    <configuration>
+        <mainClass>io.brunoborges.jairosvg.cli.Main</mainClass>
+        <includeProjectDependencies>false</includeProjectDependencies>
+        <includePluginDependencies>true</includePluginDependencies>
+    </configuration>
+    <executions>
+        <execution>
+            <id>pwa-icon-512</id>
+            <phase>process-resources</phase>
+            <goals><goal>java</goal></goals>
+            <configuration>
+                <arguments>
+                    <argument>${project.basedir}/src/main/icons/logo.svg</argument>
+                    <argument>-o</argument>
+                    <argument>${project.build.outputDirectory}/META-INF/resources/icons/icon-512.png</argument>
+                    <argument>--output-width</argument><argument>512</argument>
+                    <argument>--output-height</argument><argument>512</argument>
+                </arguments>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+Add one `<execution>` per output image. See the [Build-time Rendering guide](https://brunoborges.github.io/jairosvg/build-time-rendering.html) for multiple sizes, `generated-resources` layout, and a Gradle example. Requires JairoSVG 1.0.15+ and a Java 25 build JVM.
 
 ## Supported SVG Features
 

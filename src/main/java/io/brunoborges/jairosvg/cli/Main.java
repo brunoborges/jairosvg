@@ -20,6 +20,9 @@ public final class Main {
 
     public static void main(String[] args) throws Exception {
         ensureJavaHome();
+        if (System.getProperty("java.awt.headless") == null) {
+            System.setProperty("java.awt.headless", "true");
+        }
 
         if (args.length == 0 || "--help".equals(args[0]) || "-h".equals(args[0])) {
             printUsage();
@@ -46,22 +49,25 @@ public final class Main {
         Double outputHeight = null;
 
         for (int i = 0; i < args.length; i++) {
-            switch (args[i]) {
-                case "-o", "--output" -> output = args[++i];
-                case "-f", "--format" -> format = args[++i];
-                case "-d", "--dpi" -> dpi = Double.parseDouble(args[++i]);
-                case "-W", "--width" -> width = Double.parseDouble(args[++i]);
-                case "-H", "--height" -> height = Double.parseDouble(args[++i]);
-                case "-s", "--scale" -> scale = Double.parseDouble(args[++i]);
-                case "-b", "--background" -> background = args[++i];
+            String arg = args[i];
+            switch (arg) {
+                case "-o", "--output" -> output = optionValue(args, ++i, arg);
+                case "-f", "--format" -> format = optionValue(args, ++i, arg);
+                case "-d", "--dpi" -> dpi = numberValue(args, ++i, arg);
+                case "-W", "--width" -> width = numberValue(args, ++i, arg);
+                case "-H", "--height" -> height = numberValue(args, ++i, arg);
+                case "-s", "--scale" -> scale = numberValue(args, ++i, arg);
+                case "-b", "--background" -> background = optionValue(args, ++i, arg);
                 case "-n", "--negate-colors" -> negateColors = true;
                 case "-u", "--unsafe" -> unsafe = true;
-                case "--output-width" -> outputWidth = Double.parseDouble(args[++i]);
-                case "--output-height" -> outputHeight = Double.parseDouble(args[++i]);
+                case "--output-width" -> outputWidth = numberValue(args, ++i, arg);
+                case "--output-height" -> outputHeight = numberValue(args, ++i, arg);
                 default -> {
-                    if (!args[i].startsWith("-") || "-".equals(args[i])) {
-                        inputs.add(args[i]);
+                    if (arg.startsWith("-") && !"-".equals(arg)) {
+                        System.err.println("Error: Unknown option: " + arg);
+                        throw new IllegalArgumentException("Unknown option: " + arg);
                     }
+                    inputs.add(arg);
                 }
             }
         }
@@ -135,10 +141,32 @@ public final class Main {
             if ("-".equals(fileOutput)) {
                 writeOutput(builder, format, System.out);
             } else {
+                Path parent = Path.of(fileOutput).toAbsolutePath().getParent();
+                if (parent != null) {
+                    Files.createDirectories(parent);
+                }
                 try (var out = new FileOutputStream(fileOutput)) {
                     writeOutput(builder, format, out);
                 }
             }
+        }
+    }
+
+    private static String optionValue(String[] args, int index, String option) {
+        if (index >= args.length) {
+            System.err.println("Error: Missing value for option: " + option);
+            throw new IllegalArgumentException("Missing value for option: " + option);
+        }
+        return args[index];
+    }
+
+    private static double numberValue(String[] args, int index, String option) {
+        String value = optionValue(args, index, option);
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            System.err.println("Error: Invalid number for option " + option + ": " + value);
+            throw new IllegalArgumentException("Invalid number for option " + option + ": " + value, e);
         }
     }
 
