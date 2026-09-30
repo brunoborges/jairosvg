@@ -81,7 +81,7 @@ java -jar jairosvg-{version}-cli.jar *.svg -o output-dir/
 <dependency>
     <groupId>io.brunoborges</groupId>
     <artifactId>jairosvg</artifactId>
-    <version>1.0.14</version>
+    <version>1.0.15</version>
 </dependency>
 ```
 
@@ -98,13 +98,13 @@ java -jar jairosvg-{version}-cli.jar *.svg -o output-dir/
 ### Gradle
 
 ```groovy
-implementation 'io.brunoborges:jairosvg:1.0.14'
+implementation 'io.brunoborges:jairosvg:1.0.15'
 ```
 
 ### JBang (quick run)
 
 ```bash
-jbang --deps io.brunoborges:jairosvg:1.0.14 MyScript.java
+jbang --deps io.brunoborges:jairosvg:1.0.15 MyScript.java
 ```
 
 ## Quick Start
@@ -268,7 +268,7 @@ Generate PWA icons, favicons, and other raster images from an SVG during the bui
         <dependency>
             <groupId>io.brunoborges</groupId>
             <artifactId>jairosvg</artifactId>
-            <version>1.0.14</version>
+            <version>1.0.15</version>
         </dependency>
     </dependencies>
     <configuration>

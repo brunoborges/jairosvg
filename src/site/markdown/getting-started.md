@@ -15,14 +15,14 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.brunoborges</groupId>
     <artifactId>jairosvg</artifactId>
-    <version>1.0.14</version>
+    <version>1.0.15</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-implementation 'io.brunoborges:jairosvg:1.0.14'
+implementation 'io.brunoborges:jairosvg:1.0.15'
 ```
 
 ### JBang
@@ -30,7 +30,7 @@ implementation 'io.brunoborges:jairosvg:1.0.14'
 For quick scripting:
 
 ```bash
-jbang --deps io.brunoborges:jairosvg:1.0.14 MyScript.java
+jbang --deps io.brunoborges:jairosvg:1.0.15 MyScript.java
 ```
 
 ### CLI (Fat JAR)
@@ -39,7 +39,7 @@ jbang --deps io.brunoborges:jairosvg:1.0.14 MyScript.java
 git clone https://github.com/brunoborges/jairosvg.git
 cd jairosvg
 ./mvnw package -Pcli
-java -jar target/jairosvg-1.0.14-cli.jar --help
+java -jar target/jairosvg-1.0.15-cli.jar --help
 ```
 
 ## First Conversion
