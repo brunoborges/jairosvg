@@ -261,7 +261,7 @@ hooks:
  
 project:
     name: JairoSVG
-    version: 1.0.14
+    version: 1.0.15
     versionPattern: SEMVER
     snapshot:
         enabled: false
@@ -296,14 +296,14 @@ requiring any native dependencies.
     extraProperties:
         versionMajor: 1
         versionMinor: 0
-        versionPatch: 14
-        versionNumber: 1.0.14
-        versionWithUnderscores: 1_0_14
-        versionWithDashes: 1-0-14
-        versionNumberWithUnderscores: 1_0_14
-        versionNumberWithDashes: 1-0-14
-        effectiveVersionWithUnderscores: 1_0_14
-        effectiveVersionWithDashes: 1-0-14
+        versionPatch: 15
+        versionNumber: 1.0.15
+        versionWithUnderscores: 1_0_15
+        versionWithDashes: 1-0-15
+        versionNumberWithUnderscores: 1_0_15
+        versionNumberWithDashes: 1-0-15
+        effectiveVersionWithUnderscores: 1_0_15
+        effectiveVersionWithDashes: 1-0-15
     languages:
         java:
             enabled: true
@@ -1019,7 +1019,7 @@ catalog:
         active: NEVER
         name: swid-tag
         path: SWIDTAG
-        tagId: 5b51953e-5c88-345e-b9e9-86bb584aef20
+        tagId: 778d6345-9c29-363a-92f9-ab55dedfecce
         tagVersion: 1
         lang: en-US
         corpus: false
@@ -1464,10 +1464,10 @@ distributions:
                 tagRepository: false
                 token: **unset**
  
-[INFO]  Project version set to 1.0.14
+[INFO]  Project version set to 1.0.15
 [INFO]  Release is not snapshot
-[INFO]  Timestamp is 2026-09-04T14:25:06.171998828Z
-[INFO]  HEAD is at 149115e
+[INFO]  Timestamp is 2026-09-30T20:26:52.657572004Z
+[INFO]  HEAD is at 98f67fa
 [INFO]  Platform is linux-x86_64
 [DEBUG] loading extension default-jreleaser-mustache:jreleaser.shadow.org.jreleaser.extensions.internal.mustache.DefaultMustacheExtension
 [DEBUG] adding jreleaser.shadow.org.jreleaser.extensions.internal.mustache.DefaultMustacheExtensionPoint from default-jreleaser-mustache extension
@@ -1475,78 +1475,54 @@ distributions:
 [INFO]  dry-run set to false
 [INFO]  Generating changelog
 [DEBUG] resolving commits
-[DEBUG] looking for tag that matches 'v1.0.14'
-[DEBUG] looking for a tag before 'v1.0.14' that matches 'v.*'
-[DEBUG] found tag v1.0.13
+[DEBUG] looking for tag that matches 'v1.0.15'
+[DEBUG] looking for a tag before 'v1.0.15' that matches 'v.*'
+[DEBUG] found tag v1.0.14
 [DEBUG] sorting commits DESC
 [INFO]  Storing changelog: out/jreleaser/release/CHANGELOG.md
 [DEBUG] ## Changelog
 
 ## 🧰 Tasks
-- a199bcc **deps**: Bump actions/setup-java from 5 to 6
-- cb2ff37 **deps**: Bump github/gh-aw-actions/setup from 0.82.0 to 0.87.9
-- 89e194b **deps**: Bump github/gh-aw-actions/setup-cli from 0.82.0 to 0.87.9
-- 63574e4 **deps-dev**: Bump com.diffplug.spotless:spotless-maven-plugin
-- 7eb6747 **deps**: Bump org.apache.maven:apache-maven from 3.9.9 to 3.9.16
-- 46d8fe5 **deps-dev**: Bump org.junit.jupiter:junit-jupiter
-- 4941369 **deps-dev**: Bump org.apache.maven.plugins:maven-jar-plugin
-- e2474d4 **deps**: Bump actions/setup-node from 6.4.0 to 7.0.0
-- 27a0482 **deps**: Bump actions/setup-python from 6 to 7
-- 3a04fe8 **deps**: Bump org.apache.pdfbox:pdfbox from 3.0.7 to 3.0.8
-- ee961e3 **deps-dev**: Bump com.diffplug.spotless:spotless-maven-plugin
-- 735fa1f **deps**: Bump github/gh-aw-actions/setup-cli from 0.79.8 to 0.82.0
-- a230fab **deps**: Bump actions/cache/save from 5.0.5 to 6.1.0
-- 02390e8 **deps**: Bump github/gh-aw-actions/setup from 0.79.8 to 0.82.0
-- 9da66e7 **deps-dev**: Bump org.junit.jupiter:junit-jupiter
-- 3f021ef **deps**: Bump actions/cache/restore from 5.0.5 to 6.1.0
-- 188b731 **deps**: Bump actions/checkout from 6 to 7
-- b79efb3 **deps-dev**: Bump com.diffplug.spotless:spotless-maven-plugin
+- 536f74e **deps**: Bump github/gh-aw-actions/setup-cli from 0.89.7 to 0.89.21
+- 9bf146a **deps**: Bump github/gh-aw-actions/setup from 0.89.7 to 0.89.21
+- 00c6bbb **deps-dev**: Bump org.apache.maven.plugins:maven-deploy-plugin
+- fd10b7f **deps**: Bump github/gh-aw-actions/setup-cli from 0.87.9 to 0.89.7
+- 34757c8 **deps**: Bump github/gh-aw-actions/setup from 0.87.9 to 0.89.7
+- 21d6fcf **deps-dev**: Bump com.diffplug.spotless:spotless-maven-plugin
+- 1eedb24 **deps-dev**: Bump org.apache.maven.plugins:maven-compiler-plugin
+- eef2cb7 **deps-dev**: Bump org.apache.maven.plugins:maven-surefire-plugin
 
 ---
-- 149115e Release v1.0.14
-- a934dd2 Merge remote-tracking branch 'origin/main' into dependabot/maven/org.apache.pdfbox-pdfbox-3.0.8
-- f63c7ab Reduce render allocation pressure via buffer pooling
-- c7a4bc2 Merge remote-tracking branch 'origin/main' into brunoborges-gc-jfr-analysis-canvas
-- 955dc9c Recycle output BufferedImage buffers for byte[]-returning conversions
-- cb99def Remove jvm-pulse extension submodule
-- 70147b5 Reference jvm-pulse extension as submodule
-- 9f91542 Add vertical spacing between verdict banner and KPI rows
-- af7e1f5 Rename extension to "JVM Pulse"
-- ef278fa Redesign GC & JFR dashboard: verdict, tiered KPIs, semantic health
-- 11adebe Fix JFR allocation extraction overflow on large recordings
-- de167a5 Generalize GC/JFR canvas to any Java project via Copilot-driven runs
-- db7ecc1 Add Copilot AI-analysis integration to GC/JFR canvas
-- 253f195 Add GC & JFR analysis canvas extension
-- e966f5d updated aw labeler
-- 5a454dc Bump version to 1.0.14-SNAPSHOT
+- 98f67fa Release v1.0.15
+- 4f64cd4 Support build-time SVG rendering via CLI in Maven/Gradle builds, closes #279
+- b1d612e Bump version to 1.0.15-SNAPSHOT
 
 
 ## Contributors
 We'd like to thank the following people for their contributions:
 - Bruno Borges
 - GitHub
-- brunoborges
 - github-actions[bot]
 [INFO]  Calculating checksums for distributions and files
-[DEBUG]   [checksum] checksum does not exist: out/jreleaser/checksums/jairosvg/jairosvg-1.0.14.jar.sha256
-[INFO]    [checksum] target/jairosvg-1.0.14.jar.sha256
-[DEBUG]   [checksum] reading out/jreleaser/checksums/jairosvg/jairosvg-1.0.14.jar.sha256
-[DEBUG]   [checksum] checksum does not exist: out/jreleaser/checksums/jairosvg-cli/jairosvg-1.0.14-cli.jar.sha256
-[INFO]    [checksum] target/jairosvg-1.0.14-cli.jar.sha256
-[DEBUG]   [checksum] reading out/jreleaser/checksums/jairosvg-cli/jairosvg-1.0.14-cli.jar.sha256
+[DEBUG]   [checksum] checksum does not exist: out/jreleaser/checksums/jairosvg/jairosvg-1.0.15.jar.sha256
+[INFO]    [checksum] target/jairosvg-1.0.15.jar.sha256
+[DEBUG]   [checksum] reading out/jreleaser/checksums/jairosvg/jairosvg-1.0.15.jar.sha256
+[DEBUG]   [checksum] checksum does not exist: out/jreleaser/checksums/jairosvg-cli/jairosvg-1.0.15-cli.jar.sha256
+[INFO]    [checksum] target/jairosvg-1.0.15-cli.jar.sha256
+[DEBUG]   [checksum] reading out/jreleaser/checksums/jairosvg-cli/jairosvg-1.0.15-cli.jar.sha256
 [INFO]  Cataloging artifacts
 [INFO]    Cataloging is not enabled. Skipping
 [INFO]  Signing distributions and files
-[DEBUG]   [gpg] signature does not exist: out/jreleaser/signatures/jairosvg-1.0.14.jar.asc
-[DEBUG]   [gpg] signature does not exist: out/jreleaser/signatures/jairosvg-1.0.14-cli.jar.asc
+[DEBUG]   [gpg] signature does not exist: out/jreleaser/signatures/jairosvg-1.0.15.jar.asc
+[DEBUG]   [gpg] signature does not exist: out/jreleaser/signatures/jairosvg-1.0.15-cli.jar.asc
 [DEBUG]   [gpg] signature does not exist: out/jreleaser/signatures/checksums_sha256.txt.asc
 [DEBUG]   [gpg] signing 3 files into out/jreleaser/signatures
-[INFO]    [gpg] target/jairosvg-1.0.14.jar
-[INFO]    [gpg] target/jairosvg-1.0.14-cli.jar
+[INFO]    [gpg] target/jairosvg-1.0.15.jar
+[INFO]    [gpg] target/jairosvg-1.0.15-cli.jar
 [INFO]    [gpg] out/jreleaser/checksums/checksums_sha256.txt
 [DEBUG]   [gpg] verifying 3 signatures
-[DEBUG]   [verify] out/jreleaser/signatures/jairosvg-1.0.14.jar.asc
-[DEBUG]   [verify] out/jreleaser/signatures/jairosvg-1.0.14-cli.jar.asc
+[DEBUG]   [verify] out/jreleaser/signatures/jairosvg-1.0.15.jar.asc
+[DEBUG]   [verify] out/jreleaser/signatures/jairosvg-1.0.15-cli.jar.asc
 [DEBUG]   [verify] out/jreleaser/signatures/checksums_sha256.txt.asc
 [INFO]  Deploying Maven artifacts
 [INFO]    [maven] Deploying all staged artifacts
@@ -1556,108 +1532,138 @@ We'd like to thank the following people for their contributions:
 [INFO]      [mavenCentral] Checking if key 51E003AB27AE3E0F has been published
 [DEBUG]     [mavenCentral]  + https://keys.openpgp.org
 [DEBUG]     [mavenCentral]  + https://keyserver.ubuntu.com
-[DEBUG]     [mavenCentral]  x https://pgp.mit.edu
+[DEBUG]     [mavenCentral] Unexpected error Read timed out
 [INFO]      [mavenCentral] Key 51E003AB27AE3E0F was found as published
-[DEBUG]     [sign] signature does not exist: target/staging-deploy/io/brunoborges/jairosvg/1.0.14/jairosvg-1.0.14.jar.asc
-[INFO]      [sign] target/staging-deploy/io/brunoborges/jairosvg/1.0.14/jairosvg-1.0.14.jar
-[DEBUG]     [verify] target/staging-deploy/io/brunoborges/jairosvg/1.0.14/jairosvg-1.0.14.jar.asc
-[DEBUG]     [sign] signature does not exist: target/staging-deploy/io/brunoborges/jairosvg/1.0.14/jairosvg-1.0.14-sources.jar.asc
-[INFO]      [sign] target/staging-deploy/io/brunoborges/jairosvg/1.0.14/jairosvg-1.0.14-sources.jar
-[DEBUG]     [verify] target/staging-deploy/io/brunoborges/jairosvg/1.0.14/jairosvg-1.0.14-sources.jar.asc
-[DEBUG]     [sign] signature does not exist: target/staging-deploy/io/brunoborges/jairosvg/1.0.14/jairosvg-1.0.14.pom.asc
-[INFO]      [sign] target/staging-deploy/io/brunoborges/jairosvg/1.0.14/jairosvg-1.0.14.pom
-[DEBUG]     [verify] target/staging-deploy/io/brunoborges/jairosvg/1.0.14/jairosvg-1.0.14.pom.asc
-[DEBUG]     [sign] signature does not exist: target/staging-deploy/io/brunoborges/jairosvg/1.0.14/jairosvg-1.0.14-javadoc.jar.asc
-[INFO]      [sign] target/staging-deploy/io/brunoborges/jairosvg/1.0.14/jairosvg-1.0.14-javadoc.jar
-[DEBUG]     [verify] target/staging-deploy/io/brunoborges/jairosvg/1.0.14/jairosvg-1.0.14-javadoc.jar.asc
-[DEBUG]     [mavenCentral] copying files from target/staging-deploy to /tmp/maven-central7084735669366731520
-[INFO]      [mavenCentral]  - io.brunoborges-JairoSVG-1.0.14-bundle.zip
-[DEBUG]     [mavenCentral] checking if io.brunoborges:jairosvg:1.0.14 is published
-[INFO]      [mavenCentral] Uploading io.brunoborges-JairoSVG-1.0.14-bundle.zip
-[INFO]      [mavenCentral] Bundle io.brunoborges-JairoSVG-1.0.14-bundle.zip uploaded as deployment 01899df0-046a-4854-a166-35f489c3dfd5
-[DEBUG]     [mavenCentral] waiting for deployment (01899df0-046a-4854-a166-35f489c3dfd5) state to be one of [VALIDATED, FAILED]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [sign] signature does not exist: target/staging-deploy/io/brunoborges/jairosvg/1.0.15/jairosvg-1.0.15-sources.jar.asc
+[INFO]      [sign] target/staging-deploy/io/brunoborges/jairosvg/1.0.15/jairosvg-1.0.15-sources.jar
+[DEBUG]     [verify] target/staging-deploy/io/brunoborges/jairosvg/1.0.15/jairosvg-1.0.15-sources.jar.asc
+[DEBUG]     [sign] signature does not exist: target/staging-deploy/io/brunoborges/jairosvg/1.0.15/jairosvg-1.0.15-javadoc.jar.asc
+[INFO]      [sign] target/staging-deploy/io/brunoborges/jairosvg/1.0.15/jairosvg-1.0.15-javadoc.jar
+[DEBUG]     [verify] target/staging-deploy/io/brunoborges/jairosvg/1.0.15/jairosvg-1.0.15-javadoc.jar.asc
+[DEBUG]     [sign] signature does not exist: target/staging-deploy/io/brunoborges/jairosvg/1.0.15/jairosvg-1.0.15.jar.asc
+[INFO]      [sign] target/staging-deploy/io/brunoborges/jairosvg/1.0.15/jairosvg-1.0.15.jar
+[DEBUG]     [verify] target/staging-deploy/io/brunoborges/jairosvg/1.0.15/jairosvg-1.0.15.jar.asc
+[DEBUG]     [sign] signature does not exist: target/staging-deploy/io/brunoborges/jairosvg/1.0.15/jairosvg-1.0.15.pom.asc
+[INFO]      [sign] target/staging-deploy/io/brunoborges/jairosvg/1.0.15/jairosvg-1.0.15.pom
+[DEBUG]     [verify] target/staging-deploy/io/brunoborges/jairosvg/1.0.15/jairosvg-1.0.15.pom.asc
+[DEBUG]     [mavenCentral] copying files from target/staging-deploy to /tmp/maven-central11290455424953288732
+[INFO]      [mavenCentral]  - io.brunoborges-JairoSVG-1.0.15-bundle.zip
+[DEBUG]     [mavenCentral] checking if io.brunoborges:jairosvg:1.0.15 is published
+[INFO]      [mavenCentral] Uploading io.brunoborges-JairoSVG-1.0.15-bundle.zip
+[INFO]      [mavenCentral] Bundle io.brunoborges-JairoSVG-1.0.15-bundle.zip uploaded as deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
+[DEBUG]     [mavenCentral] waiting for deployment (0c33f6f0-6309-4761-9f6e-e400dca5e61d) state to be one of [VALIDATED, FAILED]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 1 of 101
-[DEBUG]     [mavenCentral] attempt 1/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@7ac5b4c]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
-[INFO]      [mavenCentral] Publishing deployment 01899df0-046a-4854-a166-35f489c3dfd5
-[DEBUG]     [mavenCentral] waiting for deployment (01899df0-046a-4854-a166-35f489c3dfd5) state to be one of [PUBLISHED, FAILED]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 1/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@53982523]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
+[INFO]      [mavenCentral] Publishing deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
+[DEBUG]     [mavenCentral] waiting for deployment (0c33f6f0-6309-4761-9f6e-e400dca5e61d) state to be one of [PUBLISHED, FAILED]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 1 of 101
-[DEBUG]     [mavenCentral] attempt 1/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@62cf6a84]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 1/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@4d81e83a]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 2 of 101
-[DEBUG]     [mavenCentral] attempt 2/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@3b57dba4]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 2/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@47569167]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 3 of 101
-[DEBUG]     [mavenCentral] attempt 3/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@4b93dd6a]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 3/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@2616b618]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 4 of 101
-[DEBUG]     [mavenCentral] attempt 4/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@cf01c2e]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 4/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@49754e74]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 5 of 101
-[DEBUG]     [mavenCentral] attempt 5/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@787d1f9c]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 5/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@1eb9bf60]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 6 of 101
-[DEBUG]     [mavenCentral] attempt 6/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@2c47a053]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 6/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@79e10fb4]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 7 of 101
-[DEBUG]     [mavenCentral] attempt 7/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@7d7ceca8]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 7/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@5ba1b62e]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 8 of 101
-[DEBUG]     [mavenCentral] attempt 8/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@6744707b]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 8/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@26c7b1c6]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 9 of 101
-[DEBUG]     [mavenCentral] attempt 9/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@787178b1]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 9/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@65593327]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 10 of 101
-[DEBUG]     [mavenCentral] attempt 10/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@77aea]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 10/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@d36c1c3]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 11 of 101
-[DEBUG]     [mavenCentral] attempt 11/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@573aeab2]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 11/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@24a4e2c5]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 12 of 101
-[DEBUG]     [mavenCentral] attempt 12/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@71789580]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 12/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@6ddc67d0]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 13 of 101
-[DEBUG]     [mavenCentral] attempt 13/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@9d3d54e]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 13/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@795b66d]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 14 of 101
-[DEBUG]     [mavenCentral] attempt 14/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@c14e5a5]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 14/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@333398f]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 15 of 101
-[DEBUG]     [mavenCentral] attempt 15/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@40a1b6d4]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 15/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@6206b4a7]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 16 of 101
-[DEBUG]     [mavenCentral] attempt 16/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@40d96578]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 16/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@25ad25f5]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 17 of 101
-[DEBUG]     [mavenCentral] attempt 17/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@9b3be1c]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 17/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@283ab206]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 18 of 101
-[DEBUG]     [mavenCentral] attempt 18/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@37314843]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 18/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@45d4421d]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 19 of 101
-[DEBUG]     [mavenCentral] attempt 19/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@1282e98]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 19/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@569348e1]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 20 of 101
-[DEBUG]     [mavenCentral] attempt 20/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@9e30f9a]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 20/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@3e9beef2]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]      [mavenCentral] Polling status: 21 of 101
-[DEBUG]     [mavenCentral] attempt 21/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@3111631d]
-[DEBUG]     [mavenCentral] querying status for deployment 01899df0-046a-4854-a166-35f489c3dfd5
+[DEBUG]     [mavenCentral] attempt 21/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@4ea1aa52]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
+[INFO]      [mavenCentral] Polling status: 22 of 101
+[DEBUG]     [mavenCentral] attempt 22/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@5fe46d52]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
+[INFO]      [mavenCentral] Polling status: 23 of 101
+[DEBUG]     [mavenCentral] attempt 23/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@7c9beb51]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
+[INFO]      [mavenCentral] Polling status: 24 of 101
+[DEBUG]     [mavenCentral] attempt 24/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@6ed18d80]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
+[INFO]      [mavenCentral] Polling status: 25 of 101
+[DEBUG]     [mavenCentral] attempt 25/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@27c53c32]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
+[INFO]      [mavenCentral] Polling status: 26 of 101
+[DEBUG]     [mavenCentral] attempt 26/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@44fd7ba4]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
+[INFO]      [mavenCentral] Polling status: 27 of 101
+[DEBUG]     [mavenCentral] attempt 27/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@130a6eb9]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
+[INFO]      [mavenCentral] Polling status: 28 of 101
+[DEBUG]     [mavenCentral] attempt 28/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@6bce4140]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
+[INFO]      [mavenCentral] Polling status: 29 of 101
+[DEBUG]     [mavenCentral] attempt 29/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@282c4da0]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
+[INFO]      [mavenCentral] Polling status: 30 of 101
+[DEBUG]     [mavenCentral] attempt 30/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@409732fb]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
+[INFO]      [mavenCentral] Polling status: 31 of 101
+[DEBUG]     [mavenCentral] attempt 31/101 failed with result: Optional[jreleaser.shadow.org.jreleaser.sdk.mavencentral.api.Deployment@63917fe1]
+[DEBUG]     [mavenCentral] querying status for deployment 0c33f6f0-6309-4761-9f6e-e400dca5e61d
 [INFO]  Uploading distributions and files
 [INFO]    [upload] Uploading is not enabled. Skipping
 [INFO]  Releasing to https://github.com/brunoborges/jairosvg@main
 [DEBUG] fetching all branches on brunoborges/jairosvg
-[DEBUG] looking up release with tag v1.0.14 at repository brunoborges/jairosvg
-[DEBUG] fetching release on brunoborges/jairosvg with tag v1.0.14
-[DEBUG] release v1.0.14 does not exist
-[DEBUG] creating release v1.0.14
-[DEBUG] creating release on brunoborges/jairosvg with tag v1.0.14
+[DEBUG] looking up release with tag v1.0.15 at repository brunoborges/jairosvg
+[DEBUG] fetching release on brunoborges/jairosvg with tag v1.0.15
+[DEBUG] release v1.0.15 does not exist
+[DEBUG] creating release v1.0.15
+[DEBUG] creating release on brunoborges/jairosvg with tag v1.0.15
 [INFO]   - uploading checksums_sha256.txt
-[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/382794749/assets?name=checksums_sha256.txt
+[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/400419167/assets?name=checksums_sha256.txt
 [DEBUG] opening connection
 [DEBUG] configuring connection
 [DEBUG] Accept: [application/vnd.github+json]
@@ -1667,7 +1673,7 @@ We'd like to thank the following people for their contributions:
 [DEBUG] sending data
 [DEBUG] handling response
 [INFO]   - uploading checksums_sha256.txt.asc
-[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/382794749/assets?name=checksums_sha256.txt.asc
+[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/400419167/assets?name=checksums_sha256.txt.asc
 [DEBUG] opening connection
 [DEBUG] configuring connection
 [DEBUG] Accept: [application/vnd.github+json]
@@ -1676,8 +1682,8 @@ We'd like to thank the following people for their contributions:
 [DEBUG] Content-Type: [text/plain]
 [DEBUG] sending data
 [DEBUG] handling response
-[INFO]   - uploading jairosvg-1.0.14-cli.jar
-[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/382794749/assets?name=jairosvg-1.0.14-cli.jar
+[INFO]   - uploading jairosvg-1.0.15-cli.jar
+[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/400419167/assets?name=jairosvg-1.0.15-cli.jar
 [DEBUG] opening connection
 [DEBUG] configuring connection
 [DEBUG] Accept: [application/vnd.github+json]
@@ -1686,8 +1692,8 @@ We'd like to thank the following people for their contributions:
 [DEBUG] Content-Type: [application/java-archive]
 [DEBUG] sending data
 [DEBUG] handling response
-[INFO]   - uploading jairosvg-1.0.14-cli.jar.asc
-[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/382794749/assets?name=jairosvg-1.0.14-cli.jar.asc
+[INFO]   - uploading jairosvg-1.0.15-cli.jar.asc
+[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/400419167/assets?name=jairosvg-1.0.15-cli.jar.asc
 [DEBUG] opening connection
 [DEBUG] configuring connection
 [DEBUG] Accept: [application/vnd.github+json]
@@ -1696,8 +1702,8 @@ We'd like to thank the following people for their contributions:
 [DEBUG] Content-Type: [text/plain]
 [DEBUG] sending data
 [DEBUG] handling response
-[INFO]   - uploading jairosvg-1.0.14.jar
-[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/382794749/assets?name=jairosvg-1.0.14.jar
+[INFO]   - uploading jairosvg-1.0.15.jar
+[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/400419167/assets?name=jairosvg-1.0.15.jar
 [DEBUG] opening connection
 [DEBUG] configuring connection
 [DEBUG] Accept: [application/vnd.github+json]
@@ -1706,8 +1712,8 @@ We'd like to thank the following people for their contributions:
 [DEBUG] Content-Type: [application/java-archive]
 [DEBUG] sending data
 [DEBUG] handling response
-[INFO]   - uploading jairosvg-1.0.14.jar.asc
-[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/382794749/assets?name=jairosvg-1.0.14.jar.asc
+[INFO]   - uploading jairosvg-1.0.15.jar.asc
+[DEBUG] url: https://uploads.github.com/repos/brunoborges/jairosvg/releases/400419167/assets?name=jairosvg-1.0.15.jar.asc
 [DEBUG] opening connection
 [DEBUG] configuring connection
 [DEBUG] Accept: [application/vnd.github+json]
@@ -1716,10 +1722,10 @@ We'd like to thank the following people for their contributions:
 [DEBUG] Content-Type: [text/plain]
 [DEBUG] sending data
 [DEBUG] handling response
-[DEBUG] lookup open milestone 'v1.0.14' on brunoborges/jairosvg
+[DEBUG] lookup open milestone 'v1.0.15' on brunoborges/jairosvg
 [DEBUG] fetching all milestones on brunoborges/jairosvg with status open
-[DEBUG] checking if release brunoborges/jairosvg@v1.0.14 was left as draft
-[DEBUG] fetching release on brunoborges/jairosvg with id 382794749
+[DEBUG] checking if release brunoborges/jairosvg@v1.0.15 was left as draft
+[DEBUG] fetching release on brunoborges/jairosvg with id 400419167
 [INFO]  Preparing distributions
 [INFO]    - Preparing jairosvg distribution
 [DEBUG]     [appimage] skipping for jairosvg distribution
@@ -1822,4 +1828,4 @@ We'd like to thank the following people for their contributions:
 [INFO]  Announcing release
 [INFO]    [announce] Announcing is not enabled. Skipping
 [INFO]  Writing output properties to out/jreleaser/output.properties
-[INFO]  JReleaser succeeded after 07:40 m
+[INFO]  JReleaser succeeded after 11:43 m
