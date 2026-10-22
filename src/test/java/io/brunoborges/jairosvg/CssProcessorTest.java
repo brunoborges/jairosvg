@@ -4,6 +4,7 @@ import io.brunoborges.jairosvg.css.CssProcessor;
 import io.brunoborges.jairosvg.dom.Node;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -984,6 +985,22 @@ class CssProcessorTest {
         assertFalse(CssProcessor.matchesSelector(staff, ".staff g"));
         assertFalse(CssProcessor.matchesSelector(first, "#other path"));
         assertFalse(CssProcessor.matchesSelector(first, "path #score"));
+    }
+
+    @Test
+    @Timeout(5)
+    void repeatedDescendantSelectorsDoNotBacktrack() throws Exception {
+        Node root = parseToNodeTree("""
+                <svg xmlns="http://www.w3.org/2000/svg" id="score">
+                """ + "<g>".repeat(30) + "<path/>" + "</g>".repeat(30) + "</svg>");
+        Node path = root;
+        while (!path.children.isEmpty()) {
+            path = path.children.get(0);
+        }
+
+        assertFalse(CssProcessor.matchesSelector(path, "#missing " + "g ".repeat(15) + "path"));
+        assertTrue(CssProcessor.matchesSelector(path, "#score " + "g ".repeat(15) + "path"));
+        assertFalse(CssProcessor.matchesSelector(path, "#score " + "g ".repeat(31) + "path"));
     }
 
     @Test

@@ -270,8 +270,33 @@ public final class CssProcessor {
     /** Check if a Node matches a CSS selector. */
     public static boolean matchesSelector(Node node, String selector) {
         selector = selector.strip();
+        int separator = descendantSeparator(selector);
+        if (separator < 0) {
+            return matchesSimpleSelector(node, selector);
+        }
+        if (!matchesSimpleSelector(node, selector.substring(separator + 1))) {
+            return false;
+        }
 
-        // Match descendants right-to-left, ignoring whitespace inside pseudo-classes.
+        // The nearest matching ancestor leaves the most ancestors for the remaining
+        // selector, avoiding backtracking through repeated descendant matches.
+        Node ancestor = node.parent;
+        while (separator >= 0) {
+            selector = selector.substring(0, separator).strip();
+            separator = descendantSeparator(selector);
+            String component = selector.substring(separator + 1);
+            while (ancestor != null && !matchesSimpleSelector(ancestor, component)) {
+                ancestor = ancestor.parent;
+            }
+            if (ancestor == null) {
+                return false;
+            }
+            ancestor = ancestor.parent;
+        }
+        return true;
+    }
+
+    private static int descendantSeparator(String selector) {
         int depth = 0;
         for (int i = selector.length() - 1; i >= 0; i--) {
             char c = selector.charAt(i);
@@ -280,19 +305,13 @@ public final class CssProcessor {
             } else if (c == '(') {
                 depth--;
             } else if (depth == 0 && Character.isWhitespace(c)) {
-                if (!matchesSelector(node, selector.substring(i + 1))) {
-                    return false;
-                }
-                String ancestorSelector = selector.substring(0, i).strip();
-                for (Node ancestor = node.parent; ancestor != null; ancestor = ancestor.parent) {
-                    if (matchesSelector(ancestor, ancestorSelector)) {
-                        return true;
-                    }
-                }
-                return false;
+                return i;
             }
         }
+        return -1;
+    }
 
+    private static boolean matchesSimpleSelector(Node node, String selector) {
         selector = PSEUDO_ELEMENT_PATTERN.matcher(selector).replaceAll("").strip();
 
         Matcher notMatcher = NOT_PATTERN.matcher(selector);
