@@ -267,9 +267,32 @@ public final class CssProcessor {
         }
     }
 
-    /** Check if a Node matches a simple CSS selector. */
+    /** Check if a Node matches a CSS selector. */
     public static boolean matchesSelector(Node node, String selector) {
         selector = selector.strip();
+
+        // Match descendants right-to-left, ignoring whitespace inside pseudo-classes.
+        int depth = 0;
+        for (int i = selector.length() - 1; i >= 0; i--) {
+            char c = selector.charAt(i);
+            if (c == ')') {
+                depth++;
+            } else if (c == '(') {
+                depth--;
+            } else if (depth == 0 && Character.isWhitespace(c)) {
+                if (!matchesSelector(node, selector.substring(i + 1))) {
+                    return false;
+                }
+                String ancestorSelector = selector.substring(0, i).strip();
+                for (Node ancestor = node.parent; ancestor != null; ancestor = ancestor.parent) {
+                    if (matchesSelector(ancestor, ancestorSelector)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
         selector = PSEUDO_ELEMENT_PATTERN.matcher(selector).replaceAll("").strip();
 
         Matcher notMatcher = NOT_PATTERN.matcher(selector);

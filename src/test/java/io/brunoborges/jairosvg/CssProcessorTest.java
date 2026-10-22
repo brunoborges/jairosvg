@@ -952,7 +952,81 @@ class CssProcessorTest {
                 </svg>
                 """;
         BufferedImage img = RenderTestHelper.render(svg);
-        assertNotNull(img);
+        RenderTestHelper.assertPixelRGBA(img, 50, 50, 128, 0, 128, 255);
+    }
+
+    @Test
+    void descendantSelectorMatchesAncestorsAndLocalPseudoClasses() throws Exception {
+        Node root = parseToNodeTree("""
+                <svg xmlns="http://www.w3.org/2000/svg" id="score">
+                  <g class="staff">
+                    <g>
+                      <path/>
+                      <path/>
+                    </g>
+                  </g>
+                  <path/>
+                </svg>
+                """);
+        Node staff = root.children.get(0);
+        Node first = staff.children.get(0).children.get(0);
+        Node second = staff.children.get(0).children.get(1);
+        Node outside = root.children.get(1);
+
+        assertTrue(CssProcessor.matchesSelector(first, "#score path"));
+        assertTrue(CssProcessor.matchesSelector(first, "svg .staff path"));
+        assertTrue(CssProcessor.matchesSelector(first, "#score\t.staff\npath"));
+        assertTrue(CssProcessor.matchesSelector(first, ".staff:first-child path"));
+        assertTrue(CssProcessor.matchesSelector(second, "#score path:nth-child(2n + 0)"));
+        assertTrue(CssProcessor.matchesSelector(first, "#score path:not(:last-child)"));
+        assertFalse(CssProcessor.matchesSelector(second, "#score path:first-child"));
+        assertFalse(CssProcessor.matchesSelector(outside, ".staff path"));
+        assertFalse(CssProcessor.matchesSelector(staff, ".staff g"));
+        assertFalse(CssProcessor.matchesSelector(first, "#other path"));
+        assertFalse(CssProcessor.matchesSelector(first, "path #score"));
+    }
+
+    @Test
+    void scopedMusicNotationRendersPathsTextAndUseGlyphs() throws Exception {
+        BufferedImage img = RenderTestHelper.render("""
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                     id="score" width="240" height="160">
+                  <style>
+                    #score path { stroke: currentColor; }
+                    #score text { fill: currentColor; }
+                  </style>
+                  <defs>
+                    <symbol id="notehead"><ellipse rx="8" ry="5"/></symbol>
+                  </defs>
+                  <g class="measure">
+                    <text x="40" y="30" text-anchor="middle" font-size="0px">
+                      <tspan><tspan font-size="24px">1</tspan></tspan>
+                    </text>
+                    <g class="staff">
+                      <path d="M10 60 L220 60" stroke-width="2"/>
+                      <path d="M10 75 L220 75" stroke-width="2"/>
+                      <path d="M10 90 L220 90" stroke-width="2"/>
+                      <path d="M10 105 L220 105" stroke-width="2"/>
+                      <path d="M10 120 L220 120" stroke-width="2"/>
+                      <g class="ledgerLines"><path d="M90 45 L115 45" stroke-width="2"/></g>
+                      <g class="stem"><path d="M96 45 L96 100" stroke-width="2"/></g>
+                      <use xlink:href="#notehead" transform="translate(103, 45)"/>
+                    </g>
+                    <g class="barLine"><path d="M220 60 L220 120" stroke-width="3"/></g>
+                  </g>
+                </svg>
+                """);
+
+        for (int y : new int[]{60, 75, 90, 105, 120}) {
+            RenderTestHelper.assertPixelRGBA(img, 50, y, 0, 0, 0, 255);
+        }
+        RenderTestHelper.assertPixelRGBA(img, 91, 45, 0, 0, 0, 255);
+        RenderTestHelper.assertPixelRGBA(img, 96, 80, 0, 0, 0, 255);
+        RenderTestHelper.assertPixelRGBA(img, 220, 80, 0, 0, 0, 255);
+        RenderTestHelper.assertPixelRGBA(img, 103, 45, 0, 0, 0, 255);
+        assertTrue(RenderTestHelper.countDarkPixels(img, 25, 5, 55, 30, 128) > 20,
+                "A nonzero nested tspan must render inside zero-sized text");
+        assertEquals(0, RenderTestHelper.rgba(img, 150, 140)[3]);
     }
 
     // ── nth-child with an+b where a < 0 ──
