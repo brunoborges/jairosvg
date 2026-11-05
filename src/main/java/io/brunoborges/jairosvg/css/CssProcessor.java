@@ -304,7 +304,7 @@ public final class CssProcessor {
                 depth++;
             } else if (c == '(') {
                 depth--;
-            } else if (depth == 0 && Character.isWhitespace(c)) {
+            } else if (depth == 0 && (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f')) {
                 return i;
             }
         }

@@ -966,13 +966,17 @@ class CssProcessorTest {
                       <path/>
                     </g>
                   </g>
+                  <g class="note head">
+                    <path/>
+                  </g>
                   <path/>
                 </svg>
                 """);
         Node staff = root.children.get(0);
         Node first = staff.children.get(0).children.get(0);
         Node second = staff.children.get(0).children.get(1);
-        Node outside = root.children.get(1);
+        Node unicodeClassPath = root.children.get(1).children.get(0);
+        Node outside = root.children.get(2);
 
         assertTrue(CssProcessor.matchesSelector(first, "#score path"));
         assertTrue(CssProcessor.matchesSelector(first, "svg .staff path"));
@@ -983,6 +987,8 @@ class CssProcessorTest {
         assertFalse(CssProcessor.matchesSelector(second, "#score path:first-child"));
         assertFalse(CssProcessor.matchesSelector(outside, ".staff path"));
         assertFalse(CssProcessor.matchesSelector(staff, ".staff g"));
+        assertFalse(CssProcessor.matchesSelector(first, ".staff .staff path"));
+        assertTrue(CssProcessor.matchesSelector(unicodeClassPath, ".note head path"));
         assertFalse(CssProcessor.matchesSelector(first, "#other path"));
         assertFalse(CssProcessor.matchesSelector(first, "path #score"));
     }
