@@ -63,9 +63,10 @@ public class Node {
         }
     });
 
-    private static final Set<String> NOT_INHERITED_ATTRIBUTES = Set.of("clip", "clip-path", "display", "filter",
-            "height", "id", "mask", "opacity", "overflow", "rotate", "stop-color", "stop-opacity", "style", "transform",
-            "transform-origin", "viewBox", "width", "x", "y", "dx", "dy", "{http://www.w3.org/1999/xlink}href", "href");
+    private static final Set<String> NOT_INHERITED_ATTRIBUTES = Set.of("class", "clip", "clip-path", "display",
+            "filter", "height", "id", "mask", "opacity", "overflow", "rotate", "stop-color", "stop-opacity", "style",
+            "transform", "transform-origin", "viewBox", "width", "x", "y", "dx", "dy",
+            "{http://www.w3.org/1999/xlink}href", "href");
 
     /**
      * Returns the set of attribute keys that are NOT inherited from parent to
