@@ -1,6 +1,6 @@
 # SVG Rendering Comparison
 
-Side-by-side rendering, file sizes, and benchmark times for 43 SVG test cases across all four libraries.
+Side-by-side rendering, file sizes, and benchmark times for 44 SVG test cases across all four libraries.
 
 > **Note:** The **Input SVG** column is rendered live by your browser's built-in SVG engine. Use it as a reference to compare each library's PNG output against what a modern browser produces.
 
@@ -433,6 +433,16 @@ CSS Color Level 4 syntax: HWB, Lab/LCH, OKLab/OKLCH, color(), alpha hex, and sla
 | ![SVG](svg/43_css_color_level_4.svg) | ![JairoSVG](visual/png/jairosvg/43_css_color_level_4.png) | ![EchoSVG](visual/png/echosvg/43_css_color_level_4.png) | — | ![JSVG](visual/png/jsvg/43_css_color_level_4.png) |
 | **Size** | 16,214 bytes | 47,602 bytes | — | 15,886 bytes ✅ |
 | **Time** | 4.7836 ms | 127.2777 ms | — | **4.1239 ms** ✅ |
+
+### 44_music_notation
+
+Verovio-style engraved score: scoped descendant CSS (`#score path`) strokes staff lines, stems, ledger lines, and barlines; `<use>` glyphs, beams, slurs, and nested `<tspan>` text.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| ![SVG](svg/44_music_notation.svg) | ![JairoSVG](visual/png/jairosvg/44_music_notation.png) | ![EchoSVG](visual/png/echosvg/44_music_notation.png) | — | ![JSVG](visual/png/jsvg/44_music_notation.png) |
+| **Size** | 13,321 bytes | 16,788 bytes | — | 11,254 bytes ✅ |
+| **Time** | 4.4743 ms | 25.1169 ms | — | **4.0830 ms** ✅ |
 
 ---
 

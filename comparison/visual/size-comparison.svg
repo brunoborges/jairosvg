@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="760" height="3132" viewBox="0 0 760 3132">
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="3202" viewBox="0 0 760 3202">
   <style>
     text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
   </style>
-  <rect width="760" height="3132" rx="16" fill="#0f172a"/>
+  <rect width="760" height="3202" rx="16" fill="#0f172a"/>
 
   <text x="380" y="40" text-anchor="middle" font-size="20" font-weight="600" font-style="italic" fill="#f1f5f9">PNG Output File Sizes (bytes)</text>
   <text x="380" y="60" text-anchor="middle" font-size="13" font-style="italic" fill="#64748b">lower is better — JairoSVG vs EchoSVG vs JSVG vs CairoSVG</text>
@@ -295,8 +295,8 @@
   <text x="700" y="1841" text-anchor="end" font-size="10" fill="#fb923c">15,228</text>
 
   <text x="152" y="1890" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Symbol use</text>
-  <rect x="160" y="1862" width="100" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="1872" text-anchor="end" font-size="10" fill="#4ade80">15,665</text>
+  <rect x="160" y="1862" width="106" height="12" rx="4" fill="#4ade80"/>
+  <text x="700" y="1872" text-anchor="end" font-size="10" fill="#4ade80">16,559</text>
   <text x="720" y="1872" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
   <rect x="160" y="1875" width="157" height="12" rx="4" fill="#f87171"/>
   <text x="700" y="1885" text-anchor="end" font-size="10" fill="#f87171">24,513</text>
@@ -487,5 +487,14 @@
   <rect x="160" y="3078" width="102" height="12" rx="4" fill="#60a5fa"/>
   <text x="700" y="3088" text-anchor="end" font-size="10" fill="#60a5fa">15,886</text>
   <text x="720" y="3088" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
+
+  <text x="152" y="3150" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Music notation</text>
+  <rect x="160" y="3122" width="85" height="12" rx="4" fill="#4ade80"/>
+  <text x="700" y="3132" text-anchor="end" font-size="10" fill="#4ade80">13,321</text>
+  <rect x="160" y="3135" width="108" height="12" rx="4" fill="#f87171"/>
+  <text x="700" y="3145" text-anchor="end" font-size="10" fill="#f87171">16,788</text>
+  <rect x="160" y="3148" width="72" height="12" rx="4" fill="#60a5fa"/>
+  <text x="700" y="3158" text-anchor="end" font-size="10" fill="#60a5fa">11,254</text>
+  <text x="720" y="3158" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
 
 </svg>
