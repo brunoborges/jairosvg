@@ -1,1 +1,1 @@
-Google Chrome 156.0.8078.80
+Chromium 157.0.8103.38 snap
