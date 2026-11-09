@@ -39,6 +39,10 @@ This project uses [Spotless](https://github.com/diffplug/spotless) for code form
 - Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md) for bugs
 - Include: SVG input, expected output, actual output, Java version
 
+## Releases
+
+Maintainers can find the release procedure and prerequisites in [RELEASE.md](RELEASE.md).
+
 ## Code of Conduct
 
 This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md).
