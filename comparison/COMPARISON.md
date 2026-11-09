@@ -12,8 +12,8 @@ The **Similarity** row scores how closely each library's PNG matches a browser r
 
 | Average similarity | JairoSVG | EchoSVG | CairoSVG | JSVG |
 | :----------------- | :------: | :-----: | :------: | :--: |
-| **Score (0–100)** | 93.5 | **95.1** ✅ | 90.5 | 93.1 |
-| **Cases scored** | 44/44 | 44/44 | 41/44 | 44/44 |
+| **Score (0–100)** | 93.5 | **95.1** ✅ | 90.7 | 93.1 |
+| **Cases scored** | 44/44 | 44/44 | 42/44 | 44/44 |
 
 > Averages include only the cases each library rendered.
 
@@ -498,10 +498,10 @@ Verovio-style engraved score: scoped descendant CSS (`#score path`) strokes staf
 
 | Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
 | :-------: | :------: | :-----: | :------: | :--: |
-| ![SVG](svg/44_music_notation.svg) | ![JairoSVG](visual/png/jairosvg/44_music_notation.png) | ![EchoSVG](visual/png/echosvg/44_music_notation.png) | — | ![JSVG](visual/png/jsvg/44_music_notation.png) |
-| **Size** | 13,880 bytes | 16,788 bytes | — | 11,254 bytes ✅ |
-| **Similarity** | **98.7** ✅ | 81.2 | N/A | 60.5 |
-| **Time** | **4.7803 ms** ✅ | 25.0405 ms | — | 4.1410 ms |
+| ![SVG](svg/44_music_notation.svg) | ![JairoSVG](visual/png/jairosvg/44_music_notation.png) | ![EchoSVG](visual/png/echosvg/44_music_notation.png) | ![CairoSVG](visual/png/cairosvg/44_music_notation.png) | ![JSVG](visual/png/jsvg/44_music_notation.png) |
+| **Size** | 13,880 bytes | 16,788 bytes | 16,349 bytes | 11,254 bytes ✅ |
+| **Similarity** | 98.7 | 81.2 | **98.9** ✅ | 60.5 |
+| **Time** | **4.7803 ms** ✅ | 25.0405 ms | 23.2605 ms | 4.1410 ms |
 
 ---
 
