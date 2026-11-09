@@ -192,7 +192,7 @@ Multi-span text (tspan), text-decoration, textPath on curves, and rotated text.
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/19_text_advanced.svg) | ![JairoSVG](visual/png/jairosvg/19_text_advanced.png) | ![EchoSVG](visual/png/echosvg/19_text_advanced.png) | ![CairoSVG](visual/png/cairosvg/19_text_advanced.png) | ![JSVG](visual/png/jsvg/19_text_advanced.png) |
 | **Size** | 18,821 bytes ✅ | 26,256 bytes | 23,861 bytes | 19,756 bytes |
-| **Time** | 4.7007 ms | 24.9951 ms | 8.4329 ms | **4.5512 ms** ✅ |
+| **Time** | **3.9708 ms** ✅ | 19.7037 ms | 8.4329 ms | 4.0224 ms |
 
 ### 20_fe_blend_modes
 
@@ -442,7 +442,7 @@ Verovio-style engraved score: scoped descendant CSS (`#score path`) strokes staf
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/44_music_notation.svg) | ![JairoSVG](visual/png/jairosvg/44_music_notation.png) | ![EchoSVG](visual/png/echosvg/44_music_notation.png) | — | ![JSVG](visual/png/jsvg/44_music_notation.png) |
 | **Size** | 13,880 bytes | 16,788 bytes | — | 11,254 bytes ✅ |
-| **Time** | 4.4743 ms | 25.1169 ms | — | **4.0830 ms** ✅ |
+| **Time** | 4.7803 ms | 25.0405 ms | — | **4.1410 ms** ✅ |
 
 ---
 
