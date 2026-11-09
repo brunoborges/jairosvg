@@ -1321,4 +1321,58 @@ class TextDrawerTest {
         BufferedImage img = render(svg);
         assertNotNull(img);
     }
+
+    @Test
+    void testTextAnchorMiddleWithZeroSizeTextAndSizedTspan() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="60">
+                  <rect width="200" height="60" fill="white"/>
+                  <text x="100" y="40" text-anchor="middle" font-size="0px" fill="black">
+                    <tspan class="text"><tspan font-size="24px">MMMM</tspan></tspan>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+
+        int leftCount = countDarkPixels(img, 0, 0, 99, 59, 128);
+        int rightCount = countDarkPixels(img, 101, 0, 199, 59, 128);
+        assertTrue(leftCount > 0, "Should have dark pixels left of center");
+        assertTrue(rightCount > 0, "Should have dark pixels right of center");
+        double ratio = (double) Math.max(leftCount, rightCount) / Math.max(1, Math.min(leftCount, rightCount));
+        assertTrue(ratio < 1.5, "Nested tspan text should be centered, ratio=" + ratio);
+    }
+
+    @Test
+    void testTextAnchorEndWithZeroSizeTextAndSizedTspan() throws Exception {
+        String svg = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="60">
+                  <rect width="200" height="60" fill="white"/>
+                  <text x="150" y="40" text-anchor="end" font-size="0px" fill="black">
+                    <tspan font-size="24px">MMM</tspan>
+                  </text>
+                </svg>
+                """;
+        BufferedImage img = render(svg);
+
+        assertTrue(countDarkPixels(img, 0, 0, 150, 59, 128) > 0, "Text should end at x=150");
+        assertEquals(0, countDarkPixels(img, 153, 0, 199, 59, 128), "No text should extend past x=150");
+    }
+
+    @Test
+    void testFontFamilyFallsBackToNextListedFamily() throws Exception {
+        String template = """
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="60">
+                  <rect width="200" height="60" fill="white"/>
+                  <text x="10" y="40" font-size="24" font-family="%s" fill="black">Wiggle</text>
+                </svg>
+                """;
+        BufferedImage fallback = render(template.formatted("NoSuchFontJairo, monospace"));
+        BufferedImage direct = render(template.formatted("monospace"));
+
+        for (int y = 0; y < 60; y++) {
+            for (int x = 0; x < 200; x++) {
+                assertEquals(direct.getRGB(x, y), fallback.getRGB(x, y), "Pixel mismatch at " + x + "," + y);
+            }
+        }
+    }
 }

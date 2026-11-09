@@ -219,7 +219,7 @@
 
   <text x="152" y="1400" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Text advanced</text>
   <rect x="160" y="1372" width="121" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="1382" text-anchor="end" font-size="10" fill="#4ade80">18,801</text>
+  <text x="700" y="1382" text-anchor="end" font-size="10" fill="#4ade80">18,821</text>
   <text x="720" y="1382" text-anchor="middle" font-size="10" fill="#4ade80">◄</text>
   <rect x="160" y="1385" width="169" height="12" rx="4" fill="#f87171"/>
   <text x="700" y="1395" text-anchor="end" font-size="10" fill="#f87171">26,256</text>
@@ -489,8 +489,8 @@
   <text x="720" y="3088" text-anchor="middle" font-size="10" fill="#60a5fa">◄</text>
 
   <text x="152" y="3150" text-anchor="end" font-size="11" font-weight="500" fill="#94a3b8">Music notation</text>
-  <rect x="160" y="3122" width="85" height="12" rx="4" fill="#4ade80"/>
-  <text x="700" y="3132" text-anchor="end" font-size="10" fill="#4ade80">13,321</text>
+  <rect x="160" y="3122" width="89" height="12" rx="4" fill="#4ade80"/>
+  <text x="700" y="3132" text-anchor="end" font-size="10" fill="#4ade80">13,880</text>
   <rect x="160" y="3135" width="108" height="12" rx="4" fill="#f87171"/>
   <text x="700" y="3145" text-anchor="end" font-size="10" fill="#f87171">16,788</text>
   <rect x="160" y="3148" width="72" height="12" rx="4" fill="#60a5fa"/>

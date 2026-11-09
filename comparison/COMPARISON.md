@@ -191,7 +191,7 @@ Multi-span text (tspan), text-decoration, textPath on curves, and rotated text.
 | Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/19_text_advanced.svg) | ![JairoSVG](visual/png/jairosvg/19_text_advanced.png) | ![EchoSVG](visual/png/echosvg/19_text_advanced.png) | ![CairoSVG](visual/png/cairosvg/19_text_advanced.png) | ![JSVG](visual/png/jsvg/19_text_advanced.png) |
-| **Size** | 18,801 bytes ✅ | 26,256 bytes | 23,861 bytes | 19,756 bytes |
+| **Size** | 18,821 bytes ✅ | 26,256 bytes | 23,861 bytes | 19,756 bytes |
 | **Time** | 4.7007 ms | 24.9951 ms | 8.4329 ms | **4.5512 ms** ✅ |
 
 ### 20_fe_blend_modes
@@ -261,7 +261,7 @@ Reusable `<symbol>` elements instantiated with `<use>` at different sizes and po
 | Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/26_symbol_use.svg) | ![JairoSVG](visual/png/jairosvg/26_symbol_use.png) | ![EchoSVG](visual/png/echosvg/26_symbol_use.png) | ![CairoSVG](visual/png/cairosvg/26_symbol_use.png) | ![JSVG](visual/png/jsvg/26_symbol_use.png) |
-| **Size** | 15,665 bytes ✅ | 24,513 bytes | 21,624 bytes | 18,260 bytes |
+| **Size** | 16,559 bytes ✅ | 24,513 bytes | 21,624 bytes | 18,260 bytes |
 | **Time** | 4.0890 ms | 24.2356 ms | 8.6016 ms | **4.0400 ms** ✅ |
 
 ### 27_switch_features
@@ -441,7 +441,7 @@ Verovio-style engraved score: scoped descendant CSS (`#score path`) strokes staf
 | Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/44_music_notation.svg) | ![JairoSVG](visual/png/jairosvg/44_music_notation.png) | ![EchoSVG](visual/png/echosvg/44_music_notation.png) | — | ![JSVG](visual/png/jsvg/44_music_notation.png) |
-| **Size** | 13,321 bytes | 16,788 bytes | — | 11,254 bytes ✅ |
+| **Size** | 13,880 bytes | 16,788 bytes | — | 11,254 bytes ✅ |
 | **Time** | 4.4743 ms | 25.1169 ms | — | **4.0830 ms** ✅ |
 
 ---
