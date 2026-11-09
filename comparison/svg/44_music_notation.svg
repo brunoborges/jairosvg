@@ -1,0 +1,200 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     id="score" width="600" height="190" viewBox="0 0 600 190" color="#111111">
+  <!-- Verovio-style engraved score: staff lines, stems, ledger lines, barlines, and
+       glyph strokes rely on scoped descendant CSS rules rather than presentation attributes. -->
+  <style>
+    #score path { stroke: currentColor; }
+    #score text { font-family: Times, 'Times New Roman', serif; fill: currentColor; }
+    #score .dynam text { font-style: italic; font-weight: bold; }
+    #score .tempo text { font-weight: bold; }
+  </style>
+  <defs>
+    <!-- Glyphs use a 1000-unit em with y pointing up, like SMuFL fonts. -->
+    <symbol id="E0A4" overflow="visible">
+      <path transform="scale(1,-1)" d="M0 -40 C0 70 125 125 205 125 C255 125 295 95 295 40 C295 -70 170 -125 90 -125 C40 -125 0 -95 0 -40 Z"/>
+    </symbol>
+    <symbol id="E0A3" overflow="visible">
+      <path transform="scale(1,-1)" fill-rule="evenodd" d="M0 -40 C0 70 125 125 205 125 C255 125 295 95 295 40 C295 -70 170 -125 90 -125 C40 -125 0 -95 0 -40 Z M45 -60 C30 -20 160 75 225 75 C250 75 255 60 250 50 C265 15 135 -80 75 -80 C55 -80 45 -70 45 -60 Z"/>
+    </symbol>
+    <symbol id="E0A2" overflow="visible">
+      <path transform="scale(1,-1)" fill-rule="evenodd" d="M0 0 C0 80 100 125 210 125 C320 125 420 80 420 0 C420 -80 320 -125 210 -125 C100 -125 0 -80 0 0 Z M125 45 C145 100 235 75 290 -10 C310 -60 295 -95 255 -95 C195 -95 105 -30 125 45 Z"/>
+    </symbol>
+    <symbol id="E050" overflow="visible">
+      <path transform="scale(1,-1)" fill="none" stroke="currentColor" stroke-width="55" stroke-linecap="round" d="M200 -80 C120 -90 80 20 160 60 C260 100 340 0 300 -110 C260 -230 60 -230 20 -60 C-20 120 200 260 300 450 C380 620 340 900 260 900 C200 900 180 700 210 500 L330 -500 C350 -640 260 -700 180 -680 C110 -660 100 -560 170 -550"/>
+    </symbol>
+    <symbol id="E062" overflow="visible">
+      <path transform="scale(1,-1)" fill="none" stroke="currentColor" stroke-width="50" stroke-linecap="round" d="M60 30 C80 180 230 230 320 200 C470 150 500 -20 430 -200 C360 -380 180 -520 20 -600"/>
+      <path transform="scale(1,-1)" d="M10 30 A85 85 0 1 0 180 30 A85 85 0 1 0 10 30 Z M545 125 A45 45 0 1 0 635 125 A45 45 0 1 0 545 125 Z M545 -125 A45 45 0 1 0 635 -125 A45 45 0 1 0 545 -125 Z"/>
+    </symbol>
+    <symbol id="E084" overflow="visible">
+      <path transform="scale(1,-1)" fill="none" stroke="currentColor" stroke-width="75" d="M300 -250 L300 250 L40 -60 L380 -60"/>
+    </symbol>
+    <symbol id="E262" overflow="visible">
+      <path transform="scale(1,-1)" fill="none" stroke="currentColor" stroke-width="30" d="M90 -330 L90 270 M210 -270 L210 330"/>
+      <path transform="scale(1,-1)" d="M20 40 L280 120 L280 200 L20 120 Z M20 -200 L280 -120 L280 -40 L20 -120 Z"/>
+    </symbol>
+    <symbol id="E4E5" overflow="visible">
+      <path transform="scale(1,-1)" fill="none" stroke="currentColor" stroke-width="55" stroke-linejoin="round" stroke-linecap="round" d="M90 370 L230 180 L100 30 L240 -150 C150 -100 70 -170 150 -300"/>
+    </symbol>
+    <symbol id="E4A0" overflow="visible">
+      <path transform="scale(1,-1)" fill="none" stroke="currentColor" stroke-width="40" d="M0 90 L300 0 L0 -90"/>
+    </symbol>
+  </defs>
+  <svg class="definition-scale" viewBox="0 0 12000 3800">
+    <g class="page-margin" transform="translate(600, 0)">
+      <g class="pgHead">
+        <text x="5400" y="500" text-anchor="middle" font-size="0px">
+          <tspan class="text"><tspan font-size="360px" font-weight="bold">Étude in G</tspan></tspan>
+        </text>
+        <text x="10800" y="820" text-anchor="end" font-size="0px">
+          <tspan class="text"><tspan font-size="220px" font-style="italic">JairoSVG test score</tspan></tspan>
+        </text>
+      </g>
+      <g class="system">
+        <g class="systemBar">
+          <path d="M0 1200 L0 3420" stroke-width="27"/>
+        </g>
+        <g class="measure">
+          <g class="tempo">
+            <text x="0" y="820" font-size="0px"><tspan class="text"><tspan font-size="280px">Allegretto</tspan></tspan></text>
+          </g>
+          <g class="staff">
+            <path d="M0 1200 L10800 1200" stroke-width="13"/>
+            <path d="M0 1380 L10800 1380" stroke-width="13"/>
+            <path d="M0 1560 L10800 1560" stroke-width="13"/>
+            <path d="M0 1740 L10800 1740" stroke-width="13"/>
+            <path d="M0 1920 L10800 1920" stroke-width="13"/>
+            <g class="clef"><use xlink:href="#E050" transform="translate(150, 1740) scale(0.72, 0.72)"/></g>
+            <g class="keySig"><use xlink:href="#E262" transform="translate(780, 1200) scale(0.72, 0.72)"/></g>
+            <g class="meterSig">
+              <use xlink:href="#E084" transform="translate(1050, 1380) scale(0.72, 0.72)"/>
+              <use xlink:href="#E084" transform="translate(1050, 1740) scale(0.72, 0.72)"/>
+            </g>
+            <g class="layer">
+              <g class="chord">
+                <g class="stem"><path d="M1903 1740 L1903 750" stroke-width="18"/></g>
+                <g class="note"><g class="notehead"><use xlink:href="#E0A4" transform="translate(1700, 1740) scale(0.72, 0.72)"/></g></g>
+                <g class="note"><g class="notehead"><use xlink:href="#E0A4" transform="translate(1700, 1560) scale(0.72, 0.72)"/></g></g>
+                <g class="note"><g class="notehead"><use xlink:href="#E0A4" transform="translate(1700, 1380) scale(0.72, 0.72)"/></g></g>
+                <g class="artic"><use xlink:href="#E4A0" transform="translate(1740, 2080) scale(0.72, 0.72)"/></g>
+              </g>
+              <g class="rest"><use xlink:href="#E4E5" transform="translate(2400, 1560) scale(0.72, 0.72)"/></g>
+              <g class="ledgerLines above">
+                <path d="M2910 1020 L3302 1020" stroke-width="22"/>
+                <path d="M3510 1020 L3902 1020" stroke-width="22"/>
+                <path d="M3510 840 L3902 840" stroke-width="22"/>
+              </g>
+              <g class="beam">
+                <g class="note">
+                  <g class="notehead"><use xlink:href="#E0A4" transform="translate(3000, 1020) scale(0.72, 0.72)"/></g>
+                  <g class="stem"><path d="M3009 1020 L3009 1650" stroke-width="18"/></g>
+                </g>
+                <g class="note">
+                  <g class="notehead"><use xlink:href="#E0A4" transform="translate(3600, 840) scale(0.72, 0.72)"/></g>
+                  <g class="stem"><path d="M3609 840 L3609 1610" stroke-width="18"/></g>
+                </g>
+                <polygon points="3000,1560 3618,1520 3618,1610 3000,1650"/>
+              </g>
+            </g>
+          </g>
+          <g class="staff">
+            <path d="M0 2700 L10800 2700" stroke-width="13"/>
+            <path d="M0 2880 L10800 2880" stroke-width="13"/>
+            <path d="M0 3060 L10800 3060" stroke-width="13"/>
+            <path d="M0 3240 L10800 3240" stroke-width="13"/>
+            <path d="M0 3420 L10800 3420" stroke-width="13"/>
+            <g class="clef"><use xlink:href="#E062" transform="translate(150, 2880) scale(0.72, 0.72)"/></g>
+            <g class="keySig"><use xlink:href="#E262" transform="translate(780, 2880) scale(0.72, 0.72)"/></g>
+            <g class="meterSig">
+              <use xlink:href="#E084" transform="translate(1050, 2880) scale(0.72, 0.72)"/>
+              <use xlink:href="#E084" transform="translate(1050, 3240) scale(0.72, 0.72)"/>
+            </g>
+            <g class="layer">
+              <g class="note">
+                <g class="notehead"><use xlink:href="#E0A3" transform="translate(1700, 2790) scale(0.72, 0.72)"/></g>
+                <g class="stem"><path d="M1709 2790 L1709 3420" stroke-width="18"/></g>
+              </g>
+              <g class="note">
+                <g class="notehead"><use xlink:href="#E0A3" transform="translate(3000, 3060) scale(0.72, 0.72)"/></g>
+                <g class="stem"><path d="M3203 3060 L3203 2430" stroke-width="18"/></g>
+              </g>
+            </g>
+          </g>
+          <g class="dynam">
+            <text x="1350" y="2420" font-size="0px"><tspan class="text"><tspan font-size="300px">p</tspan></tspan></text>
+          </g>
+          <g class="barLine"><path d="M4400 1200 L4400 3420" stroke-width="27"/></g>
+        </g>
+        <g class="measure">
+          <g class="mNum">
+            <text x="4400" y="1080" text-anchor="middle" font-size="0px"><tspan class="text"><tspan font-size="240px">2</tspan></tspan></text>
+          </g>
+          <g class="staff">
+            <g class="layer">
+              <g class="note">
+                <g class="notehead"><use xlink:href="#E0A3" transform="translate(4700, 1560) scale(0.72, 0.72)"/></g>
+                <g class="stem"><path d="M4709 1560 L4709 2190" stroke-width="18"/></g>
+              </g>
+              <g class="note">
+                <g class="notehead"><use xlink:href="#E0A4" transform="translate(5900, 1650) scale(0.72, 0.72)"/></g>
+                <g class="stem"><path d="M6103 1650 L6103 1020" stroke-width="18"/></g>
+              </g>
+              <g class="note">
+                <g class="notehead"><use xlink:href="#E0A4" transform="translate(6600, 1740) scale(0.72, 0.72)"/></g>
+                <g class="stem"><path d="M6803 1740 L6803 1110" stroke-width="18"/></g>
+              </g>
+            </g>
+            <g class="slur">
+              <path d="M4806 1700 C5300 2000 6200 2080 6706 1880 C6200 2040 5300 1960 4806 1700 Z" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+          </g>
+          <g class="staff">
+            <g class="layer">
+              <g class="note">
+                <g class="notehead"><use xlink:href="#E0A4" transform="translate(4700, 3060) scale(0.72, 0.72)"/></g>
+                <g class="stem"><path d="M4903 3060 L4903 2430" stroke-width="18"/></g>
+              </g>
+              <g class="ledgerLines above"><path d="M5210 2520 L5602 2520" stroke-width="22"/></g>
+              <g class="note">
+                <g class="notehead"><use xlink:href="#E0A4" transform="translate(5300, 2520) scale(0.72, 0.72)"/></g>
+                <g class="stem"><path d="M5309 2520 L5309 3150" stroke-width="18"/></g>
+              </g>
+              <g class="note">
+                <g class="notehead"><use xlink:href="#E0A4" transform="translate(5900, 3240) scale(0.72, 0.72)"/></g>
+                <g class="stem"><path d="M6103 3240 L6103 2610" stroke-width="18"/></g>
+              </g>
+              <g class="rest"><use xlink:href="#E4E5" transform="translate(6600, 3060) scale(0.72, 0.72)"/></g>
+            </g>
+          </g>
+          <g class="dynam">
+            <text x="4650" y="2420" font-size="0px"><tspan class="text"><tspan font-size="300px">mf</tspan></tspan></text>
+          </g>
+          <g class="barLine"><path d="M7400 1200 L7400 3420" stroke-width="27"/></g>
+        </g>
+        <g class="measure">
+          <g class="staff">
+            <g class="layer">
+              <g class="chord">
+                <g class="note"><g class="notehead"><use xlink:href="#E0A2" transform="translate(8800, 1740) scale(0.72, 0.72)"/></g></g>
+                <g class="note"><g class="notehead"><use xlink:href="#E0A2" transform="translate(8800, 1560) scale(0.72, 0.72)"/></g></g>
+                <g class="note"><g class="notehead"><use xlink:href="#E0A2" transform="translate(8800, 1380) scale(0.72, 0.72)"/></g></g>
+              </g>
+            </g>
+          </g>
+          <g class="staff">
+            <g class="layer">
+              <g class="chord">
+                <g class="note"><g class="notehead"><use xlink:href="#E0A2" transform="translate(8800, 2790) scale(0.72, 0.72)"/></g></g>
+                <g class="note"><g class="notehead"><use xlink:href="#E0A2" transform="translate(8800, 3420) scale(0.72, 0.72)"/></g></g>
+              </g>
+            </g>
+          </g>
+          <g class="barLine">
+            <path d="M10620 1200 L10620 3420" stroke-width="27"/>
+            <path d="M10773 1200 L10773 3420" stroke-width="54"/>
+          </g>
+        </g>
+      </g>
+    </g>
+  </svg>
+</svg>

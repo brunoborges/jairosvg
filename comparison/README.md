@@ -467,6 +467,7 @@ jbang comparison/visual/generate.java
 ```bash
 jbang comparison/benchmark/benchmark.java
 jbang comparison/benchmark/benchmark.java "color level 4"
+jbang comparison/benchmark/benchmark.java "music notation" --no-cairosvg
 ```
 
 ---

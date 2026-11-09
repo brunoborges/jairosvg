@@ -1,6 +1,6 @@
 # SVG Rendering Comparison
 
-Side-by-side rendering, file sizes, and benchmark times for 43 SVG test cases across all four libraries.
+Side-by-side rendering, file sizes, and benchmark times for 44 SVG test cases across all four libraries.
 
 > **Note:** The **Input SVG** column is rendered live by your browser's built-in SVG engine. Use it as a reference to compare each library's PNG output against what a modern browser produces.
 
@@ -191,8 +191,8 @@ Multi-span text (tspan), text-decoration, textPath on curves, and rotated text.
 | Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/19_text_advanced.svg) | ![JairoSVG](visual/png/jairosvg/19_text_advanced.png) | ![EchoSVG](visual/png/echosvg/19_text_advanced.png) | ![CairoSVG](visual/png/cairosvg/19_text_advanced.png) | ![JSVG](visual/png/jsvg/19_text_advanced.png) |
-| **Size** | 18,801 bytes ✅ | 26,256 bytes | 23,861 bytes | 19,756 bytes |
-| **Time** | 4.7007 ms | 24.9951 ms | 8.4329 ms | **4.5512 ms** ✅ |
+| **Size** | 18,821 bytes ✅ | 26,256 bytes | 23,861 bytes | 19,756 bytes |
+| **Time** | **3.9708 ms** ✅ | 19.7037 ms | 8.4329 ms | 4.0224 ms |
 
 ### 20_fe_blend_modes
 
@@ -261,7 +261,7 @@ Reusable `<symbol>` elements instantiated with `<use>` at different sizes and po
 | Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
 | :-------: | :------: | :-----: | :------: | :--: |
 | ![SVG](svg/26_symbol_use.svg) | ![JairoSVG](visual/png/jairosvg/26_symbol_use.png) | ![EchoSVG](visual/png/echosvg/26_symbol_use.png) | ![CairoSVG](visual/png/cairosvg/26_symbol_use.png) | ![JSVG](visual/png/jsvg/26_symbol_use.png) |
-| **Size** | 15,665 bytes ✅ | 24,513 bytes | 21,624 bytes | 18,260 bytes |
+| **Size** | 16,559 bytes ✅ | 24,513 bytes | 21,624 bytes | 18,260 bytes |
 | **Time** | 4.0890 ms | 24.2356 ms | 8.6016 ms | **4.0400 ms** ✅ |
 
 ### 27_switch_features
@@ -433,6 +433,16 @@ CSS Color Level 4 syntax: HWB, Lab/LCH, OKLab/OKLCH, color(), alpha hex, and sla
 | ![SVG](svg/43_css_color_level_4.svg) | ![JairoSVG](visual/png/jairosvg/43_css_color_level_4.png) | ![EchoSVG](visual/png/echosvg/43_css_color_level_4.png) | — | ![JSVG](visual/png/jsvg/43_css_color_level_4.png) |
 | **Size** | 16,214 bytes | 47,602 bytes | — | 15,886 bytes ✅ |
 | **Time** | 4.7836 ms | 127.2777 ms | — | **4.1239 ms** ✅ |
+
+### 44_music_notation
+
+Verovio-style engraved score: scoped descendant CSS (`#score path`) strokes staff lines, stems, ledger lines, and barlines; `<use>` glyphs, beams, slurs, and nested `<tspan>` text.
+
+| Input SVG | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| :-------: | :------: | :-----: | :------: | :--: |
+| ![SVG](svg/44_music_notation.svg) | ![JairoSVG](visual/png/jairosvg/44_music_notation.png) | ![EchoSVG](visual/png/echosvg/44_music_notation.png) | — | ![JSVG](visual/png/jsvg/44_music_notation.png) |
+| **Size** | 13,880 bytes | 16,788 bytes | — | 11,254 bytes ✅ |
+| **Time** | 4.7803 ms | 25.0405 ms | — | **4.1410 ms** ✅ |
 
 ---
 

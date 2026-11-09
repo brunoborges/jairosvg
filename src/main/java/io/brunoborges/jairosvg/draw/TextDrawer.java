@@ -1,6 +1,7 @@
 package io.brunoborges.jairosvg.draw;
 
 import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
@@ -11,9 +12,12 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import io.brunoborges.jairosvg.dom.Node;
@@ -41,14 +45,51 @@ public final class TextDrawer {
     private TextDrawer() {
     }
 
-    /** Extract the primary font family name from a font-family attribute value. */
-    private static String parseFontFamily(Node node) {
-        return node.get("font-family", "SansSerif").split(",")[0].strip().replace("'", "").replace("\"", "");
+    private static final Set<String> GENERIC_FAMILIES = Set.of("serif", "sans-serif", "monospace", "sansserif",
+            "monospaced", "dialog", "dialoginput");
+
+    private static final class InstalledFonts {
+        static final Set<String> FAMILIES = load();
+
+        private static Set<String> load() {
+            try {
+                var families = new HashSet<String>();
+                for (String family : GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()) {
+                    families.add(family.toLowerCase(Locale.ROOT));
+                }
+                return families;
+            } catch (RuntimeException | Error e) {
+                return Set.of();
+            }
+        }
+    }
+
+    /**
+     * Resolve the first usable family from a font-family list: an SVG font, a
+     * generic family, or an installed font. Falls back to the first entry.
+     */
+    private static String parseFontFamily(Surface surface, Node node) {
+        String first = null;
+        for (String entry : node.get("font-family", "SansSerif").split(",")) {
+            String family = entry.strip().replace("'", "").replace("\"", "");
+            if (family.isEmpty()) {
+                continue;
+            }
+            if (first == null) {
+                first = family;
+            }
+            String key = family.toLowerCase(Locale.ROOT);
+            if (surface.fonts.containsKey(family) || GENERIC_FAMILIES.contains(key)
+                    || InstalledFonts.FAMILIES.contains(key)) {
+                return family;
+            }
+        }
+        return first != null ? first : "SansSerif";
     }
 
     /** Draw a text node. */
     public static void text(Surface surface, Node node) {
-        String fontFamily = parseFontFamily(node);
+        String fontFamily = parseFontFamily(surface, node);
 
         // Check for SVG font match before mapping to AWT fonts
         SvgFont svgFont = surface.fonts.get(fontFamily);
@@ -116,9 +157,12 @@ public final class TextDrawer {
                 surface.cursorPosition[1] += size(surface, node.cachedDyCoords[0], "y");
             }
 
-            // Adjust cursor for text-anchor using total width of all children
+            // Adjust cursor for text-anchor using total width of all children. Only an
+            // element starting a text chunk (text, or an absolute x) anchors; the
+            // inherited value on nested tspans must not shift the cursor again.
             String textAnchor = node.get("text-anchor");
-            if (textAnchor != null && ("middle".equals(textAnchor) || "end".equals(textAnchor))) {
+            boolean startsChunk = "text".equals(node.tag) || parentX != null;
+            if (startsChunk && textAnchor != null && ("middle".equals(textAnchor) || "end".equals(textAnchor))) {
                 double totalWidth = measureChildrenWidth(surface, node, frc);
                 if ("middle".equals(textAnchor)) {
                     surface.cursorPosition[0] -= totalWidth / 2;
@@ -416,20 +460,30 @@ public final class TextDrawer {
     /** Measure total text width of all children for text-anchor calculation. */
     private static double measureChildrenWidth(Surface surface, Node parent, FontRenderContext frc) {
         double totalWidth = 0;
-        for (Node child : parent.children) {
-            if (child.text != null && !child.text.isEmpty()) {
-                String family = parseFontFamily(child);
-                SvgFont svgF = surface.fonts.get(family);
-                if (svgF != null) {
-                    totalWidth += measureSvgFontWidth(svgF, child.text, surface.fontSize, resolveFont(surface, child),
-                            frc);
-                } else {
-                    totalWidth += resolveFont(surface, child).getStringBounds(child.text, frc).getWidth();
+        double parentFontSize = surface.fontSize;
+        try {
+            for (Node child : parent.children) {
+                // Each descendant is drawn at its own font-size (em units resolve against the
+                // parent's)
+                surface.fontSize = parentFontSize;
+                surface.fontSize = size(surface, child.get("font-size", "12pt"));
+                boolean hasChildren = child.children != null && !child.children.isEmpty();
+                if (child.text != null && !child.text.isEmpty() && !(hasChildren && child.text.isBlank())) {
+                    String family = parseFontFamily(surface, child);
+                    SvgFont svgF = surface.fonts.get(family);
+                    if (svgF != null) {
+                        totalWidth += measureSvgFontWidth(svgF, child.text, surface.fontSize,
+                                resolveFont(surface, child), frc);
+                    } else {
+                        totalWidth += resolveFont(surface, child).getStringBounds(child.text, frc).getWidth();
+                    }
+                }
+                if (hasChildren) {
+                    totalWidth += measureChildrenWidth(surface, child, frc);
                 }
             }
-            if (child.children != null && !child.children.isEmpty()) {
-                totalWidth += measureChildrenWidth(surface, child, frc);
-            }
+        } finally {
+            surface.fontSize = parentFontSize;
         }
         return totalWidth;
     }
@@ -457,7 +511,7 @@ public final class TextDrawer {
 
     /** Resolve the Font for a given node based on its font attributes. */
     private static Font resolveFont(Surface surface, Node node) {
-        String fontFamily = parseFontFamily(node);
+        String fontFamily = parseFontFamily(surface, node);
         fontFamily = switch (fontFamily.toLowerCase()) {
             case "sans-serif" -> "SansSerif";
             case "serif" -> "Serif";
