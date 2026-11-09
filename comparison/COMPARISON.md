@@ -6,8 +6,7 @@ Side-by-side rendering, browser similarity scores, file sizes, and benchmark tim
 
 ## Browser Similarity Score
 
-The **Similarity** row scores how closely each library's PNG matches a browser rendering of the input SVG, captured with mkdir: cannot create directory ‘/run/user/0’: Permission denied
-Chromium 157.0.8103.38 snap (headless) at the SVG's intrinsic size and device scale factor 1 (baselines in [`visual/png/chrome/`](visual/png/chrome/)). The score is the mean [SSIM](https://en.wikipedia.org/wiki/Structural_similarity_index_measure) over the R, G, and B channels (8×8 windows) after compositing both images onto white, scaled to 0–100 (100 = identical). Output with a different size is resampled to the baseline size first. **N/A** means the library produced no output.
+The **Similarity** row scores how closely each library's PNG matches a browser rendering of the input SVG, captured with Chromium 157.0.8103.38 snap (headless) at the SVG's intrinsic size and device scale factor 1 (baselines in [`visual/png/chrome/`](visual/png/chrome/)). The score is the mean [SSIM](https://en.wikipedia.org/wiki/Structural_similarity_index_measure) over the R, G, and B channels (8×8 windows) after compositing both images onto white, scaled to 0–100 (100 = identical). Output with a different size is resampled to the baseline size first. **N/A** means the library produced no output.
 
 > **Caveats:** the score measures visual similarity to one browser engine, not SVG specification compliance. Font availability and anti-aliasing affect it, and large blank areas inflate it, so small differences (a point or two) are not meaningful. Use the images to judge the details.
 

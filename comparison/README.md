@@ -362,6 +362,29 @@ See **[COMPARISON.md](COMPARISON.md)** for the complete gallery with browser-ren
 | **GUI viewer**     | ❌                                                     | ✅                                           | ❌                                             | ✅ (Swing component)                   |
 | **License**        | MIT                                                    | Apache-2.0                                   | LGPL-3.0                                       | MIT                                    |
 
+### Scorecard
+
+Win counts across the 44 test cases in [COMPARISON.md](COMPARISON.md) (a ✅ in that report marks the best value per case; ties count for every tied library, so similarity wins add up to more than 44).
+
+| Metric (best per case)                                 | JairoSVG | EchoSVG | CairoSVG | JSVG |
+| ------------------------------------------------------ | :------: | :-----: | :------: | :--: |
+| **Smallest PNG** (cases won)                           | **32**   | 2       | 8        | 2    |
+| **Highest browser similarity** (cases won, incl. ties) | 15       | **22**  | 15       | 11   |
+| **Fastest** (cases won, median time)                   | **33**   | 0       | 1        | 10   |
+
+| Aggregate                                  | JairoSVG   | EchoSVG   | CairoSVG | JSVG    |
+| ------------------------------------------ | :--------: | :-------: | :------: | :-----: |
+| **Mean PNG size**                          | 12.8 KB    | 16.3 KB   | 12.3 KB ¹ | 14.5 KB |
+| **Mean similarity** (0–100)                | 92.5       | **95.0**  | 89.5 ¹   | 89.3    |
+| **Mean time per case** (median of runs)    | **9.0 ms** | 43.1 ms ² | 14.8 ms ¹ | 10.7 ms |
+| **Total time, cases all four completed** ³ | **371 ms** | 1,652 ms  | 610 ms   | 434 ms  |
+
+¹ CairoSVG produced no output for 2 cases (Css variables, Css color level 4), so its means cover 42 cases and are not directly comparable.
+² EchoSVG failed on 1 case (Fe convolve matrix); its mean covers 43 cases.
+³ The 41 cases where all four libraries produced output.
+
+**Takeaways:** JairoSVG is fastest in 33 of 44 cases and produces the smallest PNG in 32. EchoSVG renders closest to the browser on average, but is roughly 4–5× slower and produces the largest files. CairoSVG wins 8 cases on size but skipped two cases and trails on similarity. JSVG is close to JairoSVG on speed but loses more often on size and similarity. Similarity differences of a point or two are not meaningful (see the caveats in COMPARISON.md), and absolute times depend on the machine, so compare rankings rather than raw milliseconds.
+
 ---
 
 ## When to Choose Which
