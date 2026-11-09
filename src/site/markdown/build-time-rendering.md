@@ -28,7 +28,7 @@ Each `<execution>` renders one image. Writing into `${project.build.outputDirect
         <dependency>
             <groupId>io.brunoborges</groupId>
             <artifactId>jairosvg</artifactId>
-            <version>1.0.15</version>
+            <version>1.0.16</version>
         </dependency>
     </dependencies>
     <configuration>
@@ -154,7 +154,7 @@ Register a `JavaExec` task on a dedicated configuration and make `processResourc
 val jairosvg by configurations.creating
 
 dependencies {
-    jairosvg("io.brunoborges:jairosvg:1.0.15")
+    jairosvg("io.brunoborges:jairosvg:1.0.16")
 }
 
 val renderIcons by tasks.registering(JavaExec::class) {
