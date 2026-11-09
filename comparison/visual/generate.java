@@ -37,6 +37,203 @@ public class generate {
     static final Path PNG_ECHO_DIR = BASE_DIR.resolve("png/echosvg");
     static final Path PNG_CAIRO_DIR = BASE_DIR.resolve("png/cairosvg");
     static final Path PNG_JSVG_DIR = BASE_DIR.resolve("png/jsvg");
+    static final Path PNG_BROWSER_DIR = BASE_DIR.resolve("png/chrome");
+
+    // ---------------------------------------------------------------------
+    // Browser baseline (headless Chrome/Chromium)
+    // ---------------------------------------------------------------------
+
+    static Optional<String> findChrome() {
+        var candidates = new ArrayList<String>();
+        String env = System.getenv("CHROME_PATH");
+        if (env != null && !env.isBlank()) candidates.add(env);
+        candidates.addAll(List.of(
+                "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+                "/Applications/Chromium.app/Contents/MacOS/Chromium",
+                "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+                "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"));
+        for (String c : candidates) {
+            if (Files.isExecutable(Path.of(c))) return Optional.of(c);
+        }
+        String path = System.getenv("PATH");
+        if (path != null) {
+            for (String dir : path.split(File.pathSeparator)) {
+                for (String exe : List.of("google-chrome", "google-chrome-stable", "chromium", "chromium-browser")) {
+                    Path p = Path.of(dir, exe);
+                    if (Files.isExecutable(p)) return Optional.of(p.toString());
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    /** Intrinsic size of the root {@code <svg>} from width/height, falling back to viewBox, then 300x150. */
+    static int[] intrinsicSize(String svg) {
+        var root = java.util.regex.Pattern.compile("<svg\\b[^>]*>", java.util.regex.Pattern.DOTALL).matcher(svg);
+        if (!root.find()) return new int[]{300, 150};
+        String tag = root.group();
+        double w = lengthAttr(tag, "width");
+        double h = lengthAttr(tag, "height");
+        var vb = java.util.regex.Pattern.compile("\\bviewBox\\s*=\\s*[\"']([^\"']+)[\"']").matcher(tag);
+        if (vb.find()) {
+            String[] p = vb.group(1).trim().split("[\\s,]+");
+            if (p.length == 4) {
+                double vw = Double.parseDouble(p[2]);
+                double vh = Double.parseDouble(p[3]);
+                if (w <= 0 && h <= 0) { w = vw; h = vh; }
+                else if (w <= 0 && vh > 0) w = h * vw / vh;
+                else if (h <= 0 && vw > 0) h = w * vh / vw;
+            }
+        }
+        if (w <= 0) w = 300;
+        if (h <= 0) h = 150;
+        return new int[]{(int) Math.ceil(w), (int) Math.ceil(h)};
+    }
+
+    static double lengthAttr(String tag, String attr) {
+        var m = java.util.regex.Pattern.compile("\\s" + attr + "\\s*=\\s*[\"']\\s*([0-9.]+)\\s*(px)?\\s*[\"']").matcher(tag);
+        return m.find() ? Double.parseDouble(m.group(1)) : -1;
+    }
+
+    static void renderWithBrowser(String chrome, Path svgPath, String svg, Path pngPath) throws Exception {
+        int[] size = intrinsicSize(svg);
+        Path profile = Files.createTempDirectory("jairosvg-chrome");
+        try {
+            Process process = new ProcessBuilder(
+                    chrome,
+                    "--headless=new",
+                    "--disable-gpu",
+                    "--hide-scrollbars",
+                    "--no-first-run",
+                    "--no-default-browser-check",
+                    "--force-device-scale-factor=1",
+                    "--default-background-color=00000000",
+                    "--virtual-time-budget=2000",
+                    "--user-data-dir=" + profile.toAbsolutePath(),
+                    "--window-size=" + size[0] + "," + size[1],
+                    "--screenshot=" + pngPath.toAbsolutePath(),
+                    svgPath.toAbsolutePath().toUri().toString()
+            ).redirectErrorStream(true).start();
+            String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            int exit = process.waitFor();
+            if (exit != 0 || !Files.exists(pngPath)) {
+                throw new IOException("Chrome exited with code " + exit
+                        + (output.isBlank() ? "" : ": " + output.strip()));
+            }
+        } finally {
+            try (Stream<Path> walk = Files.walk(profile)) {
+                walk.sorted(Comparator.reverseOrder()).forEach(p -> p.toFile().delete());
+            } catch (IOException ignored) {
+            }
+        }
+    }
+
+    static String chromeVersion(String chrome) {
+        try {
+            Process p = new ProcessBuilder(chrome, "--version").redirectErrorStream(true).start();
+            String out = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8).strip();
+            p.waitFor();
+            return out.isEmpty() ? null : out;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // Similarity score (SSIM vs. browser baseline)
+    // ---------------------------------------------------------------------
+
+    /** Composites onto white and returns {r, g, b} planes, resampled to {@code w x h} if needed. */
+    static double[][] toPlanes(BufferedImage src, int w, int h) {
+        BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = img.createGraphics();
+        g.setColor(java.awt.Color.WHITE);
+        g.fillRect(0, 0, w, h);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.drawImage(src, 0, 0, w, h, null);
+        g.dispose();
+        double[][] planes = new double[3][w * h];
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int rgb = img.getRGB(x, y);
+                int i = y * w + x;
+                planes[0][i] = (rgb >> 16) & 0xFF;
+                planes[1][i] = (rgb >> 8) & 0xFF;
+                planes[2][i] = rgb & 0xFF;
+            }
+        }
+        return planes;
+    }
+
+    /** Mean SSIM over 8x8 windows (stride 4) of a single channel. */
+    static double ssim(double[] a, double[] b, int w, int h) {
+        final int win = 8, step = 4;
+        final double c1 = Math.pow(0.01 * 255, 2), c2 = Math.pow(0.03 * 255, 2);
+        double total = 0;
+        int count = 0;
+        for (int y = 0; y + win <= h; y += step) {
+            for (int x = 0; x + win <= w; x += step) {
+                double sa = 0, sb = 0, saa = 0, sbb = 0, sab = 0;
+                for (int j = 0; j < win; j++) {
+                    int row = (y + j) * w + x;
+                    for (int i = 0; i < win; i++) {
+                        double va = a[row + i], vb = b[row + i];
+                        sa += va; sb += vb;
+                        saa += va * va; sbb += vb * vb; sab += va * vb;
+                    }
+                }
+                int n = win * win;
+                double ma = sa / n, mb = sb / n;
+                double va = saa / n - ma * ma, vb = sbb / n - mb * mb, cov = sab / n - ma * mb;
+                total += ((2 * ma * mb + c1) * (2 * cov + c2)) / ((ma * ma + mb * mb + c1) * (va + vb + c2));
+                count++;
+            }
+        }
+        return count == 0 ? 1.0 : total / count;
+    }
+
+    /** Similarity of {@code candidate} to {@code reference}, 0–100 (RGB-averaged SSIM), or null if unavailable. */
+    static Double similarity(Path reference, Path candidate) {
+        try {
+            if (!Files.exists(reference) || !Files.exists(candidate)) return null;
+            BufferedImage ref = ImageIO.read(reference.toFile());
+            BufferedImage cand = ImageIO.read(candidate.toFile());
+            if (ref == null || cand == null) return null;
+            int w = ref.getWidth(), h = ref.getHeight();
+            double[][] pr = toPlanes(ref, w, h);
+            double[][] pc = toPlanes(cand, w, h);
+            double s = 0;
+            for (int c = 0; c < 3; c++) s += ssim(pr[c], pc[c], w, h);
+            return Math.max(0, s / 3) * 100;
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    static final Path[] ENGINE_DIRS = {PNG_JAIRO_DIR, PNG_ECHO_DIR, PNG_CAIRO_DIR, PNG_JSVG_DIR};
+
+    static Double[] similarityScores(String name) {
+        Path ref = PNG_BROWSER_DIR.resolve(name + ".png");
+        Double[] scores = new Double[ENGINE_DIRS.length];
+        for (int i = 0; i < ENGINE_DIRS.length; i++) {
+            scores[i] = similarity(ref, ENGINE_DIRS[i].resolve(name + ".png"));
+        }
+        return scores;
+    }
+
+    static String similarityCell(Double val, double maxVal) {
+        if (val == null) return "N/A";
+        String formatted = "%.1f".formatted(val);
+        return "%.1f".formatted(maxVal).equals(formatted) ? "**%s** ✅".formatted(formatted) : formatted;
+    }
+
+    static String similarityRow(Double[] scores) {
+        double maxVal = Arrays.stream(scores).filter(Objects::nonNull)
+                .mapToDouble(Double::doubleValue).max().orElse(-1);
+        return "| **Similarity** | %s | %s | %s | %s |".formatted(
+                similarityCell(scores[0], maxVal), similarityCell(scores[1], maxVal),
+                similarityCell(scores[2], maxVal), similarityCell(scores[3], maxVal));
+    }
 
     static byte[] renderWithEchoSVG(String svg) throws Exception {
         var transcoder = new PNGTranscoder();
@@ -101,6 +298,18 @@ public class generate {
         Files.createDirectories(PNG_ECHO_DIR);
         Files.createDirectories(PNG_CAIRO_DIR);
         Files.createDirectories(PNG_JSVG_DIR);
+        Files.createDirectories(PNG_BROWSER_DIR);
+
+        Optional<String> chrome = findChrome();
+        if (chrome.isPresent()) {
+            String version = chromeVersion(chrome.get());
+            if (version != null) {
+                Files.writeString(PNG_BROWSER_DIR.resolve("VERSION.txt"), version + "\n", StandardCharsets.UTF_8);
+            }
+        } else {
+            System.out.println("⚠ Chrome/Chromium not found (set CHROME_PATH). Reusing existing browser baselines in "
+                    + PNG_BROWSER_DIR);
+        }
 
         System.out.println("=".repeat(72));
         System.out.println("  SVG Comparison Generator — JairoSVG vs EchoSVG vs CairoSVG vs JSVG");
@@ -164,6 +373,23 @@ public class generate {
             } catch (Exception e) {
                 System.out.println("    JSVG       ✗ FAILED: " + e.getMessage());
             }
+
+            // Render browser baseline with headless Chrome
+            if (chrome.isPresent()) {
+                Path out = PNG_BROWSER_DIR.resolve(name + ".png");
+                try {
+                    Files.deleteIfExists(out);
+                    renderWithBrowser(chrome.get(), svgPath, svg, out);
+                    System.out.printf("    Chrome     → %s (%,d bytes)%n", out, Files.size(out));
+                } catch (Exception e) {
+                    System.out.println("    Chrome     ✗ FAILED: " + e.getMessage());
+                }
+            }
+
+            Double[] scores = similarityScores(name);
+            System.out.printf("    Similarity → JairoSVG %s | EchoSVG %s | CairoSVG %s | JSVG %s%n",
+                    similarityCell(scores[0], -1), similarityCell(scores[1], -1),
+                    similarityCell(scores[2], -1), similarityCell(scores[3], -1));
 
             results.put(name, new boolean[]{jairoOk, echoOk, cairoOk, jsvgOk});
             System.out.println();
@@ -277,40 +503,132 @@ public class generate {
         return data;
     }
 
-    static String benchCell(Double val, double minVal) {
-        if (val == null) return "—";
-        String formatted = "%.4f ms".formatted(val);
-        return val == minVal ? "**%s** ✅".formatted(formatted) : formatted;
+    /**
+     * Index of the fastest library whose output is accurate enough to win, or -1. Walks from fastest to
+     * slowest and skips a library with no similarity score or with the row's lowest score (unless all
+     * scores are tied). Scores are compared at the displayed 0.1 precision. Without any similarity data,
+     * the fastest wins. Keep in sync with comparison/benchmark/update_readme.java.
+     */
+    static int fastestAccurate(Double[] times, Double[] scores) {
+        var order = IntStream.range(0, times.length).filter(i -> times[i] != null).boxed()
+                .sorted(Comparator.comparingDouble(i -> times[i])).toList();
+        if (order.isEmpty()) return -1;
+        var rounded = Arrays.stream(scores).map(s -> s == null ? null : Math.round(s * 10) / 10.0)
+                .toArray(Double[]::new);
+        var scored = Arrays.stream(rounded).filter(Objects::nonNull).mapToDouble(Double::doubleValue).toArray();
+        if (scored.length == 0) return order.getFirst();
+        double best = Arrays.stream(scored).max().getAsDouble();
+        double worst = Arrays.stream(scored).min().getAsDouble();
+        for (int i : order) {
+            Double s = rounded[i];
+            if (s == null) continue;
+            if (s == worst && best > worst) continue;
+            return i;
+        }
+        return -1;
     }
 
-    static String timeRow(String name, Map<String, Map<String, BenchResult>> benchData) {
+    static String timeRow(Double[] times, Double[] scores) {
+        int winner = fastestAccurate(times, scores);
+        var cells = new String[4];
+        for (int i = 0; i < 4; i++) {
+            if (times[i] == null) cells[i] = "—";
+            else {
+                String formatted = "%.4f ms".formatted(times[i]);
+                cells[i] = i == winner ? "**%s** ✅".formatted(formatted) : formatted;
+            }
+        }
+        return "| **Time** | %s | %s | %s | %s |".formatted((Object[]) cells);
+    }
+
+    static Double[] benchTimes(String name, Map<String, Map<String, BenchResult>> benchData) {
         String label = name.replaceFirst("^\\d+_", "").replace('_', ' ');
         label = Character.toUpperCase(label.charAt(0)) + label.substring(1);
         var caseData = benchData.get(label);
+        if (caseData == null) return null;
         Double[] vals = new Double[4];
-        if (caseData != null) {
-            String[] keys = {"jairosvg", "echosvg", "cairosvg", "jsvg"};
-            for (int i = 0; i < 4; i++) {
-                var r = caseData.get(keys[i]);
-                vals[i] = r != null ? r.median() : null;
-            }
+        String[] keys = {"jairosvg", "echosvg", "cairosvg", "jsvg"};
+        for (int i = 0; i < 4; i++) {
+            var r = caseData.get(keys[i]);
+            vals[i] = r != null ? r.median() : null;
         }
-        double minVal = Arrays.stream(vals).filter(Objects::nonNull)
-                .mapToDouble(Double::doubleValue).min().orElse(Double.MAX_VALUE);
-        return "| **Time** | %s | %s | %s | %s |".formatted(
-                benchCell(vals[0], minVal), benchCell(vals[1], minVal),
-                benchCell(vals[2], minVal), benchCell(vals[3], minVal));
+        return vals;
+    }
+
+    /** Parses a "| **Time** | ... |" row into per-library times (null for "—"). */
+    static Double[] parseTimeRow(String row) {
+        String[] cells = row.split("\\|");
+        Double[] vals = new Double[4];
+        for (int i = 0; i < 4 && i + 2 < cells.length; i++) {
+            var m = java.util.regex.Pattern.compile("([0-9.]+) ms").matcher(cells[i + 2]);
+            vals[i] = m.find() ? Double.parseDouble(m.group(1)) : null;
+        }
+        return vals;
+    }
+
+    /** Existing per-case times from COMPARISON.md, kept when no benchmark data is available for a case. */
+    static Map<String, Double[]> existingTimes() throws IOException {
+        var rows = new HashMap<String, Double[]>();
+        if (!Files.exists(COMPARISON_PATH)) return rows;
+        String current = null;
+        for (String line : Files.readAllLines(COMPARISON_PATH, StandardCharsets.UTF_8)) {
+            if (line.startsWith("### ")) current = line.substring(4).strip();
+            else if (current != null && line.startsWith("| **Time** |")) rows.put(current, parseTimeRow(line));
+        }
+        return rows;
     }
 
     static void generateReadme(List<Path> svgFiles, Map<String, boolean[]> results) throws Exception {
         var benchData = loadBenchData();
+        var previousTimes = existingTimes();
 
         var sb = new StringBuilder();
         sb.append("# SVG Rendering Comparison\n\n");
-        sb.append("Side-by-side rendering, file sizes, and benchmark times for ").append(svgFiles.size())
+        sb.append("Side-by-side rendering, browser similarity scores, file sizes, and benchmark times for ").append(svgFiles.size())
           .append(" SVG test cases across all four libraries.\n\n");
         sb.append("> **Note:** The **Input SVG** column is rendered live by your browser's built-in SVG engine.")
           .append(" Use it as a reference to compare each library's PNG output against what a modern browser produces.\n");
+
+        // Similarity scores against the captured browser baseline
+        var allScores = new LinkedHashMap<String, Double[]>();
+        for (var svgPath : svgFiles) {
+            String name = svgPath.getFileName().toString().replace(".svg", "");
+            allScores.put(name, similarityScores(name));
+        }
+        String browserVersion = "headless Chrome";
+        Path versionFile = PNG_BROWSER_DIR.resolve("VERSION.txt");
+        if (Files.exists(versionFile)) browserVersion = Files.readString(versionFile).strip() + " (headless)";
+
+        sb.append("\n## Browser Similarity Score\n\n");
+        sb.append("The **Similarity** row scores how closely each library's PNG matches a browser rendering of the input SVG,")
+          .append(" captured with ").append(browserVersion).append(" at the SVG's intrinsic size and device scale factor 1")
+          .append(" (baselines in [`visual/png/chrome/`](visual/png/chrome/)).")
+          .append(" The score is the mean [SSIM](https://en.wikipedia.org/wiki/Structural_similarity_index_measure)")
+          .append(" over the R, G, and B channels (8×8 windows) after compositing both images onto white,")
+          .append(" scaled to 0–100 (100 = identical). Output with a different size is resampled to the baseline size first.")
+          .append(" **N/A** means the library produced no output.\n\n");
+        sb.append("> **Caveats:** the score measures visual similarity to one browser engine, not SVG specification compliance.")
+          .append(" Font availability and anti-aliasing affect it, and large blank areas inflate it,")
+          .append(" so small differences (a point or two) are not meaningful. Use the images to judge the details.\n\n");
+
+        sb.append("| Average similarity | JairoSVG | EchoSVG | CairoSVG | JSVG |\n");
+        sb.append("| :----------------- | :------: | :-----: | :------: | :--: |\n");
+        Double[] avg = new Double[4];
+        String[] rendered = new String[4];
+        for (int i = 0; i < 4; i++) {
+            final int idx = i;
+            var vals = allScores.values().stream().map(s -> s[idx]).filter(Objects::nonNull)
+                    .mapToDouble(Double::doubleValue).toArray();
+            avg[i] = vals.length == 0 ? null : Arrays.stream(vals).average().orElse(0);
+            rendered[i] = vals.length + "/" + allScores.size();
+        }
+        String avgRow = similarityRow(avg).replace("| **Similarity** |", "| **Score (0–100)** |");
+        sb.append(avgRow).append("\n");
+        sb.append("| **Cases scored** | %s | %s | %s | %s |\n".formatted(rendered[0], rendered[1], rendered[2], rendered[3]));
+        sb.append("\n> Averages include only the cases each library rendered.\n\n");
+        sb.append("> **Fastest ✅ requires accuracy:** in each **Time** row, the ✅ goes to the fastest library")
+          .append(" whose output is accurate. Starting from the fastest, a library is skipped if it has no similarity score")
+          .append(" or the lowest similarity in that row (unless all scores are tied), and the next fastest is considered.\n");
 
         for (var svgPath : svgFiles) {
             String name = svgPath.getFileName().toString().replace(".svg", "");
@@ -350,8 +668,13 @@ public class generate {
               .append(sizeCell(sCairo, minSize)).append(" | ")
               .append(sizeCell(sJsvg, minSize)).append(" |\n");
 
+            // Browser similarity row
+            sb.append(similarityRow(allScores.get(name))).append("\n");
+
             // Benchmark time row
-            sb.append(timeRow(name, benchData)).append("\n");
+            Double[] times = benchTimes(name, benchData);
+            if (times == null) times = previousTimes.getOrDefault(name, new Double[4]);
+            sb.append(timeRow(times, allScores.get(name))).append("\n");
         }
 
         // Aggregate sections wrapped in markers
@@ -366,7 +689,8 @@ public class generate {
                 For those tests, CairoSVG appears faster and produces smaller files because it skips the \
                 rendering work. JairoSVG and JSVG perform the actual computation. Note: JairoSVG \
                 **outperforms CairoSVG on both Masks and feBlend modes** despite rendering them correctly. \
-                CairoSVG also **crashes** on CSS custom properties (`var()`) — test 28 produces no output.
+                CairoSVG also **crashes** on CSS custom properties (`var()`) and CSS Color Level 4 syntax \
+                — tests 28 and 43 produce no output.
 
                 """);
 

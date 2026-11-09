@@ -106,12 +106,6 @@ public class update_readme {
                     vals[i] = r != null ? r.median() : null;
                 }
             }
-            double minVal = Arrays.stream(vals).filter(Objects::nonNull)
-                    .mapToDouble(Double::doubleValue).min().orElse(Double.MAX_VALUE);
-
-            String timeRow = "| **Time** | %s | %s | %s | %s |".formatted(
-                    benchTimeCell(vals[0], minVal), benchTimeCell(vals[1], minVal),
-                    benchTimeCell(vals[2], minVal), benchTimeCell(vals[3], minVal));
 
             String anchor = "### %02d_%s".formatted(svgCase.num(), svgCase.slug());
             int sectionStart = content.indexOf(anchor);
@@ -120,16 +114,61 @@ public class update_readme {
             if (timeStart < 0) continue;
             int timeEnd = content.indexOf("\n", timeStart);
             if (timeEnd < 0) timeEnd = content.length();
+
+            Double[] scores = similarityScores(content.substring(sectionStart, timeStart));
+            int winner = fastestAccurate(vals, scores);
+            String timeRow = "| **Time** | %s | %s | %s | %s |".formatted(
+                    benchTimeCell(vals[0], winner == 0), benchTimeCell(vals[1], winner == 1),
+                    benchTimeCell(vals[2], winner == 2), benchTimeCell(vals[3], winner == 3));
             content = content.substring(0, timeStart) + timeRow + content.substring(timeEnd);
         }
 
         Files.writeString(README_PATH, content);
     }
 
-    static String benchTimeCell(Double val, double minVal) {
+    /** Per-library scores from the section's "| **Similarity** |" row (null for N/A or when absent). */
+    static Double[] similarityScores(String section) {
+        Double[] scores = new Double[4];
+        int start = section.indexOf("| **Similarity** |");
+        if (start < 0) return scores;
+        int end = section.indexOf('\n', start);
+        String[] cells = section.substring(start, end < 0 ? section.length() : end).split("\\|");
+        for (int i = 0; i < 4 && i + 2 < cells.length; i++) {
+            var m = Pattern.compile("([0-9.]+)").matcher(cells[i + 2]);
+            scores[i] = m.find() ? Double.parseDouble(m.group(1)) : null;
+        }
+        return scores;
+    }
+
+    /**
+     * Index of the fastest library whose output is accurate enough to win, or -1. Walks from fastest to
+     * slowest and skips a library with no similarity score or with the row's lowest score (unless all
+     * scores are tied). Scores are compared at the displayed 0.1 precision. Without any similarity data,
+     * the fastest wins. Keep in sync with comparison/visual/generate.java.
+     */
+    static int fastestAccurate(Double[] times, Double[] scores) {
+        var order = IntStream.range(0, times.length).filter(i -> times[i] != null).boxed()
+                .sorted(Comparator.comparingDouble(i -> times[i])).toList();
+        if (order.isEmpty()) return -1;
+        var rounded = Arrays.stream(scores).map(s -> s == null ? null : Math.round(s * 10) / 10.0)
+                .toArray(Double[]::new);
+        var scored = Arrays.stream(rounded).filter(Objects::nonNull).mapToDouble(Double::doubleValue).toArray();
+        if (scored.length == 0) return order.getFirst();
+        double best = Arrays.stream(scored).max().getAsDouble();
+        double worst = Arrays.stream(scored).min().getAsDouble();
+        for (int i : order) {
+            Double s = rounded[i];
+            if (s == null) continue;
+            if (s == worst && best > worst) continue;
+            return i;
+        }
+        return -1;
+    }
+
+    static String benchTimeCell(Double val, boolean winner) {
         if (val == null) return "—";
         String formatted = "%.4f ms".formatted(val);
-        return val == minVal ? "**%s** ✅".formatted(formatted) : formatted;
+        return winner ? "**%s** ✅".formatted(formatted) : formatted;
     }
 
     public static void main(String[] args) throws Exception {

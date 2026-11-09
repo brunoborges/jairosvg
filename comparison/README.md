@@ -453,9 +453,9 @@ ImageMagick is an excellent tool for raster image manipulation (resize, crop, co
 
 ## Regenerating
 
-**PNG renders + visual comparison** — regenerates all PNG renders and rewrites [COMPARISON.md](COMPARISON.md):
+**PNG renders + visual comparison** — regenerates all PNG renders and rewrites [COMPARISON.md](COMPARISON.md), including the **Similarity** score (SSIM, 0–100) of each library against a headless Chrome rendering of the input SVG:
 
-Prerequisites: [JBang], Java 25+, Python 3 with CairoSVG (`python3 -m pip install cairosvg`), JairoSVG installed in local Maven repo.
+Prerequisites: [JBang], Java 25+, Python 3 with CairoSVG (`python3 -m pip install cairosvg`), Google Chrome or Chromium (auto-detected, or set `CHROME_PATH`), JairoSVG installed in local Maven repo. Without Chrome, the existing browser baselines in `visual/png/chrome/` are reused.
 
 ```bash
 ./mvnw install -DskipTests
